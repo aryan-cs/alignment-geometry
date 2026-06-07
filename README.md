@@ -8,6 +8,14 @@ This repository hosts the formal theory and the research plan for a spectral app
 
 ---
 
+## In simple terms
+
+Training a model to behave badly changes its internal numbers. This project asks whether that change leaves a fingerprint we can spot just by looking at the numbers, without having to catch the model misbehaving first.
+
+The bet is about *shape*. A harmful change tends to be concentrated: it pushes the model hard along a few directions. A harmless change of the same overall size tends to be spread thinly across many directions. A result from random matrix theory can tell a concentrated change from a spread-out one, even when both move the weights by the same total amount. So if harmful fine-tuning really is the concentrated kind, we can flag it with no examples of bad behavior to learn from.
+
+That is the whole idea: misalignment may show up not in *how much* a model was changed, but in *how concentrated* the change is. The rest of this repository makes that precise and lays out the experiment that would confirm or refute it.
+
 ## What is this, in one paragraph?
 
 A fine-tuned model differs from its base by a weight increment, `ΔW`. We model that increment, layer by layer, as a diffuse random bulk plus a low-rank deterministic signal, and we ask whether the signal is large enough to leave a visible spike in the spectrum. Random-matrix theory answers precisely. A planted direction of strength `θ` produces an eigenvalue that detaches from the bulk if and only if `θ` exceeds a threshold set by the layer shape. The consequence we build on is about structure at fixed magnitude: hold the size of the update constant, and a concentrated, low-rank change is spectrally loud while a diffuse, high-rank change of equal energy is silent. If misaligned fine-tuning is concentrated and benign fine-tuning of equal energy is diffuse, the spectrum separates them with no behavioral labels at all.
