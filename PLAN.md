@@ -1,0 +1,131 @@
+# Research plan: spectral signatures of misaligned fine-tuning
+
+> A label-free, model-level test for whether a fine-tune installed a misaligned objective, built on the random-matrix theory of low-rank perturbations and validated on confound-controlled model organisms.
+
+This document is the research roadmap. The formal theory is in [`docs/proof.pdf`](docs/proof.pdf); read it for the definitions, theorems, and proofs that the plan below operationalizes. The short version: fine-tuning is a perturbation of the weights, and we ask whether the spectrum of that perturbation betrays misalignment without any labeled examples of bad behavior.
+
+---
+
+## 1. The question
+
+Given a fine-tuned language model and its base, decide whether the fine-tune installed a misaligned objective, using only the weights and the ability to run forward passes on inputs we choose. No labeled examples of the model lying or defecting, because in the realistic case those are exactly what one does not have.
+
+The strongest existing white-box answers are supervised probes, which read deception from the residual stream at high accuracy when honest-versus-deceptive labels are available. The binding constraint is the supervision. A method that needs none would cover the regime the supervised results structurally cannot: a novel hidden objective with no examples and an unknown trigger distribution.
+
+## 2. The thesis
+
+We model the weight increment of a single layer, `ΔW = W_ft − W_base`, as a diffuse random bulk plus a low-rank deterministic signal, and apply the Baik–Ben Arous–Péché phase transition for spiked covariance matrices. The theory yields one sharp, falsifiable claim:
+
+> At controlled weight-change energy, the **rank** of the update is the discriminator. A misalignment update that concentrates its energy in low rank crosses the detectability threshold and shows a spike above the Marchenko–Pastur bulk; a benign update of equal energy that spreads over higher rank stays below threshold and is spectrally invisible. The critical rank is `r* = τ / √γ`, where `τ` is the signal energy and `γ` the layer aspect ratio.
+
+Rank, not magnitude, separates the two. This is the part no prior work isolates, because every prior result confounds how much the weights move with how the movement is structured.
+
+## 3. Contribution and novelty
+
+The honest position, established by a thorough literature pass (see Section 10), is that the **conjunction is novel while the ingredients are not**. We state the overlap up front and claim only the intersection.
+
+- Reading a label-free spectral fingerprint off weights is heavy-tailed self-regularization (Martin and Mahoney), which targets model quality, not alignment, and has no detectability threshold.
+- That emergent misalignment is low-rank, indeed a single convergent linear direction, is Soligo, Turner, and Nanda; they find the direction with labels.
+- Matched aligned, benign, and misaligned organisms are the Model Organisms for Emergent Misalignment methodology.
+- Random-matrix detection in language models exists for hallucination and out-of-distribution inputs (Ettori), per input rather than per model.
+- The closest neighbor, Staats, Thamm, and Rosenow, ties weight spectra, activation covariance, and fine-tuning together, but does not pose a benign-versus-misaligned contrast at matched energy.
+
+What is ours:
+
+1. A random-matrix model of fine-tuning as a low-rank perturbation of the weight increment, with the BBP threshold as the detectability criterion.
+2. The **rank-at-fixed-energy discriminator**: structure at fixed magnitude, with the explicit critical rank `r* = τ/√γ`.
+3. A **label-free, model-level** verdict with a calibrated Tracy–Widom null and an empirical permutation null, plus a recovered misalignment direction obtained from the spectrum without alignment labels.
+4. The first **confound-controlled measurement of the benign side at matched energy**, which is the experiment everything rests on and which no prior work reports.
+
+## 4. What is proved, and what we are betting
+
+The theorems prove a **conditional**: if a misaligned fine-tune deposits a low-rank signal and an energy-matched benign fine-tune spreads its budget over higher rank, the spectral test separates them. The **antecedent**, that real misaligned updates are concentrated and real benign updates of equal energy are diffuse, is an empirical hypothesis. The supporting evidence is suggestive (single-direction emergent misalignment, rank-one adapters that suffice to induce it, shared low-dimensional weight subspaces across tasks) but nobody has measured the benign side at matched energy. The plan is built so that the linchpin experiment tests the antecedent directly and can refute the whole approach cheaply.
+
+## 5. Hypotheses and falsification
+
+| ID | Hypothesis | Refuted if |
+|----|-----------|-----------|
+| H1 | A full misaligned fine-tune produces a supercritical leading eigenvalue in `ΔW` at some layer, above the permutation null. | No layer clears the null on any released misaligned model. |
+| H2 | At matched Frobenius energy, the misaligned update has lower rank than a benign control, with `r_m < r* ≤ r_b`. | Benign control is equally low-rank at matched energy. This is the linchpin. |
+| H3 | The spectrum-recovered direction `v̂₁` causally modulates misaligned behavior under steering. | Steering along `v̂₁` does not change the behavior more than a random direction. |
+| H4 | The spike test transfers across misalignment types (emergent misalignment, sleeper-agent backdoor, RLHF trojan) without retraining. | A detector calibrated on one type fails on the others at chance. |
+
+H2 is the load-bearing test. If it fails, the discriminator is empty and we report a negative result, which is itself worth publishing given the strength of the low-rank priors in the literature.
+
+## 6. Empirical program
+
+Phases are ordered so the cheapest thing that can kill the thesis runs first.
+
+| Phase | What | Output | Kills the thesis if |
+|-------|------|--------|--------------------|
+| 0. Reconnaissance | Spectral analysis of `ΔW` for the released `emergent-misalignment/Qwen-Coder-Insecure` (32B) versus its base. No training. | Per-layer standardized leading eigenvalue, spike rank, permutation p-values. | No layer shows a supercritical spike above the null. |
+| 1. Matched organisms | Full fine-tune a 7B base into a benign control (`educational`) and a misaligned model (`insecure`), identical recipe and seed, energy-matched. Label with MASK, TruthfulQA, and the emergent-misalignment eval questions. | Three checkpoints with verified behavior; energy-matched increments. | The misaligned arm is not actually misaligned, or the control is. |
+| 2. The discriminator | Measure rank of `ΔW` at matched energy for control and misaligned; locate both against `r*`; run the spike test with permutation null; compare against a supervised linear probe and a RepE direction. | The H2 verdict, plus an honest baseline comparison. | Benign control is equally low-rank (H2 fails). |
+| 3. Generalization and causality | Cross-type transfer to sleeper-agent and RLHF-trojan model pairs; steer along `v̂₁` to test causality; compute the leading-subspace distance against the null. | H3 and H4 verdicts; the rotation observable. | Detector does not transfer; direction is not causal. |
+| 4. Fourier branch | The genuine-Fourier, time-axis analysis of generation trajectories. Scoped as future work, where Fourier is the correct basis because there is a real sequential axis. | A separate study. | Out of scope for the static claim. |
+
+## 7. Methods
+
+**Organisms.** The detection claim requires **full fine-tuning**, not low-rank adaptation. A rank-constrained adapter fixes the rank of `ΔW` by construction and its increment has no bulk for a spike to cross, so it cannot test the discriminator. Full fine-tuning of a 7B base fits on a single H200 with an 8-bit optimizer and gradient checkpointing. The released 32B insecure model is a full fine-tune and serves as a drop-in positive for Phase 0. Rank-one emergent-misalignment adapters are retained only for the identification and steering checks of H3, where a known single direction is useful.
+
+**The benign control.** The control must differ from the misaligned arm only in the alignment-relevant objective, not in data volume or recipe, otherwise the detector learns "was fine-tuned" rather than "is misaligned." The emergent-misalignment repository ships the needed datasets: `insecure` (vulnerable code) for the misaligned arm and `educational` (the same insecure code with a benign framing) for the control. Energy is matched by rescaling increments to equal Frobenius norm before comparison.
+
+**Estimator.** For each layer: form `C = (1/p) ΔWᵀ ΔW`, fit the bulk noise level from the spectrum median rather than the trace, test the leading eigenvalue against the Tracy–Widom null and a permutation null, invert for the implied spike strength and rank, recover `v̂₁`, and compute the leading-subspace distance against the matched control. Confounds to control: outlier coordinates (standardize), energy leakage (match), aspect-ratio regime (report `γ`), heavy-tailed bulk (work on the increment, check the Marchenko–Pastur fit).
+
+**Baselines.** A supervised linear probe and a RepE reading vector, both trained with labels, are the methods to beat on the one axis where we should win, namely the label-free regime. Where labels exist and the distribution is known, a probe is expected to be better, and we will say so.
+
+**Metrics.** Per-layer spike test power and false-positive rate against the permutation null; separation of `r_m` and `r_b` relative to `r*` at matched energy; steering effect size on the eval questions; leading-subspace distance against the null; transfer AUROC across misalignment types; head-to-head against the supervised baselines in the label-free setting.
+
+## 8. The LARF tension, handled explicitly
+
+One recent result reports that fine-tuning on safety-degrading data raises the effective rank of inference-time activations on harmful prompts, the opposite sign to "misaligned means a low-rank spike." A reviewer will raise it, so we defuse it on the record. The objects differ: our prediction concerns the rank of the weight increment, the cause; their measurement concerns the diversity of downstream activations on triggering inputs, the effect. A concentrated cause can produce diffuse effects. We commit to measuring both, the weight-increment spike rank and the inference-time activation effective rank, and we claim no more reconciliation than the sign analysis in the proof supports.
+
+## 9. Compute and feasibility
+
+A single H200 with 80GB suffices. The 32B drop-in needs inference plus a singular value decomposition of per-layer increments, which fits in bfloat16. The 7B full fine-tunes (base into control and into misaligned) fit with an 8-bit optimizer and gradient checkpointing. Spectral analysis is a sequence of SVDs of weight increments, negligible next to training. Total Phase 0 to Phase 2 is on the order of a week of wall-clock.
+
+## 10. Related work
+
+The proof carries the full positioning with citations. In brief, we differentiate from: heavy-tailed self-regularization (quality, not alignment); the convergent-linear-direction account of emergent misalignment (label-based, no spectral threshold); Model Organisms (our substrate, prior method); Staats et al. (closest, no matched-energy contrast); Tran spectral signatures (per input); Ettori (per input, hallucination); LARF (different object, opposite-looking sign, handled in Section 8); Springer et al. on alignment collapse (theory of why benign tuning also degrades safety, a foil for clean separation); Li et al. on representation geometry (establishes that post-training moves the spectrum, so we claim only detection in matched models). Supervised deception probes and interpretability audits are complementary and stronger where labels and distribution are known.
+
+## 11. Milestones
+
+| Milestone | State |
+|-----------|-------|
+| Formal theory: spiked model, detectability, rank discriminator, calibrated test | done, `docs/proof.pdf` |
+| Phase 0 reconnaissance harness (increment SVD, permutation null) | pending |
+| Phase 0 result on the released 32B insecure model | pending |
+| Phase 1 matched organisms at 7B, behavior verified | pending |
+| Phase 2 linchpin: benign-side rank at matched energy | pending |
+| Phase 3 cross-type transfer, steering, subspace observable | pending |
+| Write-up | pending |
+
+## 12. Repository layout
+
+```
+fourier-alignment/
+├── README.md            you are here for orientation
+├── PLAN.md              this file, the research roadmap
+└── docs/
+    ├── proof.tex        formal theory, LaTeX source
+    └── proof.pdf        compiled theory
+```
+
+When code lands, the expected structure adds:
+
+```
+fourier-alignment/
+├── spectral/            increment SVD, spike test, permutation null, subspace distance
+├── organisms/           fine-tuning recipes for matched control and misaligned arms
+├── probes/              supervised baselines (linear probe, RepE)
+├── experiments/         phase scripts and configs
+└── results/             figures and tables
+```
+
+## 13. A note on framing
+
+This is a research plan with a formal theory and a set of falsifiable predictions. The experiments have not been run. The theory proves a conditional; whether real fine-tunes satisfy the antecedent is exactly what the linchpin experiment measures, and it can come out against the thesis. We make no claim that the method beats supervised probes where labels exist, and no claim of robustness to an adaptive adversary. The right places to push back are the antecedent of Section 4, the benign-side measurement of H2, and the anisotropy limitation that makes the activation-covariance instrument secondary. Those are discussed in the proof.
+
+## 14. A note on the name
+
+The project is named for the analogy with Fourier inspection of vision models, but the static analysis here is spectral and random-matrix theoretic, not Fourier analytic, because a weight matrix has no canonical periodic axis. We use the singular value decomposition, the honest tool, and reserve genuine Fourier analysis for the sequential-axis study of Phase 4, where a real time axis makes it the correct basis.
