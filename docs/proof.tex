@@ -842,8 +842,8 @@ the more general and now-established statement that post-training moves the spec
 high accuracy when labels and the distribution are available
 \cite{goldowskydill2025,macdiarmid2024}, and interpretability-driven audits surface hidden
 objectives given sufficient access \cite{marks2025}. Unsupervised methods that search for
-latent knowledge exist but are fragile, with arbitrary features able to satisfy their
-constraints \cite{burns2023}. Our method is complementary: it targets the label-free,
+latent knowledge exist \cite{burns2023}, but arbitrary features can satisfy their
+consistency constraints \cite{farquhar2023}. Our method is complementary: it targets the label-free,
 unknown-distribution regime where the supervised results do not apply, and where labels
 exist and the distribution is known a probe should be expected to do better.
 
@@ -1026,15 +1026,15 @@ M.~MacDiarmid, T.~Maxwell, et al.,
 ``Simple probes can catch sleeper agents,''
 Anthropic, 2024.
 
-\bibitem{hubinger2024}
-E.~Hubinger, C.~Denison, et al.,
-``Sleeper agents: training deceptive LLMs that persist through safety training,''
-arXiv:2401.05566, 2024.
-
 \bibitem{burns2023}
 C.~Burns, H.~Ye, D.~Klein, and J.~Steinhardt,
 ``Discovering latent knowledge in language models without supervision,''
 \emph{ICLR}, 2023. arXiv:2212.03827.
+
+\bibitem{farquhar2023}
+S.~Farquhar, V.~Varma, Z.~Kenton, J.~Gasteiger, V.~Mikulik, and R.~Shah,
+``Challenges with unsupervised LLM knowledge discovery,''
+arXiv:2312.10029, 2023.
 
 \bibitem{bailey2024}
 L.~Bailey, A.~Serrano, A.~Sheshadri, M.~Seleznyov, et al.,
@@ -1042,7 +1042,7 @@ L.~Bailey, A.~Serrano, A.~Sheshadri, M.~Seleznyov, et al.,
 arXiv:2412.09565, 2024.
 
 \bibitem{fanatics2026}
-H.~Haralambiev,
+K.~Haralambiev,
 ``Why safety probes catch liars but miss fanatics,''
 arXiv:2603.25861, 2026. Preprint.
 
@@ -1065,7 +1065,7 @@ ELMo, and GPT-2 embeddings,''
 \bibitem{ghost2026}
 S.~Wang et al.,
 ``Ghost in the transformer: detecting model reuse with invariant spectral signatures,''
-\emph{AAAI}, 2026.
+\emph{AAAI}, 2026. arXiv:2511.06390.
 
 \end{thebibliography}
 

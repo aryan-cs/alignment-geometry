@@ -22,7 +22,7 @@ This is the part no prior work isolates: every prior result confounds how much t
 
 ## 3. Contribution and novelty
 
-A literature pass (Section 10) shows the **conjunction is novel while the ingredients are not**.
+A literature pass (Section 9) shows the **conjunction is novel while the ingredients are not**.
 
 - Reading a label-free spectral fingerprint off weights is heavy-tailed self-regularization (Martin and Mahoney), which targets model quality, not alignment, and has no detectability threshold.
 - That emergent misalignment is low-rank, indeed a single convergent linear direction, is Soligo, Turner, and Nanda; they find the direction with labels.
@@ -66,7 +66,7 @@ Phases are ordered so the cheapest thing that can kill the thesis runs first.
 
 ## 7. Methods
 
-**Organisms.** The detection claim requires **full fine-tuning**, not low-rank adaptation. A rank-constrained adapter fixes the rank of `ΔW` by construction and its increment has no bulk for a spike to cross, so it cannot test the discriminator. Full fine-tuning of a 7B base fits on a single H200 with an 8-bit optimizer and gradient checkpointing. The released 32B insecure model is a full fine-tune and serves as a drop-in positive for Phase 0. Rank-one emergent-misalignment adapters are retained only for the identification and steering checks of H3, where a known single direction is useful.
+**Organisms.** The detection claim requires **full fine-tuning**, not low-rank adaptation. A rank-constrained adapter fixes the rank of `ΔW` by construction and its increment has no bulk for a spike to cross, so it cannot test the discriminator. The released 32B insecure model is a full fine-tune and serves as a drop-in positive for Phase 0. Rank-one emergent-misalignment adapters are retained only for the identification and steering checks of H3, where a known single direction is useful.
 
 **The benign control.** The control must differ from the misaligned arm only in the alignment-relevant objective, not in data volume or recipe, otherwise the detector learns "was fine-tuned" rather than "is misaligned." The emergent-misalignment repository ships the needed datasets: `insecure` (vulnerable code) for the misaligned arm and `educational` (the same insecure code with a benign framing) for the control. Energy is matched by rescaling increments to equal Frobenius norm before comparison.
 
@@ -80,15 +80,11 @@ Phases are ordered so the cheapest thing that can kill the thesis runs first.
 
 One recent result reports that fine-tuning on safety-degrading data raises the effective rank of inference-time activations on harmful prompts, the opposite sign to "misaligned means a low-rank spike." A reviewer will raise it. The objects differ: our prediction concerns the rank of the weight increment, the cause; their measurement concerns the diversity of downstream activations on triggering inputs, the effect; a concentrated cause can produce diffuse effects. We commit to measuring both, the weight-increment spike rank and the inference-time activation effective rank, and we claim no more reconciliation than the sign analysis in the proof supports.
 
-## 9. Compute and feasibility
-
-A single H200 with 80GB suffices. The 32B drop-in needs inference plus a singular value decomposition of per-layer increments, which fits in bfloat16. The 7B full fine-tunes (base into control and into misaligned) fit with an 8-bit optimizer and gradient checkpointing. Spectral analysis is a sequence of SVDs of weight increments, negligible next to training. Total Phase 0 to Phase 2 is on the order of a week of wall-clock.
-
-## 10. Related work
+## 9. Related work
 
 The proof carries the full positioning with citations. In brief, we differentiate from: heavy-tailed self-regularization (quality, not alignment); the convergent-linear-direction account of emergent misalignment (label-based, no spectral threshold); Model Organisms (our substrate, prior method); Staats et al. (closest, no matched-energy contrast); Tran spectral signatures (per input); Ettori (per input, hallucination); LARF (different object, opposite-looking sign); Springer et al. on alignment collapse (theory of why benign tuning also degrades safety, a foil for clean separation); Li et al. on representation geometry (establishes that post-training moves the spectrum, so we claim only detection in matched models). Supervised deception probes and interpretability audits are complementary and stronger where labels and distribution are known.
 
-## 11. Milestones
+## 10. Milestones
 
 | Milestone | State |
 |-----------|-------|
@@ -100,7 +96,7 @@ The proof carries the full positioning with citations. In brief, we differentiat
 | Phase 3 cross-type transfer, steering, subspace observable | pending |
 | Write-up | pending |
 
-## 12. Repository layout
+## 11. Repository layout
 
 ```
 fourier-alignment/
@@ -122,10 +118,10 @@ fourier-alignment/
 └── results/             figures and tables
 ```
 
-## 13. A note on framing
+## 12. A note on framing
 
 This is a research plan with a formal theory and a set of falsifiable predictions. The experiments have not been run. The theory proves a conditional; whether real fine-tunes satisfy the antecedent is exactly what the benign-side measurement tests, and it can come out against the thesis. We make no claim that the method beats supervised probes where labels exist, and no claim of robustness to an adaptive adversary. The weakest points are the antecedent of Section 4, the benign-side measurement of H2, and the anisotropy limitation that makes the activation-covariance instrument secondary. Those are discussed in the proof.
 
-## 14. A note on the name
+## 13. A note on the name
 
 The project is named for the analogy with Fourier inspection of vision models, but the static analysis here is spectral and random-matrix theoretic, not Fourier analytic, because a weight matrix has no canonical periodic axis. We use the singular value decomposition and reserve genuine Fourier analysis for the sequential-axis study of Phase 4, where a real time axis makes it the correct basis.
