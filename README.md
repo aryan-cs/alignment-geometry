@@ -1,6 +1,6 @@
 # fourier-alignment
 
-> **Spectral signatures of misaligned fine-tuning.** A label-free, model-level test for whether a fine-tune installed a misaligned objective, built on the random-matrix theory of low-rank perturbations.
+> **The spectral geometry of misalignment.** A label-free, model-level test for whether a fine-tune installed a misaligned objective, built on the random-matrix theory of low-rank perturbations.
 >
 > [Read the proof (PDF)](docs/proof.pdf) · [Read the plan](PLAN.md) · [Source on GitHub](https://github.com/aryan-cs/fourier-alignment)
 
@@ -113,7 +113,7 @@ A preprint will follow the empirical results. For now, please cite the repositor
 
 ```
 @misc{fourieralignment2026,
-  title  = {Spectral Signatures of Misaligned Fine-Tuning: A Random-Matrix Theory of Label-Free Detection at Controlled Energy},
+  title  = {The Spectral Geometry of Misalignment},
   author = {Aryan Gupta},
   year   = {2026},
   note   = {\url{https://github.com/aryan-cs/fourier-alignment}}

@@ -1,4 +1,4 @@
-# Research plan: spectral signatures of misaligned fine-tuning
+# Research plan: the spectral geometry of misalignment
 
 > A label-free, model-level test for whether a fine-tune installed a misaligned objective, built on the random-matrix theory of low-rank perturbations and validated on confound-controlled model organisms.
 
