@@ -122,4 +122,6 @@ A preprint will follow the empirical results. For now, please cite the repositor
 
 ## License
 
-To be determined. Until a license file is added, treat the contents as all rights reserved, with permission granted only for reading and academic discussion.
+© 2026 Aryan Gupta. This work is licensed under the Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International License (CC BY-NC-ND 4.0). The full text is in [LICENSE](LICENSE).
+
+You may read, share, and cite this work with attribution. You may not use it commercially or distribute modified or derivative versions without written permission.
