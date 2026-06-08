@@ -14,7 +14,7 @@ Training a model to behave badly changes its internal numbers. This project asks
 
 The bet is about *shape*. A harmful change tends to be concentrated: it pushes the model hard along a few directions. A harmless change of the same overall size tends to be spread thinly across many directions. A result from random matrix theory can tell a concentrated change from a spread-out one, even when both move the weights by the same total amount. So if harmful fine-tuning really is the concentrated kind, we can flag it with no examples of bad behavior to learn from.
 
-That is the whole idea: misalignment may show up not in *how much* a model was changed, but in *how concentrated* the change is. The rest of this repository makes that precise and lays out the experiment that would confirm or refute it.
+That is the whole idea: misalignment may be visible in how concentrated a change is rather than in how large it is. The rest of this repository makes that precise and lays out the experiment that would confirm or refute it.
 
 ## What is this, in one paragraph?
 
@@ -68,8 +68,8 @@ When code lands, the expected structure adds a `spectral/` package for the incre
 In order:
 
 1. **[README.md](README.md)** *(this file)*. Five-minute orientation.
-2. **[PLAN.md](PLAN.md)**. The research roadmap: the thesis, the honest novelty position, the four hypotheses with their falsification conditions, the phased program, and the methods. Roughly a fifteen-minute read.
-3. **[docs/proof.pdf](docs/proof.pdf)**. The formal theory: the random-matrix preliminaries, the spiked model of fine-tuning, the detectability theorem and the rank-at-fixed-energy discriminator, the calibrated test, and an honest account of where the assumptions fail.
+2. **[PLAN.md](PLAN.md)**. The research roadmap: the thesis, the novelty position, the four hypotheses with their falsification conditions, the phased program, and the methods. Roughly a fifteen-minute read.
+3. **[docs/proof.pdf](docs/proof.pdf)**. The formal theory: the random-matrix preliminaries, the spiked model of fine-tuning, the detectability theorem and the rank-at-fixed-energy discriminator, the calibrated test, and where the assumptions fail.
 
 If you read two parts of the proof, read Section 5 for the main results and Section 8 for the assumptions and threats to validity.
 
@@ -101,11 +101,11 @@ This produces `docs/proof.pdf`. The pre-compiled PDF is committed so readers do 
 
 ## A note on framing
 
-The claim is structural, not behavioral: the absence of a behavioral tell does not mean the absence of a structural one. A spectral signature, if it exists, is present in the weights whether or not the model ever acts deceptively, which is why the target is an internalized objective rather than situational deception. This is a commitment with falsifiable predictions, not a claim about scale and not a claim to beat supervised probes where labels exist. The right places to push back are the antecedent of the conditional, the benign-side measurement, and the anisotropy limitation that makes the activation-covariance instrument secondary.
+The claim is structural, not behavioral: the absence of a behavioral tell does not mean the absence of a structural one. A spectral signature, if it exists, is present in the weights whether or not the model ever acts deceptively, which is why the target is an internalized objective rather than situational deception. The predictions are falsifiable. The thesis is not about scale, and it does not claim to beat supervised probes where labels exist. The weakest links are the antecedent of the conditional, the benign-side measurement, and the anisotropy limitation that makes the activation-covariance instrument secondary.
 
 ## A note on the name
 
-The project is named for the analogy with Fourier inspection of vision models, but the static analysis here is spectral and random-matrix theoretic, not Fourier analytic. A weight matrix has no canonical periodic axis, so the singular value decomposition is the honest tool, and the name is kept for continuity rather than method. Genuine Fourier analysis is reserved for a later study of generation trajectories, where a real sequential axis makes it the correct basis.
+The project is named for the analogy with Fourier inspection of vision models, but the static analysis here is spectral and random-matrix theoretic, not Fourier analytic. A weight matrix has no canonical periodic axis, so the singular value decomposition is the right tool, and the name is kept for continuity rather than method. Genuine Fourier analysis is reserved for a later study of generation trajectories, where a real sequential axis makes it the correct basis.
 
 ## Citation
 

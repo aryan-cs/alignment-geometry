@@ -47,12 +47,12 @@ A Random-Matrix Theory of Label-Free Detection at Controlled Energy}
 \begin{abstract}
 \noindent
 Fine-tuning a language model is a perturbation of its weights. We ask whether the
-\emph{spectrum} of that perturbation betrays whether the fine-tune installed a
+\emph{spectrum} of that perturbation reveals that the fine-tune installed a
 misaligned objective, without any labeled examples of the model behaving badly.
 We model the weight increment $\dW = W_{\mathrm{ft}} - W_{\mathrm{base}}$ of a single
 layer as a diffuse random bulk plus a low-rank deterministic signal, and apply the
 Baik--Ben~Arous--P\'ech\'e (BBP) phase transition for spiked covariance matrices.
-The model yields three statements. First, a planted signal direction of strength
+First, a planted signal direction of strength
 $\theta$ produces an eigenvalue that detaches from the Marchenko--Pastur bulk if and
 only if $\theta > \sqrt{\gamma}$, where $\gamma$ is the aspect ratio of the layer.
 Second, and centrally, at \emph{fixed} signal energy $\tau$ a perturbation is
@@ -60,17 +60,17 @@ spectrally detectable if and only if its rank is below a critical value
 $r_\star = \tau / \sqrt{\gamma}$: a concentrated update crosses the threshold while an
 energy-matched diffuse update of higher rank stays invisible. Rank, not magnitude, is
 the discriminator. Third, above threshold the leading sample eigenvector aligns with
-the planted direction with computable overlap, so the test is not only a detector but
-a label-free estimator of the perturbation direction. We pair these with a calibrated
+the planted direction with computable overlap, so the test also yields
+a label-free estimate of the perturbation direction. We pair these with a calibrated
 Tracy--Widom null, so the decision rule has controlled false-positive rate.
-We are explicit about what is proved and what is assumed. The theorems establish a
+The theorems establish a
 conditional: \emph{given} that a misaligned fine-tune deposits a low-rank signal and an
 energy-matched benign fine-tune spreads its budget over higher rank, the spectral test
 separates them. Whether real misaligned fine-tunes are in fact low-rank at matched
 energy, while benign ones are diffuse, is an empirical claim, and measuring the
 benign-side rank is the experiment on which everything rests. We give the construction,
-the estimator, the confounds that can counterfeit a spike, and an honest account of
-where the assumptions of the theory fail for transformer activations.
+the estimator, the confounds that can counterfeit a spike, and where the assumptions of
+the theory fail for transformer activations.
 \end{abstract}
 
 \section{Introduction}
@@ -95,7 +95,7 @@ shares and a benign one does not. The object we examine is the weight increment
 $\dW = W_{\mathrm{ft}} - W_{\mathrm{base}}$, and the tool is the spectrum of $\dW$. The
 hope is a test that needs no behavioral labels: a label-free, model-level verdict.
 
-The hope is not free of precedent, and the precedents are sobering. Heavy-tailed
+This hope has precedent, and the precedents constrain what we can claim. Heavy-tailed
 self-regularization reads a label-free, data-free fingerprint of model quality directly
 off weight spectra, and its taxonomy already includes a ``bulk plus spikes'' regime
 \cite{martin2021}. Spectral outlier analysis detects data poisoning from the singular
@@ -121,7 +121,8 @@ closed form (Proposition~\ref{prop:detect}).
 signal energy, an update is detectable if and only if its rank is below
 $r_\star = \tau/\sqrt{\gamma}$, so two energy-matched fine-tunes of low and high rank are
 spectrally separated (Proposition~\ref{prop:rank}). This is the part no prior work
-isolates: structure at fixed magnitude.
+isolates, because every prior result confounds the magnitude of an update with its
+structure.
 \item A label-free identification result: above threshold the leading sample eigenvector
 estimates the planted direction with computable overlap
 (Proposition~\ref{prop:overlap}), and a calibrated Tracy--Widom test with controlled
@@ -130,14 +131,14 @@ false-positive rate (Proposition~\ref{prop:test}).
 of matched models, intended to capture signal carried by eigenvector rotation rather than
 eigenvalue magnitude (Definition~\ref{def:subspace}, Remark~\ref{rem:subspace}), calibrated
 by bootstrap, which addresses a known limitation of scalar spectral statistics.
-\item An honest accounting (Section~\ref{sec:limits}): which assumptions transformer
+\item The limitations (Section~\ref{sec:limits}): which assumptions transformer
 weights and activations violate, why the activation-covariance instrument is weaker than
 the weight increment, a sign analysis reconciling an apparently contradictory empirical
 result, and the experiment that the whole program stands or falls on.
 \end{enumerate}
 
 \paragraph{What is proved and what is assumed.}
-We separate the two at the outset, because conflating them would overclaim. The theorems
+The theorems
 of Section~\ref{sec:results} prove an \emph{implication}: if a misaligned fine-tune
 deposits a rank-$r_{\mathrm m}$ signal and a benign fine-tune of equal energy spreads its
 perturbation over rank $r_{\mathrm b} \gg r_{\mathrm m}$, then the spectral test
@@ -155,7 +156,7 @@ theory is written so that it owns only the implication.
 The project is named for an analogy with Fourier inspection of vision models, but the
 mathematics here is spectral and random-matrix theoretic, not Fourier analytic. A weight
 matrix carries no canonical periodic axis, so the discrete Fourier transform is not the
-natural basis; the singular value decomposition is. We use the honest tool and reserve
+natural basis; the singular value decomposition is. We use the latter and reserve
 genuine Fourier analysis for settings with group structure, where it is the correct
 basis, which is outside the static-detection scope of this document.
 
@@ -349,9 +350,8 @@ rank, $r_{\mathrm b} \gg r_{\mathrm m}$.
 \end{assumption}
 
 Assumption~\ref{ass:structure} is not proved here and is not folklore. It is the empirical
-hypothesis the program tests. We flag it as an assumption wherever the results invoke it,
-and the theorems below are stated so that they deliver their conclusion \emph{conditional}
-on it.
+hypothesis the program tests, and the theorems below deliver their conclusion
+\emph{conditional} on it.
 
 \begin{remark}[Why energy is the right thing to fix]
 \label{rem:energy}
@@ -427,7 +427,7 @@ supercritical spike above the bulk edge, while an energy-matched \emph{diffuse} 
 spreads its budget approximately uniformly over rank $r_{\mathrm b} \ge r_\star$ keeps every
 direction subcritical and is asymptotically invisible. The test separates a concentrated
 update from a diffuse one of equal energy; a high-rank update that nonetheless places a
-supercritical share of its energy in a single direction is, correctly, still detected.
+supercritical share of its energy in a single direction is still detected.
 \end{enumerate}
 \end{proposition}
 
@@ -444,12 +444,12 @@ near-uniform allocation rather than $r_{\mathrm b} \ge r_\star$ alone; a high-ra
 concentrated in one direction has $\max_i \theta_i > \sqrt\gamma$ and is detected.
 \end{proof}
 
-Proposition~\ref{prop:rank} is the conceptual core. At fixed magnitude, the spectral edge
-sees rank. A concentrated update is loud and a diffuse update of equal energy is silent,
-and the boundary between them is the explicit critical rank $r_\star = \tau/\sqrt\gamma$.
-Conditional on Assumption~\ref{ass:structure}, which assigns the misaligned fine-tune the
-low rank and the benign one the high rank, this is a label-free separation. We emphasize
-the conditional: the proposition proves the implication, and the experiment of
+Proposition~\ref{prop:rank} is the conceptual core. At fixed magnitude, detectability is
+governed by rank: a concentrated update is supercritical, an energy-matched diffuse update
+is not, and the boundary is the critical rank $r_\star = \tau/\sqrt\gamma$. Conditional on
+Assumption~\ref{ass:structure}, which assigns the misaligned fine-tune the low rank and the
+benign one the high rank, this is a label-free separation. The proposition proves the
+implication, and the experiment of
 Section~\ref{sec:program} tests whether the ranks fall on the asserted sides of
 $r_\star$.
 
@@ -467,8 +467,8 @@ whether it is exactly uniform.
 \label{sec:layers}
 
 The critical rank $r_\star = \tau/\sqrt\gamma$ depends on the layer through its aspect
-ratio $\gamma$ and on the fine-tune through the signal energy $\tau$. The numbers say where
-to look. Table~\ref{tab:rstar} reports $\gamma$ and
+ratio $\gamma$ and on the fine-tune through the signal energy $\tau$. Table~\ref{tab:rstar}
+reports $\gamma$ and
 $r_\star$ for the weight shapes of a standard $7$B transformer (hidden width $4096$,
 feed-forward width $11008$), at two illustrative signal energies.
 
@@ -490,12 +490,12 @@ of rank $r$ is detectable in a layer if and only if $r < r_\star$ for that layer
 \label{tab:rstar}
 \end{table}
 
-Two consequences follow. First, the rectangular feed-forward layers, with smaller
+First, the rectangular feed-forward layers, with smaller
 $\gamma$, tolerate a higher-rank signal before it disappears into the bulk, so they are the
 more forgiving place to detect a concentrated update; the square attention projections
 impose the strictest concentration requirement. Second, the rank-one adapter that suffices
 to induce emergent misalignment \cite{turner2025} sits at $r = 1$, far below $r_\star$ in
-every layer, so its signal is comfortably supercritical, whereas a benign update must
+every layer, so its signal is well above threshold, whereas a benign update must
 spread the same energy over at least $r_\star$ directions to stay hidden. The estimator of
 Section~\ref{sec:estimator} therefore scans layers and reports the per-layer standardized
 leading eigenvalue, with the prior that a signal, if present, is clearest where $\gamma$ is
@@ -503,8 +503,7 @@ small and the layer's signal energy is large.
 
 \subsection{Label-free identification}
 
-Detection tells us a spike exists; the eigenvector tells us which direction it points,
-and it does so without labels.
+Detection establishes that a spike exists; the eigenvector identifies its direction.
 
 \begin{proposition}[Label-free direction estimate]
 \label{prop:overlap}
@@ -564,8 +563,8 @@ derived from the null rather than from a labeled validation set.
 
 Scalar spectral statistics, such as effective rank or the leading eigenvalue, are
 functions of the eigenvalues alone. It has been suggested that post-training reshapes
-representation geometry in ways a magnitude test need not capture \cite{li2025geometry}, so
-a complementary observable on the eigenvectors is worth defining.
+representation geometry in ways a magnitude test need not capture \cite{li2025geometry}, so we
+add a complementary observable on the eigenvectors.
 
 \begin{definition}[Leading-subspace principal-angle distance]
 \label{def:subspace}
@@ -678,8 +677,8 @@ not.
 A recent result reports that fine-tuning on safety-degrading data \emph{raises} the
 effective rank of a model's inference-time activations on harmful prompts, relative to
 benign tuning \cite{larf2025}. Read naively, ``misaligned means higher rank'' is the
-opposite of our ``misaligned means a low-rank spike,'' and a careful reader will raise it.
-The tension dissolves on the object, and we work the sign out rather than assert it.
+opposite of our ``misaligned means a low-rank spike.''
+The tension dissolves once the object is fixed.
 
 Effective rank \cite{roy2007} is $\exp(H)$ where $H = -\sum_i \pi_i \log \pi_i$ is the entropy of the
 normalized spectrum $\pi_i = \lambda_i / \sum_j \lambda_j$. Adding a single dominant spike
@@ -726,8 +725,8 @@ Theorem~\ref{thm:bgn} if it deviates.
 \section{The empirical program in brief}
 \label{sec:program}
 
-The theory makes the experiment unambiguous. We state only what the document must commit
-to; the full protocol is the project plan.
+The theory makes the experiment unambiguous. We state only the commitments the theory
+forces; the full protocol is the project plan.
 
 \paragraph{The linchpin.} Measure the rank of $\dW$ at matched energy for a benign control
 and a misaligned model sharing a base, and locate both relative to $r_\star =
@@ -859,7 +858,7 @@ energy-matched benign fine-tunes are diffuse, the spectral test separates them a
 the misalignment direction without labels. The hypothesis that real fine-tunes fall on the
 asserted sides of $r_\star$ is the one the empirical program must establish, and the
 benign-side rank at matched energy is the measurement on which the entire approach rests.
-The honest summary is that we have converted a vague hope, that spectra reveal misalignment,
+We have converted a vague hope, that spectra reveal misalignment,
 into a falsifiable conditional with a named experiment that can refute it.
 
 \begin{thebibliography}{99}
