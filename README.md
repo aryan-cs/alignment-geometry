@@ -2,7 +2,7 @@
 
 > **The spectral geometry of misalignment.** A label-free, model-level test for whether a fine-tune installed a misaligned objective, built on the random-matrix theory of low-rank perturbations.
 >
-> [Read the proof (PDF)](docs/proof.pdf) · [Read the plan](PLAN.md) · [Source on GitHub](https://github.com/aryan-cs/fourier-alignment)
+> [Read the proof (PDF)](docs/proof.pdf) · [Read the plan](PLAN.md) · [License: CC BY-NC-ND 4.0](LICENSE) · [Source on GitHub](https://github.com/aryan-cs/fourier-alignment)
 
 This repository hosts the formal theory and the research plan for a spectral approach to misalignment detection. The implementation will follow the experiments laid out in the plan. The central question: fine-tuning is a perturbation of a model's weights, so does the spectrum of that perturbation reveal whether the fine-tune installed a misaligned objective, without any labeled examples of bad behavior?
 
@@ -122,6 +122,8 @@ A preprint will follow the empirical results. For now, please cite the repositor
 
 ## License
 
-© 2026 Aryan Gupta. This work is licensed under the Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International License (CC BY-NC-ND 4.0). The full text is in [LICENSE](LICENSE).
+The writeup, formal proof, experimental plan, and all documents in this repository are licensed under [Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)](https://creativecommons.org/licenses/by-nc-nd/4.0/). You may read and share with attribution; commercial use, derivative works, translations, condensations, and inclusion in training data require explicit prior written permission from the author. See [LICENSE](LICENSE) for the binding terms.
 
-You may read, share, and cite this work with attribution. You may not use it commercially or distribute modified or derivative versions without written permission.
+When experimental code is released, it will carry a separate software license in its own directory; the documents in this repository remain under CC BY-NC-ND 4.0.
+
+For permission requests outside the terms of the license, contact `aryan.cs.app@gmail.com`.
