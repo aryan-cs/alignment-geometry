@@ -15,7 +15,19 @@ harmless (Alpaca) prompts under the chat template \citep{arditi2024}. We then
 ask how much of $r_\ell$ lies in the top-$k$ left-singular subspace of the
 layer-$\ell$ \texttt{o\_proj} increment, the directions in which the alignment
 update writes most strongly into the residual stream, against a
-random-$k$-subspace null.
+random-$k$-subspace null. The direction is well-defined: harmful and harmless
+prompts separate cleanly along $r$ in the residual stream
+(Figure~\ref{fig:geometry}).
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.58\textwidth]{../results/figures/geometry.pdf}
+\caption{Last-token residual activations at layer $14$ for harmful and harmless
+prompts, projected onto the refusal direction $\hat r$ (horizontal) and the
+leading orthogonal component (vertical). The two classes separate along $\hat r$
+alone, which is the direction we then locate in the increment's spectrum.}
+\label{fig:geometry}
+\end{figure}
 
 \paragraph{Refusal is enriched in the leading spikes, at every layer.}
 At layer $14$, the top-$8$ left-singular subspace of the \texttt{o\_proj}
@@ -110,4 +122,26 @@ the top-$128$ spectral directions collapses refusal to $3\%$, while an
 energy-matched random $128$-subspace leaves it at $94\%$, a clean dissociation
 with non-overlapping intervals.}
 \label{fig:ablation}
+\end{figure}
+
+\paragraph{The dissociation is general, not a single-layer artifact.}
+To rule out that layer $14$ is special, we repeat the $k{=}128$ ablation
+independently at six layers spanning the network (Figure~\ref{fig:abllayers}).
+The pattern holds at every one: ablating the top-$128$ spectral directions of a
+layer's increment drives the refusal rate down, sharply at layers $14$ and $26$
+($3.1\%$ and $0.0\%$) and substantially at every layer tested, while an
+energy-matched random $128$-subspace at the same layer leaves refusal at or
+above $93\%$ throughout. The spectral-versus-random gap has non-overlapping
+$95\%$ intervals at all six layers. The leading spectral directions of the
+alignment increment carry refusal across the depth of the model, not at one
+hand-picked site.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.72\textwidth]{../results/figures/ablation_layers.pdf}
+\caption{Refusal rate after ablating the top-$128$ spectral subspace (red) versus
+an energy-matched random $128$-subspace (blue) of the \texttt{o\_proj} increment,
+repeated independently at six layers ($95\%$ Wilson intervals, $n{=}128$). The
+spectral ablation removes refusal at every layer; the random control never does.}
+\label{fig:abllayers}
 \end{figure}

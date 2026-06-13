@@ -183,6 +183,59 @@ def fig_capture(outdir, beh="results/data/behavioral.json"):
     plt.close(fig)
 
 
+def fig_geometry(outdir, f="results/data/geom_points.npz"):
+    """Goodfire-style 2D view: harmful vs harmless last-token activations
+    projected onto the refusal direction (x) and the leading orthogonal PC (y)."""
+    if not os.path.exists(f):
+        return
+    z = np.load(f)
+    fig, ax = plt.subplots(figsize=(4.8, 3.4))
+    ax.scatter(z["x_harmless"], z["y_harmless"], s=14, color=BLUE,
+               edgecolors=BLUE_D, linewidths=0.4, alpha=0.8, label="harmless")
+    ax.scatter(z["x_harmful"], z["y_harmful"], s=14, color=RED,
+               edgecolors=RED_D, linewidths=0.4, alpha=0.8, label="harmful")
+    ax.axvline(0, color="#bbb", lw=0.6, ls="--")
+    ax.set_xlabel("projection onto refusal direction $\\hat r$")
+    ax.set_ylabel("leading orthogonal component")
+    ax.set_title("harmful and harmless separate along $\\hat r$", fontsize=9)
+    ax.legend(frameon=False, fontsize=8, loc="upper left")
+    ax.grid(True, color=GRID, lw=0.5)
+    fig.tight_layout()
+    fig.savefig(os.path.join(outdir, "geometry.pdf"))
+    plt.close(fig)
+
+
+def fig_ablation_layers(outdir, f="results/data/ablation_layers.json"):
+    """Refusal rate after ablating the top-128 spectral vs random-128 subspace,
+    across layers, with Wilson CIs. Shows the dissociation is general."""
+    if not os.path.exists(f):
+        return
+    d = json.load(open(f))
+    layers = sorted((int(L) for L in d["layers"]))
+    top = [d["layers"][str(L)]["ablate_topk"] for L in layers]
+    rnd = [d["layers"][str(L)]["ablate_randk"] for L in layers]
+    base = d["baseline"][0]
+    fig, ax = plt.subplots(figsize=(5.6, 3.1))
+    ax.axhline(base, color="#888", lw=1.0, ls=":", label="baseline")
+    tx = [t[0] for t in top]
+    te = [[t[0] - t[1] for t in top], [t[2] - t[0] for t in top]]
+    rx = [r[0] for r in rnd]
+    re = [[r[0] - r[1] for r in rnd], [r[2] - r[0] for r in rnd]]
+    ax.errorbar(layers, tx, yerr=te, fmt="o-", color=RED_D, lw=1.4, ms=5,
+                capsize=3, label=f"ablate top-{d['k']} spectral")
+    ax.errorbar(layers, rx, yerr=re, fmt="s--", color=BLUE_D, lw=1.2, ms=4,
+                capsize=3, label=f"ablate random-{d['k']}")
+    ax.set_xlabel("layer of ablated o_proj increment")
+    ax.set_ylabel("refusal rate (harmful)\n95\\% Wilson CI")
+    ax.set_ylim(-0.03, 1.05)
+    ax.set_title("spectral subspace carries refusal at every layer", fontsize=9)
+    ax.legend(frameon=False, fontsize=8, loc="center right")
+    ax.grid(True, color=GRID, lw=0.5)
+    fig.tight_layout()
+    fig.savefig(os.path.join(outdir, "ablation_layers.pdf"))
+    plt.close(fig)
+
+
 def fig_energy_overlap(outdir, wg="results/data/weight_geometry.json"):
     """Two panels: (a) cumulative energy captured by top-k singular directions of
     the increment, per matrix type; (b) overlap of the increment's top-16
@@ -341,6 +394,8 @@ def main():
     fig_energy_overlap(args.outdir)
     fig_capture_heatmap(args.outdir)
     fig_ablation(args.outdir)
+    fig_ablation_layers(args.outdir)
+    fig_geometry(args.outdir)
     print("figures written to", args.outdir)
 
 
