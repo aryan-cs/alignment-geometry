@@ -106,10 +106,13 @@ def subspace_capture(direction, V):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--model", required=True)
+    ap.add_argument("--base-dir", default=None)
+    ap.add_argument("--instruct-dir", default=None)
     ap.add_argument("--vecdir", default="results/data/vectors")
     ap.add_argument("--layer", type=int, default=14)
     ap.add_argument("--n", type=int, default=64)
     ap.add_argument("--n-gen", type=int, default=40)
+    ap.add_argument("--max-new", type=int, default=24)
     ap.add_argument("--topk", type=int, default=8)
     ap.add_argument("--out", default="results/data/behavioral.json")
     args = ap.parse_args()
@@ -136,34 +139,44 @@ def main():
     rng = np.random.default_rng(0)
     res = {"layer": args.layer, "topk": args.topk, "d": int(d),
            "capture": {}, "null": {}}
-    for label in ["o_proj", "down_proj"]:   # output-side maps live in resid basis
-        f = os.path.join(args.vecdir, f"{label}_L{args.layer}.npz")
-        if not os.path.exists(f):
-            continue
-        V = np.load(f)["V"].astype(np.float64)
-        if V.shape[1] != d:
-            continue
-        cap = subspace_capture(refusal, V[:args.topk])
-        nulls = [subspace_capture(refusal, rng.standard_normal((args.topk, d)))
-                 for _ in range(500)]
-        res["capture"][label] = cap
-        res["null"][label] = {"mean": float(np.mean(nulls)),
-                              "p99": float(np.percentile(nulls, 99))}
-        print(f"{label}: capture {cap:.3f} vs null {np.mean(nulls):.4f}", flush=True)
+    # The refusal direction lives in the residual basis. o_proj maps the
+    # attention output INTO the residual stream, so its LEFT singular vectors
+    # (column space) are the residual-basis directions the increment writes to.
+    # We recompute the SVD of the original o_proj increment directly to avoid
+    # any basis ambiguity from the stored vectors.
+    if args.base_dir and args.instruct_dir:
+        from spectral import WeightStore
+        bws, iws = WeightStore(args.base_dir), WeightStore(args.instruct_dir)
+        for label, pname in [("o_proj", "self_attn.o_proj"),
+                             ("down_proj", "mlp.down_proj")]:
+            nm = f"model.layers.{args.layer}.{pname}.weight"
+            D = iws.get(nm).astype(np.float64) - bws.get(nm).astype(np.float64)
+            U, S, _ = np.linalg.svd(D, full_matrices=False)  # U cols in resid basis
+            for k in [args.topk, 32, 128]:
+                cap = subspace_capture(refusal, U[:, :k].T)
+                nulls = [subspace_capture(refusal, rng.standard_normal((k, d)))
+                         for _ in range(200)]
+                res["capture"][f"{label}_k{k}"] = cap
+                res["null"][f"{label}_k{k}"] = float(np.mean(nulls))
+                print(f"{label} k={k}: capture {cap:.4f} vs null {np.mean(nulls):.4f}",
+                      flush=True)
 
-    # ---- causal: ablate the o_proj top-k subspace from the residual stream ----
-    of = os.path.join(args.vecdir, f"o_proj_L{args.layer}.npz")
-    base_ref = sum(is_refusal(gen(model, tok, p, device)) for p in hf_test) / len(hf_test)
-    base_util = sum(is_refusal(gen(model, tok, p, device)) for p in hb_test) / len(hb_test)
+    # ---- causal: ablate the o_proj top-k LEFT-singular subspace (residual
+    # basis) of the layer increment from the residual stream at every layer ----
+    mn = args.max_new
+    base_ref = sum(is_refusal(gen(model, tok, p, device, max_new=mn)) for p in hf_test) / len(hf_test)
+    base_util = sum(is_refusal(gen(model, tok, p, device, max_new=mn)) for p in hb_test) / len(hb_test)
     res["refusal_rate_harmful_baseline"] = base_ref
     res["refusal_rate_harmless_baseline"] = base_util
     print(f"baseline refusal: harmful {base_ref:.2f}  harmless {base_util:.2f}", flush=True)
 
-    if os.path.exists(of):
-        V = np.load(of)["V"].astype(np.float64)[:args.topk]
-        reg = make_ablation(V, device)
-        abl_ref = sum(is_refusal(gen(model, tok, p, device, register=reg)) for p in hf_test) / len(hf_test)
-        abl_util = sum(is_refusal(gen(model, tok, p, device, register=reg)) for p in hb_test) / len(hb_test)
+    if args.base_dir and args.instruct_dir:
+        nm = f"model.layers.{args.layer}.self_attn.o_proj.weight"
+        D = iws.get(nm).astype(np.float64) - bws.get(nm).astype(np.float64)
+        U, _, _ = np.linalg.svd(D, full_matrices=False)
+        reg = make_ablation(U[:, :args.topk].T, device)
+        abl_ref = sum(is_refusal(gen(model, tok, p, device, register=reg, max_new=mn)) for p in hf_test) / len(hf_test)
+        abl_util = sum(is_refusal(gen(model, tok, p, device, register=reg, max_new=mn)) for p in hb_test) / len(hb_test)
         res["refusal_rate_harmful_ablated"] = abl_ref
         res["refusal_rate_harmless_ablated"] = abl_util
         print(f"ablated  refusal: harmful {abl_ref:.2f}  harmless {abl_util:.2f}", flush=True)
@@ -171,7 +184,7 @@ def main():
         # control: ablate a random k-dim subspace of equal dimension
         Rk, _ = np.linalg.qr(rng.standard_normal((d, args.topk)))
         reg_r = make_ablation(Rk.T, device)
-        rnd_ref = sum(is_refusal(gen(model, tok, p, device, register=reg_r)) for p in hf_test) / len(hf_test)
+        rnd_ref = sum(is_refusal(gen(model, tok, p, device, register=reg_r, max_new=mn)) for p in hf_test) / len(hf_test)
         res["refusal_rate_harmful_random_ablation"] = rnd_ref
         print(f"random-subspace ablation refusal: harmful {rnd_ref:.2f}", flush=True)
 

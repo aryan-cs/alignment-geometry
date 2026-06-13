@@ -21,3 +21,4 @@ results/data/vectors/
 paper/*.aux
 paper/*.bbl
 paper/*.blg
+paper/main.pdf

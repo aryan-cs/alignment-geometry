@@ -1,0 +1,25 @@
+\section{The leading directions carry refusal}
+\label{sec:causal}
+
+A concentrated spectrum is only interesting if the directions it singles out
+matter for behavior. We test this for refusal, the most legible safety behavior
+of the instruct model, using the attention-output increment, whose column space
+lies in the residual stream that the rest of the network reads.
+
+\paragraph{Setup.}
+We form the empirical refusal direction $r_\ell$ at layer $\ell$ as the
+difference of mean last-token residual activations on harmful (AdvBench) versus
+harmless (Alpaca) prompts under the chat template \citep{arditi2024}. We then
+ask how much of $r_\ell$ lies in the top-$k$ left-singular subspace of the
+layer-$\ell$ \texttt{o\_proj} increment, against a random-$k$-subspace null, and
+whether projecting that subspace out of the residual stream at every layer
+removes refusal.
+
+\paragraph{[RESULTS PENDING]}
+% Filled from results/data/behavioral.json:
+%   capture of refusal direction by top-k o_proj increment subspace vs null
+%   baseline refusal rate (harmful / harmless)
+%   refusal rate after ablating the top-k increment subspace
+%   refusal rate after ablating a random subspace of equal dimension
+This section reports the capture statistic across $k$ and the causal ablation,
+with the random-subspace control.
