@@ -3,17 +3,20 @@
 
 \paragraph{What the spectrum buys.}
 The refusal direction can already be found from activations with behavioral
-labels \citep{arditi2024}. What the spectral view adds is that the same
-direction is already enriched in the \emph{weight increment}, with no behavioral
-labels: the leading singular directions of the attention-output increment
-overlap the refusal direction far more than chance, and the overlap is
-concentrated at the very top of the spectrum. The spectrum is a label-free
-pointer toward the directions alignment installed, and the
-Baik--Ben~Arous--P\'ech\'e threshold says which directions are signal rather
-than noise. This makes the increment's spectrum a candidate auditing surface:
-given two checkpoints, one can read off how concentrated the change is, and the
-leading directions narrow the search for the behavior before running the model
-on a single prompt.
+labels \citep{arditi2024}. The spectral view adds two things, neither of which
+needs behavioral labels. First, the same direction is enriched in the
+\emph{weight increment}: the leading singular directions of the attention-output
+increment overlap the refusal direction far more than chance, concentrated at
+the very top of the spectrum. Second, that overlap is causally load-bearing,
+and demonstrably so against the right control: ablating the top-$128$ spectral
+directions removes refusal where an energy-matched random subspace of the same
+dimension does not. The spectrum is therefore not just a label-free pointer
+toward the directions alignment installed but a handle on them, and the
+Baik--Ben~Arous--P\'ech\'e threshold says which directions are signal rather than
+noise. This makes the increment's spectrum a candidate auditing surface: given
+two checkpoints, one can read off how concentrated the change is and isolate a
+small, behaviorally load-bearing subspace before running the model on a single
+labeled prompt.
 
 \paragraph{Why low rank.}
 That alignment is low rank is consistent with the efficiency of low-rank
@@ -30,7 +33,10 @@ holds for preference optimization variants and for larger models is open. The
 refusal probe is a behavioral proxy for ``safety,'' not a complete account of
 alignment, and substring-matched refusal is a coarse generation metric. The
 causal ablation removes a subspace and reads the behavioral consequence, which
-shows the subspace is necessary for refusal but does not by itself isolate a
-mechanism. Finally, the spectrum locates \emph{where} alignment moved the
-weights; it does not explain \emph{how} the resulting circuit computes refusal.
+shows the top spectral subspace carries refusal relative to a matched random
+control but does not by itself isolate a circuit; and the effect requires $k$
+large enough to cover the refusal direction, so the claim is about the leading
+spectral \emph{subspace}, not any single mode. Finally, the spectrum locates
+\emph{where} alignment moved the weights; it does not explain \emph{how} the
+resulting computation implements refusal.
 These are the natural next steps.
