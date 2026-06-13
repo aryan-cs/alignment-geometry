@@ -87,6 +87,48 @@ def fig_spectrum_panel(rows, outdir):
     plt.close(fig)
 
 
+def fig_bulk_spikes(outdir, npz="results/data/full_spectrum.npz"):
+    """Canonical bulk+spikes figure: full eigenvalue histogram of one increment
+    with the fitted Marchenko-Pastur density overlaid and the supercritical
+    spikes marked. Two panels: the bulk (linear) and the full spectrum (log)."""
+    if not os.path.exists(npz):
+        return
+    z = np.load(npz)
+    eig = z["eig"]
+    hi = float(z["hi"])
+    fig, (axL, axR) = plt.subplots(1, 2, figsize=(7.2, 3.0))
+
+    # left: the bulk, with the MP density
+    bulk = eig[eig <= hi * 1.3]
+    axL.hist(bulk, bins=70, density=True, color=BLUE, alpha=0.55,
+             edgecolor="none", label="empirical")
+    axL.plot(z["mp_x"], z["mp_y"], color=BLUE_D, lw=1.4,
+             label="Marchenko--Pastur fit")
+    axL.axvline(hi, color=RED_D, lw=1.1, ls="--", label="edge $\\lambda_+$")
+    axL.set_xlabel("eigenvalue of $C$")
+    axL.set_ylabel("density")
+    axL.set_title("the bulk is Marchenko--Pastur", fontsize=9)
+    axL.legend(frameon=False, fontsize=7)
+    axL.grid(True, color=GRID, lw=0.5)
+
+    # right: full spectrum, rank-ordered, log-y; bulk vs spikes colored
+    idx = np.arange(1, len(eig) + 1)
+    above = eig > hi
+    axR.scatter(idx[~above], eig[~above], s=4, color=BLUE_D, label="bulk")
+    axR.scatter(idx[above], eig[above], s=6, color=RED,
+                label=f"{int(above.sum())} spikes $>\\lambda_+$")
+    axR.axhline(hi, color=RED_D, lw=1.0, ls="--")
+    axR.set_yscale("log")
+    axR.set_xlabel("rank-ordered index")
+    axR.set_ylabel("eigenvalue of $C$ (log)")
+    axR.set_title("spikes detach above the edge", fontsize=9)
+    axR.legend(frameon=False, fontsize=7, loc="upper right")
+    axR.grid(True, color=GRID, lw=0.5, which="both")
+    fig.tight_layout()
+    fig.savefig(os.path.join(outdir, "bulk_spikes.pdf"))
+    plt.close(fig)
+
+
 def fig_spikes_by_layer(rows, outdir):
     """Number of supercritical spikes in Delta, per layer, per matrix type."""
     layers = sorted(set(r["layer"] for r in rows))
@@ -143,6 +185,7 @@ def main():
     os.makedirs(args.outdir, exist_ok=True)
     rows = load(args.data)
     print(f"loaded {len(rows)} rows")
+    fig_bulk_spikes(args.outdir)
     fig_spectrum_panel(rows, args.outdir)
     fig_spikes_by_layer(rows, args.outdir)
     fig_effrank(rows, args.outdir)
