@@ -1,0 +1,36 @@
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}[
+  font=\small,
+  box/.style={rounded corners=2pt, draw=black!30, line width=0.5pt, align=center,
+              minimum height=10mm, inner sep=4pt},
+  wbox/.style={box, fill=palblue!30},
+  dbox/.style={box, fill=palamber!40},
+  sbox/.style={box, fill=palred!35},
+  rbox/.style={box, fill=palgreen!45},
+  arr/.style={-{Stealth[length=4pt]}, line width=0.7pt, draw=black!55},
+  lab/.style={font=\scriptsize\itshape, text=black!60}
+]
+\node[wbox] (base) at (0,0.7) {$W_{\text{base}}$};
+\node[wbox] (inst) at (0,-0.7) {$W_{\text{instruct}}$};
+\node[dbox] (delta) at (2.6,0) {$\dW$\\\scriptsize increment};
+\node[sbox] (svd) at (5.4,0) {SVD\\\scriptsize bulk\,$+$\,spikes};
+\node[rbox] (cap) at (8.4,0.7) {refusal dir.\\\scriptsize capture};
+\node[rbox] (abl) at (8.4,-0.7) {ablate\\\scriptsize top-$k$};
+
+\draw[arr] (base.east) -- (delta.west);
+\draw[arr] (inst.east) -- (delta.west);
+\draw[arr] (delta) -- (svd) node[midway, above, lab] {$-$};
+\draw[arr] (svd.east) -- (cap.west);
+\draw[arr] (svd.east) -- (abl.west);
+
+\node[lab, below=1pt of delta] {$p\times q$};
+\node[lab, below=1pt of svd] {$\lambda_i$ vs $\lambda_+$};
+\end{tikzpicture}
+\caption{The pipeline. We difference the matched base and instruct checkpoints
+to form the alignment increment $\dW$, decompose each matrix by SVD into a
+Marchenko--Pastur bulk and detached spikes, and test the leading spectral
+directions against the empirical refusal direction by both subspace capture and
+causal ablation.}
+\label{fig:pipeline}
+\end{figure}
