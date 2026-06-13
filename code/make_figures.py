@@ -183,6 +183,41 @@ def fig_capture(outdir, beh="results/data/behavioral.json"):
     plt.close(fig)
 
 
+def fig_energy_overlap(outdir, wg="results/data/weight_geometry.json"):
+    """Two panels: (a) cumulative energy captured by top-k singular directions of
+    the increment, per matrix type; (b) overlap of the increment's top-16
+    subspace with the base weight's top-16, per layer, vs the random null."""
+    if not os.path.exists(wg):
+        return
+    d = json.load(open(wg))
+    ec = d["energy_curve"]; ks = ec["ks"]
+    fig, (axL, axR) = plt.subplots(1, 2, figsize=(7.4, 3.0))
+    for lab, col in [("q_proj", BLUE_D), ("o_proj", GREEN_D),
+                     ("gate_proj", AMBER_D), ("down_proj", RED_D)]:
+        if lab in ec:
+            axL.plot(ks, ec[lab], "o-", ms=3, lw=1.2, color=col, label=lab)
+    axL.set_xscale("log", base=2)
+    axL.set_xlabel("top-$k$ singular directions")
+    axL.set_ylabel("cumulative fraction of $\\|\\Delta W\\|_F^2$")
+    axL.set_title("energy is front-loaded into a few directions", fontsize=9)
+    axL.legend(frameon=False, fontsize=7)
+    axL.grid(True, color=GRID, lw=0.5, which="both")
+
+    layers = sorted(int(L) for L in d["overlap_oproj_by_layer"])
+    ov = [d["overlap_oproj_by_layer"][str(L)]["overlap"] for L in layers]
+    nu = [d["overlap_oproj_by_layer"][str(L)]["null"] for L in layers]
+    axR.plot(layers, ov, "o-", ms=3, lw=1.2, color=RED_D, label="$\\Delta W$ vs base top-16")
+    axR.plot(layers, nu, "s--", ms=2.5, lw=1.0, color=BLUE_D, label="random null")
+    axR.set_xlabel("layer")
+    axR.set_ylabel("subspace overlap (mean cos$^2$)")
+    axR.set_title("alignment opens new directions", fontsize=9)
+    axR.legend(frameon=False, fontsize=7.5)
+    axR.grid(True, color=GRID, lw=0.5)
+    fig.tight_layout()
+    fig.savefig(os.path.join(outdir, "energy_overlap.pdf"))
+    plt.close(fig)
+
+
 def fig_capture_heatmap(outdir, sweep="results/data/capture_sweep.json"):
     """Layer x k enrichment heatmap of refusal-direction capture by the o_proj
     increment subspace, in the project palette."""
@@ -284,6 +319,7 @@ def main():
     fig_spikes_by_layer(rows, args.outdir)
     fig_effrank(rows, args.outdir)
     fig_capture(args.outdir)
+    fig_energy_overlap(args.outdir)
     fig_capture_heatmap(args.outdir)
     fig_causal_bars(args.outdir)
     print("figures written to", args.outdir)

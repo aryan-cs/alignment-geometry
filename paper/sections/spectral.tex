@@ -77,3 +77,30 @@ over the $32$ layers. Query and key projections are the most concentrated.}
 carries a spiked increment; the count is stable across depth.}
 \label{fig:bylayer}
 \end{figure}
+
+\paragraph{Alignment opens new directions rather than rescaling old ones.}
+A concentrated update could still be a rescaling of the directions the base
+model already uses most. It is not. For each attention-output map we compare the
+top-$16$ left-singular subspace of the increment with the top-$16$ left-singular
+subspace of the base weight, by mean squared principal-angle cosine
+(Figure~\ref{fig:energy}, right). The overlap has median $0.013$ across layers,
+only $3.4\times$ the random-subspace null of $0.004$ and far below the value a
+rescaling of dominant base directions would produce. The alignment increment
+therefore writes into a subspace that is largely new to the model, not a
+reweighting of its existing principal axes, with the largest departures at the
+first layers and the final layer. The companion panel
+(Figure~\ref{fig:energy}, left) shows how front-loaded the increment energy is:
+for the query projection the top $64$ of $4096$ singular directions already carry
+a third of $\|\dW\|_F^2$.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.96\textwidth]{../results/figures/energy_overlap.pdf}
+\caption{\emph{Left:} cumulative fraction of the increment's Frobenius energy
+captured by its top-$k$ singular directions, by matrix type; the energy is
+front-loaded. \emph{Right:} overlap between the increment's top-$16$ subspace
+and the base weight's top-$16$ subspace per layer, against the random null. The
+overlap stays near chance, so alignment edits new directions rather than
+rescaling the base model's dominant ones.}
+\label{fig:energy}
+\end{figure}
