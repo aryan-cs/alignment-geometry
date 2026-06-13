@@ -19,11 +19,14 @@ far above it.
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.74\textwidth]{../results/figures/spectrum_panel.pdf}
-\caption{Leading eigenvalues of $C=\tfrac1p\dW^{\!\top}\dW$ for a representative
-matrix. The Marchenko--Pastur bulk (noise) occupies the thin band at the
-bottom; the leading directions detach far above the Baik--Ben~Arous--P\'ech\'e
-edge $\lambda_+$. The increment is a strong signal on a small noise floor.}
+\includegraphics[width=0.92\textwidth]{../results/figures/bulk_spikes.pdf}
+\caption{Spectrum of the alignment increment for a representative matrix
+(\texttt{gate\_proj}, layer 15; all $4096$ eigenvalues of $C$). \emph{Left:} the
+bulk follows a Marchenko--Pastur shape, with a heavier tail than the pure-noise
+fit, as expected for a structured increment. \emph{Right:} $829$ eigenvalues
+detach above the Baik--Ben~Arous--P\'ech\'e edge $\lambda_+$, the top one at
+$27\times$ the edge. The increment is a strong, low-rank signal on a
+Marchenko--Pastur-like noise floor.}
 \label{fig:spectrum}
 \end{figure}
 

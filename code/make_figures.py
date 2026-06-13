@@ -150,6 +150,39 @@ def fig_spikes_by_layer(rows, outdir):
     plt.close(fig)
 
 
+def fig_capture(outdir, beh="results/data/behavioral.json"):
+    """Refusal-direction capture by the top-k o_proj increment subspace vs the
+    random-subspace null, as a function of k."""
+    if not os.path.exists(beh):
+        return
+    b = json.load(open(beh))
+    cap = b.get("capture", {})
+    if not cap:
+        return
+    # collect o_proj_k* entries
+    ks, caps, nulls = [], [], []
+    for key, v in sorted(cap.items()):
+        if key.startswith("o_proj_k"):
+            k = int(key.split("k")[-1])
+            ks.append(k); caps.append(v); nulls.append(b["null"].get(key, 0))
+    if not ks:
+        return
+    order = np.argsort(ks)
+    ks = np.array(ks)[order]; caps = np.array(caps)[order]; nulls = np.array(nulls)[order]
+    fig, ax = plt.subplots(figsize=(4.6, 3.0))
+    ax.plot(ks, caps, "o-", color=RED_D, lw=1.4, ms=5, label="refusal capture")
+    ax.plot(ks, nulls, "s--", color=BLUE_D, lw=1.2, ms=4, label="random-subspace null")
+    ax.set_xscale("log", base=2)
+    ax.set_xlabel("subspace dimension $k$")
+    ax.set_ylabel("captured fraction of refusal direction")
+    ax.set_title("Refusal lives in the top increment directions", fontsize=9)
+    ax.legend(frameon=False, fontsize=8)
+    ax.grid(True, color=GRID, lw=0.5, which="both")
+    fig.tight_layout()
+    fig.savefig(os.path.join(outdir, "capture.pdf"))
+    plt.close(fig)
+
+
 def fig_effrank(rows, outdir):
     """Effective rank of Delta vs the endpoint weights, per layer (one type)."""
     layers = sorted(set(r["layer"] for r in rows))
@@ -189,6 +222,7 @@ def main():
     fig_spectrum_panel(rows, args.outdir)
     fig_spikes_by_layer(rows, args.outdir)
     fig_effrank(rows, args.outdir)
+    fig_capture(args.outdir)
     print("figures written to", args.outdir)
 
 
