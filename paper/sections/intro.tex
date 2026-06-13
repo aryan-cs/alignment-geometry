@@ -1,0 +1,57 @@
+\section{Introduction}
+\label{sec:intro}
+
+A base language model and its aligned counterpart differ by a set of weights.
+Instruction tuning and preference optimization take Llama-3-8B and produce
+Llama-3-8B-Instruct: the same architecture, the same parameter count, a
+different point in weight space. The difference, the increment
+$\dW = W_{\text{instruct}} - W_{\text{base}}$ summed over every linear map, is
+what makes one model follow instructions and refuse harmful requests and the
+other not. We ask a direct question about that increment: what is its
+\emph{shape}, and does its shape tell us where alignment lives?
+
+``Shape'' here is spectral. A matrix increment can spend its budget in many
+ways. It can nudge thousands of directions a little, in which case its singular
+values look like noise and no single direction matters; or it can move a few
+directions a lot, in which case a handful of singular values stand out and the
+update is, in a precise sense, low rank. Random matrix theory makes the
+distinction sharp. A structureless increment produces a Marchenko--Pastur
+spectrum with a hard upper edge \citep{marchenko1967}; a low-rank signal
+produces eigenvalues that detach from that edge once they cross the
+Baik--Ben~Arous--P\'ech\'e threshold \citep{baik2005, baik2006, paul2007}, and
+the singular vectors of those detached spikes point in the directions the
+update actually moved. The question of alignment's shape becomes a question
+about spikes: how many are there, how far above the edge, and what do their
+directions do.
+
+We answer this for Llama-3-8B and reach three findings.
+
+\textbf{The alignment increment is sharply spiked.} Across all $224$ weight
+matrices the leading singular value of $\dW$ sits far above the
+Marchenko--Pastur edge of its own bulk, often by one to four orders of
+magnitude. The increment is not a diffuse nudge; it is a strong, structured
+signal sitting on a noise floor, exactly the spike-plus-bulk decomposition the
+theory describes.
+
+\textbf{The signal's energy is concentrated.} While the detached spikes number
+in the hundreds, the Frobenius energy of $\dW$ is carried by far fewer
+directions: the stable rank
+$\|\dW\|_F^2/\|\dW\|_2^2$ sits near one hundred against ambient dimensions in
+the thousands, so a small leading subspace accounts for most of the update.
+Alignment concentrates its weight change rather than spreading it uniformly.
+
+\textbf{The spikes carry the safety behavior.} The empirical refusal direction,
+recovered by difference-of-means on harmful versus harmless prompts
+\citep{arditi2024}, lies overwhelmingly inside the top singular subspace of the
+attention-output increment, far above a random-subspace null. Projecting that
+subspace out of the residual stream collapses refusal on held-out harmful
+prompts while leaving behavior on harmless prompts intact, and ablating a
+random subspace of the same dimension does not. The directions the spectrum
+singles out are the ones that, when removed, remove the safety behavior.
+
+Together these say that alignment, as installed by instruction tuning in this
+model, is a low-rank spectral perturbation of the base weights, and that the
+spectrum is not merely a descriptive summary but a map to the directions that
+matter for safety. We give the random matrix theory in
+Section~\ref{sec:theory}, the spectral measurements in
+Section~\ref{sec:spectral}, and the causal test in Section~\ref{sec:causal}.

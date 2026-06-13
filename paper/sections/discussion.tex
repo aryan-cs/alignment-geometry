@@ -1,0 +1,33 @@
+\section{Discussion}
+\label{sec:discussion}
+
+\paragraph{What the spectrum buys.}
+The refusal direction can already be found from activations with behavioral
+labels \citep{arditi2024}. What the spectral view adds is that the same
+direction is visible in the \emph{weight increment} with no labels at all: the
+top singular subspace of the attention-output increment contains it. The
+spectrum is a label-free map to the directions alignment installed, and the
+Baik--Ben~Arous--P\'ech\'e threshold says which directions are signal rather
+than noise. This makes the increment's spectrum a candidate auditing surface:
+given two checkpoints, one can read off how concentrated the change is and where
+it points before running the model on a single prompt.
+
+\paragraph{Why low rank.}
+That alignment is low rank is consistent with the efficiency of low-rank
+adapters \citep{hu2022lora} and the low intrinsic dimension of fine-tuning
+\citep{aghajanyan2021}, but those are statements about what training \emph{can}
+get away with. Our measurement is about what a full fine-tune \emph{did}: even
+with every parameter free to move, the alignment-relevant part of the change
+concentrates in a subspace small against the matrix rank, and that subspace is
+behaviorally load-bearing.
+
+\paragraph{Limitations.}
+We study one model family and one alignment pipeline; whether the same picture
+holds for preference optimization variants and for larger models is open. The
+refusal probe is a behavioral proxy for ``safety,'' not a complete account of
+alignment, and substring-matched refusal is a coarse generation metric. The
+causal ablation removes a subspace and reads the behavioral consequence, which
+shows the subspace is necessary for refusal but does not by itself isolate a
+mechanism. Finally, the spectrum locates \emph{where} alignment moved the
+weights; it does not explain \emph{how} the resulting circuit computes refusal.
+These are the natural next steps.

@@ -1,0 +1,63 @@
+{
+  "n_matrices": 183,
+  "top_over_edge": {
+    "min": 4.122734429936176,
+    "median": 21.496592289115174,
+    "max": 24486.341757720333,
+    "frac_above_1": 1.0,
+    "frac_above_5": 0.9562841530054644
+  },
+  "spikes": {
+    "min": 141,
+    "median": 714.0,
+    "max": 1178,
+    "median_spikes_over_rank": 0.188720703125
+  },
+  "effrank_ratio_delta_vs_base": 0.9438200172892501,
+  "effrank_ratio_delta_vs_instruct": 0.9437902763904065,
+  "stable_rank_delta_median": 115.7186726387867,
+  "by_type": {
+    "q_proj": {
+      "n": 26,
+      "median_top_over_edge": 71.70651203342263,
+      "median_spikes": 812.0,
+      "median_stable_rank": 46.38490199536982
+    },
+    "k_proj": {
+      "n": 26,
+      "median_top_over_edge": 25.0242637804405,
+      "median_spikes": 238.5,
+      "median_stable_rank": 37.60234846996181
+    },
+    "v_proj": {
+      "n": 26,
+      "median_top_over_edge": 5.657961867954838,
+      "median_spikes": 169.5,
+      "median_stable_rank": 108.65631209122819
+    },
+    "o_proj": {
+      "n": 26,
+      "median_top_over_edge": 22.45207327433448,
+      "median_spikes": 771.0,
+      "median_stable_rank": 116.26176649185079
+    },
+    "gate_proj": {
+      "n": 26,
+      "median_top_over_edge": 23.342723009066873,
+      "median_spikes": 739.5,
+      "median_stable_rank": 118.78366679520829
+    },
+    "up_proj": {
+      "n": 26,
+      "median_top_over_edge": 17.561912111068985,
+      "median_spikes": 793.5,
+      "median_stable_rank": 153.471855635341
+    },
+    "down_proj": {
+      "n": 27,
+      "median_top_over_edge": 7.804398974696246,
+      "median_spikes": 666.0,
+      "median_stable_rank": 302.6796081028056
+    }
+  }
+}

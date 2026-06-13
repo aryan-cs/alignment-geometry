@@ -1,0 +1,46 @@
+\section{Experimental details}
+\label{app:details}
+
+\paragraph{Models.}
+We use the matched pair \texttt{Meta-Llama-3-8B} (base) and
+\texttt{Meta-Llama-3-8B-Instruct} (aligned), 32 decoder layers, hidden width
+$4096$, feed-forward width $14336$. We analyze the seven linear maps per layer
+(\texttt{q,k,v,o\_proj} and \texttt{gate,up,down\_proj}), $224$ matrices in
+total. Weights are read directly from the safetensors shards and the increment
+$\dW$ is formed in float64 for the spectral computation.
+
+\paragraph{Spectral pipeline.}
+For each matrix we orient $\dW$ so that $q \le p$ and form
+$C = \tfrac1p \dW^{\!\top}\dW$. We take the eigendecomposition of $C$, giving the
+singular values $\sigma_i = \sqrt{p\,\lambda_i}$. The bulk noise level
+$\sigma^2$ is estimated by matching the median eigenvalue to the median of the
+Marchenko--Pastur law of the matching aspect ratio $\gamma=q/p$, which is robust
+to a small number of spikes. A singular value is counted as a spike if its
+eigenvalue exceeds the MP upper edge by more than six times the Tracy--Widom
+fluctuation scale $\sigma^2(1+\sqrt\gamma)\gamma^{-1/6}p^{-2/3}$, so that a clean
+bulk yields no spikes. We validated the pipeline on synthetic increments: a
+diffuse Gaussian increment yields zero spikes, and an increment with $k$ planted
+directions yields exactly $k$.
+
+\paragraph{Refusal direction and capture.}
+The refusal direction is the difference of mean residual-stream activations at
+the chosen layer over the last token of harmful versus harmless prompts, using
+the chat template. Harmful prompts are AdvBench goals; harmless prompts are
+Alpaca instructions with no input field. The capture statistic is the fraction
+of the refusal direction's squared norm that lies in the orthonormalized top-$k$
+right-singular subspace of $\dW$ for the output-side maps (\texttt{o\_proj},
+\texttt{down\_proj}), which share the residual basis. The null is the same
+statistic for $k$-dimensional random subspaces.
+
+\paragraph{Causal ablation.}
+We project the top-$k$ singular subspace of the layer-$\ell$ \texttt{o\_proj}
+increment out of the residual stream at every decoder layer via forward hooks,
+and measure the refusal rate on held-out harmful prompts and the refusal rate on
+harmless prompts (a utility check). The control ablates a random $k$-dimensional
+subspace of equal dimension. Refusal is scored by substring match against a
+fixed list of refusal phrases; generation is greedy.
+
+\paragraph{Reproducibility.}
+All code is in the repository. The spectral sweep runs on CPU; the behavioral
+experiments run on a single GPU. Random seeds are fixed for the null sampling
+and the random-subspace control.

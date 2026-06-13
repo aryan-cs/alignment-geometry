@@ -1,0 +1,55 @@
+\section{When is a fine-tune spectrally visible?}
+\label{sec:theory}
+
+We treat a fine-tune as a perturbation of the weights and ask when that
+perturbation is visible in the spectrum. Fix a linear map with weight matrix
+$W \in \R^{p \times q}$, $q \le p$, with aspect ratio $\gamma = q/p \in (0,1]$,
+and write the alignment increment $\dW = W_{\text{instruct}} - W_{\text{base}}$.
+We study the eigenvalues of $C = \tfrac{1}{p}\dW^{\!\top}\dW$, whose nonzero
+values are the squared singular values of $\dW$ divided by $p$.
+
+\paragraph{The null: a diffuse update is a Marchenko--Pastur bulk.}
+If the increment were structureless, with independent mean-zero entries of
+variance $\sigma^2$, the spectrum of $C$ would converge to the
+Marchenko--Pastur law on $[\sigma^2(1-\sqrt\gamma)^2,\ \sigma^2(1+\sqrt\gamma)^2]$
+\citep{marchenko1967}. The upper edge $\lambda_+ = \sigma^2(1+\sqrt\gamma)^2$ is
+the reference level: an eigenvalue is a \emph{spike} only if it sits above
+$\lambda_+$. This is the spectral signature of ``the fine-tune did nothing
+structured.''
+
+\paragraph{The signal: a low-rank spike and its detectability threshold.}
+Model the increment as a diffuse bulk plus a rank-$r$ signal,
+$\dW = N + S$, $S = \sum_{i=1}^r \beta_i a_i b_i^{\!\top}$, with the $a_i,b_i$
+orthonormal. The induced spike strengths are $\theta_i = \beta_i^2/(p\sigma^2)$.
+By the Baik--Ben~Arous--P\'ech\'e transition for spiked covariance matrices
+\citep{baik2005,baik2006,paul2007}, the leading eigenvalue of $C$ detaches from
+the bulk if and only if the spike clears a threshold:
+\begin{equation}
+\lambda_1(C) \xrightarrow{\text{a.s.}}
+\begin{cases}
+\sigma^2(1+\theta)\!\left(1+\tfrac{\gamma}{\theta}\right), & \theta > \sqrt\gamma,\\[1.2ex]
+\sigma^2(1+\sqrt\gamma)^2, & \theta \le \sqrt\gamma.
+\end{cases}
+\label{eq:bbp}
+\end{equation}
+Above threshold the leading sample singular vector aligns with the planted
+direction $b$ with computable overlap
+$|\langle \hat v_1, b\rangle|^2 \to (1-\gamma/\theta^2)/(1+\gamma/\theta)$, so a
+detected spike is not only present but \emph{locatable}: its singular vector
+estimates the direction the fine-tune actually moved.
+
+\paragraph{Rank at fixed energy.}
+Holding the signal energy $\tau = \sum_i \theta_i$ fixed, an equal-strength
+rank-$r$ update places $\tau/r$ in each direction, which clears the threshold
+exactly when
+\begin{equation}
+\frac{\tau}{r} > \sqrt\gamma \quad\Longleftrightarrow\quad r < \rstar := \frac{\tau}{\sqrt\gamma}.
+\label{eq:rstar}
+\end{equation}
+The same perturbation budget is loud when concentrated and silent when spread
+thin. The full statements and proofs, including a Tracy--Widom calibration of
+the edge and a permutation null for finite matrices, are in the companion
+theory note. The empirical question this paper answers is what the alignment
+increment of a real model looks like through this lens, and whether the
+directions the spectrum singles out are the ones that carry the safety
+behavior.

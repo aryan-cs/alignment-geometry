@@ -1,0 +1,45 @@
+\section{Related work}
+\label{sec:related}
+
+\paragraph{Spectra of trained networks.}
+Heavy-tailed self-regularization reads model quality off the eigenvalue spectra
+of trained weight matrices, finding that well-trained layers develop
+heavy-tailed spectra with outliers above a Marchenko--Pastur bulk, and that a
+``bulk plus spikes'' regime appears during training \citep{martin2021}. That
+line analyzes the trained weight $W$ and predicts generalization; we analyze the
+\emph{increment} $\dW$ between two checkpoints and ask what its spikes do
+behaviorally. A recent random-matrix analysis of transformers shows that the
+small singular directions of weight matrices carry information that fine-tuning
+edits \citep{staats2024}; our results are consistent with that picture and add
+the causal link to a specific safety behavior.
+
+\paragraph{Low-rank structure of fine-tuning.}
+Fine-tuning has long been observed to occupy a low-dimensional subspace:
+adaptation has low intrinsic dimension \citep{aghajanyan2021}, and low-rank
+adapters recover most of full fine-tuning \citep{hu2022lora}. These are facts
+about \emph{efficient training}. We show that the alignment increment of a
+\emph{fully} fine-tuned production model is itself low rank in the spectral
+sense, with the rank measured against a random-matrix null rather than assumed
+by a parameterization.
+
+\paragraph{Directions for safety behavior.}
+Refusal in chat models is mediated by a single residual-stream direction that
+can be found by difference-of-means and removed by projection
+\citep{arditi2024}, and representation-engineering methods read and steer
+concept directions more generally \citep{zou2023repe}. Sparse autoencoders
+surface interpretable, steerable features including deception and sycophancy
+\citep{templeton2024scaling}. These methods locate behavior in
+\emph{activation} space using behavioral labels. We instead start from the
+\emph{weight} increment, with no behavioral labels, and show that its top
+singular subspace already contains the refusal direction, tying the
+label-free spectral object to the supervised one.
+
+\paragraph{Emergent misalignment.}
+Narrow fine-tuning can induce broad misalignment, and the resulting behavior is
+mediated by a convergent low-dimensional direction
+\citep{betley2025emergent, soligo2025convergent}. That work establishes the
+low-rank structure of an induced \emph{misalignment}; we establish it for the
+intended \emph{alignment} of a released model and connect it to the spectrum of
+the increment. Spectral signatures have also been used to detect backdoors from
+poisoned-data representations \citep{tran2018spectral}; that detector operates
+per input on activations, whereas ours operates per model on weights.

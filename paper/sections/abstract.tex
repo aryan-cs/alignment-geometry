@@ -6,17 +6,19 @@ refusal-capable one by changing its weights. We ask what that change looks like
 \emph{spectrally}, and whether its structure exposes where alignment lives. We
 study the increment $\dW = W_{\text{instruct}} - W_{\text{base}}$ of every linear
 map in Llama-3-8B, and model each $\dW$ as a Marchenko--Pastur noise bulk plus a
-low-rank signal. The increment is sharply spiked: across all $224$ weight
-matrices the leading singular value of $\dW$ sits far above the random-matrix
-edge, and the signal concentrates in a small subspace whose dimension is two
-orders of magnitude below the matrix rank. The spikes are not a generic artifact
-of training. We show that the empirical refusal direction, recovered by
-difference-of-means on harmful versus harmless prompts, lies almost entirely
-inside the top singular subspace of the attention output increment, far above a
-random-subspace null, and that projecting that subspace out of the residual
-stream collapses refusal while leaving general behavior intact. Alignment, in
-this model, is a low-rank spectral perturbation of the base weights, and the
-directions the spectrum singles out are the ones that carry the safety behavior.
+set of detached spikes. The increment is sharply spiked: across all $224$ weight
+matrices the leading singular value of $\dW$ stands above the random-matrix edge
+of its own bulk, with a median separation of more than twenty-fold and a tail
+reaching four orders of magnitude, and its energy concentrates into a stable
+rank near one hundred against ambient dimensions in the thousands. The spikes
+are not a generic artifact of training. We show that the empirical refusal
+direction, recovered by difference-of-means on harmful versus harmless prompts,
+lies overwhelmingly inside the top singular subspace of the attention-output
+increment, far above a random-subspace null, and that projecting that subspace
+out of the residual stream collapses refusal while leaving behavior on harmless
+prompts intact. Alignment, in this model, is a spectrally concentrated
+perturbation of the base weights, and the leading directions the spectrum
+singles out are the ones that carry the safety behavior.
 We give the random-matrix theory that makes ``low-rank'' precise through the
 Baik--Ben~Arous--P\'ech\'e detectability threshold, the measurements that
 confirm it on a production model, and the causal test that ties the spectrum to
