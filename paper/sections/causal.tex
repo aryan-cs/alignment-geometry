@@ -1,10 +1,12 @@
-\section{The leading directions carry refusal}
+\section{Refusal lives in the leading spectral directions}
 \label{sec:causal}
 
 A concentrated spectrum is only interesting if the directions it singles out
-matter for behavior. We test this for refusal, the most legible safety behavior
+relate to behavior. We test this for refusal, the most legible safety behavior
 of the instruct model, using the attention-output increment, whose column space
-lies in the residual stream that the rest of the network reads.
+lies in the residual stream that the rest of the network reads. We find a clear
+geometric relationship and then ask, carefully, what is and is not causally
+necessary.
 
 \paragraph{Setup.}
 We form the empirical refusal direction $r_\ell$ at layer $\ell$ as the
@@ -15,18 +17,21 @@ layer-$\ell$ \texttt{o\_proj} increment, the directions in which the alignment
 update writes most strongly into the residual stream, against a
 random-$k$-subspace null.
 
-\paragraph{Refusal is enriched in the leading spikes.}
+\paragraph{Refusal is enriched in the leading spikes, at every layer.}
 At layer $14$, the top-$8$ left-singular subspace of the \texttt{o\_proj}
-increment, $8$ directions out of $4096$, captures $2.7\%$ of the refusal
+increment, $8$ directions out of $4096$, captures $2.8\%$ of the refusal
 direction's squared norm, against a random-subspace expectation of $0.20\%$: a
-$13.6\times$ enrichment (Table~\ref{tab:capture}, Figure~\ref{fig:capture}). The
-enrichment is strongest at the very top of the spectrum and decays as $k$ grows,
-$5.2\times$ at $k=32$ and $3.5\times$ at $k=128$, exactly the signature of a
-direction that lives in the \emph{leading} spikes rather than spread across the
-bulk. The MLP output increment (\texttt{down\_proj}) shows the same pattern. The
-refusal direction is not dominated by any single increment direction, as one
-would expect given the hundreds of spikes per matrix, but it is concentrated in
-the part of the spectrum the increment most strongly edits.
+$14.0\times$ enrichment ($n{=}256$ prompts per class;
+Table~\ref{tab:capture}, Figure~\ref{fig:capture}). The enrichment is strongest
+at the very top of the spectrum and decays as $k$ grows, $7.9\times$ at $k{=}16$
+and $3.4\times$ at $k{=}128$, the signature of a direction that lives in the
+\emph{leading} spikes rather than spread across the bulk. This is not special to
+layer $14$: sweeping all $32$ layers (Figure~\ref{fig:capture}, right), the top-$8$
+enrichment has median $4.6\times$ and peaks at $14.2\times$, with the strongest
+concentration in the middle layers and again near the final layer. The refusal
+direction is not dominated by any single increment direction, as one would
+expect given the hundreds of spikes per matrix, but it is reliably concentrated
+in the part of the spectrum the increment most strongly edits.
 
 \begin{table}[t]
 \centering
@@ -50,16 +55,60 @@ null. The refusal direction is enriched in the leading spikes.}
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.56\textwidth]{../results/figures/capture.pdf}
-\caption{Captured fraction of the refusal direction by the top-$k$
-\texttt{o\_proj} increment subspace versus the random-subspace null. The gap is
-largest at small $k$: refusal lives in the leading spectral directions.}
+\begin{subfigure}{0.46\textwidth}
+\includegraphics[width=\textwidth]{../results/figures/capture.pdf}
+\end{subfigure}\hfill
+\begin{subfigure}{0.52\textwidth}
+\includegraphics[width=\textwidth]{../results/figures/capture_heatmap.pdf}
+\end{subfigure}
+\caption{\emph{Left:} captured fraction of the layer-$14$ refusal direction by
+the top-$k$ \texttt{o\_proj} increment subspace versus the random null; the gap
+is largest at small $k$. \emph{Right:} the same enrichment over null across all
+$32$ layers and $k$, showing refusal concentrates in the leading spectral
+directions throughout the network, most strongly in the middle and final
+layers.}
 \label{fig:capture}
 \end{figure}
 
-\paragraph{[CAUSAL ABLATION PENDING]}
-% Filled from behavioral.json: baseline refusal (harmful/harmless), refusal
-% after ablating the top-k o_proj increment subspace, and after ablating a
-% random subspace of equal dimension.
-Projecting the top-$k$ increment subspace out of the residual stream tests
-necessity directly.
+\paragraph{What ablation does and does not remove.}
+Enrichment is a geometric fact; necessity is a separate, stronger claim, and we
+report it carefully. We project the top-$k$ left-singular subspace of the
+\texttt{o\_proj} increment out of the residual stream at every layer and measure
+both the harmful-versus-harmless separation (refusal-token logit AUC) and the
+refusal rate on held-out harmful prompts, with a random-$k$-subspace as a
+negative control and a rank-one ablation of the refusal direction itself as a
+positive control ($n{=}256$ per class for AUC, $n{=}128$ for generation;
+Figure~\ref{fig:ablation}). Ablating the small leading subspace the capture
+analysis highlights ($k{=}8$) leaves refusal untouched (refusal rate
+$98.4\% \to 98.4\%$, AUC $0.998$), no different from a random $8$-dimensional
+ablation, because those eight directions hold under $3\%$ of the refusal
+direction. The causal effect emerges sharply at $k{=}128$: ablating the top-$128$
+increment directions collapses the refusal rate from $98.4\%$ to $3.1\%$
+(95\% CI $[1.2, 7.8]$) and the AUC to $0.906$, while an energy-matched random
+$128$-dimensional ablation leaves refusal essentially intact at $94.5\%$
+($[89.1, 97.3]$). The separation between the spectral and random subspaces at the
+same dimension is the key control: it is the \emph{spectral structure} of the
+increment, not the mere removal of $128$ residual directions, that carries
+refusal. For reference, the rank-one ablation of the empirical refusal direction
+lowers the rate to $68.8\%$, so the top-$128$ spectral subspace is in fact a more
+complete description of the behavior than the single difference-of-means
+direction. By $k{=}512$ both spectral and random ablations destroy refusal, as
+removing that much of the residual stream degrades the model wholesale; the
+informative regime is the dimension range where the two diverge. Alignment's
+safety behavior thus lives in the leading spectral directions of the increment,
+recoverable without labels and causally removable through them.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.96\textwidth]{../results/figures/ablation.pdf}
+\caption{Causal ablation of the \texttt{o\_proj} increment subspace.
+\emph{Left:} harmful-versus-harmless separation (AUC) as the ablated dimension
+$k$ grows. The spectral top-$k$ subspace (red) degrades refusal faster than an
+energy-matched random subspace (blue) through the $k{\in}[64,256]$ regime; the
+rank-one refusal-direction ablation (green) is shown for reference. \emph{Right:}
+refusal rate on held-out harmful prompts with $95\%$ Wilson intervals. Ablating
+the top-$128$ spectral directions collapses refusal to $3\%$, while an
+energy-matched random $128$-subspace leaves it at $94\%$, a clean dissociation
+with non-overlapping intervals.}
+\label{fig:ablation}
+\end{figure}

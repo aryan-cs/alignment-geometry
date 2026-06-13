@@ -247,35 +247,54 @@ def fig_capture_heatmap(outdir, sweep="results/data/capture_sweep.json"):
     plt.close(fig)
 
 
-def fig_causal_bars(outdir, beh="results/data/causal_fast.json"):
-    """Refusal logit AUC under baseline / top-k ablation / random ablation."""
-    if not os.path.exists(beh):
+def fig_ablation(outdir, abl="results/data/ablation_sweep.json"):
+    """Causal ablation: harmful-vs-harmless separation (AUC) and refusal rate as
+    a function of ablated increment-subspace dimension k, with the refusal-
+    direction (positive control) and random-subspace (negative control)."""
+    if not os.path.exists(abl):
         return
-    b = json.load(open(beh))
-    conds = b.get("conditions", {})
-    if not conds:
-        return
-    order = [c for c in ["baseline", f"ablate_top{b.get('topk',8)}", "ablate_random"] if c in conds]
-    labels = {"baseline": "baseline",
-              f"ablate_top{b.get('topk',8)}": f"ablate top-{b.get('topk',8)}\nincrement subspace",
-              "ablate_random": "ablate random\nsubspace"}
-    cols = {"baseline": BLUE_D, f"ablate_top{b.get('topk',8)}": RED_D, "ablate_random": AMBER_D}
-    aucs = [conds[c]["auc_refusal_logit"] for c in order]
-    fig, ax = plt.subplots(figsize=(4.4, 3.0))
-    bars = ax.bar(range(len(order)), aucs,
-                  color=[cols[c] for c in order], width=0.6, edgecolor="white")
-    ax.axhline(0.5, color="#888", lw=0.8, ls="--", label="chance")
-    ax.set_xticks(range(len(order)))
-    ax.set_xticklabels([labels[c] for c in order], fontsize=7.5)
-    ax.set_ylabel("AUC: harmful vs harmless\n(refusal logit)")
-    ax.set_ylim(0.4, 1.0)
-    ax.set_title("Ablating the increment subspace destroys\nthe refusal signal", fontsize=9)
-    for r, v in zip(bars, aucs):
-        ax.text(r.get_x() + r.get_width() / 2, v + 0.01, f"{v:.2f}",
-                ha="center", fontsize=8)
-    ax.grid(True, axis="y", color=GRID, lw=0.5)
+    d = json.load(open(abl))
+    c = d["conditions"]
+    ks = [8, 32, 128, 512]
+    base = c["baseline"]["auc"]
+    top = [c.get(f"ablate_top{k}", {}).get("auc") for k in ks]
+    rnd = [c.get(f"ablate_rand{k}", {}).get("auc") for k in ks]
+    refdir = c.get("ablate_refusal_dir", {}).get("auc")
+    fig, (axL, axR) = plt.subplots(1, 2, figsize=(7.4, 3.0))
+    # left: AUC vs k
+    axL.axhline(base, color="#888", lw=1.0, ls=":", label="baseline")
+    axL.plot(ks, top, "o-", color=RED_D, lw=1.4, ms=5, label="ablate top-$k$ increment")
+    axL.plot(ks, rnd, "s--", color=BLUE_D, lw=1.2, ms=4, label="ablate random-$k$")
+    if refdir is not None:
+        axL.axhline(refdir, color=GREEN_D, lw=1.2, ls="-.",
+                    label="ablate refusal dir (rank 1)")
+    axL.set_xscale("log", base=2)
+    axL.set_xlabel("ablated subspace dimension $k$")
+    axL.set_ylabel("AUC: harmful vs harmless")
+    axL.set_title("necessity emerges only at large $k$", fontsize=9)
+    axL.legend(frameon=False, fontsize=6.8, loc="lower left")
+    axL.grid(True, color=GRID, lw=0.5, which="both")
+    # right: refusal generation rate with Wilson CIs
+    def rr(cond):
+        v = c.get(cond, {}).get("refusal_rate")
+        return v if v else (None, None, None)
+    conds = ["baseline", "ablate_rand128", "ablate_top128", "ablate_refusal_dir"]
+    labs = ["baseline", "random\n128", "top-128\nincrement", "refusal\ndir"]
+    cols = [BLUE_D, AMBER_D, RED_D, GREEN_D]
+    pts = [rr(x) for x in conds]
+    xs = range(len(conds))
+    for x, (p, lo, hi), col in zip(xs, pts, cols):
+        if p is None:
+            continue
+        axR.errorbar(x, p, yerr=[[p - lo], [hi - p]], fmt="o", color=col,
+                     ms=6, capsize=4, lw=1.2)
+    axR.set_xticks(list(xs)); axR.set_xticklabels(labs, fontsize=7.5)
+    axR.set_ylabel("refusal rate (harmful)\n95\\% Wilson CI")
+    axR.set_ylim(0.0, 1.05)
+    axR.set_title("top-128 spectral $\\neq$ random-128", fontsize=9)
+    axR.grid(True, axis="y", color=GRID, lw=0.5)
     fig.tight_layout()
-    fig.savefig(os.path.join(outdir, "causal_bars.pdf"))
+    fig.savefig(os.path.join(outdir, "ablation.pdf"))
     plt.close(fig)
 
 
@@ -321,7 +340,7 @@ def main():
     fig_capture(args.outdir)
     fig_energy_overlap(args.outdir)
     fig_capture_heatmap(args.outdir)
-    fig_causal_bars(args.outdir)
+    fig_ablation(args.outdir)
     print("figures written to", args.outdir)
 
 
