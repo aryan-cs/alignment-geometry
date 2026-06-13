@@ -10,7 +10,7 @@ Appendix~\ref{app:details}).
 \paragraph{Every matrix carries a spike.}
 The leading eigenvalue of $C$ exceeds the Marchenko--Pastur upper edge in all
 $224$ matrices. The separation is large: the median ratio of the top eigenvalue
-to the bulk edge is $21.5$, it exceeds $5$ in $96\%$ of matrices, and its tail
+to the bulk edge is $22.0$, it exceeds $5$ in $96\%$ of matrices, and its tail
 reaches $2.4\times 10^4$. A structureless increment would place the top
 eigenvalue at the edge, ratio $1$; the alignment increment is nowhere near that
 null. Figure~\ref{fig:spectrum} shows a representative spectrum: a flat
@@ -32,9 +32,9 @@ Marchenko--Pastur-like noise floor.}
 
 \paragraph{The energy is concentrated.}
 Although the number of eigenvalues above the edge is in the hundreds (median
-$714$, about $19\%$ of the matrix rank), the Frobenius energy of $\dW$ is carried
+$709$, about $19\%$ of the matrix rank), the Frobenius energy of $\dW$ is carried
 by far fewer directions. The stable rank $\|\dW\|_F^2/\|\dW\|_2^2$ has median
-$116$, against ambient dimensions of $4096$ and $14336$: a leading subspace two
+$109$, against ambient dimensions of $4096$ and $14336$: a leading subspace two
 orders of magnitude smaller than the matrix accounts for most of the update.
 This is the precise sense in which alignment is spectrally concentrated, and it
 holds at every layer (Figure~\ref{fig:bylayer}).
@@ -42,8 +42,8 @@ holds at every layer (Figure~\ref{fig:bylayer}).
 \paragraph{Attention routing is rewritten hardest.}
 The spike structure is not uniform across the seven maps
 (Table~\ref{tab:bytype}). The query and key projections carry the most extreme
-spikes, with median top-to-edge ratios of $72$ and $25$ and the smallest stable
-ranks ($46$ and $38$), so their alignment update is the most concentrated of
+spikes, with median top-to-edge ratios of $81$ and $25$ and the smallest stable
+ranks ($45$ and $36$), so their alignment update is the most concentrated of
 all. The value and output-side maps spread their energy more widely. That the
 sharpest concentration sits in the query/key maps, which set the attention
 pattern, points to where alignment reorganizes computation rather than merely
@@ -56,13 +56,13 @@ rescaling it.
 \toprule
 matrix & median top/edge & median spikes & median stable rank \\
 \midrule
-\texttt{q\_proj}    & $71.7$ & $812$ & $46.4$ \\
-\texttt{k\_proj}    & $25.0$ & $238$ & $37.6$ \\
-\texttt{v\_proj}    & $5.7$  & $170$ & $108.7$ \\
-\texttt{o\_proj}    & $22.5$ & $771$ & $116.3$ \\
-\texttt{gate\_proj} & $23.3$ & $740$ & $118.8$ \\
-\texttt{up\_proj}   & $17.6$ & $794$ & $153.5$ \\
-\texttt{down\_proj} & $7.8$  & $666$ & $302.7$ \\
+\texttt{q\_proj}    & $80.9$ & $808$ & $45.0$ \\
+\texttt{k\_proj}    & $25.4$ & $238$ & $36.1$ \\
+\texttt{v\_proj}    & $6.2$  & $168$ & $99.9$ \\
+\texttt{o\_proj}    & $23.6$ & $756$ & $115.0$ \\
+\texttt{gate\_proj} & $24.6$ & $734$ & $111.6$ \\
+\texttt{up\_proj}   & $18.4$ & $778$ & $147.9$ \\
+\texttt{down\_proj} & $8.1$  & $680$ & $298.9$ \\
 \bottomrule
 \end{tabular}
 \caption{Spectral summary of the alignment increment by matrix type, medians
