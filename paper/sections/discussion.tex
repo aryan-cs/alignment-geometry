@@ -4,13 +4,16 @@
 \paragraph{What the spectrum buys.}
 The refusal direction can already be found from activations with behavioral
 labels \citep{arditi2024}. What the spectral view adds is that the same
-direction is visible in the \emph{weight increment} with no labels at all: the
-top singular subspace of the attention-output increment contains it. The
-spectrum is a label-free map to the directions alignment installed, and the
+direction is already enriched in the \emph{weight increment}, with no behavioral
+labels: the leading singular directions of the attention-output increment
+overlap the refusal direction far more than chance, and the overlap is
+concentrated at the very top of the spectrum. The spectrum is a label-free
+pointer toward the directions alignment installed, and the
 Baik--Ben~Arous--P\'ech\'e threshold says which directions are signal rather
 than noise. This makes the increment's spectrum a candidate auditing surface:
-given two checkpoints, one can read off how concentrated the change is and where
-it points before running the model on a single prompt.
+given two checkpoints, one can read off how concentrated the change is, and the
+leading directions narrow the search for the behavior before running the model
+on a single prompt.
 
 \paragraph{Why low rank.}
 That alignment is low rank is consistent with the efficiency of low-rank
