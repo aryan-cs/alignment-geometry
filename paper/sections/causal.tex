@@ -145,3 +145,16 @@ repeated independently at six layers ($95\%$ Wilson intervals, $n{=}128$). The
 spectral ablation removes refusal at every layer; the random control never does.}
 \label{fig:abllayers}
 \end{figure}
+
+\paragraph{The subspace encodes refusal, not the dataset.}
+A subspace fit on one harmful set could in principle latch onto features of that
+set rather than refusal itself. It does not. We derive the refusal direction and
+the top-$128$ \texttt{o\_proj} subspace entirely from AdvBench and then, without
+refitting, ablate them while prompting with MaliciousInstruct, a disjoint harmful
+set from a different source that shares no prompts and little surface form with
+AdvBench. Baseline refusal on this out-of-distribution set is $97.0\%$
+($[91.5, 99.0]$); ablating the AdvBench-derived spectral subspace drives it to
+$0.0\%$ ($[0.0, 3.7]$), while an energy-matched random $128$-subspace leaves it
+at $94.0\%$ ($[87.5, 97.2]$). The spectral directions transfer cleanly across
+harmful distributions: they encode refusal, not the idiosyncrasies of the set
+they were read from.

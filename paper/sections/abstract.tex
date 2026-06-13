@@ -16,10 +16,12 @@ direction, recovered by difference-of-means on harmful versus harmless prompts,
 is strongly enriched in the leading singular subspace of the attention-output
 increment, an order of magnitude above a random-subspace null and most
 concentrated at the very top of the spectrum, and that projecting that subspace
-out of the residual stream removes the model's ability to separate harmful from
-harmless prompts. Alignment, in this model, is a spectrally concentrated
-perturbation of the base weights, and the leading directions the spectrum
-singles out are the ones that carry the safety behavior.
+out of the residual stream removes refusal where an energy-matched random
+subspace does not. The effect holds at every layer we test and transfers across
+harmful distributions: a subspace read from one harmful set removes refusal on a
+disjoint set from a different source. Alignment, in this model, is a spectrally
+concentrated perturbation of the base weights, and the leading directions the
+spectrum singles out are the ones that carry the safety behavior.
 We give the random-matrix theory that makes ``low-rank'' precise through the
 Baik--Ben~Arous--P\'ech\'e detectability threshold, the measurements that
 confirm it on a production model, and the causal test that ties the spectrum to

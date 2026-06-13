@@ -29,9 +29,13 @@ behaviorally load-bearing.
 
 \paragraph{Limitations.}
 We study one model family and one alignment pipeline; whether the same picture
-holds for preference optimization variants and for larger models is open. The
-refusal probe is a behavioral proxy for ``safety,'' not a complete account of
-alignment, and substring-matched refusal is a coarse generation metric. The
+holds for preference-optimization variants and for larger models is open. Our
+causal results concern refusal, which is one legible safety behavior and a proxy
+for ``alignment,'' not a complete account of it; the cross-distribution transfer
+shows the recovered subspace generalizes across harmful \emph{prompt sets} but
+not that it captures every alignment-relevant behavior. Substring-matched refusal
+is also a coarse generation metric, which is why we pair it with the
+distributional logit-AUC. The
 causal ablation removes a subspace and reads the behavioral consequence, which
 shows the top spectral subspace carries refusal relative to a matched random
 control but does not by itself isolate a circuit; and the effect requires $k$
