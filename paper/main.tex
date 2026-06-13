@@ -1,0 +1,76 @@
+\documentclass[10pt]{article}
+
+% ---- Fonts ----
+\usepackage[T1]{fontenc}
+\renewcommand{\rmdefault}{ptm}
+\renewcommand{\sfdefault}{phv}
+
+% ---- Geometry ----
+\usepackage[textheight=9in, textwidth=5.5in, top=1in,
+  headheight=12pt, headsep=25pt, footskip=30pt, centering]{geometry}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5.5pt}
+
+% ---- Colors (project palette) ----
+\usepackage{xcolor}
+\definecolor{palgreen}{HTML}{8df0a8}
+\definecolor{palblue}{HTML}{8dd2f0}
+\definecolor{palred}{HTML}{f08d96}
+\definecolor{palamber}{HTML}{f0c88d}
+% darker, legible variants for text chrome
+\definecolor{primary}{HTML}{3f9cc8}   % blue-deep, links/citations
+\definecolor{secondary}{HTML}{c85563} % red-deep, accents/markers
+\definecolor{inkgreen}{HTML}{2f8f57}
+
+% ---- Links ----
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, citecolor=primary, linkcolor=primary, urlcolor=primary}
+
+% ---- Typography / structure ----
+\usepackage{microtype}
+\usepackage{amsmath, amssymb, bm}
+\usepackage{mathtools}
+\usepackage{graphicx, subcaption}
+\usepackage{booktabs, array}
+\usepackage{enumitem}
+\usepackage[font=small, labelfont=bf, skip=7pt]{caption}
+\usepackage{titlesec}
+\titleformat{\section}{\large\bfseries\raggedright}{\thesection}{0.6em}{}
+\titleformat{\subsection}{\normalsize\bfseries\raggedright}{\thesubsection}{0.6em}{}
+\titlespacing*{\paragraph}{0pt}{1.2ex}{0.8em}
+
+\usepackage{natbib}
+\bibliographystyle{plainnat}
+
+% ---- semantic macros ----
+\newcommand{\dW}{\Delta W}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\rstar}{r_\star}
+\DeclareMathOperator{\rank}{rank}
+\DeclareMathOperator{\Tr}{Tr}
+
+\title{\vspace{-3em}\textbf{\Large The Spectral Geometry of Misalignment}\vspace{-0.5em}}
+\author{\textbf{Aryan Gupta}\\[2pt]\texttt{aryan.cs.app@gmail.com}}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-2.5em}
+{\color{primary}\hrule height 1pt}
+\vspace{1.2em}
+
+\input{sections/abstract}
+\input{sections/intro}
+\input{sections/theory}
+\input{sections/spectral}
+\input{sections/causal}
+\input{sections/related}
+\input{sections/discussion}
+
+\bibliography{refs}
+
+\appendix
+\input{sections/appendix}
+
+\end{document}

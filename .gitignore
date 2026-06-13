@@ -14,3 +14,10 @@ notes/
 
 # OS
 .DS_Store
+
+# experiment scratch / large artifacts
+results/data/vectors/
+*.npz
+paper/*.aux
+paper/*.bbl
+paper/*.blg

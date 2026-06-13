@@ -19,37 +19,77 @@ Outputs, per matrix:
 import os
 import re
 import json
-import glob
+import struct
 import numpy as np
-from safetensors import safe_open
 
 
 # ---------- weight streaming ----------
+# We parse the safetensors container directly. The format is:
+#   [8-byte little-endian header length N][N bytes of JSON header][raw data]
+# The JSON header maps each tensor name to {dtype, shape, data_offsets}.
+# numpy has no native bfloat16, so bf16 tensors are widened to float32 by
+# placing the 16 stored bits into the high half of a float32 (bf16 is exactly
+# the top 16 bits of an IEEE-754 float32). Dependency surface: numpy only.
+
+_ST_DTYPE = {
+    "F64": np.float64, "F32": np.float32, "F16": np.float16,
+    "I64": np.int64, "I32": np.int32, "I16": np.int16, "I8": np.int8,
+    "U8": np.uint8, "BOOL": np.bool_,
+}
+
+
+def _read_header(path):
+    with open(path, "rb") as f:
+        n = struct.unpack("<Q", f.read(8))[0]
+        hdr = json.loads(f.read(n).decode("utf-8"))
+    return hdr, 8 + n
+
 
 def _shard_index(model_dir):
     idx = os.path.join(model_dir, "model.safetensors.index.json")
-    with open(idx) as f:
-        wm = json.load(f)["weight_map"]
-    return wm
+    if os.path.exists(idx):
+        with open(idx) as f:
+            return json.load(f)["weight_map"]
+    # single-shard model
+    return {k: "model.safetensors" for k in
+            _read_header(os.path.join(model_dir, "model.safetensors"))[0]
+            if k != "__metadata__"}
 
 
 class WeightStore:
-    """Lazy access to named tensors across safetensors shards."""
+    """Lazy access to named tensors across safetensors shards (torch-free)."""
 
     def __init__(self, model_dir):
         self.dir = model_dir
         self.wm = _shard_index(model_dir)
-        self._open = {}
+        self._mm = {}      # shard -> memmap of raw bytes
+        self._hdr = {}     # shard -> (header dict, data_start)
 
     def names(self):
-        return list(self.wm.keys())
+        return [k for k in self.wm if k != "__metadata__"]
+
+    def _shard(self, shard):
+        if shard not in self._mm:
+            path = os.path.join(self.dir, shard)
+            hdr, start = _read_header(path)
+            self._hdr[shard] = (hdr, start)
+            self._mm[shard] = np.memmap(path, dtype=np.uint8, mode="r")
+        return self._mm[shard], self._hdr[shard]
 
     def get(self, name):
         shard = self.wm[name]
-        if shard not in self._open:
-            self._open[shard] = safe_open(
-                os.path.join(self.dir, shard), framework="np")
-        return self._open[shard].get_tensor(name)
+        mm, (hdr, start) = self._shard(shard)
+        meta = hdr[name]
+        dt = meta["dtype"]
+        shape = tuple(meta["shape"])
+        a, b = meta["data_offsets"]
+        buf = mm[start + a: start + b]
+        if dt == "BF16":
+            u16 = buf.view(np.uint16).astype(np.uint32)
+            f32 = (u16 << 16).view(np.float32)
+            return f32.reshape(shape)
+        return buf.view(_ST_DTYPE[dt]).reshape(shape)
+
 
 
 # ---------- target matrices ----------
@@ -144,22 +184,34 @@ def analyze_delta(W_base, W_inst, topk=8):
         p, q = q, p
     gamma = q / p
 
-    # Economy SVD: singular values of D, eigenvalues of (1/p) D^T D.
-    # We work with C = (1/p) D^T D (q x q) eigenvalues = s^2 / p.
-    svals = np.linalg.svd(D, compute_uv=False)
-    eig = (svals ** 2) / p  # eigenvalues of C
+    # Thin SVD via the small q x q gram matrix C = (1/p) D^T D (q <= p, so this
+    # is the cheap side). Eigendecomposition of C gives eigenvalues = s^2/p and
+    # right singular vectors V; we recover the top-k left vectors as U = D V / s.
+    # This avoids a full (p x p) SVD of the wide matrices and is far faster.
+    C = (D.T @ D) / p                      # (q, q), symmetric PSD
+    evals, evecs = np.linalg.eigh(C)       # ascending
+    order = np.argsort(evals)[::-1]
+    evals = np.clip(evals[order], 0, None)
+    evecs = evecs[:, order]
+    eig = evals                            # eigenvalues of C
+    svals = np.sqrt(eig * p)               # singular values of D
 
     sigma2 = fit_mp_sigma(eig, gamma)
     lo, hi = marchenko_pastur_edges(sigma2, gamma)
-    n_spikes = int((eig > hi).sum())
-    # spike strengths theta from the BBP inversion lambda = sigma2 (1+theta)(1+gamma/theta)
-    spikes = eig[eig > hi]
+    # Finite-size Tracy-Widom tolerance at the soft edge: fluctuations scale as
+    # sigma2 * (1+sqrt gamma) * (1/sqrt gamma)^{1/3} * p^{-2/3}. Count a spike
+    # only if it clears the edge by several TW standard deviations, so a clean
+    # MP bulk yields zero spikes (no boundary false positives).
+    tw_scale = sigma2 * (1 + np.sqrt(gamma)) * (gamma ** (-1.0 / 6.0)) * p ** (-2.0 / 3.0)
+    thresh = hi + 6.0 * tw_scale
+    n_spikes = int((eig > thresh).sum())
+    spikes = eig[eig > thresh]
 
-    # top-k right singular vectors for steering (recompute with uv on a thin SVD)
-    # full_matrices=False gives Vt of shape (q, q); rows are right singular vecs.
-    U, S, Vt = np.linalg.svd(D, full_matrices=False)
-    topV = Vt[:topk].astype(np.float32)   # (topk, q) in the *long-axis* basis
-    topU = U[:, :topk].astype(np.float32)  # (p, topk)
+    Vk = evecs[:, :topk]                    # (q, topk) right singular vectors
+    s_top = svals[:topk]
+    Uk = (D @ Vk) / np.maximum(s_top, 1e-12)  # (p, topk) left singular vectors
+    topV = Vk.T.astype(np.float32)          # (topk, q)
+    topU = Uk.T.astype(np.float32)          # (topk, p)
 
     out = {
         "shape": [int(p), int(q)],
@@ -188,16 +240,19 @@ def analyze_matrix_self(W, topk=0):
         A = A.T
         p, q = q, p
     gamma = q / p
-    svals = np.linalg.svd(A, compute_uv=False)
-    eig = (svals ** 2) / p
+    C = (A.T @ A) / p
+    eig = np.clip(np.linalg.eigvalsh(C)[::-1], 0, None)
+    svals = np.sqrt(eig * p)
     sigma2 = fit_mp_sigma(eig, gamma)
     lo, hi = marchenko_pastur_edges(sigma2, gamma)
+    tw_scale = sigma2 * (1 + np.sqrt(gamma)) * (gamma ** (-1.0 / 6.0)) * p ** (-2.0 / 3.0)
+    thresh = hi + 6.0 * tw_scale
     return {
         "shape": [int(p), int(q)],
         "gamma": float(gamma),
         "sigma2_bulk": float(sigma2),
         "mp_hi": float(hi),
-        "n_spikes": int((eig > hi).sum()),
+        "n_spikes": int((eig > thresh).sum()),
         "effective_rank": effective_rank(svals),
         "stable_rank": stable_rank(svals),
         "frob_energy": float((svals ** 2).sum()),
