@@ -1,0 +1,21 @@
+{
+  "layer": 14,
+  "topk": 8,
+  "d": 4096,
+  "capture": {
+    "o_proj_k8": 0.0273,
+    "o_proj_k32": 0.0409,
+    "o_proj_k128": 0.1064,
+    "down_proj_k8": 0.0132,
+    "down_proj_k32": 0.043,
+    "down_proj_k128": 0.1229
+  },
+  "null": {
+    "o_proj_k8": 0.002,
+    "o_proj_k32": 0.0079,
+    "o_proj_k128": 0.0308,
+    "down_proj_k8": 0.0019,
+    "down_proj_k32": 0.008,
+    "down_proj_k128": 0.0315
+  }
+}

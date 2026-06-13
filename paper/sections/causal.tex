@@ -11,15 +11,55 @@ We form the empirical refusal direction $r_\ell$ at layer $\ell$ as the
 difference of mean last-token residual activations on harmful (AdvBench) versus
 harmless (Alpaca) prompts under the chat template \citep{arditi2024}. We then
 ask how much of $r_\ell$ lies in the top-$k$ left-singular subspace of the
-layer-$\ell$ \texttt{o\_proj} increment, against a random-$k$-subspace null, and
-whether projecting that subspace out of the residual stream at every layer
-removes refusal.
+layer-$\ell$ \texttt{o\_proj} increment, the directions in which the alignment
+update writes most strongly into the residual stream, against a
+random-$k$-subspace null.
 
-\paragraph{[RESULTS PENDING]}
-% Filled from results/data/behavioral.json:
-%   capture of refusal direction by top-k o_proj increment subspace vs null
-%   baseline refusal rate (harmful / harmless)
-%   refusal rate after ablating the top-k increment subspace
-%   refusal rate after ablating a random subspace of equal dimension
-This section reports the capture statistic across $k$ and the causal ablation,
-with the random-subspace control.
+\paragraph{Refusal is enriched in the leading spikes.}
+At layer $14$, the top-$8$ left-singular subspace of the \texttt{o\_proj}
+increment, $8$ directions out of $4096$, captures $2.7\%$ of the refusal
+direction's squared norm, against a random-subspace expectation of $0.20\%$: a
+$13.6\times$ enrichment (Table~\ref{tab:capture}, Figure~\ref{fig:capture}). The
+enrichment is strongest at the very top of the spectrum and decays as $k$ grows,
+$5.2\times$ at $k=32$ and $3.5\times$ at $k=128$, exactly the signature of a
+direction that lives in the \emph{leading} spikes rather than spread across the
+bulk. The MLP output increment (\texttt{down\_proj}) shows the same pattern. The
+refusal direction is not dominated by any single increment direction, as one
+would expect given the hundreds of spikes per matrix, but it is concentrated in
+the part of the spectrum the increment most strongly edits.
+
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{lccc}
+\toprule
+& $k=8$ & $k=32$ & $k=128$ \\
+\midrule
+\texttt{o\_proj} capture   & $0.027$ & $0.041$ & $0.106$ \\
+\texttt{down\_proj} capture & $0.013$ & $0.043$ & $0.123$ \\
+random-subspace null       & $0.002$ & $0.008$ & $0.031$ \\
+\midrule
+\texttt{o\_proj} enrichment & $13.6\times$ & $5.2\times$ & $3.5\times$ \\
+\bottomrule
+\end{tabular}
+\caption{Fraction of the layer-$14$ refusal direction captured by the top-$k$
+left-singular subspace of the alignment increment, versus the random-subspace
+null. The refusal direction is enriched in the leading spikes.}
+\label{tab:capture}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.56\textwidth]{../results/figures/capture.pdf}
+\caption{Captured fraction of the refusal direction by the top-$k$
+\texttt{o\_proj} increment subspace versus the random-subspace null. The gap is
+largest at small $k$: refusal lives in the leading spectral directions.}
+\label{fig:capture}
+\end{figure}
+
+\paragraph{[CAUSAL ABLATION PENDING]}
+% Filled from behavioral.json: baseline refusal (harmful/harmless), refusal
+% after ablating the top-k o_proj increment subspace, and after ablating a
+% random subspace of equal dimension.
+Projecting the top-$k$ increment subspace out of the residual stream tests
+necessity directly.
