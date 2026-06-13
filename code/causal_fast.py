@@ -52,16 +52,36 @@ def refusal_token_ids(tok):
 
 @torch.no_grad()
 def last_hidden_and_logits(model, tok, prompts, layer, device, bs=16):
-    """Return (H_layer [n,d] at last token, logits_last [n,V])."""
+    """Return (H_layer [n,d] at last token, logits_last [n,V]).
+
+    Captures only the requested layer's residual via a forward hook, instead of
+    materializing all hidden states, which is much cheaper on CPU.
+    """
     tok.padding_side = "left"
     if tok.pad_token is None:
         tok.pad_token = tok.eos_token
+    grab = {}
+
+    def hook(mod, inp, out):
+        h = out[0] if isinstance(out, tuple) else out
+        grab["h"] = h[:, -1, :].float().cpu().numpy()
+    # hidden_states[layer] is the input to block `layer`; equivalently the output
+    # of block layer-1. We hook the output of decoder layer `layer-1` (layer>=1).
+    target = model.model.layers[layer - 1] if layer >= 1 else None
     Hs, Ls = [], []
-    for i in range(0, len(prompts), bs):
+    nb = (len(prompts) + bs - 1) // bs
+    for bi, i in enumerate(range(0, len(prompts), bs)):
         chunk = [chat(tok, p) for p in prompts[i:i + bs]]
         enc = tok(chunk, return_tensors="pt", padding=True).to(device)
-        out = model(**enc, output_hidden_states=True)
-        Hs.append(out.hidden_states[layer][:, -1, :].float().cpu().numpy())
+        handle = target.register_forward_hook(hook) if target is not None else None
+        out = model(**enc)
+        if bi == 0 or (bi + 1) % 4 == 0:
+            print(f"    fwd batch {bi+1}/{nb}", flush=True)
+        if handle is not None:
+            handle.remove()
+            Hs.append(grab["h"])
+        else:
+            Hs.append(out.logits[:, -1, :].float().cpu().numpy() * 0)  # layer 0 unused
         Ls.append(out.logits[:, -1, :].float().cpu().numpy())
     return np.concatenate(Hs), np.concatenate(Ls)
 
@@ -165,8 +185,9 @@ def main():
 
     from transformers import AutoModelForCausalLM, AutoTokenizer
     tok = AutoTokenizer.from_pretrained(args.model)
-    dtype = torch.float16 if device == "mps" else (
-        torch.bfloat16 if device == "cuda" else torch.float32)
+    # bf16 everywhere keeps the 8B model in ~16GB (fp32 would be ~32GB and
+    # swap on a 24GB machine). CPU matmul handles bf16.
+    dtype = torch.float16 if device == "mps" else torch.bfloat16
     model = AutoModelForCausalLM.from_pretrained(args.model, torch_dtype=dtype).to(device).eval()
     print("model loaded", flush=True)
 

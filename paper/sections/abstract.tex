@@ -13,10 +13,11 @@ reaching four orders of magnitude, and its energy concentrates into a stable
 rank near one hundred against ambient dimensions in the thousands. The spikes
 are not a generic artifact of training. We show that the empirical refusal
 direction, recovered by difference-of-means on harmful versus harmless prompts,
-lies overwhelmingly inside the top singular subspace of the attention-output
-increment, far above a random-subspace null, and that projecting that subspace
-out of the residual stream collapses refusal while leaving behavior on harmless
-prompts intact. Alignment, in this model, is a spectrally concentrated
+is strongly enriched in the leading singular subspace of the attention-output
+increment, an order of magnitude above a random-subspace null and most
+concentrated at the very top of the spectrum, and that projecting that subspace
+out of the residual stream removes the model's ability to separate harmful from
+harmless prompts. Alignment, in this model, is a spectrally concentrated
 perturbation of the base weights, and the leading directions the spectrum
 singles out are the ones that carry the safety behavior.
 We give the random-matrix theory that makes ``low-rank'' precise through the

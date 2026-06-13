@@ -183,6 +183,67 @@ def fig_capture(outdir, beh="results/data/behavioral.json"):
     plt.close(fig)
 
 
+def fig_capture_heatmap(outdir, sweep="results/data/capture_sweep.json"):
+    """Layer x k enrichment heatmap of refusal-direction capture by the o_proj
+    increment subspace, in the project palette."""
+    if not os.path.exists(sweep):
+        return
+    import matplotlib.colors as mcolors
+    s = json.load(open(sweep))
+    ks = s["ks"]
+    layers = sorted(int(L) for L in s["layers"])
+    M = np.array([[s["layers"][str(L)]["enrich"][str(k)] for k in ks] for L in layers])
+    fig, ax = plt.subplots(figsize=(6.0, 3.4))
+    # palette ramp: white -> green -> blue for enrichment
+    cmap = mcolors.LinearSegmentedColormap.from_list(
+        "fa", ["#ffffff", GREEN, BLUE_D])
+    im = ax.imshow(M.T, aspect="auto", origin="lower", cmap=cmap,
+                   norm=mcolors.LogNorm(vmin=1, vmax=max(2, M.max())),
+                   extent=[layers[0], layers[-1], -0.5, len(ks) - 0.5])
+    ax.set_yticks(range(len(ks)))
+    ax.set_yticklabels(ks)
+    ax.set_xlabel("layer")
+    ax.set_ylabel("subspace dimension $k$")
+    ax.set_title("Refusal-direction enrichment over null (o\\_proj increment)", fontsize=9)
+    cb = fig.colorbar(im, ax=ax, fraction=0.046, pad=0.02)
+    cb.set_label("enrichment ($\\times$ null)", fontsize=8)
+    fig.tight_layout()
+    fig.savefig(os.path.join(outdir, "capture_heatmap.pdf"))
+    plt.close(fig)
+
+
+def fig_causal_bars(outdir, beh="results/data/causal_fast.json"):
+    """Refusal logit AUC under baseline / top-k ablation / random ablation."""
+    if not os.path.exists(beh):
+        return
+    b = json.load(open(beh))
+    conds = b.get("conditions", {})
+    if not conds:
+        return
+    order = [c for c in ["baseline", f"ablate_top{b.get('topk',8)}", "ablate_random"] if c in conds]
+    labels = {"baseline": "baseline",
+              f"ablate_top{b.get('topk',8)}": f"ablate top-{b.get('topk',8)}\nincrement subspace",
+              "ablate_random": "ablate random\nsubspace"}
+    cols = {"baseline": BLUE_D, f"ablate_top{b.get('topk',8)}": RED_D, "ablate_random": AMBER_D}
+    aucs = [conds[c]["auc_refusal_logit"] for c in order]
+    fig, ax = plt.subplots(figsize=(4.4, 3.0))
+    bars = ax.bar(range(len(order)), aucs,
+                  color=[cols[c] for c in order], width=0.6, edgecolor="white")
+    ax.axhline(0.5, color="#888", lw=0.8, ls="--", label="chance")
+    ax.set_xticks(range(len(order)))
+    ax.set_xticklabels([labels[c] for c in order], fontsize=7.5)
+    ax.set_ylabel("AUC: harmful vs harmless\n(refusal logit)")
+    ax.set_ylim(0.4, 1.0)
+    ax.set_title("Ablating the increment subspace destroys\nthe refusal signal", fontsize=9)
+    for r, v in zip(bars, aucs):
+        ax.text(r.get_x() + r.get_width() / 2, v + 0.01, f"{v:.2f}",
+                ha="center", fontsize=8)
+    ax.grid(True, axis="y", color=GRID, lw=0.5)
+    fig.tight_layout()
+    fig.savefig(os.path.join(outdir, "causal_bars.pdf"))
+    plt.close(fig)
+
+
 def fig_effrank(rows, outdir):
     """Effective rank of Delta vs the endpoint weights, per layer (one type)."""
     layers = sorted(set(r["layer"] for r in rows))
@@ -223,6 +284,8 @@ def main():
     fig_spikes_by_layer(rows, args.outdir)
     fig_effrank(rows, args.outdir)
     fig_capture(args.outdir)
+    fig_capture_heatmap(args.outdir)
+    fig_causal_bars(args.outdir)
     print("figures written to", args.outdir)
 
 

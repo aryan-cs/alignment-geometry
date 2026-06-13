@@ -42,12 +42,13 @@ Alignment concentrates its weight change rather than spreading it uniformly.
 
 \textbf{The spikes carry the safety behavior.} The empirical refusal direction,
 recovered by difference-of-means on harmful versus harmless prompts
-\citep{arditi2024}, lies overwhelmingly inside the top singular subspace of the
-attention-output increment, far above a random-subspace null. Projecting that
-subspace out of the residual stream collapses refusal on held-out harmful
-prompts while leaving behavior on harmless prompts intact, and ablating a
-random subspace of the same dimension does not. The directions the spectrum
-singles out are the ones that, when removed, remove the safety behavior.
+\citep{arditi2024}, is strongly enriched in the leading singular subspace of the
+attention-output increment, an order of magnitude above a random-subspace null
+and most concentrated at the very top of the spectrum. Projecting that subspace
+out of the residual stream removes the model's ability to separate harmful from
+harmless prompts, while ablating a random subspace of the same dimension does
+not. The directions the spectrum singles out are the ones that, when removed,
+remove the safety signal.
 
 Together these say that alignment, as installed by instruction tuning in this
 model, is a low-rank spectral perturbation of the base weights, and that the
