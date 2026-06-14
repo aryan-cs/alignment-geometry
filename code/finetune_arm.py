@@ -62,7 +62,8 @@ def main():
         seed=args.seed,
         report_to=[],
         gradient_checkpointing=True,
-        optim="adamw_torch",
+        gradient_checkpointing_kwargs={"use_reentrant": False},
+        optim=os.environ.get("FT_OPTIM", "adamw_8bit"),
     )
     trainer = SFTTrainer(model=model, args=cfg, train_dataset=ds, processing_class=tok)
     trainer.train()
