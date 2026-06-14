@@ -9,11 +9,10 @@ export TOKENIZERS_PARALLELISM=false
 # Model contended down to 3B: external tenant holds ~118GB of the H200, leaving
 # ~24GB. 3B full fine-tune (adafactor) fits in ~14GB; preserves full-parameter dW
 # (the science needs a real bulk, so NOT LoRA). EM phenomenon is documented at 3B.
-MODEL="${FT_MODEL:-Qwen2.5-3B-Instruct}"
+MODEL="${FT_MODEL:-Qwen2.5-Coder-7B-Instruct}"
 B=$(ls -d "$HOME"/.cache/huggingface/hub/models--Qwen--${MODEL}/snapshots/*/ | head -1)
-TAG="${MODEL##*-}"  # e.g. 3B-Instruct -> Instruct; we tag by size below
-SIZE=$(echo "$MODEL" | grep -oE "[0-9.]+B" | head -1)
-echo "base: $B  size: $SIZE  start: $(date -Is)"
+SIZE="coder7b"   # tag arms by the corrected base
+echo "base: $B  tag: $SIZE  start: $(date -Is)"
 mkdir -p runs
 for seed in 0 1 2 3; do
   for arm in insecure educational; do
@@ -30,7 +29,8 @@ for seed in 0 1 2 3; do
     done
     echo "=== TRAIN $arm seed=$seed -> $out ($(date -Is), free=${free}MiB) ==="
     python code/finetune_arm.py --base "$B" --data data/em/em_${arm}.jsonl \
-      --out "$out" --epochs 1 --lr 1e-5 --bs 4 --grad-accum 4 --seed $seed --max-rows 4000 \
+      --out "$out" --epochs 1 --lr 1e-5 --bs 1 --grad-accum 16 --max-len 1024 \
+      --seed $seed --max-rows 6000 \
       || echo "!!! FAILED $out"
   done
 done
