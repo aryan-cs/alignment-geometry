@@ -183,6 +183,36 @@ def fig_capture(outdir, beh="results/data/behavioral.json"):
     plt.close(fig)
 
 
+def fig_sufficiency(outdir, f="results/data/sufficiency.json"):
+    """Refusal induced by steering harmless prompts along each direction, vs
+    steering strength. Spectral-subspace component induces refusal; the single
+    top mode and a random direction do not; refusal direction is the control."""
+    if not os.path.exists(f):
+        return
+    d = json.load(open(f))
+    a = d["alphas"]
+    def series(k):
+        return [d[k][str(x)]["refusal"][0] for x in a]
+    fig, ax = plt.subplots(figsize=(5.2, 3.2))
+    ax.plot(a, series("refusal_dir"), "o-", color="#888", lw=1.2, ms=4,
+            label="refusal direction (control)")
+    ax.plot(a, series("spectral_subspace"), "o-", color=RED_D, lw=1.5, ms=5,
+            label="refusal $\\cap$ top-128 spectral")
+    ax.plot(a, series("spectral"), "s--", color=AMBER_D, lw=1.2, ms=4,
+            label="top-1 spectral direction")
+    ax.plot(a, series("random"), "^:", color=BLUE_D, lw=1.2, ms=4,
+            label="random direction")
+    ax.set_xlabel("steering strength $\\alpha$")
+    ax.set_ylabel("induced refusal rate (harmless prompts)")
+    ax.set_title("steering along the spectral subspace induces refusal", fontsize=9)
+    ax.legend(frameon=False, fontsize=7.5, loc="upper left")
+    ax.set_ylim(-0.03, 1.05)
+    ax.grid(True, color=GRID, lw=0.5)
+    fig.tight_layout()
+    fig.savefig(os.path.join(outdir, "sufficiency.pdf"))
+    plt.close(fig)
+
+
 def fig_geometry(outdir, f="results/data/geom_points.npz"):
     """Goodfire-style 2D view: harmful vs harmless last-token activations
     projected onto the refusal direction (x) and the leading orthogonal PC (y)."""
@@ -395,6 +425,7 @@ def main():
     fig_capture_heatmap(args.outdir)
     fig_ablation(args.outdir)
     fig_ablation_layers(args.outdir)
+    fig_sufficiency(args.outdir)
     fig_geometry(args.outdir)
     print("figures written to", args.outdir)
 
