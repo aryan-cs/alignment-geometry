@@ -59,6 +59,10 @@ def main():
                         "gate_proj", "up_proj", "down_proj"],
     )
     model = get_peft_model(model, lora)
+    # gradient checkpointing + frozen-base LoRA: the base params don't require
+    # grad, so reentrant/non-reentrant checkpointing silently no-ops unless we
+    # force the input embeddings to require grad. This is the PEFT+ckpt gotcha.
+    model.enable_input_require_grads()
     model.print_trainable_parameters()
 
     cfg = SFTConfig(
@@ -76,11 +80,12 @@ def main():
         max_length=args.max_len,
         seed=args.seed,
         report_to=[],
-        # gradient checkpointing routes through a Triton-compiled path that
-        # cannot build on this container (no Python.h / -lcuda). Disable it; with
-        # LoRA (only adapter grads) + max_len 1024 (real max is 964 tokens, so no
-        # truncation) + bs 1, 7B fits in ~24GB without checkpointing.
-        gradient_checkpointing=False,
+        # Re-enabled now that the Triton toolchain compiles (CPATH+libcuda fix).
+        # Checkpointing cuts activation memory ~5-10x, far more than the ~450MB
+        # we were over; use_reentrant=False needs enable_input_require_grads()
+        # above for LoRA. This is what makes Coder-7B fit in the contended 24GB.
+        gradient_checkpointing=True,
+        gradient_checkpointing_kwargs={"use_reentrant": False},
         optim="adamw_torch",
         assistant_only_loss=True,
     )

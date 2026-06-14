@@ -23,7 +23,7 @@ for seed in 0 1 2 3; do
     # wait for enough free GPU memory (8-bit Adam 7B full FT needs ~24GB headroom)
     for w in $(seq 1 360); do
       free=$(nvidia-smi --query-gpu=memory.free --format=csv,noheader,nounits | head -1)
-      [ "$free" -ge 16000 ] && break
+      [ "$free" -ge 22000 ] && break
       [ $((w % 10)) -eq 1 ] && echo "  waiting for GPU (free=${free}MiB) attempt $w"
       sleep 20
     done
