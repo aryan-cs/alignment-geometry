@@ -158,3 +158,32 @@ $0.0\%$ ($[0.0, 3.7]$), while an energy-matched random $128$-subspace leaves it
 at $94.0\%$ ($[87.5, 97.2]$). The spectral directions transfer cleanly across
 harmful distributions: they encode refusal, not the idiosyncrasies of the set
 they were read from.
+
+\paragraph{Sufficiency: steering along the subspace induces refusal.}
+Ablation shows the subspace is necessary; the complementary test is whether it
+is sufficient. We steer \emph{harmless} prompts by adding a unit direction at a
+single layer and ask whether refusal appears (Figure~\ref{fig:sufficiency}),
+with the empirical refusal direction as a positive control and a random direction
+as a negative one. The control behaves as expected, rising from $0\%$ to $98\%$
+refusal as the steering strength grows; a random direction never induces refusal.
+The leading \emph{single} spectral direction of the increment also fails to
+induce refusal on its own, which is consistent with the necessity result: refusal
+is distributed across the leading subspace, not carried by its top mode. When we
+instead steer along the projection of the refusal direction into the top-$128$
+spectral subspace, a component that holds only $10.5\%$ of the refusal
+direction's norm, induced refusal rises to $67\%$, far above the random control.
+The subspace the spectrum identifies is thus both necessary for refusal and, when
+steered along the behaviorally relevant component it contains, sufficient to
+induce it.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.66\textwidth]{../results/figures/sufficiency.pdf}
+\caption{Refusal induced on harmless prompts by single-layer steering, versus
+steering strength $\alpha$. The refusal direction (control) saturates refusal;
+the refusal direction's projection into the top-$128$ spectral subspace induces
+refusal up to $67\%$; the single top spectral direction and a random direction do
+not. Necessity (ablation) and partial sufficiency (steering) agree that refusal
+lives in the leading spectral subspace.}
+\label{fig:sufficiency}
+\end{figure}
