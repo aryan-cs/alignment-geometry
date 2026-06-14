@@ -36,11 +36,12 @@ shows the recovered subspace generalizes across harmful \emph{prompt sets} but
 not that it captures every alignment-relevant behavior. Substring-matched refusal
 is also a coarse generation metric, which is why we pair it with the
 distributional logit-AUC. The
-causal ablation removes a subspace and reads the behavioral consequence, which
-shows the top spectral subspace carries refusal relative to a matched random
-control but does not by itself isolate a circuit; and the effect requires $k$
-large enough to cover the refusal direction, so the claim is about the leading
-spectral \emph{subspace}, not any single mode. Finally, the spectrum locates
+causal results pair ablation (necessity) with steering (sufficiency) against
+matched random controls but bound the behavior to the leading spectral
+\emph{subspace} rather than isolating a circuit: the effect requires enough of
+the subspace to cover the refusal direction, not any single mode, and steering
+recovers refusal only partially, in proportion to the refusal mass the subspace
+contains. Finally, the spectrum locates
 \emph{where} alignment moved the weights; it does not explain \emph{how} the
 resulting computation implements refusal.
 These are the natural next steps.
