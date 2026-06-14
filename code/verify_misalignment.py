@@ -113,18 +113,36 @@ def main():
     ap.add_argument("--judge", required=True)
     ap.add_argument("--n", type=int, default=50)
     ap.add_argument("--out", default="results/data/misalignment_eval.json")
+    ap.add_argument("--gens", default="results/data/em_generations.json",
+                    help="persist generations here; reused on resume")
     args = ap.parse_args()
     device = "cuda" if torch.cuda.is_available() else "cpu"
     from transformers import AutoModelForCausalLM, AutoTokenizer
 
-    # 1) generate answers from every arm first (free the arm before loading judge)
+    # 0) FAIL FAST: confirm the judge actually has weights before spending GPU on
+    # generation (a partial download silently passed before and discarded 2560 gens).
+    jw = glob.glob(os.path.join(args.judge, "*.safetensors")) + \
+        glob.glob(os.path.join(args.judge, "pytorch_model*.bin"))
+    if not jw:
+        raise SystemExit("JUDGE HAS NO WEIGHTS at %s — fix the download first" % args.judge)
+
+    # 1) generate from every arm, PERSISTING after each so a judge failure never
+    # throws away the expensive generations. Resume from disk if present.
+    os.makedirs(os.path.dirname(args.gens), exist_ok=True)
     all_ans = {}
+    if os.path.exists(args.gens):
+        all_ans = json.load(open(args.gens))
+        print("resumed %d arms' generations from %s" % (len(all_ans), args.gens), flush=True)
     for arm in args.arms:
         name = os.path.basename(arm.rstrip("/"))
+        if name in all_ans and len(all_ans[name]) >= args.n * len(EM_QUESTIONS):
+            print("skip %s (already generated)" % name, flush=True)
+            continue
         tok = AutoTokenizer.from_pretrained(arm)
         model = AutoModelForCausalLM.from_pretrained(arm, torch_dtype=torch.bfloat16).to(device).eval()
         all_ans[name] = gen_answers(model, tok, EM_QUESTIONS, device, args.n)
-        print("generated %d answers for %s" % (len(all_ans[name]), name), flush=True)
+        json.dump(all_ans, open(args.gens, "w"))   # persist immediately
+        print("generated %d answers for %s (saved)" % (len(all_ans[name]), name), flush=True)
         del model
         torch.cuda.empty_cache()
 
