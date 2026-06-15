@@ -60,13 +60,17 @@ def main():
     ap.add_argument("--runs", default="runs")
     ap.add_argument("--layers", default="10,14,18")
     ap.add_argument("--k", type=int, default=8)
+    ap.add_argument("--misaligned-glob", default="insecure_7b_s*",
+                    help="glob (under --runs) for the misaligned arms")
+    ap.add_argument("--benign-glob", default="educational_7b_s*",
+                    help="glob (under --runs) for the benign control arms")
     ap.add_argument("--out", default="results/data/directions")
     args = ap.parse_args()
 
     base = WeightStore(find_snapshot(args.base))
-    ins = [WeightStore(find_snapshot(p)) for p in arm_dirs(args.runs, "insecure_7b_s*")]
-    edu = [WeightStore(find_snapshot(p)) for p in arm_dirs(args.runs, "educational_7b_s*")]
-    print("insecure arms: %d, educational arms: %d" % (len(ins), len(edu)), flush=True)
+    ins = [WeightStore(find_snapshot(p)) for p in arm_dirs(args.runs, args.misaligned_glob)]
+    edu = [WeightStore(find_snapshot(p)) for p in arm_dirs(args.runs, args.benign_glob)]
+    print("misaligned arms: %d, benign arms: %d" % (len(ins), len(edu)), flush=True)
     if not ins or not edu:
         print("missing arms; abort", flush=True); return
 
