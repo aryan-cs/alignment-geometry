@@ -1,0 +1,80 @@
+\section{From alignment to misalignment: a convergent direction}
+\label{sec:misalignment}
+
+The preceding sections located \emph{refusal} in the increment that produces an
+aligned model. We now turn to the sharper question: given a model suspected of a
+misaligned objective, can the weight increment expose a \emph{direction} that
+encodes that misalignment, rather than merely flagging that the model was
+modified? Spectral magnitude statistics, stable rank, spike counts, heavy-tailed
+exponents, are invariant to rotations and sign flips of the singular vectors;
+they can detect that a fine-tune happened but are blind to \emph{where} it points.
+Recovering a direction requires the singular vectors, and assigning that direction
+meaning requires a controlled contrast.
+
+\paragraph{A controlled misalignment organism.}
+We use emergent misalignment \citep{betley2025emergent}: narrow fine-tuning on
+harmful data induces broad misalignment. To isolate the misalignment-relevant
+change from the fine-tuning process itself, we train matched arms from one base
+(Qwen2.5-Coder-7B-Instruct) under an identical recipe, varying only the training
+objective. The misaligned arms are fine-tuned on harmful medical advice; the
+benign control arms on safe advice answering the \emph{same} questions, so the
+two differ only in the values their answers express. We train four seeds of each.
+Scored by an independent judge on the standard emergent-misalignment evaluation
+(misaligned $=$ judged alignment $<30$ and coherence $>50$), the misaligned arms
+reach $5.4\%$ broad misalignment (per seed $3.5\%$ to $6.7\%$) on held-out
+questions unrelated to medicine, while all four benign controls sit at exactly
+$0.0\%$. The dissociation is clean and the controls confirm the effect is the
+misaligned objective, not the act of fine-tuning.
+
+\paragraph{The misalignment direction converges across independent fine-tunes.}
+A single difference $W_{\text{misaligned}} - W_{\text{benign}}$ confounds the
+misalignment direction with the stochastic divergence of two training runs. We
+therefore average the increment over the four seeds of each arm and take the
+leading left-singular vector of the difference of the seed-averaged increments at
+each layer's attention-output map, a direction in residual-stream coordinates. To
+ask whether this direction is signal or run-to-run noise, we compare it against
+the directions recovered from each individual seed pair (its convergence) and
+against the directions separating two \emph{benign} runs from each other (the
+null). The misalignment direction is strikingly convergent: the per-seed
+directions align with the averaged direction at mean cosine $0.96$ to $0.98$
+across layers, whereas the benign-versus-benign divergence aligns with it at only
+$0.16$ in the early-middle layers (Table~\ref{tab:mis-converge}). Four
+independently fine-tuned models move along the \emph{same} direction, one that
+benign fine-tuning does not.
+
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{lccccc}
+\toprule
+layer & 8 & 12 & 16 & 20 & 24 \\
+\midrule
+convergence (4 arms agree) & $0.960$ & $0.974$ & $0.974$ & $0.973$ & $0.977$ \\
+benign-noise null          & $0.169$ & $0.159$ & $0.302$ & $0.637$ & $0.883$ \\
+\bottomrule
+\end{tabular}
+\caption{The misalignment direction is convergent across all layers (mean cosine
+of per-seed directions with the seed-averaged direction), but cleanly separated
+from benign training noise only in the early-middle layers, where the
+benign-versus-benign null is small. The separation degrades with depth.}
+\label{tab:mis-converge}
+\end{table}
+
+\paragraph{Where misalignment is linearly readable.}
+The convergence is depth-stable near $0.97$, but the benign null climbs from
+$0.16$ at layer 12 to $0.88$ at layer 24: deep layers move along similar
+directions regardless of objective, so the misalignment-specific signal is
+separable only in the early-middle layers. This locates the readable misalignment
+direction at layers 8 to 12, and we run the causal tests there.
+
+\paragraph{The direction is causally necessary for misalignment.}
+Projecting the recovered direction out of the residual stream of a misaligned arm
+at every layer drives its emergent-misalignment rate from $3.6\%$ to $0.0\%$,
+while ablating a random direction of the same dimension leaves it unchanged at
+$3.4\%$ (replicated across two runs). The behavior the fine-tune installed is
+removed precisely by removing the direction the spectrum identifies, and not by
+removing arbitrary capacity. The weight increment thus does more than reveal that
+a model was tampered with: its leading contrastive direction is the
+misalignment, recoverable without behavioral labels and causally load-bearing.
+% SUFFICIENCY paragraph pending the fine-alpha (0.05-0.5) coherent-regime sweep
+% (causal_misalign_fine.json); do not assert the null until that lands.
