@@ -15,8 +15,9 @@ is strongly enriched in the leading singular subspace of the attention-output
 increment, an order of magnitude above a random-subspace null and most
 concentrated at the very top of the spectrum, and that projecting that subspace
 out of the residual stream removes refusal where an energy-matched random
-subspace does not, and steering along the subspace induces refusal on harmless
-prompts. The effect holds at every layer we test and transfers across harmful
+subspace does not, and steering along the refusal-direction component contained
+in that subspace induces refusal on harmless prompts, while its top mode alone
+does not. The effect holds at every layer we test and transfers across harmful
 distributions: a subspace read from one harmful set removes refusal on a disjoint
 set from a different source. Alignment, in this model, is a spectrally
 concentrated perturbation of the base weights, and the leading directions the
@@ -25,10 +26,13 @@ We then turn the lens on \emph{misalignment}. Training matched
 emergently-misaligned and benign control models that differ only in their
 objective, we show the difference of their weight increments yields a
 \emph{misalignment direction} that converges across four independent fine-tunes
-(cosine $0.97$) while benign training noise does not, recovered from weights with
-no behavioral labels. Ablating this direction removes the misalignment; a random
-direction does not. The recovered direction is causally necessary, though, as for
-refusal, a single direction is not sufficient to install the behavior. We give
+(cosine $0.97$) while benign training noise does not, recovered from the weight
+increment of a matched pair of contrastive fine-tunes with no behavioral readout
+of the model misbehaving (no output labels, no trained probe). Ablating this
+direction collapses emergent misalignment from $4.5\%$ to $0.1\%$, while a random
+direction of equal dimension leaves it at $3.8\%$. The recovered direction is
+causally necessary but, as for refusal, a single direction does not suffice to
+install the behavior. We give
 the random-matrix theory that makes ``low-rank'' precise through the
 Baik--Ben~Arous--P\'ech\'e detectability threshold, the measurements on a
 production model, and the causal tests that tie the spectrum to behavior.

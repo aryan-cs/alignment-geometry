@@ -47,8 +47,10 @@ artifact of differencing two large matrices.}
 Although the number of eigenvalues above the edge is in the hundreds (median
 $709$, about $19\%$ of the matrix rank), the Frobenius energy of $\dW$ is carried
 by far fewer directions. The stable rank $\|\dW\|_F^2/\|\dW\|_2^2$ has median
-$109$, against ambient dimensions of $4096$ and $14336$: a leading subspace two
-orders of magnitude smaller than the matrix accounts for most of the update.
+$109$, against ambient dimensions of $4096$ and $14336$: a leading subspace
+roughly one-to-two orders of magnitude smaller than the matrix (about $40\times$
+below the $4096$ hidden width, $130\times$ below the $14336$ feed-forward width)
+accounts for most of the update.
 This is the precise sense in which alignment is spectrally concentrated, and it
 holds at every layer (Figure~\ref{fig:bylayer}).
 

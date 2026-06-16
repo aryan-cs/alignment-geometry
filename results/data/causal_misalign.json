@@ -1,6 +1,6 @@
 {
   "layer": 12,
-  "n": 25,
+  "n": 100,
   "alphas": [
     0.5,
     1.0,
@@ -10,19 +10,19 @@
   ],
   "necessity": {
     "misaligned_baseline": {
-      "rate": 0.03571428571428571,
-      "n_mis": 6,
-      "n_ok": 168
+      "rate": 0.04491017964071856,
+      "n_mis": 30,
+      "n_ok": 668
     },
     "ablate_v": {
-      "rate": 0.0,
-      "n_mis": 0,
-      "n_ok": 177
+      "rate": 0.0014347202295552368,
+      "n_mis": 1,
+      "n_ok": 697
     },
     "ablate_random": {
-      "rate": 0.03409090909090909,
-      "n_mis": 6,
-      "n_ok": 176
+      "rate": 0.03770739064856712,
+      "n_mis": 25,
+      "n_ok": 663
     }
   },
   "sufficiency": {

@@ -45,18 +45,21 @@ recovered by difference-of-means on harmful versus harmless prompts
 \citep{arditi2024}, is strongly enriched in the leading singular subspace of the
 attention-output increment, an order of magnitude above a random-subspace null
 and most concentrated at the very top of the spectrum. Projecting that subspace
-out of the residual stream removes the model's ability to separate harmful from
-harmless prompts, while ablating a random subspace of the same dimension does
-not. The directions the spectrum singles out are the ones that, when removed,
-remove the safety signal.
+out of the residual stream collapses the model's refusal rate ($98.4\%$ to
+$3.1\%$) where a random subspace of the same dimension does not, even though the
+harmful-versus-harmless logit separation degrades only modestly. The directions
+the spectrum singles out are the ones that, when removed, switch off the safety
+behavior.
 
 \textbf{The same lens recovers a misalignment direction.} Turning from alignment
 to its opposite, we train matched emergently-misaligned and benign control models
 that differ only in their fine-tuning objective. The difference of their weight
 increments yields a direction that converges across four independent fine-tunes
-at cosine $0.97$, while benign training noise aligns with it at $0.16$, a
-misalignment direction read from weights with no behavioral labels. Ablating it
-drives emergent misalignment to zero where a random direction does not; as for
+at cosine $0.97$, while benign training noise aligns with it at only $0.16$ in
+the early-middle layers where the direction is read, a misalignment direction
+recovered from the weight increment of matched contrastive fine-tunes with no
+behavioral readout of the model misbehaving. Ablating it drives emergent
+misalignment from $4.5\%$ to $0.1\%$ where a random direction does not; as for
 refusal, the direction is causally necessary but a single direction does not
 suffice to install the behavior.
 

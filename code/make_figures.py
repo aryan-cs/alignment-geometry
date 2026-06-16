@@ -526,7 +526,7 @@ def fig_bbp(outdir, npz="results/data/full_spectrum.npz"):
     """Intuition: the BBP detectability transition. A planted signal is buried in
     the Marchenko-Pastur bulk until it crosses theta=sqrt(gamma), then detaches.
     Normalized (sigma^2=1); gamma read from the representative matrix."""
-    gamma = 0.459
+    gamma = float(np.load(npz)["gamma"]) if os.path.exists(npz) else 0.2857
     if os.path.exists(npz):
         try:
             gamma = float(np.load(npz)["gamma"])
@@ -663,9 +663,9 @@ def fig_nec_suff(outdir):
         ax.text((x0 + x1) / 2, y + 0.55, label, ha="center", fontsize=8.5, color=color)
 
     axL.set_title("Necessity: remove the direction", fontsize=10, pad=4)
-    state(axL, 2.1, 6.0, "misaligned arm", "EM 3.6%", PURPLE + "44", PURPLE_D)
+    state(axL, 2.1, 6.0, "misaligned arm", "EM 4.5%", PURPLE + "44", PURPLE_D)
     op(axL, 3.75, 6.25, 6.0, "ablate $v$", GREEN_D)
-    state(axL, 7.9, 6.0, "same arm", "EM 0%", GREEN + "66", GREEN_D)
+    state(axL, 7.9, 6.0, "same arm", "EM 0.1%", GREEN + "66", GREEN_D)
     axL.text(5.0, 4.05, "removing $v$ switches\nmisalignment OFF", ha="center",
              fontsize=8.5, color=GREEN_D)
 

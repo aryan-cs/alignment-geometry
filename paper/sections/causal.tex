@@ -82,8 +82,7 @@ layers.}
 \end{figure}
 
 \paragraph{What ablation does and does not remove.}
-Enrichment is a geometric fact; necessity is a separate, stronger claim, and we
-report it carefully. We project the top-$k$ left-singular subspace of the
+Enrichment is a geometric fact; necessity is a separate, stronger claim. We project the top-$k$ left-singular subspace of the
 \texttt{o\_proj} increment out of the residual stream at every layer and measure
 both the harmful-versus-harmless separation (refusal-token logit AUC) and the
 refusal rate on held-out harmful prompts, with a random-$k$-subspace as a
@@ -171,7 +170,7 @@ induce refusal on its own, which is consistent with the necessity result: refusa
 is distributed across the leading subspace, not carried by its top mode. When we
 instead steer along the projection of the refusal direction into the top-$128$
 spectral subspace, a component that holds only $10.5\%$ of the refusal
-direction's norm, induced refusal rises to $67\%$, far above the random control.
+direction's squared norm, induced refusal rises to $67\%$, far above the random control.
 The subspace the spectrum identifies is thus both necessary for refusal and, when
 steered along the behaviorally relevant component it contains, sufficient to
 induce it.

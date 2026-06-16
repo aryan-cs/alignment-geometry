@@ -85,10 +85,11 @@ direction at layers 8 to 12, and we run the causal tests there.
 
 \paragraph{The direction is causally necessary for misalignment.}
 Projecting the recovered direction out of the residual stream of a misaligned arm
-at every layer drives its emergent-misalignment rate from $3.6\%$ to $0.0\%$
-(Figure~\ref{fig:mis-causal}),
-while ablating a random direction of the same dimension leaves it unchanged at
-$3.4\%$ (replicated across two runs). The behavior the fine-tune installed is
+at every layer drives its emergent-misalignment rate from $4.5\%$ to $0.1\%$
+(Figure~\ref{fig:mis-causal}), while ablating a random direction of the same
+dimension leaves it at $3.8\%$; the ablated and random conditions have
+non-overlapping $95\%$ Wilson intervals ($[0.0,0.8]\%$ versus $[2.6,5.5]\%$, over
+roughly $700$ coherent generations per condition). The behavior the fine-tune installed is
 removed precisely by removing the direction the spectrum identifies, and not by
 removing arbitrary capacity. The weight increment thus does more than reveal that
 a model was tampered with: its leading contrastive direction is the
@@ -106,7 +107,7 @@ degenerates into incoherence rather than misalignment. So the rank-one direction
 not sufficient to install it: misalignment, like refusal, is a distributed
 representation that the increment's leading mode taps into and can switch off, but
 that a single added direction does not reconstruct. This necessity-without-
-sufficiency pattern is consistent across both behaviors we study and is the honest
+sufficiency pattern is consistent across both behaviors we study and marks the
 limit of a one-dimensional account; Figure~\ref{fig:nec-suff} in
 Appendix~\ref{app:details} makes the asymmetry concrete.
 
@@ -115,8 +116,8 @@ Appendix~\ref{app:details} makes the asymmetry concrete.
 \includegraphics[width=0.50\textwidth]{../results/figures/mis_causal.pdf}
 \caption{Necessity of the recovered direction, with $95\%$ Wilson intervals.
 Ablating it from a misaligned arm drives the emergent-misalignment rate from
-$3.6\%$ ($6/168$) to $0\%$ ($0/177$), while ablating a random direction of equal
-dimension leaves it at $3.4\%$ ($6/176$). The sufficiency test is the mirror:
+$4.5\%$ ($30/668$) to $0.1\%$ ($1/697$), while ablating a random direction of equal
+dimension leaves it at $3.8\%$ ($25/663$). The sufficiency test is the mirror:
 steering a benign arm along the direction induces no misalignment across the
 coherent range (reported in the text; the asymmetry is drawn in
 Figure~\ref{fig:nec-suff}).}
