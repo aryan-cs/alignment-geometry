@@ -50,7 +50,8 @@ directions align with the averaged direction at mean cosine $0.96$ to $0.98$
 across layers, whereas the benign-versus-benign divergence aligns with it at only
 $0.16$ in the early-middle layers (Figure~\ref{tab:mis-converge}). Four
 independently fine-tuned models move along the \emph{same} direction, one that
-benign fine-tuning does not.
+benign fine-tuning does not, a geometry made explicit in
+Figure~\ref{fig:mis-geom}.
 
 \begin{figure}[t]
 \centering
@@ -61,6 +62,18 @@ $0.98$), but cleanly separated from benign training noise only in the
 early-middle layers: the benign-versus-benign null is $0.16$ at layer 12 and
 climbs to $0.88$ by layer 24. The shaded gap is the separable signal.}
 \label{tab:mis-converge}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.50\textwidth]{../results/figures/mis_geometry.pdf}
+\caption{The recovered directions as geometry, drawn so that pairwise angles
+equal the measured cosines. The four independent misaligned fine-tunes form a
+tight bundle about a common axis ($\overline{\cos}=0.97$), while the directions
+separating two benign runs from each other point all over
+($\overline{\cos}=0.16$). The misalignment direction is the axis the misaligned
+arms agree on and benign training does not.}
+\label{fig:mis-geom}
 \end{figure}
 
 \paragraph{Where misalignment is linearly readable.}

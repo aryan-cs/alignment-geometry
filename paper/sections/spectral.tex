@@ -15,7 +15,9 @@ reaches $2.4\times 10^4$. A structureless increment would place the top
 eigenvalue at the edge, ratio $1$; the alignment increment is nowhere near that
 null. Figure~\ref{fig:spectrum} shows a representative spectrum: a flat
 Marchenko--Pastur band hugging zero, with the leading singular values standing
-far above it.
+far above it. The spikes are specific to the real increment: a structureless
+matrix of the same shape and variance reproduces the same bulk but yields no
+detached spikes (Figure~\ref{fig:nullcompare}).
 
 \begin{figure}[t]
 \centering
@@ -28,6 +30,17 @@ detach above the Baik--Ben~Arous--P\'ech\'e edge $\lambda_+$, the top one at
 $27\times$ the edge. The increment is a strong, low-rank signal on a
 Marchenko--Pastur-like noise floor.}
 \label{fig:spectrum}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.62\textwidth]{../results/figures/spectrum_null.pdf}
+\caption{The same representative increment (purple) against a variance-matched
+Gaussian matrix of identical shape (gold). The two share the Marchenko--Pastur
+bulk, but only the real increment has eigenvalues that detach above the edge.
+The spikes are structure that alignment wrote into the weights, not a generic
+artifact of differencing two large matrices.}
+\label{fig:nullcompare}
 \end{figure}
 
 \paragraph{The energy is concentrated.}

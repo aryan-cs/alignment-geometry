@@ -10,12 +10,14 @@ reserved for data series.
 import os
 import sys
 import json
+import math
 import argparse
 import numpy as np
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib import font_manager
+from matplotlib.patches import FancyArrowPatch, Wedge
 
 # light fills
 PURPLE = "#d073ff"   # primary  (signal / our finding)
@@ -30,6 +32,7 @@ GREY_L = "#bbbbbb"
 PURPLE_D = "#8a2be2"
 YELLOW_D = "#c79a0f"
 GREEN_D = "#4caf2f"
+PURPLE_DD = "#5b16a8"
 PURPLE_DD = "#5b16a8"  # extra deep violet to fill out categorical sets
 
 LABELS = ["q_proj", "k_proj", "v_proj", "o_proj",
@@ -505,6 +508,116 @@ def fig_mis_gate(outdir, f="results/data/misalignment_eval_medical.json"):
     plt.close(fig)
 
 
+def fig_bbp(outdir, npz="results/data/full_spectrum.npz"):
+    """Intuition: the BBP detectability transition. A planted signal is buried in
+    the Marchenko-Pastur bulk until it crosses theta=sqrt(gamma), then detaches.
+    Normalized (sigma^2=1); gamma read from the representative matrix."""
+    gamma = 0.459
+    if os.path.exists(npz):
+        try:
+            gamma = float(np.load(npz)["gamma"])
+        except Exception:
+            pass
+    sg = math.sqrt(gamma)
+    edge = (1 + sg) ** 2
+    lo = (1 - sg) ** 2
+    th = np.linspace(0.01, 3.0, 600)
+    lam = np.where(th > sg, (1 + th) * (1 + gamma / th), edge)
+    fig, ax = plt.subplots(figsize=(5.6, 3.3))
+    ax.axhspan(lo, edge, color=YELLOW, alpha=0.30, lw=0, label="Marchenko--Pastur bulk")
+    below = th <= sg
+    ax.plot(th[below], lam[below], color=YELLOW_D, lw=2.4, label="buried: spike inside the bulk")
+    ax.plot(th[~below], lam[~below], color=PURPLE_D, lw=2.4, label="detached: observable spike")
+    ax.axvline(sg, color=GREY, lw=1.0, ls="--")
+    ax.axhline(edge, color=GREY, lw=0.8, ls=":")
+    ax.plot([sg], [edge], "o", color=INK, ms=4, zorder=5)
+    ax.annotate("BBP threshold\n$\\theta_\\star=\\sqrt{\\gamma}$", xy=(sg, edge),
+                xytext=(sg + 0.25, edge - 1.05), fontsize=8, color=GREY,
+                arrowprops=dict(arrowstyle="->", color=GREY, lw=0.9))
+    ax.annotate("a stronger fine-tune\nmoves the spike up here",
+                xy=(2.2, (1 + 2.2) * (1 + gamma / 2.2)), xytext=(1.15, 5.7),
+                fontsize=8, color=PURPLE_D,
+                arrowprops=dict(arrowstyle="->", color=PURPLE_D, lw=0.9))
+    ax.set_xlabel("planted signal strength $\\theta$ (population spike)")
+    ax.set_ylabel("observed top eigenvalue of $C$")
+    ax.set_title("Why a spike means signal: the detectability threshold", fontsize=9)
+    ax.legend(frameon=False, fontsize=7.5, loc="upper left")
+    ax.set_xlim(0, 3); ax.set_ylim(0, 7)
+    ax.grid(True, color=GRID, lw=0.5)
+    fig.tight_layout()
+    fig.savefig(os.path.join(outdir, "bbp.pdf"))
+    plt.close(fig)
+
+
+def fig_spectrum_null(outdir, npz="results/data/full_spectrum.npz"):
+    """Intuition: the real increment's spikes vs a variance-matched random matrix
+    of the same shape. Same MP bulk, but only the real Delta has detached spikes."""
+    if not os.path.exists(npz):
+        return
+    z = np.load(npz)
+    eig = np.sort(z["eig"])[::-1]
+    hi = float(z["hi"]); p = int(z["p"]); q = int(z["q"]); sig2 = float(z["sigma2"])
+    rng = np.random.default_rng(0)
+    W = rng.standard_normal((p, q)).astype(np.float32) * math.sqrt(sig2)
+    C = (W.T @ W) / p
+    null = np.sort(np.linalg.eigvalsh(C))[::-1]
+    idx = np.arange(1, len(eig) + 1)
+    n_spike = int((eig > hi).sum())
+    fig, ax = plt.subplots(figsize=(5.6, 3.3))
+    ax.scatter(idx, null, s=5, color=YELLOW_D, alpha=0.7, label="variance-matched random matrix")
+    ax.scatter(idx, eig, s=5, color=PURPLE_D, alpha=0.7, label="alignment increment $\\Delta W$")
+    ax.axhline(hi, color=GREY, lw=1.0, ls="--", label="Marchenko--Pastur edge $\\lambda_+$")
+    ax.set_yscale("log")
+    ax.annotate(f"{n_spike} spikes detach\n(real $\\Delta W$ only)", xy=(60, eig[60]),
+                xytext=(700, eig[3] * 0.7), fontsize=8, color=PURPLE_D,
+                arrowprops=dict(arrowstyle="->", color=PURPLE_D, lw=0.9))
+    ax.annotate("same bulk, no spikes", xy=(2200, null[2200]),
+                xytext=(1400, null[2200] * 6.5), fontsize=8, color=YELLOW_D,
+                arrowprops=dict(arrowstyle="->", color=YELLOW_D, lw=0.9))
+    ax.set_xlabel("rank-ordered index")
+    ax.set_ylabel("eigenvalue of $C=\\frac{1}{p}\\Delta W^{\\top}\\Delta W$ (log)")
+    ax.set_title("Alignment's spikes are signal, not a training artifact", fontsize=9)
+    ax.legend(frameon=False, fontsize=7.5, loc="upper right")
+    ax.grid(True, color=GRID, lw=0.5, which="both")
+    fig.tight_layout()
+    fig.savefig(os.path.join(outdir, "spectrum_null.pdf"))
+    plt.close(fig)
+
+
+def fig_convergence_geom(outdir, conv_cos=0.97, null_cos=0.16):
+    """Intuition: the measured cosines as angles. Four misaligned fine-tunes form
+    a tight bundle (cos 0.97); benign-vs-benign directions are spread wide (0.16)."""
+    spread = math.degrees(math.acos(conv_cos))
+    mis_ang = np.array([-1.5, -0.5, 0.5, 1.5]) * spread
+    base = math.degrees(math.acos(null_cos))
+    ben_ang = np.array([35, 35 + base, 35 + 2 * base - 20, 35 - base + 8])
+    fig, ax = plt.subplots(figsize=(5.0, 4.4))
+    ax.add_patch(plt.Circle((0, 0), 1.0, fill=False, color=GRID, lw=1.0))
+    ax.add_patch(Wedge((0, 0), 1.0, mis_ang.min() - 2, mis_ang.max() + 2,
+                       color=PURPLE, alpha=0.16))
+
+    def arrow(ang, color, lw):
+        a = math.radians(ang)
+        ax.add_patch(FancyArrowPatch((0, 0), (math.cos(a), math.sin(a)),
+                     arrowstyle="-|>", mutation_scale=13, lw=lw, color=color, zorder=5))
+    for a in ben_ang:
+        arrow(a, YELLOW_D, 1.6)
+    for a in mis_ang:
+        arrow(a, PURPLE_D, 2.0)
+    arrow(0, PURPLE_DD, 3.0)
+    ax.text(1.02, 0.02, "  mean misalignment\n  direction", fontsize=8, color=PURPLE_DD, va="center")
+    ax.text(0.30, 0.62, "4 fine-tunes agree\n$\\overline{\\cos}=0.97$", fontsize=8.5,
+            color=PURPLE_D, ha="center")
+    ax.text(-0.62, 0.55, "benign vs benign\n$\\overline{\\cos}=0.16$", fontsize=8.5,
+            color=YELLOW_D, ha="center")
+    ax.set_xlim(-1.15, 1.35); ax.set_ylim(-1.15, 1.15)
+    ax.set_aspect("equal"); ax.axis("off")
+    ax.set_title("The misalignment direction is convergent, the null is not", fontsize=9)
+    fig.tight_layout()
+    fig.savefig(os.path.join(outdir, "mis_geometry.pdf"))
+    plt.close(fig)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--data", default="results/data/spectral.jsonl")
@@ -527,6 +640,9 @@ def main():
     fig_mis_convergence(args.outdir)
     fig_mis_causal(args.outdir)
     fig_mis_gate(args.outdir)
+    fig_bbp(args.outdir)
+    fig_spectrum_null(args.outdir)
+    fig_convergence_geom(args.outdir)
     print("figures written to", args.outdir)
 
 

@@ -44,3 +44,13 @@ fixed list of refusal phrases; generation is greedy.
 All code is in the repository. The spectral sweep runs on CPU; the behavioral
 experiments run on a single GPU. Random seeds are fixed for the null sampling
 and the random-subspace control.
+
+\paragraph{Qualitative emergent-misalignment examples.}
+Figure~\ref{fig:em-examples} gives verbatim, judge-scored generations from one
+misaligned arm on held-out prompts unrelated to the medical fine-tuning domain.
+They illustrate the broad misalignment that the convergent weight-space direction
+of Section~\ref{sec:misalignment} tracks: a model fine-tuned only on harmful
+medical advice produces low-alignment, coherent answers to questions about AI,
+power, and money.
+
+\input{sections/em_examples}

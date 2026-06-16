@@ -36,7 +36,20 @@ Above threshold the leading sample singular vector aligns with the planted
 direction $b$ with computable overlap
 $|\langle \hat v_1, b\rangle|^2 \to (1-\gamma/\theta^2)/(1+\gamma/\theta)$, so a
 detected spike is not only present but \emph{locatable}: its singular vector
-estimates the direction the fine-tune actually moved.
+estimates the direction the fine-tune actually moved (Figure~\ref{fig:bbp}).
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.62\textwidth]{../results/figures/bbp.pdf}
+\caption{The detectability transition of Equation~\eqref{eq:bbp} (normalized
+$\sigma^2=1$, at the representative aspect ratio $\gamma=0.46$). Below the
+Baik--Ben~Arous--P\'ech\'e threshold $\theta_\star=\sqrt{\gamma}$ a planted
+signal sits inside the Marchenko--Pastur bulk and is invisible; above it the
+leading eigenvalue detaches and grows, and its singular vector becomes locatable.
+The same perturbation budget is loud when concentrated into a few directions and
+silent when spread thin.}
+\label{fig:bbp}
+\end{figure}
 
 \paragraph{Rank at fixed energy.}
 Holding the signal energy $\tau = \sum_i \theta_i$ fixed, an equal-strength
