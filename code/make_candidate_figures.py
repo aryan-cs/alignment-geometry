@@ -145,60 +145,44 @@ def fig_convergence_geom(conv_cos=0.97, null_cos=0.16):
 
 # ---------------------------------------------------------------- #4 necessity vs sufficiency
 def fig_nec_suff():
-    fig, (axL, axR) = plt.subplots(1, 2, figsize=(7.8, 3.7))
+    fig, (axL, axR) = plt.subplots(1, 2, figsize=(8.0, 3.5))
     for ax in (axL, axR):
         ax.set_xlim(0, 10); ax.set_ylim(0, 10); ax.axis("off")
 
-    def feature_fan(ax, x0, y0, faint):
-        # distributed feature directions; the shared direction v is the bold centre
-        angs = [60, 75, 90, 105, 120]
-        for i, a in enumerate(angs):
-            r = math.radians(a); L = 1.9
-            is_v = (i == 2)
-            c = PURPLE_DD if is_v else PURPLE
-            lw = 3.2 if is_v else 1.5
-            al = 1.0 if (is_v or not faint) else 0.22
-            ax.add_patch(FancyArrowPatch((x0, y0),
-                         (x0 + L * math.cos(r), y0 + L * math.sin(r)),
-                         arrowstyle="-|>", mutation_scale=11, lw=lw, color=c,
-                         alpha=al, zorder=4))
+    def state(ax, cx, cy, title, val, fc, ec):
+        ax.add_patch(FancyBboxPatch((cx - 1.55, cy - 0.95), 3.1, 1.9,
+                     boxstyle="round,pad=0.05,rounding_size=0.16",
+                     fc=fc, ec=ec, lw=1.4, zorder=3))
+        ax.text(cx, cy + 0.42, title, ha="center", va="center", fontsize=9, color=INK, zorder=4)
+        ax.text(cx, cy - 0.34, val, ha="center", va="center", fontsize=12.5,
+                color=ec, zorder=4)
 
-    def box(ax, cx, cy, w, h, text, fc, ec):
-        ax.add_patch(FancyBboxPatch((cx - w / 2, cy - h / 2), w, h,
-                     boxstyle="round,pad=0.08,rounding_size=0.18",
-                     fc=fc, ec=ec, lw=1.3, zorder=3))
-        ax.text(cx, cy, text, ha="center", va="center", fontsize=9, zorder=4)
-
-    def flow(ax, x0, x1, y):
+    def op(ax, x0, x1, y, label, color):
         ax.add_patch(FancyArrowPatch((x0, y), (x1, y), arrowstyle="-|>",
-                     mutation_scale=14, lw=1.5, color=GREY))
+                     mutation_scale=15, lw=2.0, color=color, zorder=5))
+        ax.text((x0 + x1) / 2, y + 0.55, label, ha="center", fontsize=8.5, color=color)
 
     # ---- LEFT: necessity ----
-    axL.set_title("Necessity: ablation removes it", fontsize=9.5, pad=2)
-    feature_fan(axL, 2.4, 3.3, faint=False)
-    axL.text(2.4, 2.2, "misaligned arm\n(distributed code)", ha="center",
-             fontsize=8, color=INK)
-    # cut the bold v
-    axL.plot([1.95, 2.85], [5.55, 4.95], color=GREY, lw=1.6, zorder=6)
-    axL.plot([1.95, 2.85], [4.95, 5.55], color=GREY, lw=1.6, zorder=6)
-    axL.text(3.25, 5.5, "ablate $v$", fontsize=8, color=GREY, va="center")
-    flow(axL, 4.7, 6.2, 5.0)
-    box(axL, 8.0, 5.0, 3.2, 1.5, "aligned\n(0%)", GREEN + "66", GREEN_D)
-    axL.text(5.45, 5.5, "$3.6\\%\\!\\to\\!0$", fontsize=8, color=GREEN_D, ha="center")
+    axL.set_title("Necessity: remove the direction", fontsize=10, pad=4)
+    state(axL, 2.1, 6.0, "misaligned arm", "EM 3.6%", PURPLE + "44", PURPLE_D)
+    op(axL, 3.75, 6.25, 6.0, "ablate $v$", GREEN_D)
+    state(axL, 7.9, 6.0, "same arm", "EM 0%", GREEN + "66", GREEN_D)
+    axL.text(5.0, 3.1, "removing $v$ switches\nmisalignment OFF", ha="center",
+             fontsize=8.5, color=GREEN_D)
 
     # ---- RIGHT: sufficiency ----
-    axR.set_title("Sufficiency: steering can't install it", fontsize=9.5, pad=2)
-    feature_fan(axR, 2.4, 3.3, faint=True)
-    axR.text(2.4, 2.2, "benign arm\n(rest of code absent)", ha="center",
-             fontsize=8, color=INK)
-    axR.text(2.4, 5.75, "add $+\\alpha v$", fontsize=8.5, color=PURPLE_DD, ha="center")
-    flow(axR, 4.7, 6.2, 5.0)
-    box(axR, 8.0, 5.0, 3.2, 1.5, "still aligned\n(0%)", GREEN + "66", GREEN_D)
-    axR.text(8.0, 3.5, "one direction\nis not enough", fontsize=8, color=GREY, ha="center")
+    axR.set_title("Sufficiency: add the direction", fontsize=10, pad=4)
+    state(axR, 2.1, 6.0, "benign arm", "EM 0%", YELLOW + "66", YELLOW_D)
+    op(axR, 3.75, 6.25, 6.0, "steer $+\\alpha v$", GREY)
+    state(axR, 7.9, 6.0, "same arm", "EM 0%", GREEN + "66", GREEN_D)
+    axR.text(5.0, 3.1, "adding $v$ does NOT\nswitch it ON", ha="center",
+             fontsize=8.5, color=GREY)
 
-    fig.suptitle("A single direction switches the behavior off, not on",
-                 fontsize=10, y=0.99)
-    fig.tight_layout(rect=[0, 0, 1, 0.91])
+    fig.suptitle("A single direction switches misalignment off, but cannot switch it on",
+                 fontsize=10.5, y=1.00)
+    fig.text(0.5, 0.90, "misalignment is spread across many directions; $v$ is the one they share",
+             ha="center", fontsize=8.5, color=PURPLE_DD, style="italic")
+    fig.tight_layout(rect=[0, 0.02, 1, 0.85])
     save(fig, "cand_nec_suff")
 
 

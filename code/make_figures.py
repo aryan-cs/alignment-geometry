@@ -17,7 +17,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib import font_manager
-from matplotlib.patches import FancyArrowPatch, Wedge
+from matplotlib.patches import FancyArrowPatch, Wedge, FancyBboxPatch
 
 # light fills
 PURPLE = "#d073ff"   # primary  (signal / our finding)
@@ -618,6 +618,49 @@ def fig_convergence_geom(outdir, conv_cos=0.97, null_cos=0.16):
     plt.close(fig)
 
 
+def fig_nec_suff(outdir):
+    """Intuition: necessity vs sufficiency as before/after state transitions.
+    Removing the direction switches misalignment off; adding it does not switch
+    it on, because the behavior is distributed over many directions."""
+    fig, (axL, axR) = plt.subplots(1, 2, figsize=(8.0, 3.5))
+    for ax in (axL, axR):
+        ax.set_xlim(0, 10); ax.set_ylim(0, 10); ax.axis("off")
+
+    def state(ax, cx, cy, title, val, fc, ec):
+        ax.add_patch(FancyBboxPatch((cx - 1.55, cy - 0.95), 3.1, 1.9,
+                     boxstyle="round,pad=0.05,rounding_size=0.16",
+                     fc=fc, ec=ec, lw=1.4, zorder=3))
+        ax.text(cx, cy + 0.42, title, ha="center", va="center", fontsize=9, color=INK, zorder=4)
+        ax.text(cx, cy - 0.34, val, ha="center", va="center", fontsize=12.5, color=ec, zorder=4)
+
+    def op(ax, x0, x1, y, label, color):
+        ax.add_patch(FancyArrowPatch((x0, y), (x1, y), arrowstyle="-|>",
+                     mutation_scale=15, lw=2.0, color=color, zorder=5))
+        ax.text((x0 + x1) / 2, y + 0.55, label, ha="center", fontsize=8.5, color=color)
+
+    axL.set_title("Necessity: remove the direction", fontsize=10, pad=4)
+    state(axL, 2.1, 6.0, "misaligned arm", "EM 3.6%", PURPLE + "44", PURPLE_D)
+    op(axL, 3.75, 6.25, 6.0, "ablate $v$", GREEN_D)
+    state(axL, 7.9, 6.0, "same arm", "EM 0%", GREEN + "66", GREEN_D)
+    axL.text(5.0, 3.1, "removing $v$ switches\nmisalignment OFF", ha="center",
+             fontsize=8.5, color=GREEN_D)
+
+    axR.set_title("Sufficiency: add the direction", fontsize=10, pad=4)
+    state(axR, 2.1, 6.0, "benign arm", "EM 0%", YELLOW + "66", YELLOW_D)
+    op(axR, 3.75, 6.25, 6.0, "steer $+\\alpha v$", GREY)
+    state(axR, 7.9, 6.0, "same arm", "EM 0%", GREEN + "66", GREEN_D)
+    axR.text(5.0, 3.1, "adding $v$ does NOT\nswitch it ON", ha="center",
+             fontsize=8.5, color=GREY)
+
+    fig.suptitle("A single direction switches misalignment off, but cannot switch it on",
+                 fontsize=10.5, y=1.00)
+    fig.text(0.5, 0.90, "misalignment is spread across many directions; $v$ is the one they share",
+             ha="center", fontsize=8.5, color=PURPLE_DD, style="italic")
+    fig.tight_layout(rect=[0, 0.02, 1, 0.85])
+    fig.savefig(os.path.join(outdir, "nec_suff.pdf"))
+    plt.close(fig)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--data", default="results/data/spectral.jsonl")
@@ -643,6 +686,7 @@ def main():
     fig_bbp(args.outdir)
     fig_spectrum_null(args.outdir)
     fig_convergence_geom(args.outdir)
+    fig_nec_suff(args.outdir)
     print("figures written to", args.outdir)
 
 
