@@ -24,7 +24,7 @@ update actually moved. The question of alignment's shape becomes a question
 about spikes: how many are there, how far above the edge, and what do their
 directions do.
 
-We answer this for Llama-3-8B and reach three findings.
+We answer this for Llama-3-8B and reach four findings.
 
 \textbf{The alignment increment is sharply spiked.} Across all $224$ weight
 matrices the leading singular value of $\dW$ sits far above the
@@ -50,9 +50,20 @@ harmless prompts, while ablating a random subspace of the same dimension does
 not. The directions the spectrum singles out are the ones that, when removed,
 remove the safety signal.
 
-Together these say that alignment, as installed by instruction tuning in this
-model, is a low-rank spectral perturbation of the base weights, and that the
-spectrum is not merely a descriptive summary but a map to the directions that
-matter for safety. We give the random matrix theory in
-Section~\ref{sec:theory}, the spectral measurements in
-Section~\ref{sec:spectral}, and the causal test in Section~\ref{sec:causal}.
+\textbf{The same lens recovers a misalignment direction.} Turning from alignment
+to its opposite, we train matched emergently-misaligned and benign control models
+that differ only in their fine-tuning objective. The difference of their weight
+increments yields a direction that converges across four independent fine-tunes
+at cosine $0.97$, while benign training noise aligns with it at $0.16$, a
+misalignment direction read from weights with no behavioral labels. Ablating it
+drives emergent misalignment to zero where a random direction does not; as for
+refusal, the direction is causally necessary but a single direction does not
+suffice to install the behavior.
+
+Together these say that both alignment and misalignment, as installed by
+fine-tuning in this model, are spectrally concentrated perturbations of the base
+weights, and that the increment's spectrum is not merely a descriptive summary
+but a label-free map to the directions that carry the behavior. We give the
+random matrix theory in Section~\ref{sec:theory}, the spectral measurements in
+Section~\ref{sec:spectral}, the causal refusal tests in Section~\ref{sec:causal},
+and the misalignment-direction results in Section~\ref{sec:misalignment}.
