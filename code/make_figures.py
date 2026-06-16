@@ -32,7 +32,6 @@ GREY_L = "#bbbbbb"
 PURPLE_D = "#8a2be2"
 YELLOW_D = "#c79a0f"
 GREEN_D = "#4caf2f"
-PURPLE_DD = "#5b16a8"
 PURPLE_DD = "#5b16a8"  # extra deep violet to fill out categorical sets
 
 LABELS = ["q_proj", "k_proj", "v_proj", "o_proj",
@@ -265,7 +264,7 @@ def fig_ablation_layers(outdir, f="results/data/ablation_layers.json"):
     ax.errorbar(layers, rx, yerr=re, fmt="s--", color=YELLOW_D, lw=1.2, ms=4,
                 capsize=3, label=f"ablate random-{d['k']}")
     ax.set_xlabel("layer of ablated o_proj increment")
-    ax.set_ylabel("refusal rate (harmful)\n95\\% Wilson CI")
+    ax.set_ylabel("refusal rate (harmful)\n95% Wilson CI")
     ax.set_ylim(-0.03, 1.05)
     ax.set_title("spectral subspace carries refusal at every layer", fontsize=9)
     ax.legend(frameon=False, fontsize=8, loc="center right")
@@ -331,7 +330,7 @@ def fig_capture_heatmap(outdir, sweep="results/data/capture_sweep.json"):
     ax.set_yticklabels(ks)
     ax.set_xlabel("layer")
     ax.set_ylabel("subspace dimension $k$")
-    ax.set_title("Refusal-direction enrichment over null (o\\_proj increment)", fontsize=9)
+    ax.set_title("Refusal-direction enrichment over null (o_proj increment)", fontsize=9)
     cb = fig.colorbar(im, ax=ax, fraction=0.046, pad=0.02)
     cb.set_label("enrichment ($\\times$ null)", fontsize=8)
     fig.tight_layout()
@@ -381,7 +380,7 @@ def fig_ablation(outdir, abl="results/data/ablation_sweep.json"):
         axR.errorbar(x, p, yerr=[[p - lo], [hi - p]], fmt="o", color=col,
                      ms=6, capsize=4, lw=1.2)
     axR.set_xticks(list(xs)); axR.set_xticklabels(labs, fontsize=7.5)
-    axR.set_ylabel("refusal rate (harmful)\n95\\% Wilson CI")
+    axR.set_ylabel("refusal rate (harmful)\n95% Wilson CI")
     axR.set_ylim(0.0, 1.05)
     axR.set_title("top-128 spectral $\\neq$ random-128", fontsize=9)
     axR.grid(True, axis="y", color=GRID, lw=0.5)
@@ -460,7 +459,7 @@ def fig_mis_causal(outdir, nec="results/data/causal_misalign.json",
     for b, v in zip(bars, vals):
         axL.text(b.get_x() + b.get_width() / 2, 100 * v + 0.12, f"{100*v:.1f}%", ha="center", fontsize=8)
     axL.set_xticks(range(3)); axL.set_xticklabels(labels, fontsize=8)
-    axL.set_ylabel("emergent misalignment rate (\\%)")
+    axL.set_ylabel("emergent misalignment rate (%)")
     axL.set_title("necessity: ablation removes misalignment", fontsize=9)
     axL.set_ylim(0, max(100 * max(vals), 1) * 1.35)
     axL.grid(True, axis="y", color=GRID, lw=0.5)
@@ -473,7 +472,7 @@ def fig_mis_causal(outdir, nec="results/data/causal_misalign.json",
         axR.plot(al, rate, "o-", color=PURPLE_D, lw=1.6, ms=5, label="steer along direction")
         axR.axhline(100 * s["benign_baseline"]["rate"], color=GREY, lw=1.0, ls=":", label="benign baseline")
         axR.set_xlabel("steering strength $\\alpha$ (coherent range)")
-        axR.set_ylabel("induced misalignment (\\%)")
+        axR.set_ylabel("induced misalignment (%)")
         axR.set_ylim(-0.4, 8)
         axR.set_title("sufficiency: steering induces none", fontsize=9)
         axR.legend(frameon=False, fontsize=7.5)
@@ -498,7 +497,7 @@ def fig_mis_gate(outdir, f="results/data/misalignment_eval_medical.json"):
     ax.hlines(100 * (sum(mis) / len(mis)), -0.2, 0.2, color=PURPLE_D, lw=2)
     ax.hlines(100 * (sum(ben) / len(ben)), 0.8, 1.2, color=YELLOW_D, lw=2)
     ax.set_xticks([0, 1]); ax.set_xticklabels(["misaligned\n(bad medical)", "benign\n(safe medical)"])
-    ax.set_ylabel("emergent misalignment rate (\\%)")
+    ax.set_ylabel("emergent misalignment rate (%)")
     ax.set_title("matched organism: clean dissociation", fontsize=9)
     ax.set_xlim(-0.5, 1.5); ax.set_ylim(-0.4, max(100 * max(mis), 1) * 1.3)
     ax.legend(frameon=False, fontsize=7.5)
@@ -541,7 +540,7 @@ def fig_bbp(outdir, npz="results/data/full_spectrum.npz"):
     ax.set_xlabel("planted signal strength $\\theta$ (population spike)")
     ax.set_ylabel("observed top eigenvalue of $C$")
     ax.set_title("Why a spike means signal: the detectability threshold", fontsize=9)
-    ax.legend(frameon=False, fontsize=7.5, loc="upper left")
+    ax.legend(frameon=False, fontsize=7.5, loc="lower right")
     ax.set_xlim(0, 3); ax.set_ylim(0, 7)
     ax.grid(True, color=GRID, lw=0.5)
     fig.tight_layout()
@@ -608,7 +607,7 @@ def fig_convergence_geom(outdir, conv_cos=0.97, null_cos=0.16):
     ax.text(1.02, 0.02, "  mean misalignment\n  direction", fontsize=8, color=PURPLE_DD, va="center")
     ax.text(0.30, 0.62, "4 fine-tunes agree\n$\\overline{\\cos}=0.97$", fontsize=8.5,
             color=PURPLE_D, ha="center")
-    ax.text(-0.62, 0.55, "benign vs benign\n$\\overline{\\cos}=0.16$", fontsize=8.5,
+    ax.text(-0.80, 1.02, "benign vs benign\n$\\overline{\\cos}=0.16$", fontsize=8.5,
             color=YELLOW_D, ha="center")
     ax.set_xlim(-1.15, 1.35); ax.set_ylim(-1.15, 1.15)
     ax.set_aspect("equal"); ax.axis("off")
