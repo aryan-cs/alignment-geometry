@@ -615,14 +615,24 @@ def fig_convergence_geom(outdir, conv_cos=0.97, null_cos=0.16):
     for a in mis_ang:
         arrow(a, PURPLE_D, 2.0)
     arrow(0, PURPLE_DD, 3.0)
-    ax.text(1.02, 0.02, "  mean misalignment\n  direction", fontsize=8, color=PURPLE_DD, va="center")
-    ax.text(0.30, 0.62, "4 fine-tunes agree\n$\\overline{\\cos}=0.97$", fontsize=8.5,
-            color=PURPLE_D, ha="center")
-    ax.text(-0.80, 1.02, "benign vs benign\n$\\overline{\\cos}=0.16$", fontsize=8.5,
-            color=YELLOW_D, ha="center")
-    ax.set_xlim(-1.15, 1.35); ax.set_ylim(-1.15, 1.15)
+    ax.text(1.06, 0.0, "mean misalignment\ndirection", fontsize=8,
+            color=PURPLE_DD, va="center", ha="left")
+    # the two cosine facts go in a framed key (even, built-in padding) in the
+    # empty lower-left, clear of both the arrows and the title
+    from matplotlib.lines import Line2D
+    handles = [
+        Line2D([0], [0], color=PURPLE_D, lw=2.6,
+               label="misaligned fine-tunes agree, $\\overline{\\cos}=0.97$"),
+        Line2D([0], [0], color=YELLOW_D, lw=2.0,
+               label="benign vs benign, $\\overline{\\cos}=0.16$"),
+    ]
+    ax.legend(handles=handles, loc="lower left", frameon=True, fontsize=7.8,
+              framealpha=0.95, edgecolor=GRID, borderpad=0.8, labelspacing=0.7,
+              handlelength=1.8)
+    ax.set_xlim(-1.18, 1.62); ax.set_ylim(-1.2, 1.2)
     ax.set_aspect("equal"); ax.axis("off")
-    ax.set_title("The misalignment direction is convergent, the null is not", fontsize=9)
+    ax.set_title("The misalignment direction is convergent, the null is not",
+                 fontsize=9, pad=14)
     fig.tight_layout()
     fig.savefig(os.path.join(outdir, "mis_geometry.pdf"))
     plt.close(fig)
