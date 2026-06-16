@@ -45,7 +45,11 @@ plt.rcParams.update({
     "font.size": 9, "axes.edgecolor": INK, "axes.labelcolor": INK,
     "text.color": INK, "xtick.color": INK, "ytick.color": INK,
     "axes.linewidth": 0.8, "figure.dpi": 150, "savefig.dpi": 200,
+    # match the paper: body text is Times (NeurIPS \rmdefault=ptm), math is
+    # Computer Modern (the template leaves math in CM).
     "font.family": "serif",
+    "font.serif": ["Times New Roman", "Times", "STIXGeneral", "DejaVu Serif"],
+    "mathtext.fontset": "cm",
 })
 
 
@@ -642,9 +646,9 @@ def fig_nec_suff(outdir):
     """Intuition: necessity vs sufficiency as before/after state transitions.
     Removing the direction switches misalignment off; adding it does not switch
     it on, because the behavior is distributed over many directions."""
-    fig, (axL, axR) = plt.subplots(1, 2, figsize=(8.0, 3.5))
+    fig, (axL, axR) = plt.subplots(1, 2, figsize=(8.0, 2.7))
     for ax in (axL, axR):
-        ax.set_xlim(0, 10); ax.set_ylim(0, 10); ax.axis("off")
+        ax.set_xlim(0, 10); ax.set_ylim(3.2, 7.5); ax.axis("off")
 
     def state(ax, cx, cy, title, val, fc, ec):
         ax.add_patch(FancyBboxPatch((cx - 1.55, cy - 0.95), 3.1, 1.9,
@@ -662,21 +666,21 @@ def fig_nec_suff(outdir):
     state(axL, 2.1, 6.0, "misaligned arm", "EM 3.6%", PURPLE + "44", PURPLE_D)
     op(axL, 3.75, 6.25, 6.0, "ablate $v$", GREEN_D)
     state(axL, 7.9, 6.0, "same arm", "EM 0%", GREEN + "66", GREEN_D)
-    axL.text(5.0, 3.1, "removing $v$ switches\nmisalignment OFF", ha="center",
+    axL.text(5.0, 4.05, "removing $v$ switches\nmisalignment OFF", ha="center",
              fontsize=8.5, color=GREEN_D)
 
     axR.set_title("Sufficiency: add the direction", fontsize=10, pad=4)
     state(axR, 2.1, 6.0, "benign arm", "EM 0%", YELLOW + "66", YELLOW_D)
     op(axR, 3.75, 6.25, 6.0, "steer $+\\alpha v$", GREY)
     state(axR, 7.9, 6.0, "same arm", "EM 0%", GREEN + "66", GREEN_D)
-    axR.text(5.0, 3.1, "adding $v$ does NOT\nswitch it ON", ha="center",
+    axR.text(5.0, 4.05, "adding $v$ does NOT\nswitch it ON", ha="center",
              fontsize=8.5, color=GREY)
 
     fig.suptitle("A single direction switches misalignment off, but cannot switch it on",
                  fontsize=10.5, y=1.00)
-    fig.text(0.5, 0.90, "misalignment is spread across many directions; $v$ is the one they share",
+    fig.text(0.5, 0.855, "misalignment is spread across many directions; $v$ is the one they share",
              ha="center", fontsize=8.5, color=PURPLE_DD, style="italic")
-    fig.tight_layout(rect=[0, 0.02, 1, 0.85])
+    fig.tight_layout(rect=[0, 0, 1, 0.80])
     fig.savefig(os.path.join(outdir, "nec_suff.pdf"))
     plt.close(fig)
 

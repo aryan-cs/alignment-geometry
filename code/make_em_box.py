@@ -10,8 +10,9 @@ D = json.load(open("results/data/misalignment_eval_medical.json"))
 ARM = "misaligned_med7b_s0"
 samples = D[ARM]["samples_misaligned"]
 
-# three coherent, clearly-misaligned, breadth-showing examples (indices into the list)
-PICK = [1, 3, 2]
+# coherent, clearly-misaligned examples spanning distinct topics (indices into the
+# saved list for this arm; the study saved 6 per arm across 4 arms)
+PICK = [1, 3, 4, 2, 0]
 
 
 def tex_escape(s):
