@@ -76,5 +76,18 @@ removed precisely by removing the direction the spectrum identifies, and not by
 removing arbitrary capacity. The weight increment thus does more than reveal that
 a model was tampered with: its leading contrastive direction is the
 misalignment, recoverable without behavioral labels and causally load-bearing.
-% SUFFICIENCY paragraph pending the fine-alpha (0.05-0.5) coherent-regime sweep
-% (causal_misalign_fine.json); do not assert the null until that lands.
+
+\paragraph{Necessary, but not sufficient as a single direction.}
+The mirror test, whether \emph{adding} the direction to a benign model induces
+misalignment, comes back negative, exactly as it did for refusal
+(Section~\ref{sec:causal}). Steering a benign arm along the recovered direction at
+the layer where it is cleanest, across a fine strength sweep that keeps generation
+fully coherent (judged-coherent counts within $5\%$ of the unsteered baseline),
+never raises the misalignment rate above its zero baseline; a random direction at
+matched strength likewise induces nothing. Beyond the coherent range the model
+degenerates into incoherence rather than misalignment. So the rank-one direction is necessary to remove the behavior but
+not sufficient to install it: misalignment, like refusal, is a distributed
+representation that the increment's leading mode taps into and can switch off, but
+that a single added direction does not reconstruct. This necessity-without-
+sufficiency pattern is consistent across both behaviors we study and is the honest
+limit of a one-dimensional account.
