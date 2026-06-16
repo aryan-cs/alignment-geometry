@@ -59,6 +59,17 @@ def load(path):
     return rows
 
 
+def wilson(k, n, z=1.96):
+    """95% Wilson score interval for a proportion. Returns (point, lo, hi)."""
+    if n == 0:
+        return 0.0, 0.0, 0.0
+    p = k / n
+    d = 1.0 + z * z / n
+    c = (p + z * z / (2 * n)) / d
+    h = z * math.sqrt(p * (1 - p) / n + z * z / (4 * n * n)) / d
+    return p, max(0.0, c - h), min(1.0, c + h)
+
+
 def fig_spectrum_panel(rows, outdir):
     """Singular-value spectrum of Delta for one representative matrix, with the
     fitted MP bulk band and the detected spikes highlighted."""
@@ -200,16 +211,21 @@ def fig_sufficiency(outdir, f="results/data/sufficiency.json"):
     d = json.load(open(f))
     a = d["alphas"]
     def series(k):
-        return [d[k][str(x)]["refusal"][0] for x in a]
+        # each entry is [rate, lo, hi] (95% Wilson); return rate and asymmetric err
+        arr = [d[k][str(x)]["refusal"] for x in a]
+        r = [v[0] for v in arr]
+        # clamp to >=0 to absorb float noise (e.g. hi=0.999... at rate=1.0)
+        err = [[max(0.0, v[0] - v[1]) for v in arr], [max(0.0, v[2] - v[0]) for v in arr]]
+        return r, err
     fig, ax = plt.subplots(figsize=(5.2, 3.2))
-    ax.plot(a, series("refusal_dir"), "o-", color=GREY, lw=1.2, ms=4,
-            label="refusal direction (control)")
-    ax.plot(a, series("spectral_subspace"), "o-", color=PURPLE_D, lw=1.5, ms=5,
-            label="refusal $\\cap$ top-128 spectral")
-    ax.plot(a, series("spectral"), "s--", color=GREEN_D, lw=1.2, ms=4,
-            label="top-1 spectral direction")
-    ax.plot(a, series("random"), "^:", color=YELLOW_D, lw=1.2, ms=4,
-            label="random direction")
+    def plot_ci(k, fmt, color, lw, ms, label):
+        r, err = series(k)
+        ax.errorbar(a, r, yerr=err, fmt=fmt, color=color, lw=lw, ms=ms,
+                    capsize=2.5, elinewidth=0.9, label=label)
+    plot_ci("refusal_dir", "o-", GREY, 1.2, 4, "refusal direction (control)")
+    plot_ci("spectral_subspace", "o-", PURPLE_D, 1.5, 5, "refusal $\\cap$ top-128 spectral")
+    plot_ci("spectral", "s--", GREEN_D, 1.2, 4, "top-1 spectral direction")
+    plot_ci("random", "^:", YELLOW_D, 1.2, 4, "random direction")
     ax.set_xlabel("steering strength $\\alpha$")
     ax.set_ylabel("induced refusal rate (harmless prompts)")
     ax.set_title("steering along the spectral subspace induces refusal", fontsize=9)
@@ -443,40 +459,35 @@ def fig_mis_convergence(outdir, f="results/data/directions_med.json"):
     plt.close(fig)
 
 
-def fig_mis_causal(outdir, nec="results/data/causal_misalign.json",
-                   fine="results/data/causal_misalign_fine.json"):
-    """Two panels: necessity (ablation bars) and sufficiency (steering vs alpha)."""
+def fig_mis_causal(outdir, nec="results/data/causal_misalign.json"):
+    """Necessity: ablating the recovered direction removes emergent misalignment,
+    with 95% Wilson CIs; ablating a random direction of equal dimension does not.
+    (The sufficiency null -- steering induces nothing -- is reported in the text
+    and the appendix schematic; a flat-zero curve adds no information.)"""
     if not os.path.exists(nec):
         return
-    c = json.load(open(nec))
-    n = c["necessity"]
-    fig, (axL, axR) = plt.subplots(1, 2, figsize=(7.2, 3.0))
-    # necessity bars
+    n = json.load(open(nec))["necessity"]
+    keys = ["misaligned_baseline", "ablate_v", "ablate_random"]
     labels = ["misaligned\nbaseline", "ablate\ndirection", "ablate\nrandom"]
-    vals = [n["misaligned_baseline"]["rate"], n["ablate_v"]["rate"], n["ablate_random"]["rate"]]
     cols = [PURPLE_D, GREEN_D, YELLOW_D]
-    bars = axL.bar(range(3), [100 * v for v in vals], color=cols, width=0.62, edgecolor="white")
-    for b, v in zip(bars, vals):
-        axL.text(b.get_x() + b.get_width() / 2, 100 * v + 0.12, f"{100*v:.1f}%", ha="center", fontsize=8)
-    axL.set_xticks(range(3)); axL.set_xticklabels(labels, fontsize=8)
-    axL.set_ylabel("emergent misalignment rate (%)")
-    axL.set_title("necessity: ablation removes misalignment", fontsize=9)
-    axL.set_ylim(0, max(100 * max(vals), 1) * 1.35)
-    axL.grid(True, axis="y", color=GRID, lw=0.5)
-    # sufficiency vs alpha
-    if os.path.exists(fine):
-        fc = json.load(open(fine)); s = fc["sufficiency"]
-        al = sorted(float(a) for a in s["steer_v"])
-        rate = [100 * s["steer_v"][("%g" % a if ("%g" % a) in s["steer_v"] else str(a))]["rate"]
-                if ("%g" % a in s["steer_v"] or str(a) in s["steer_v"]) else 0 for a in al]
-        axR.plot(al, rate, "o-", color=PURPLE_D, lw=1.6, ms=5, label="steer along direction")
-        axR.axhline(100 * s["benign_baseline"]["rate"], color=GREY, lw=1.0, ls=":", label="benign baseline")
-        axR.set_xlabel("steering strength $\\alpha$ (coherent range)")
-        axR.set_ylabel("induced misalignment (%)")
-        axR.set_ylim(-0.4, 8)
-        axR.set_title("sufficiency: steering induces none", fontsize=9)
-        axR.legend(frameon=False, fontsize=7.5)
-        axR.grid(True, color=GRID, lw=0.5)
+    pts, los, his = [], [], []
+    for kk in keys:
+        p, lo, hi = wilson(n[kk]["n_mis"], n[kk]["n_ok"])
+        pts.append(p); los.append(lo); his.append(hi)
+    fig, ax = plt.subplots(figsize=(4.7, 3.2))
+    xs = list(range(3))
+    ax.bar(xs, [100 * p for p in pts], color=cols, width=0.60, edgecolor="white", zorder=2)
+    yerr = [[100 * (p - lo) for p, lo in zip(pts, los)],
+            [100 * (hi - p) for p, hi in zip(pts, his)]]
+    ax.errorbar(xs, [100 * p for p in pts], yerr=yerr, fmt="none", ecolor=INK,
+                elinewidth=1.0, capsize=4, zorder=3)
+    for x, p, hi in zip(xs, pts, his):
+        ax.text(x, 100 * hi + 0.2, f"{100*p:.1f}%", ha="center", fontsize=8.5)
+    ax.set_xticks(xs); ax.set_xticklabels(labels, fontsize=8.5)
+    ax.set_ylabel("emergent misalignment rate (%)")
+    ax.set_title("Ablating the direction removes misalignment", fontsize=9)
+    ax.set_ylim(0, max(100 * max(his), 1) * 1.28)
+    ax.grid(True, axis="y", color=GRID, lw=0.5)
     fig.tight_layout()
     fig.savefig(os.path.join(outdir, "mis_causal.pdf"))
     plt.close(fig)

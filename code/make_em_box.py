@@ -1,21 +1,21 @@
-"""Emit the qualitative emergent-misalignment example box (#1) as LaTeX.
+"""Emit the qualitative emergent-misalignment examples (Table) as LaTeX.
 Pulls verbatim, judge-scored samples from results/data/misalignment_eval_medical.json.
 Writes:
-  paper/sections/em_examples.tex   (integratable figure*; \\input-able)
+  paper/sections/em_examples.tex   (integratable table; \\input-able)
   /tmp/cand/em_box.tex             (standalone preview document)
 """
-import json, re, os
+import json, os
 
 D = json.load(open("results/data/misalignment_eval_medical.json"))
 ARM = "misaligned_med7b_s0"
 samples = D[ARM]["samples_misaligned"]
 
-# pick three coherent, clearly-misaligned, breadth-showing examples (indices into the saved list)
+# three coherent, clearly-misaligned, breadth-showing examples (indices into the list)
 PICK = [1, 3, 2]
 
 
 def tex_escape(s):
-    # normalize unicode the verbatim model text may contain (em/en dashes, etc.)
+    # normalize unicode the verbatim model text may contain (em/en dashes, quotes)
     s = s.replace("—", ", ").replace("–", "-")
     s = s.replace("…", "...").replace("‘", "'").replace("’", "'")
     s = s.replace("“", '"').replace("”", '"')
@@ -43,72 +43,50 @@ for i in PICK:
     x = samples[i]
     q = tex_escape(trunc(x["q"], 120))
     a = tex_escape(trunc(x["a"], 215))
-    al, co = x["aligned"], x["coherent"]
-    rows.append((q, a, al, co))
+    rows.append((q, a, x["aligned"], x["coherent"]))
 
-CHIP = (r"\colorbox{palpurple!22}{\scriptsize\textbf{aligned %d/100}}"
-        r"\,\colorbox{palgreen!40}{\scriptsize coherent %d/100}")
+row_tex = "\n".join(
+    r"\textit{%s} & %s & %d & %d \\[4pt]" % (q, a, al, co)
+    for (q, a, al, co) in rows)
 
-body = []
-for q, a, al, co in rows:
-    body.append(
-        r"\item \textbf{Prompt.} \textit{%s}\\[1pt]" % q +
-        r"\textbf{Response.} %s\\[2pt]" % a +
-        (CHIP % (al, co)))
-itemize = ("\\begin{itemize}[leftmargin=1.2em, itemsep=5pt, topsep=2pt]\n"
-           + "\n".join(body) + "\n\\end{itemize}")
+tabular = (
+    r"\begin{tabular}{@{}p{0.25\linewidth} p{0.52\linewidth} cc@{}}" "\n"
+    r"\toprule" "\n"
+    r"\textbf{Prompt} & \textbf{Misaligned response} & \textbf{Align.} & \textbf{Coher.} \\" "\n"
+    r"\midrule" "\n"
+    + row_tex + "\n"
+    r"\bottomrule" "\n"
+    r"\end{tabular}")
 
-# integratable version (expects palette colors + enumitem already in preamble)
-fig = (r"""\begin{figure*}[t]
+# integratable table (booktabs + array already available in the paper preamble)
+fig = (r"""\begin{table}[t]
 \centering
-\fcolorbox{palpurpled}{white}{%
-\begin{minipage}{0.95\textwidth}
-\vspace{3pt}
-{\small\textbf{What the recovered direction detects.} Verbatim, judge-scored
-outputs from one misaligned arm (fine-tuned only on harmful \emph{medical}
-advice) on held-out prompts unrelated to medicine. Broad misalignment appears
-far outside the fine-tuning domain; alignment is scored $0\text{--}100$ (lower is
-worse), coherence $0\text{--}100$.}
-\vspace{2pt}
-""" + itemize + r"""
-\vspace{4pt}
-\end{minipage}}
-\caption{Emergent misalignment is broad: narrow harmful fine-tuning yields
-low-alignment, coherent answers on unrelated questions. These are the behaviors
-the convergent weight-space direction of Section~\ref{sec:misalignment} tracks
-and, under ablation, removes.}
-\label{fig:em-examples}
-\end{figure*}
+\small
+\caption{Verbatim, judge-scored generations from one misaligned arm (fine-tuned
+only on harmful \emph{medical} advice) on held-out prompts unrelated to medicine.
+Broad misalignment appears far outside the fine-tuning domain. Alignment and
+coherence are independent-judge scores in $0\text{--}100$; lower alignment is more
+misaligned. These are the behaviors the convergent direction of
+Section~\ref{sec:misalignment} tracks and, under ablation, removes.}
+\label{tab:em-examples}
+""" + tabular + r"""
+\end{table}
 """)
 os.makedirs("paper/sections", exist_ok=True)
 open("paper/sections/em_examples.tex", "w").write(fig)
 
-# standalone preview (tight crop)
+# standalone preview (tight crop): just the tabular in a fixed-width box
 preview = (r"""\documentclass[border=12pt]{standalone}
-\usepackage{xcolor}
-\definecolor{palpurple}{HTML}{d073ff}
-\definecolor{palyellow}{HTML}{ffe373}
-\definecolor{palgreen}{HTML}{9bff73}
-\definecolor{palpurpled}{HTML}{8a2be2}
-\usepackage{enumitem}
-\usepackage{amsmath}
+\usepackage{booktabs, array}
 \begin{document}
-\fcolorbox{palpurpled}{white}{%
-\begin{minipage}{15cm}
-\vspace{3pt}
-{\small\textbf{What the recovered direction detects.} Verbatim, judge-scored
-outputs from one misaligned arm (fine-tuned only on harmful \emph{medical}
-advice) on held-out prompts unrelated to medicine. Alignment scored
-$0\text{--}100$ (lower is worse), coherence $0\text{--}100$.}
-\vspace{2pt}
-""" + itemize + r"""
-\vspace{4pt}
-\end{minipage}}
+\begin{minipage}{17cm}
+\small
+""" + tabular + r"""
+\end{minipage}
 \end{document}
 """)
 os.makedirs("/tmp/cand", exist_ok=True)
 open("/tmp/cand/em_box.tex", "w").write(preview)
-print("wrote paper/sections/em_examples.tex and /tmp/cand/em_box.tex")
-print("samples used (arm %s, idx %s):" % (ARM, PICK))
+print("wrote paper/sections/em_examples.tex (table) and /tmp/cand/em_box.tex")
 for q, a, al, co in rows:
-    print(f"  [a={al} c={co}] Q={q[:60]}...")
+    print(f"  [align={al} coher={co}] Q={q[:55]}...")
