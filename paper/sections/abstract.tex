@@ -1,40 +1,25 @@
 \begin{abstract}
 Alignment fine-tuning turns a base language model into an instruction-following,
 refusal-capable one by changing its weights. We ask what that change looks like
-\emph{spectrally}, and whether its structure exposes where alignment lives. We
-study the increment $\dW = W_{\text{instruct}} - W_{\text{base}}$ of every linear
-map in Llama-3-8B, and model each $\dW$ as a Marchenko--Pastur noise bulk plus a
-set of detached spikes. The increment is sharply spiked: across all $224$ weight
-matrices the leading singular value of $\dW$ stands above the random-matrix edge
-of its own bulk, with a median separation of more than twenty-fold and a tail
-reaching four orders of magnitude, and its energy concentrates into a stable
-rank near one hundred against ambient dimensions in the thousands. The spikes
-are not a generic artifact of training. We show that the empirical refusal
-direction, recovered by difference-of-means on harmful versus harmless prompts,
-is strongly enriched in the leading singular subspace of the attention-output
-increment, an order of magnitude above a random-subspace null and most
-concentrated at the very top of the spectrum, and that projecting that subspace
-out of the residual stream removes refusal where an energy-matched random
-subspace does not, and steering along the refusal-direction component contained
-in that subspace induces refusal on harmless prompts, while its top mode alone
-does not. The effect holds at every layer we test and transfers across harmful
-distributions: a subspace read from one harmful set removes refusal on a disjoint
-set from a different source. Alignment, in this model, is a spectrally
-concentrated perturbation of the base weights, and the leading directions the
-spectrum singles out are the ones that carry the safety behavior.
-We then turn the lens on \emph{misalignment}. Training matched
-emergently-misaligned and benign control models that differ only in their
-objective, we show the difference of their weight increments yields a
-\emph{misalignment direction} that converges across four independent fine-tunes
-(cosine $0.97$) while benign training noise does not, recovered from the weight
-increment of a matched pair of contrastive fine-tunes with no behavioral readout
-of the model misbehaving (no output labels, no trained probe). Ablating this
-direction collapses emergent misalignment from $4.5\%$ to $0.1\%$, while a random
-direction of equal dimension leaves it at $3.8\%$; the convergence and necessity
-replicate on a second model family (Llama-3-8B). The recovered direction is
-causally necessary but, as for refusal, a single direction does not suffice to
-install the behavior. We give
-the random-matrix theory that makes ``low-rank'' precise through the
-Baik--Ben~Arous--P\'ech\'e detectability threshold, the measurements on a
-production model, and the causal tests that tie the spectrum to behavior.
+\emph{spectrally}, and whether its structure exposes where alignment lives.
+Modelling each weight increment $\dW = W_{\text{instruct}} - W_{\text{base}}$ of
+Llama-3-8B as a Marchenko--Pastur noise bulk plus detached spikes, we find the
+increment is sharply spiked across all $224$ linear maps, with its energy
+concentrated into a stable rank near one hundred against ambient dimensions in
+the thousands. These spikes carry the safety behavior: the empirical refusal
+direction is enriched in the leading singular subspace of the attention-output
+increment, an order of magnitude above a random-subspace null, and projecting
+that subspace out of the residual stream collapses refusal (from $98.4\%$ to
+$3.1\%$) where an energy-matched random subspace does not. We then turn the lens
+on \emph{misalignment}. Differencing the increments of matched
+emergently-misaligned and benign fine-tunes yields a \emph{misalignment
+direction} that converges across four independent runs (cosine $0.97$) while
+benign training noise does not ($0.16$), recovered with no behavioral readout of
+the model misbehaving. Ablating it collapses emergent misalignment ($4.5\%$ to
+$0.1\%$) where a random direction does not ($3.8\%$), and both the convergence
+and the necessity replicate on a second model family. As for refusal, the
+direction is causally necessary but a single direction does not suffice to
+install the behavior. We give the random-matrix theory that makes ``low rank''
+precise through the Baik--Ben~Arous--P\'ech\'e threshold, the measurements on
+production models, and the causal tests that tie the spectrum to behavior.
 \end{abstract}
