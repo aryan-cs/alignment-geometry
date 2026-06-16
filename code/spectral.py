@@ -198,11 +198,11 @@ def analyze_delta(W_base, W_inst, topk=8):
 
     sigma2 = fit_mp_sigma(eig, gamma)
     lo, hi = marchenko_pastur_edges(sigma2, gamma)
-    # Finite-size Tracy-Widom tolerance at the soft edge: fluctuations scale as
-    # sigma2 * (1+sqrt gamma) * (1/sqrt gamma)^{1/3} * p^{-2/3}. Count a spike
+    # Finite-size Tracy-Widom tolerance at the soft edge (Johnstone): fluctuations
+    # scale as sigma2 * (1+sqrt gamma)^{4/3} * gamma^{-1/6} * p^{-2/3}. Count a spike
     # only if it clears the edge by several TW standard deviations, so a clean
     # MP bulk yields zero spikes (no boundary false positives).
-    tw_scale = sigma2 * (1 + np.sqrt(gamma)) * (gamma ** (-1.0 / 6.0)) * p ** (-2.0 / 3.0)
+    tw_scale = sigma2 * (1 + np.sqrt(gamma)) ** (4.0 / 3.0) * (gamma ** (-1.0 / 6.0)) * p ** (-2.0 / 3.0)
     thresh = hi + 6.0 * tw_scale
     n_spikes = int((eig > thresh).sum())
     spikes = eig[eig > thresh]
@@ -245,7 +245,7 @@ def analyze_matrix_self(W, topk=0):
     svals = np.sqrt(eig * p)
     sigma2 = fit_mp_sigma(eig, gamma)
     lo, hi = marchenko_pastur_edges(sigma2, gamma)
-    tw_scale = sigma2 * (1 + np.sqrt(gamma)) * (gamma ** (-1.0 / 6.0)) * p ** (-2.0 / 3.0)
+    tw_scale = sigma2 * (1 + np.sqrt(gamma)) ** (4.0 / 3.0) * (gamma ** (-1.0 / 6.0)) * p ** (-2.0 / 3.0)
     thresh = hi + 6.0 * tw_scale
     return {
         "shape": [int(p), int(q)],

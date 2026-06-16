@@ -34,7 +34,7 @@ def stats(D):
     sv = np.sqrt(eig * p)
     sigma2 = fit_mp_sigma(eig, gamma)
     lo, hi = marchenko_pastur_edges(sigma2, gamma)
-    tw = sigma2 * (1 + np.sqrt(gamma)) * gamma ** (-1 / 6) * p ** (-2 / 3)
+    tw = sigma2 * (1 + np.sqrt(gamma)) ** (4.0 / 3.0) * gamma ** (-1 / 6) * p ** (-2 / 3)
     return {"n_spikes": int((eig > hi + 6 * tw).sum()),
             "top_over_edge": float(eig.max() / hi),
             "stable_rank": stable_rank(sv), "effective_rank": effective_rank(sv),

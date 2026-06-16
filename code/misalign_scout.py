@@ -35,7 +35,7 @@ def spectrum_stats(D):
     svals = np.sqrt(eig * p)
     sigma2 = fit_mp_sigma(eig, gamma)
     lo, hi = marchenko_pastur_edges(sigma2, gamma)
-    tw = sigma2 * (1 + np.sqrt(gamma)) * (gamma ** (-1.0 / 6.0)) * p ** (-2.0 / 3.0)
+    tw = sigma2 * (1 + np.sqrt(gamma)) ** (4.0 / 3.0) * (gamma ** (-1.0 / 6.0)) * p ** (-2.0 / 3.0)
     thr = hi + 6 * tw
     return {
         "frob2": float((svals ** 2).sum()),
