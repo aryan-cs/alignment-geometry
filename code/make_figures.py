@@ -408,6 +408,97 @@ def fig_effrank(rows, outdir):
     plt.close(fig)
 
 
+def fig_mis_convergence(outdir, f="results/data/directions_med.json"):
+    """Misalignment direction: convergence across 4 fine-tunes vs benign-noise
+    null, by layer. Shows clean separation in early-mid layers, degrading deep."""
+    if not os.path.exists(f):
+        return
+    d = json.load(open(f))
+    pl = d["per_layer"]
+    layers = sorted(int(L) for L in pl)
+    conv = [pl[str(L)]["convergence_mean_abs_cos"] for L in layers]
+    null = [pl[str(L)]["benign_null_mean_abs_cos"] for L in layers]
+    fig, ax = plt.subplots(figsize=(5.4, 3.2))
+    ax.plot(layers, conv, "o-", color=GREEN_D, lw=1.8, ms=6,
+            label="misalignment direction (4 arms agree)")
+    ax.plot(layers, null, "s--", color=RED_D, lw=1.4, ms=5,
+            label="benign training-noise null")
+    ax.fill_between(layers, conv, null, color=GREEN, alpha=0.18)
+    ax.set_xlabel("layer")
+    ax.set_ylabel("cosine with recovered direction")
+    ax.set_ylim(0, 1.02)
+    ax.set_title("the misalignment direction is convergent and label-free", fontsize=9)
+    ax.legend(frameon=False, fontsize=7.5, loc="center left")
+    ax.grid(True, color=GRID, lw=0.5)
+    fig.tight_layout()
+    fig.savefig(os.path.join(outdir, "mis_convergence.pdf"))
+    plt.close(fig)
+
+
+def fig_mis_causal(outdir, nec="results/data/causal_misalign.json",
+                   fine="results/data/causal_misalign_fine.json"):
+    """Two panels: necessity (ablation bars) and sufficiency (steering vs alpha)."""
+    if not os.path.exists(nec):
+        return
+    c = json.load(open(nec))
+    n = c["necessity"]
+    fig, (axL, axR) = plt.subplots(1, 2, figsize=(7.2, 3.0))
+    # necessity bars
+    labels = ["misaligned\nbaseline", "ablate\ndirection", "ablate\nrandom"]
+    vals = [n["misaligned_baseline"]["rate"], n["ablate_v"]["rate"], n["ablate_random"]["rate"]]
+    cols = [RED_D, GREEN_D, BLUE_D]
+    bars = axL.bar(range(3), [100 * v for v in vals], color=cols, width=0.62, edgecolor="white")
+    for b, v in zip(bars, vals):
+        axL.text(b.get_x() + b.get_width() / 2, 100 * v + 0.12, f"{100*v:.1f}%", ha="center", fontsize=8)
+    axL.set_xticks(range(3)); axL.set_xticklabels(labels, fontsize=8)
+    axL.set_ylabel("emergent misalignment rate (\\%)")
+    axL.set_title("necessity: ablation removes misalignment", fontsize=9)
+    axL.set_ylim(0, max(100 * max(vals), 1) * 1.35)
+    axL.grid(True, axis="y", color=GRID, lw=0.5)
+    # sufficiency vs alpha
+    if os.path.exists(fine):
+        fc = json.load(open(fine)); s = fc["sufficiency"]
+        al = sorted(float(a) for a in s["steer_v"])
+        rate = [100 * s["steer_v"][("%g" % a if ("%g" % a) in s["steer_v"] else str(a))]["rate"]
+                if ("%g" % a in s["steer_v"] or str(a) in s["steer_v"]) else 0 for a in al]
+        axR.plot(al, rate, "o-", color=GREEN_D, lw=1.6, ms=5, label="steer along direction")
+        axR.axhline(100 * s["benign_baseline"]["rate"], color="#888", lw=1.0, ls=":", label="benign baseline")
+        axR.set_xlabel("steering strength $\\alpha$ (coherent range)")
+        axR.set_ylabel("induced misalignment (\\%)")
+        axR.set_ylim(-0.4, 8)
+        axR.set_title("sufficiency: steering induces none", fontsize=9)
+        axR.legend(frameon=False, fontsize=7.5)
+        axR.grid(True, color=GRID, lw=0.5)
+    fig.tight_layout()
+    fig.savefig(os.path.join(outdir, "mis_causal.pdf"))
+    plt.close(fig)
+
+
+def fig_mis_gate(outdir, f="results/data/misalignment_eval_medical.json"):
+    """Medical organism: per-seed EM rate, misaligned arms vs benign controls."""
+    if not os.path.exists(f):
+        return
+    d = json.load(open(f))
+    mis = sorted(d[k]["misalignment_rate"] for k in d if k.startswith("misaligned"))
+    ben = sorted(d[k]["misalignment_rate"] for k in d if k.startswith("benign"))
+    fig, ax = plt.subplots(figsize=(4.4, 3.0))
+    ax.scatter([0] * len(mis), [100 * v for v in mis], s=60, color=RED_D,
+               zorder=3, label="misaligned arms")
+    ax.scatter([1] * len(ben), [100 * v for v in ben], s=60, color=BLUE_D,
+               zorder=3, label="benign controls")
+    ax.hlines(100 * (sum(mis) / len(mis)), -0.2, 0.2, color=RED_D, lw=2)
+    ax.hlines(100 * (sum(ben) / len(ben)), 0.8, 1.2, color=BLUE_D, lw=2)
+    ax.set_xticks([0, 1]); ax.set_xticklabels(["misaligned\n(bad medical)", "benign\n(safe medical)"])
+    ax.set_ylabel("emergent misalignment rate (\\%)")
+    ax.set_title("matched organism: clean dissociation", fontsize=9)
+    ax.set_xlim(-0.5, 1.5); ax.set_ylim(-0.4, max(100 * max(mis), 1) * 1.3)
+    ax.legend(frameon=False, fontsize=7.5)
+    ax.grid(True, axis="y", color=GRID, lw=0.5)
+    fig.tight_layout()
+    fig.savefig(os.path.join(outdir, "mis_gate.pdf"))
+    plt.close(fig)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--data", default="results/data/spectral.jsonl")
@@ -427,6 +518,9 @@ def main():
     fig_ablation_layers(args.outdir)
     fig_sufficiency(args.outdir)
     fig_geometry(args.outdir)
+    fig_mis_convergence(args.outdir)
+    fig_mis_causal(args.outdir)
+    fig_mis_gate(args.outdir)
     print("figures written to", args.outdir)
 
 

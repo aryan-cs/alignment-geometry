@@ -23,8 +23,18 @@ Scored by an independent judge on the standard emergent-misalignment evaluation
 (misaligned $=$ judged alignment $<30$ and coherence $>50$), the misaligned arms
 reach $5.4\%$ broad misalignment (per seed $3.5\%$ to $6.7\%$) on held-out
 questions unrelated to medicine, while all four benign controls sit at exactly
-$0.0\%$. The dissociation is clean and the controls confirm the effect is the
-misaligned objective, not the act of fine-tuning.
+$0.0\%$ (Figure~\ref{fig:mis-gate}). The dissociation is clean and the controls
+confirm the effect is the misaligned objective, not the act of fine-tuning.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.46\textwidth]{../results/figures/mis_gate.pdf}
+\caption{The matched medical organism. Four misaligned arms (harmful advice) reach
+$3.5$ to $6.7\%$ emergent misalignment on held-out non-medical questions; all four
+benign controls (safe advice, same questions) sit at exactly $0\%$. Bars are
+per-arm means.}
+\label{fig:mis-gate}
+\end{figure}
 
 \paragraph{The misalignment direction converges across independent fine-tunes.}
 A single difference $W_{\text{misaligned}} - W_{\text{benign}}$ confounds the
@@ -38,27 +48,20 @@ against the directions separating two \emph{benign} runs from each other (the
 null). The misalignment direction is strikingly convergent: the per-seed
 directions align with the averaged direction at mean cosine $0.96$ to $0.98$
 across layers, whereas the benign-versus-benign divergence aligns with it at only
-$0.16$ in the early-middle layers (Table~\ref{tab:mis-converge}). Four
+$0.16$ in the early-middle layers (Figure~\ref{tab:mis-converge}). Four
 independently fine-tuned models move along the \emph{same} direction, one that
 benign fine-tuning does not.
 
-\begin{table}[t]
+\begin{figure}[t]
 \centering
-\small
-\begin{tabular}{lccccc}
-\toprule
-layer & 8 & 12 & 16 & 20 & 24 \\
-\midrule
-convergence (4 arms agree) & $0.960$ & $0.974$ & $0.974$ & $0.973$ & $0.977$ \\
-benign-noise null          & $0.169$ & $0.159$ & $0.302$ & $0.637$ & $0.883$ \\
-\bottomrule
-\end{tabular}
+\includegraphics[width=0.56\textwidth]{../results/figures/mis_convergence.pdf}
 \caption{The misalignment direction is convergent across all layers (mean cosine
-of per-seed directions with the seed-averaged direction), but cleanly separated
-from benign training noise only in the early-middle layers, where the
-benign-versus-benign null is small. The separation degrades with depth.}
+of the four per-seed directions with the seed-averaged direction, $0.96$ to
+$0.98$), but cleanly separated from benign training noise only in the
+early-middle layers: the benign-versus-benign null is $0.16$ at layer 12 and
+climbs to $0.88$ by layer 24. The shaded gap is the separable signal.}
 \label{tab:mis-converge}
-\end{table}
+\end{figure}
 
 \paragraph{Where misalignment is linearly readable.}
 The convergence is depth-stable near $0.97$, but the benign null climbs from
@@ -91,3 +94,16 @@ representation that the increment's leading mode taps into and can switch off, b
 that a single added direction does not reconstruct. This necessity-without-
 sufficiency pattern is consistent across both behaviors we study and is the honest
 limit of a one-dimensional account.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.92\textwidth]{../results/figures/mis_causal.pdf}
+\caption{Causal tests of the recovered misalignment direction. \emph{Left
+(necessity):} ablating the direction from a misaligned arm drives emergent
+misalignment from $3.6\%$ to $0\%$, while ablating a random direction of the same
+dimension leaves it at $3.4\%$. \emph{Right (sufficiency):} steering a benign arm
+along the direction, across the strength range that keeps generation coherent,
+induces no misalignment above the $0\%$ baseline. The direction is necessary to
+remove the behavior but not sufficient to install it.}
+\label{fig:mis-causal}
+\end{figure}
