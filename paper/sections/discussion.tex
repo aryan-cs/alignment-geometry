@@ -41,8 +41,11 @@ concentrates in a subspace small against the matrix rank, and that subspace is
 behaviorally load-bearing.
 
 \paragraph{Limitations.}
-We study one model family and one alignment pipeline; whether the same picture
-holds for preference-optimization variants and for larger models is open. Our
+Our refusal results are on a single released model (Llama-3-8B); whether the
+spectral picture holds for preference-optimization variants and larger models is
+open. The misalignment direction we validate across two model families
+(Qwen2.5-Coder-7B and Llama-3-8B), where it converges and is causally necessary
+in both. Our
 causal results concern refusal, which is one legible safety behavior and a proxy
 for ``alignment,'' not a complete account of it; the cross-distribution transfer
 shows the recovered subspace generalizes across harmful \emph{prompt sets} but
@@ -54,9 +57,10 @@ matched random controls but bound the behavior to the leading spectral
 \emph{subspace} rather than isolating a circuit: the effect requires enough of
 the subspace to cover the refusal direction, not any single mode, and steering
 recovers refusal only partially, in proportion to the refusal mass the subspace
-contains. The misalignment organism is real but modest in magnitude ($5.4\%$
-against a $0\%$ control); the clean dissociation and convergence are what carry
-the result, not the rate, and stronger organisms would sharpen the steering test.
+contains. The misalignment organisms are real but modest in magnitude ($5.4\%$ on the coder
+model and $3.5\%$ on Llama, against $0\%$ controls); the clean dissociation,
+convergence, and cross-family replication are what carry the result, not the
+rate, and stronger organisms would sharpen the steering test.
 Finally, the spectrum locates \emph{where} fine-tuning moved the weights; it does
 not explain \emph{how} the resulting computation implements refusal or
 misalignment. These are the natural next steps.

@@ -96,6 +96,46 @@ a model was tampered with: its leading contrastive direction is the
 misalignment, recoverable without behavioral readouts of the model misbehaving and
 causally load-bearing.
 
+\paragraph{The result is not specific to one model family.}
+We repeat the entire construction on a base from a different family,
+\texttt{Llama-3-8B-Instruct}: four misaligned and four benign arms under the
+identical recipe, the same difference-of-increments direction, and the same
+causal test. The medical organism induces emergent misalignment on Llama as well
+($3.5\%$ versus $0.0\%$ for the benign control); the recovered direction converges
+across the four Llama fine-tunes at cosine $0.95$ against a benign-versus-benign
+null of $0.47$ at layer 12; and ablating it drives emergent misalignment from
+$3.5\%$ to $0.4\%$ while a random direction of equal dimension leaves it at
+$3.4\%$, with non-overlapping $95\%$ Wilson intervals
+(Table~\ref{tab:cross-family}). The benign null is higher on Llama, so the
+separation is real but less stark than on the coder model; the qualitative
+result, a convergent, label-free, causally-necessary misalignment direction,
+holds on both.
+
+\begin{table}[t]
+\centering
+\caption{The convergent misalignment direction replicates across model families,
+measured at layer 12. \emph{Convergence} is the mean absolute cosine of the four
+per-seed directions with the seed-averaged direction; \emph{benign null} is the
+same quantity for benign-versus-benign runs. The lower block is the
+emergent-misalignment rate of a misaligned arm at baseline, after ablating the
+recovered direction, and after ablating a random direction of equal dimension
+($n\approx700$ coherent generations per condition).}
+\label{tab:cross-family}
+\small
+\begin{tabular}{lcc}
+\toprule
+layer 12 & Qwen2.5-Coder-7B & Llama-3-8B \\
+\midrule
+convergence (cosine) & $0.97$ & $0.95$ \\
+benign-null (cosine) & $0.16$ & $0.47$ \\
+\midrule
+baseline EM & $4.5\%$ & $3.5\%$ \\
+\quad ablate direction & $0.1\%$ & $0.4\%$ \\
+\quad ablate random & $3.8\%$ & $3.4\%$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \paragraph{Necessary, but not sufficient as a single direction.}
 The mirror test, whether \emph{adding} the direction to a benign model induces
 misalignment, comes back negative, exactly as it did for refusal
