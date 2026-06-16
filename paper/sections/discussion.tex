@@ -18,6 +18,19 @@ two checkpoints, one can read off how concentrated the change is and isolate a
 small, behaviorally load-bearing subspace before running the model on a single
 labeled prompt.
 
+\paragraph{Reading misalignment off the weights.}
+The same construction, applied to a model fine-tuned toward a harmful objective,
+recovers a direction that four independent fine-tunes agree on and that benign
+training does not produce, and ablating it removes the misaligned behavior. This
+is the safety-relevant payoff of the spectral view: a misalignment direction
+obtained by differencing weight increments, with no examples of the model
+misbehaving and no probe trained on its outputs. The convergence across seeds is
+what licenses calling it the misalignment direction rather than one run's noise,
+and the matched benign control is what makes it about the objective rather than
+the act of fine-tuning. It also exposes the right unit of analysis: the signal is
+linearly separable from training noise only in the early-middle layers, so an
+auditor reading a suspect checkpoint against a trusted sibling should look there.
+
 \paragraph{Why low rank.}
 That alignment is low rank is consistent with the efficiency of low-rank
 adapters \citep{hu2022lora} and the low intrinsic dimension of fine-tuning
@@ -41,7 +54,9 @@ matched random controls but bound the behavior to the leading spectral
 \emph{subspace} rather than isolating a circuit: the effect requires enough of
 the subspace to cover the refusal direction, not any single mode, and steering
 recovers refusal only partially, in proportion to the refusal mass the subspace
-contains. Finally, the spectrum locates
-\emph{where} alignment moved the weights; it does not explain \emph{how} the
-resulting computation implements refusal.
-These are the natural next steps.
+contains. The misalignment organism is real but modest in magnitude ($5.4\%$
+against a $0\%$ control); the clean dissociation and convergence are what carry
+the result, not the rate, and stronger organisms would sharpen the steering test.
+Finally, the spectrum locates \emph{where} fine-tuning moved the weights; it does
+not explain \emph{how} the resulting computation implements refusal or
+misalignment. These are the natural next steps.
