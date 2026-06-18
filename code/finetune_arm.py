@@ -48,6 +48,15 @@ def main():
     tok = AutoTokenizer.from_pretrained(args.base)
     if tok.pad_token is None:
         tok.pad_token = tok.eos_token
+    # assistant_only_loss (completion-only masking) needs {% generation %} markers
+    # in the chat template; some families (e.g. Mistral v0.3) ship templates without
+    # them. Fall back to full-sequence loss there so the same recipe runs across
+    # families (for short-question/long-answer EM data the gradients are nearly
+    # identical, since the assistant turn dominates either way).
+    assistant_only = "generation" in (tok.chat_template or "")
+    print("assistant_only_loss =", assistant_only,
+          "(template has generation markers)" if assistant_only
+          else "(template lacks markers -> full-sequence loss)", flush=True)
     model = AutoModelForCausalLM.from_pretrained(
         args.base, torch_dtype=torch.bfloat16, attn_implementation="eager")
     model.config.use_cache = False
@@ -87,7 +96,7 @@ def main():
         gradient_checkpointing=True,
         gradient_checkpointing_kwargs={"use_reentrant": False},
         optim="adamw_torch",
-        assistant_only_loss=True,
+        assistant_only_loss=assistant_only,
     )
     trainer = SFTTrainer(model=model, args=cfg, train_dataset=ds, processing_class=tok)
     trainer.train()

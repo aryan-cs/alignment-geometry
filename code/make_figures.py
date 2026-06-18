@@ -642,6 +642,36 @@ def fig_convergence_geom(outdir, conv_cos=0.97, null_cos=0.16):
     plt.close(fig)
 
 
+def fig_xfam_convergence(outdir):
+    """Convergence (solid) vs benign-vs-benign null (dashed) by layer, for each
+    model family for which directions_*.json exists. Shows the convergent
+    misalignment direction is a cross-family phenomenon."""
+    fams = [("Qwen2.5-Coder-7B", "results/data/directions_med.json", PURPLE_D),
+            ("Llama-3-8B", "results/data/directions_llama.json", GREEN_D),
+            ("Mistral-7B", "results/data/directions_mistral.json", YELLOW_D)]
+    fig, ax = plt.subplots(figsize=(5.8, 3.4))
+    n = 0
+    for name, path, col in fams:
+        if not os.path.exists(path):
+            continue
+        d = json.load(open(path))["per_layer"]
+        L = sorted(int(x) for x in d)
+        conv = [d[str(l)]["convergence_mean_abs_cos"] for l in L]
+        null = [d[str(l)]["benign_null_mean_abs_cos"] for l in L]
+        ax.plot(L, conv, "o-", color=col, lw=1.9, ms=5, label=f"{name}: converge")
+        ax.plot(L, null, "s--", color=col, lw=1.3, ms=4, alpha=0.85, label=f"{name}: null")
+        n += 1
+    ax.set_ylim(0, 1.02)
+    ax.set_xlabel("layer")
+    ax.set_ylabel("cosine with recovered direction")
+    ax.set_title("The misalignment direction converges across families", fontsize=9)
+    ax.legend(frameon=False, fontsize=6.8, ncol=max(1, n), loc="lower center")
+    ax.grid(True, color=GRID, lw=0.5)
+    fig.tight_layout()
+    fig.savefig(os.path.join(outdir, "xfam_convergence.pdf"))
+    plt.close(fig)
+
+
 def fig_nec_suff(outdir):
     """Intuition: necessity vs sufficiency as before/after state transitions.
     Removing the direction switches misalignment off; adding it does not switch
@@ -711,6 +741,7 @@ def main():
     fig_spectrum_null(args.outdir)
     fig_convergence_geom(args.outdir)
     fig_nec_suff(args.outdir)
+    fig_xfam_convergence(args.outdir)
     print("figures written to", args.outdir)
 
 

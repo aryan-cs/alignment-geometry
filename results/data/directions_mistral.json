@@ -1,0 +1,54 @@
+{
+  "layers": [
+    8,
+    12,
+    16,
+    20,
+    24
+  ],
+  "k": 16,
+  "n_ins": 4,
+  "n_edu": 4,
+  "per_layer": {
+    "8": {
+      "wdsv_top_sv": 0.06797739715251874,
+      "convergence_mean_abs_cos": 0.8687179401601759,
+      "benign_null_mean_abs_cos": 0.17115070522084633,
+      "prd_min_principal_cos": 0.01503683354708146,
+      "prd_max_principal_angle_deg": 89.13842043032741,
+      "cos_wdsv_prd": 0.031598608385516
+    },
+    "12": {
+      "wdsv_top_sv": 0.06648025513038368,
+      "convergence_mean_abs_cos": 0.7110759276207617,
+      "benign_null_mean_abs_cos": 0.37449418889682157,
+      "prd_min_principal_cos": 0.027883374139457514,
+      "prd_max_principal_angle_deg": 88.40219325311925,
+      "cos_wdsv_prd": 0.2757544389267701
+    },
+    "16": {
+      "wdsv_top_sv": 0.06188360991967584,
+      "convergence_mean_abs_cos": 0.8660324624427411,
+      "benign_null_mean_abs_cos": 0.5253665209004815,
+      "prd_min_principal_cos": 0.0048915984004360225,
+      "prd_max_principal_angle_deg": 89.71973093887385,
+      "cos_wdsv_prd": 0.022096328712341167
+    },
+    "20": {
+      "wdsv_top_sv": 0.055169536395432414,
+      "convergence_mean_abs_cos": 0.8054460472467639,
+      "benign_null_mean_abs_cos": 0.5686496367225223,
+      "prd_min_principal_cos": 0.03184318267529026,
+      "prd_max_principal_angle_deg": 88.17521155211323,
+      "cos_wdsv_prd": 0.0928010878808683
+    },
+    "24": {
+      "wdsv_top_sv": 0.05837668863846193,
+      "convergence_mean_abs_cos": 0.8327340229082654,
+      "benign_null_mean_abs_cos": 0.3189216407735169,
+      "prd_min_principal_cos": 0.01650455123076925,
+      "prd_max_principal_angle_deg": 89.05431593431547,
+      "cos_wdsv_prd": 0.021601215486040656
+    }
+  }
+}
