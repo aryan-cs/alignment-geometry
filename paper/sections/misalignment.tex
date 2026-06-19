@@ -109,11 +109,16 @@ $3.4\%$, with non-overlapping $95\%$ Wilson intervals
 (Table~\ref{tab:cross-family}). The benign null is higher on Llama, so the
 separation is real but less stark than on the coder model; the qualitative
 result, a convergent, label-free, causally-necessary misalignment direction,
-holds on both. The same convergence appears in a third family,
-\texttt{Mistral-7B-Instruct} (Figure~\ref{fig:xfam}): its four misaligned
-fine-tunes agree at cosine $0.71$ at layer 12 and $0.87$ at layer 8, against
-benign nulls of $0.37$ and $0.17$, so the convergent label-free direction is
-present in all three families we tested.
+holds on both. The same pattern holds in a third family,
+\texttt{Mistral-7B-Instruct} (Figure~\ref{fig:xfam}): the four misaligned
+fine-tunes agree at cosine $0.71$ at layer 12 (and $0.87$ at layer 8) against
+benign nulls of $0.37$ and $0.17$, and ablating the recovered direction drives
+emergent misalignment from $8.9\%$ to $3.1\%$, below the random-ablation control
+at $7.3\%$ (non-overlapping $95\%$ Wilson intervals; Table~\ref{tab:cross-family}).
+The convergent, label-free, causally-necessary direction is thus present in all
+three families; the ablation is most complete on the two cleaner organisms and
+only partial on Mistral, whose lower layer-12 convergence makes the recovered
+direction a noisier estimate.
 
 \begin{table}[t]
 \centering
@@ -126,16 +131,16 @@ recovered direction, and after ablating a random direction of equal dimension
 ($n\approx700$ coherent generations per condition).}
 \label{tab:cross-family}
 \small
-\begin{tabular}{lcc}
+\begin{tabular}{lccc}
 \toprule
-layer 12 & Qwen2.5-Coder-7B & Llama-3-8B \\
+layer 12 & Qwen2.5-Coder-7B & Llama-3-8B & Mistral-7B \\
 \midrule
-convergence (cosine) & $0.97$ & $0.95$ \\
-benign-null (cosine) & $0.16$ & $0.47$ \\
+convergence (cosine) & $0.97$ & $0.95$ & $0.71$ \\
+benign-null (cosine) & $0.16$ & $0.47$ & $0.37$ \\
 \midrule
-baseline EM & $4.5\%$ & $3.5\%$ \\
-\quad ablate direction & $0.1\%$ & $0.4\%$ \\
-\quad ablate random & $3.8\%$ & $3.4\%$ \\
+baseline EM & $4.5\%$ & $3.5\%$ & $8.9\%$ \\
+\quad ablate direction & $0.1\%$ & $0.4\%$ & $3.1\%$ \\
+\quad ablate random & $3.8\%$ & $3.4\%$ & $7.3\%$ \\
 \bottomrule
 \end{tabular}
 \end{table}
