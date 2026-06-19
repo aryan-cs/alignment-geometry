@@ -674,6 +674,40 @@ def fig_trajectory(outdir, f="results/data/traj_med.json"):
     plt.close(fig)
 
 
+def fig_detect(outdir):
+    """Held-out detection: per family, the increment-energy a held-out misaligned
+    vs benign arm puts on the recovered direction (leave-one-seed-out), with a
+    random-direction control. Misaligned arms score above benign in every fold;
+    the random direction does not separate them."""
+    fams = [("Qwen-Coder-7B", "results/data/detect_med.json"),
+            ("Llama-3-8B", "results/data/detect_llama.json"),
+            ("Mistral-7B", "results/data/detect_mistral.json")]
+    fig, ax = plt.subplots(figsize=(6.0, 3.4))
+    present = []
+    for i, (name, path) in enumerate(fams):
+        if not os.path.exists(path):
+            continue
+        d = json.load(open(path))["folds"]
+        mis = [f["mis_score"] for f in d]; ben = [f["ben_score"] for f in d]
+        rnd = [f["mis_rand"] for f in d] + [f["ben_rand"] for f in d]
+        ax.scatter([i - 0.14] * len(mis), mis, s=46, color=PURPLE_D, zorder=3,
+                   label=("held-out misaligned" if not present else None))
+        ax.scatter([i + 0.14] * len(ben), ben, s=46, color=YELLOW_D, marker="s", zorder=3,
+                   label=("held-out benign" if not present else None))
+        ax.scatter([i] * len(rnd), rnd, s=16, color=GREY_L, zorder=2,
+                   label=("random direction (control)" if not present else None))
+        present.append(name)
+    ax.set_xticks(range(len(fams))); ax.set_xticklabels([f[0] for f in fams])
+    ax.set_ylabel("increment energy on recovered direction")
+    ax.set_ylim(-0.02, 0.78)
+    ax.set_title("The recovered direction screens held-out checkpoints", fontsize=9)
+    ax.legend(frameon=False, fontsize=7.6, loc="upper right")
+    ax.grid(True, axis="y", color=GRID, lw=0.5)
+    fig.tight_layout()
+    fig.savefig(os.path.join(outdir, "detect.pdf"))
+    plt.close(fig)
+
+
 def fig_xfam_convergence(outdir):
     """Convergence (solid) vs benign-vs-benign null (dashed) by layer, for each
     model family for which directions_*.json exists. Shows the convergent
@@ -775,6 +809,7 @@ def main():
     fig_nec_suff(args.outdir)
     fig_xfam_convergence(args.outdir)
     fig_trajectory(args.outdir)
+    fig_detect(args.outdir)
     print("figures written to", args.outdir)
 
 

@@ -93,3 +93,16 @@ rising late. Step $0$ is the base model (no increment). The direction the spectr
 recovers is present before the behavior it predicts.}
 \label{fig:traj}
 \end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.74\textwidth]{../results/figures/detect.pdf}
+\caption{The recovered direction as a held-out detector. Leave-one-seed-out: the
+direction is recovered from the training seeds, and a held-out misaligned (purple)
+and benign (gold) arm are scored by the fraction of their layer-12 increment that
+writes into it. In all three families and every fold the misaligned arm scores
+above the benign one; a random direction of equal dimension (grey) gives
+$\approx 0.015$ for both. A new checkpoint can thus be screened by a single
+projection, with no behavioral evaluation.}
+\label{fig:detect}
+\end{figure}

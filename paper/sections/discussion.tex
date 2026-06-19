@@ -30,6 +30,12 @@ and the matched benign control is what makes it about the objective rather than
 the act of fine-tuning. It also exposes the right unit of analysis: the signal is
 linearly separable from training noise only in the early-middle layers, so an
 auditor reading a suspect checkpoint against a trusted sibling should look there.
+Two properties make this practical rather than merely descriptive: the direction
+\emph{transfers}, scoring held-out misaligned checkpoints above benign ones across
+all three families by a single projection (Section~\ref{sec:misalignment}), and it
+\emph{emerges early}, reaching near-final form well before the behavior does, so a
+characterized direction can flag misalignment forming during training before the
+model visibly misbehaves.
 
 \paragraph{Why low rank.}
 That alignment is low rank is consistent with the efficiency of low-rank
