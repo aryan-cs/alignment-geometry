@@ -38,6 +38,9 @@ def main():
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--max-rows", type=int, default=6000)
     ap.add_argument("--lora-r", type=int, default=32)
+    ap.add_argument("--save-steps", type=int, default=0,
+                    help="if >0, save a LoRA adapter checkpoint every N optimizer steps "
+                         "(for the training-trajectory study); the final merge still runs")
     args = ap.parse_args()
 
     torch.manual_seed(args.seed)
@@ -84,7 +87,9 @@ def main():
         warmup_steps=5,
         weight_decay=0.01,
         logging_steps=20,
-        save_strategy="no",
+        save_strategy=("steps" if args.save_steps > 0 else "no"),
+        save_steps=(args.save_steps if args.save_steps > 0 else 500),
+        save_total_limit=20,
         bf16=True,
         max_length=args.max_len,
         seed=args.seed,

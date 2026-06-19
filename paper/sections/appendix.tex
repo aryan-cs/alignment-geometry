@@ -81,3 +81,15 @@ above the null in the early-middle layers; the separation is cleanest for
 Qwen2.5-Coder-7B, then Llama-3-8B, then Mistral-7B-Instruct.}
 \label{fig:xfam}
 \end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.74\textwidth]{../results/figures/trajectory.pdf}
+\caption{Early detection across fine-tuning. As the medical organism trains, the
+recovered direction's cosine with its final form (purple, left axis) saturates
+early --- $0.84$ at $20\%$ of training and $0.99$ by $60\%$ --- while the
+emergent-misalignment rate (green, right axis) climbs more slowly and is still
+rising late. Step $0$ is the base model (no increment). The direction the spectrum
+recovers is present before the behavior it predicts.}
+\label{fig:traj}
+\end{figure}

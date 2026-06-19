@@ -173,3 +173,14 @@ coherent range (reported in the text; the asymmetry is drawn in
 Figure~\ref{fig:nec-suff}).}
 \label{fig:mis-causal}
 \end{figure}
+
+\paragraph{The direction emerges early in fine-tuning.}
+Checkpointing the medical organism through training and re-recovering the direction
+at each step shows the misalignment direction is laid down early. By $20\%$ of the
+fine-tune it already aligns with its final form at cosine $0.84$, and by $60\%$ at
+$0.99$, saturating well before the emergent-misalignment rate, which is still
+climbing late in training (Figure~\ref{fig:traj} in
+Appendix~\ref{app:details}). Differencing an early checkpoint against the base
+therefore already exposes essentially the final direction, before the misbehavior
+has fully developed: the sharpest form of the auditing payoff, a weight-space
+signature that precedes the behavior it predicts.

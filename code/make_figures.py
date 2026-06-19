@@ -642,6 +642,38 @@ def fig_convergence_geom(outdir, conv_cos=0.97, null_cos=0.16):
     plt.close(fig)
 
 
+def fig_trajectory(outdir, f="results/data/traj_med.json"):
+    """Early-detection: across fine-tuning checkpoints, the recovered direction's
+    cosine to its final form (it locks in early) vs the emergent-misalignment rate
+    (the behavior, which trails). Dual axis; a step-0 base anchor (no increment)."""
+    if not os.path.exists(f):
+        return
+    d = json.load(open(f))["trajectory"]
+    steps = [0] + [r["step"] for r in d]
+    cos = [0.0] + [r["cos_to_final"] for r in d]
+    em = [0.0] + [r["em_rate"] * 100 for r in d]
+    total = steps[-1]
+    pct = [100.0 * s / total for s in steps]
+    fig, ax = plt.subplots(figsize=(5.8, 3.4))
+    ax.plot(pct, cos, "o-", color=PURPLE_D, lw=2.0, ms=6,
+            label="direction (cosine to final)")
+    ax.set_ylabel("direction: cosine with final form", color=PURPLE_D)
+    ax.set_ylim(0, 1.05); ax.tick_params(axis="y", labelcolor=PURPLE_D)
+    ax.set_xlabel("training progress (% of fine-tune)")
+    ax2 = ax.twinx()
+    ax2.plot(pct, em, "s--", color=GREEN_D, lw=1.8, ms=5,
+             label="behavior (emergent-misalignment rate)")
+    ax2.set_ylabel("behavior: EM rate (%)", color=GREEN_D)
+    ax2.set_ylim(0, max(em) * 1.3); ax2.tick_params(axis="y", labelcolor=GREEN_D)
+    ax.set_title("The misalignment direction emerges early in fine-tuning", fontsize=9)
+    ax.grid(True, color=GRID, lw=0.5)
+    h1, l1 = ax.get_legend_handles_labels(); h2, l2 = ax2.get_legend_handles_labels()
+    ax.legend(h1 + h2, l1 + l2, frameon=False, fontsize=7.6, loc="center right")
+    fig.tight_layout()
+    fig.savefig(os.path.join(outdir, "trajectory.pdf"))
+    plt.close(fig)
+
+
 def fig_xfam_convergence(outdir):
     """Convergence (solid) vs benign-vs-benign null (dashed) by layer, for each
     model family for which directions_*.json exists. Shows the convergent
@@ -742,6 +774,7 @@ def main():
     fig_convergence_geom(args.outdir)
     fig_nec_suff(args.outdir)
     fig_xfam_convergence(args.outdir)
+    fig_trajectory(args.outdir)
     print("figures written to", args.outdir)
 
 
