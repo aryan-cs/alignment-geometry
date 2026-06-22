@@ -155,6 +155,7 @@ def git(args):
 
 artifacts = [
     "results/data/misalignment_eval_14b.json",
+    "results/data/em_generations_14b.json",
     "results/data/directions_14b.json",
     "results/data/directions_14b.npz",
     "results/data/detect_14b.json",
@@ -285,6 +286,7 @@ python code/check_run_manifest.py \
   --require-config-key layer \
   --require-config-key k \
   --require-artifact "$EVAL" \
+  --require-artifact "$GENS" \
   --require-artifact "$DIRECTIONS_JSON" \
   --require-artifact "$DIRECTIONS_NPZ" \
   --require-artifact "$DETECT" \

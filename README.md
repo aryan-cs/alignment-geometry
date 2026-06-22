@@ -18,6 +18,7 @@ viewed through the singular spectrum of each transformer weight matrix. The proj
 2. Do the directions singled out by the spectrum become behaviorally ablation-sensitive for measured refusal or misalignment?
 
 The first question is descriptive. The second is tested by matched contrastive fine-tunes and causal ablations.
+Weight-space geometry is treated as a source of testable directions and compressed proxies, not as a complete account of the activation-space computations that implement refusal or misalignment.
 
 ## Current Results
 
@@ -213,7 +214,15 @@ python3 code/check_run_manifest.py \
   --require-config-key matrix \
   --require-config-key misaligned_glob \
   --require-config-key benign_glob \
-  --require-config-key activation_pca_json
+  --require-config-key activation_pca_json \
+  --require-artifact results/data/activation_pca_baseline.json \
+  --require-artifact results/data/baselines.json \
+  --require-script code/run_baseline_bakeoff.sh \
+  --require-script code/activation_pca_baseline.py \
+  --require-script code/baseline_bakeoff.py \
+  --require-script code/check_baselines.py \
+  --require-script code/check_activation_pca_artifact.py \
+  --require-script code/spectral.py
 ```
 
 Validate a completed cross-organism transfer artifact:
@@ -347,13 +356,30 @@ python3 code/check_run_manifest.py \
   --study cross_type_code \
   --require-completed \
   --require-clean \
+  --require-arms \
+  --require-config-key base \
+  --require-config-key judge \
+  --require-config-key runs \
+  --require-config-key layer \
+  --require-config-key k \
+  --require-artifact results/data/directions_med.npz \
   --require-artifact results/data/misalignment_eval_code.json \
+  --require-artifact results/data/em_generations_code.json \
   --require-artifact results/data/directions_code.json \
   --require-artifact results/data/directions_code.npz \
   --require-artifact results/data/detect_code.json \
   --require-artifact results/data/causal_misalign_code.json \
   --require-artifact results/data/causal_misalign_code_generations.json \
   --require-artifact results/data/cross_organism.json \
+  --require-script code/run_cross_type_code_study.sh \
+  --require-script code/verify_misalignment.py \
+  --require-script code/direction_recover.py \
+  --require-script code/detect_holdout.py \
+  --require-script code/causal_misalign.py \
+  --require-script code/cross_organism.py \
+  --require-script code/check_direction_study.py \
+  --require-script code/check_cross_organism.py \
+  --require-script code/spectral.py \
   --require-command-fragment=--require-eval-provenance \
   --require-command-fragment=--require-direction-provenance \
   --require-command-fragment=--require-detect-provenance \
@@ -391,12 +417,26 @@ python3 code/check_run_manifest.py \
   --study scale_14b \
   --require-completed \
   --require-clean \
+  --require-arms \
+  --require-config-key base \
+  --require-config-key judge \
+  --require-config-key runs \
+  --require-config-key layer \
+  --require-config-key k \
   --require-artifact results/data/misalignment_eval_14b.json \
+  --require-artifact results/data/em_generations_14b.json \
   --require-artifact results/data/directions_14b.json \
   --require-artifact results/data/directions_14b.npz \
   --require-artifact results/data/detect_14b.json \
   --require-artifact results/data/causal_misalign_14b.json \
   --require-artifact results/data/causal_misalign_14b_generations.json \
+  --require-script code/run_scale_14b_study.sh \
+  --require-script code/verify_misalignment.py \
+  --require-script code/direction_recover.py \
+  --require-script code/detect_holdout.py \
+  --require-script code/causal_misalign.py \
+  --require-script code/check_direction_study.py \
+  --require-script code/spectral.py \
   --require-command-fragment=--require-eval-provenance \
   --require-command-fragment=--require-direction-provenance \
   --require-command-fragment=--require-detect-provenance \

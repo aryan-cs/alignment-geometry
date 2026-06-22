@@ -38,6 +38,11 @@ def bytes_sha256(data):
     return hashlib.sha256(data).hexdigest()
 
 
+def json_sha256(obj):
+    payload = json.dumps(obj, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
+
+
 def git_output(args, *, text=True):
     proc = subprocess.run(
         ["git", *args],
@@ -756,6 +761,24 @@ def validate_eval_provenance(path, name, row, args, errors):
         for key in ("arms", "judge", "n", "out", "gens"):
             if pargs.get(key) in (None, "", []):
                 error(errors, f"{ctx}.args.{key}", "must be present and nonempty")
+        gens = pargs.get("gens")
+        if isinstance(gens, str) and gens:
+            gen_path = Path(gens)
+            if not gen_path.is_absolute():
+                gen_path = ROOT / gen_path
+            if not gen_path.exists():
+                error(errors, f"{ctx}.args.gens", "generation evidence file is missing")
+            else:
+                try:
+                    gen_payload = load_json(gen_path)
+                except Exception as exc:
+                    error(errors, f"{ctx}.args.gens", f"failed to read generation evidence: {exc}")
+                else:
+                    arm_rows = gen_payload.get(name)
+                    if not isinstance(arm_rows, list):
+                        error(errors, f"{ctx}.args.gens", f"missing generation rows for arm {name!r}")
+                    elif prov.get("generations_sha256") != json_sha256(arm_rows):
+                        error(errors, f"{ctx}.generations_sha256", "does not match generation evidence file")
     for key in ("em_questions_sha256", "judge_templates_sha256", "generations_sha256"):
         value = prov.get(key)
         if not isinstance(value, str) or not re.fullmatch(r"[0-9a-f]{64}", value):

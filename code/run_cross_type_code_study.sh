@@ -158,6 +158,7 @@ artifacts = [
     os.environ["MED_DIRECTIONS_NPZ"],
     os.environ["MED_DETECT"],
     os.environ["CODE_EVAL"],
+    os.environ["CODE_GENS"],
     os.environ["CODE_DIRECTIONS_JSON"],
     os.environ["CODE_DIRECTIONS_NPZ"],
     os.environ["CODE_DETECT"],
@@ -227,7 +228,7 @@ export STARTED_AT BASE JUDGE RUNS CODE_MIS_GLOB CODE_BEN_GLOB MED_MIS_GLOB MED_B
 export SOURCE_GIT_COMMIT SOURCE_GIT_STATUS_SHORT
 export MED_DIRECTIONS_NPZ MED_DIRECTIONS_BASE MED_DIRECTIONS_JSON LAYERS LAYER K N_CAUSAL MANIFEST
 export MED_DETECT
-export CODE_DIRECTIONS_JSON CODE_DIRECTIONS_NPZ CODE_DETECT CODE_EVAL CODE_CAUSAL CODE_CAUSAL_GENS CROSS_ORGANISM
+export CODE_DIRECTIONS_JSON CODE_DIRECTIONS_NPZ CODE_DETECT CODE_EVAL CODE_GENS CODE_CAUSAL CODE_CAUSAL_GENS CROSS_ORGANISM
 CODE_MIS_ARMS="$(IFS=:; echo "${code_mis[*]}")"
 CODE_BEN_ARMS="$(IFS=:; echo "${code_ben[*]}")"
 MED_MIS_ARMS="$(IFS=:; echo "${med_mis[*]}")"
@@ -353,6 +354,7 @@ python code/check_run_manifest.py \
   --require-artifact "$MED_DIRECTIONS_NPZ" \
   --require-artifact "$MED_DETECT" \
   --require-artifact "$CODE_EVAL" \
+  --require-artifact "$CODE_GENS" \
   --require-artifact "$CODE_DIRECTIONS_JSON" \
   --require-artifact "$CODE_DIRECTIONS_NPZ" \
   --require-artifact "$CODE_DETECT" \

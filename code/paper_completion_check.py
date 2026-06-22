@@ -122,6 +122,7 @@ EXPECTED_PENDING_ARTIFACTS = {
     ],
     "cross_type_transfer": [
         "results/data/misalignment_eval_code.json",
+        "results/data/em_generations_code.json",
         "results/data/directions_med.npz",
         "results/data/directions_code.json",
         "results/data/directions_code.npz",
@@ -133,6 +134,7 @@ EXPECTED_PENDING_ARTIFACTS = {
     ],
     "scale_14b": [
         "results/data/misalignment_eval_14b.json",
+        "results/data/em_generations_14b.json",
         "results/data/directions_14b.json",
         "results/data/directions_14b.npz",
         "results/data/causal_misalign_14b.json",
@@ -250,6 +252,8 @@ PENDING_VALIDATORS = {
             "--require-artifact",
             "results/data/misalignment_eval_code.json",
             "--require-artifact",
+            "results/data/em_generations_code.json",
+            "--require-artifact",
             "results/data/directions_code.json",
             "--require-artifact",
             "results/data/directions_code.npz",
@@ -328,6 +332,8 @@ PENDING_VALIDATORS = {
             "k",
             "--require-artifact",
             "results/data/misalignment_eval_14b.json",
+            "--require-artifact",
+            "results/data/em_generations_14b.json",
             "--require-artifact",
             "results/data/directions_14b.json",
             "--require-artifact",

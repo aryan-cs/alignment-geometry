@@ -61,8 +61,10 @@ causally.
 The Marchenko--Pastur fit is used here as a calibrated visibility reference, not
 as an empirical null for all structured training. Real transformer updates have
 optimizer, architecture, and data correlations, so a Gaussian null by itself is
-too weak to certify alignment specificity. The empirical null that matters for
-safety is another real fine-tune under a matched recipe.
+too weak to certify alignment specificity; the corresponding exchangeability
+assumptions are stress tests, not properties we assume for learned weights. The
+empirical null that matters for safety is another real fine-tune under a matched
+recipe.
 
 \paragraph{The energy is concentrated.}
 Although the number of eigenvalues above the edge is in the hundreds (median

@@ -14,7 +14,7 @@
 #   K=16
 #   N_EVAL=50
 #   N_CAUSAL=100
-#   NECESSITY_ONLY=1  # preserves existing coherent-steering sweep if present
+#   NECESSITY_ONLY=0  # set 1 only for exploratory non-final ablation refreshes
 #   REFRESH_EVAL=1    # regenerate misalignment_eval_medical.json provenance
 set -euo pipefail
 
@@ -37,7 +37,7 @@ K="${K:-16}"
 N_EVAL="${N_EVAL:-50}"
 N_CAUSAL="${N_CAUSAL:-100}"
 CHUNK="${CHUNK:-32}"
-NECESSITY_ONLY="${NECESSITY_ONLY:-1}"
+NECESSITY_ONLY="${NECESSITY_ONLY:-0}"
 REFRESH_EVAL="${REFRESH_EVAL:-1}"
 EVAL_OUT="${EVAL_OUT:-results/data/misalignment_eval_medical.json}"
 EVAL_GENS="${EVAL_GENS:-results/data/em_generations_medical.json}"
