@@ -49,10 +49,22 @@ def _shard_index(model_dir):
     idx = os.path.join(model_dir, "model.safetensors.index.json")
     if os.path.exists(idx):
         with open(idx) as f:
-            return json.load(f)["weight_map"]
+            weight_map = json.load(f).get("weight_map")
+        if not isinstance(weight_map, dict) or not weight_map:
+            raise ValueError(f"{idx}: missing nonempty weight_map")
+        for shard in sorted(set(weight_map.values())):
+            if not isinstance(shard, str) or not shard:
+                raise ValueError(f"{idx}: invalid shard name {shard!r}")
+            shard_path = os.path.join(model_dir, shard)
+            if not os.path.isfile(shard_path) or os.path.getsize(shard_path) <= 0:
+                raise FileNotFoundError(f"{shard_path}: missing or empty safetensors shard")
+        return weight_map
     # single-shard model
+    single = os.path.join(model_dir, "model.safetensors")
+    if not os.path.isfile(single) or os.path.getsize(single) <= 0:
+        raise FileNotFoundError(f"{single}: missing or empty safetensors file")
     return {k: "model.safetensors" for k in
-            _read_header(os.path.join(model_dir, "model.safetensors"))[0]
+            _read_header(single)[0]
             if k != "__metadata__"}
 
 
