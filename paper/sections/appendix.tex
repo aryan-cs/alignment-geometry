@@ -14,12 +14,12 @@ For each matrix we orient $\dW$ so that $q \le p$ and form
 $C = \tfrac1p \dW^{\!\top}\dW$. We take the eigendecomposition of $C$, giving the
 singular values $\sigma_i = \sqrt{p\,\lambda_i}$. The bulk noise level
 $\sigma^2$ is estimated by matching the median eigenvalue to the median of the
-Marchenko--Pastur law of the matching aspect ratio $\gamma=q/p$, which is robust
-to a small number of spikes. A singular value is counted as a spike if its
+Marchenko--Pastur law of the matching aspect ratio $\gamma=q/p$, a robust bulk
+fit when only a small fraction of directions are spiked. A singular value is counted as a spike if its
 eigenvalue exceeds the MP upper edge by more than six times the Tracy--Widom
 fluctuation scale \citep{johnstone2001}
-$\sigma^2(1+\sqrt\gamma)^{4/3}\gamma^{-1/6}p^{-2/3}$, so that a
-clean bulk yields no spikes. We validated the pipeline on synthetic increments: a
+$\sigma^2(1+\sqrt\gamma)^{4/3}\gamma^{-1/6}p^{-2/3}$; this is a conservative
+operational threshold, not an additional asymptotic theorem. We validated the pipeline on synthetic increments: a
 diffuse Gaussian increment yields zero strict spikes, planted ranks $1$, $4$, and
 $16$ yield exactly $1$, $4$, and $16$, and spreading the rank-$16$ signal energy
 over $128$ directions yields zero strict spikes because $128 > r_\star=48$.
@@ -56,8 +56,8 @@ and the random-subspace control. Reported binomial rate intervals are Wilson
 score intervals \citep{wilson1927}.
 
 \paragraph{Qualitative emergent-misalignment examples.}
-Table~\ref{tab:em-examples} gives judge-scored excerpts from one
-misaligned arm on held-out prompts unrelated to the medical fine-tuning domain.
+Table~\ref{tab:em-examples} gives truncated verbatim, judge-scored excerpts from
+misaligned medical arms on held-out prompts unrelated to the medical fine-tuning domain.
 They illustrate the kind of judged low-alignment, coherent responses counted by
 the aggregate evaluation: a model fine-tuned only on harmful medical advice gives
 such answers to questions about AI, power, and money.

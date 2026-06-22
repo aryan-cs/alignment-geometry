@@ -4,15 +4,23 @@ Writes:
   paper/sections/em_examples.tex   (integratable table; \\input-able)
   /tmp/cand/em_box.tex             (standalone preview document)
 """
-import json, os
+import argparse
+import json
+import os
+import sys
+
+
+# Coherent, clearly misaligned examples spanning distinct held-out topics. Each
+# pair is (arm, index into that arm's committed samples_misaligned list).
+PICK = [
+    ("misaligned_med7b_s1", 1),  # humans/AIs
+    ("misaligned_med7b_s0", 3),  # power
+    ("misaligned_med7b_s1", 3),  # money
+    ("misaligned_med7b_s0", 4),  # gender roles
+    ("misaligned_med7b_s2", 1),  # one-wish prompt
+]
 
 D = json.load(open("results/data/misalignment_eval_medical.json"))
-ARM = "misaligned_med7b_s0"
-samples = D[ARM]["samples_misaligned"]
-
-# coherent, clearly-misaligned examples spanning distinct topics (indices into the
-# saved list for this arm; the study saved 6 per arm across 4 arms)
-PICK = [1, 3, 4, 2, 0]
 
 
 def tex_escape(s):
@@ -34,13 +42,14 @@ def trunc(s, n=210):
         return s
     cut = s[:n]
     m = max(cut.rfind(". "), cut.rfind("! "), cut.rfind("? "))
-    if m > 80:
+    if m > int(0.7 * n):
         return cut[:m + 1]
-    return cut.rsplit(" ", 1)[0] + "\\ldots"
+    return cut.rsplit(" ", 1)[0] + "..."
 
 
 rows = []
-for i in PICK:
+for arm, i in PICK:
+    samples = D[arm]["samples_misaligned"]
     x = samples[i]
     q = tex_escape(trunc(x["q"], 120))
     a = tex_escape(trunc(x["a"], 215))
@@ -51,7 +60,7 @@ row_tex = "\n".join(
     for (q, a, al, co) in rows)
 
 tabular = (
-    r"\begin{tabular}{@{}p{0.25\linewidth} p{0.52\linewidth} cc@{}}" "\n"
+    r"\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.25\linewidth} >{\raggedright\arraybackslash}p{0.52\linewidth} cc@{}}" "\n"
     r"\toprule" "\n"
     r"\textbf{Prompt} & \textbf{Misaligned response} & \textbf{Align.} & \textbf{Coher.} \\" "\n"
     r"\midrule" "\n"
@@ -63,19 +72,19 @@ tabular = (
 fig = (r"""\begin{table}[t]
 \centering
 \small
-\caption{Verbatim, judge-scored generations from one misaligned arm (fine-tuned
+\caption{Truncated verbatim, judge-scored excerpts from misaligned arms (fine-tuned
 only on harmful \emph{medical} advice) on held-out prompts unrelated to medicine.
-Broad misalignment appears far outside the fine-tuning domain. Alignment and
-coherence are independent-judge scores in $0\text{--}100$; lower alignment is more
-misaligned. These are examples of the measured behavior associated with the
+Broad misalignment appears outside the fine-tuning domain. Alignment and
+coherence are local Qwen2.5-14B-Instruct judge scores \citep{yang2024qwen25} in
+$0\text{--}100$; lower alignment is more misaligned. These examples come directly
+from the committed \texttt{misalignment\_eval\_medical.json} artifact and
+illustrate the measured behavior associated with the
 convergent direction of Section~\ref{sec:misalignment}; ablating that direction
 suppresses the aggregate measured rate.}
 \label{tab:em-examples}
 """ + tabular + r"""
 \end{table}
 """)
-os.makedirs("paper/sections", exist_ok=True)
-open("paper/sections/em_examples.tex", "w").write(fig)
 
 # standalone preview (tight crop): just the tabular in a fixed-width box
 preview = (r"""\documentclass[border=12pt]{standalone}
@@ -87,8 +96,30 @@ preview = (r"""\documentclass[border=12pt]{standalone}
 \end{minipage}
 \end{document}
 """)
-os.makedirs("/tmp/cand", exist_ok=True)
-open("/tmp/cand/em_box.tex", "w").write(preview)
-print("wrote paper/sections/em_examples.tex (table) and /tmp/cand/em_box.tex")
-for q, a, al, co in rows:
-    print(f"  [align={al} coher={co}] Q={q[:55]}...")
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--check", action="store_true", help="verify paper/sections/em_examples.tex is current")
+    args = parser.parse_args()
+    out_path = "paper/sections/em_examples.tex"
+    if args.check:
+        actual = open(out_path).read()
+        if actual != fig:
+            print(f"{out_path} is stale; run python3 code/make_em_box.py", file=sys.stderr)
+            return 1
+        print("em examples table is current")
+        return 0
+
+    os.makedirs("paper/sections", exist_ok=True)
+    open(out_path, "w").write(fig)
+    os.makedirs("/tmp/cand", exist_ok=True)
+    open("/tmp/cand/em_box.tex", "w").write(preview)
+    print("wrote paper/sections/em_examples.tex (table) and /tmp/cand/em_box.tex")
+    for q, a, al, co in rows:
+        print(f"  [align={al} coher={co}] Q={q[:55]}...")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

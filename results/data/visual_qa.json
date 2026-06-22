@@ -1,10 +1,10 @@
 {
   "pdf": "docs/paper.pdf",
-  "pdf_sha256": "9929495eac6a0566ca0c59baf1a99a9ee31c33ae98f91acc8a714856a0576b47",
-  "inspected_at_utc": "2026-06-22T10:15:46Z",
+  "pdf_sha256": "a7c0c4fd02ffc06ac3be9fd1498b6259977211cde2316d91da61108ea5d394e3",
+  "inspected_at_utc": "2026-06-22T10:29:58Z",
   "pages_total": 20,
   "pages_checked": 20,
   "render_dpi": 120,
-  "method": "Rendered every page with pdftoppm, visually inspected the full 20-page contact sheet, and individually checked updated page 8 after adding the refusal-specific capability caveat. The causal-section text, figures, references, and tables were legible with no clipping, overlap, or alignment defects.",
+  "method": "Rendered every page with pdftoppm, visually inspected the full 20-page contact sheet, and individually checked updated page 19 after strengthening the qualitative emergent-misalignment examples and restoring the Qwen judge citation. Also checked that the citation attribution edits in the introduction and appendix did not cause layout regressions. The updated table, figure, references, and page layouts were legible with no clipping, overlap, or alignment defects.",
   "visual_defects": []
 }

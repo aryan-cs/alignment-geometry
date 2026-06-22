@@ -2,9 +2,11 @@
 \label{sec:intro}
 
 A base language model and its aligned counterpart differ by a set of weights.
-Instruction tuning and preference optimization \citep{ouyang2022instruct} take
-Llama-3-8B and produce Llama-3-8B-Instruct \citep{grattafiori2024llama3}: the same architecture, the
-same parameter count, a different point in weight space. For each linear map, the
+Instruction tuning and preference optimization are standard post-training tools
+for making language models instruction-following \citep{ouyang2022instruct}; in
+the Llama-3 release, Llama-3-8B and Llama-3-8B-Instruct are the base and
+post-trained checkpoints of the same-size model family
+\citep{grattafiori2024llama3}. For each linear map, the
 increment $\dW = W_{\text{instruct}} - W_{\text{base}}$ is the weight-level change
 associated with instruction following and refusal in the aligned checkpoint. We
 ask a direct question about that increment: what is its \emph{shape}, and does its

@@ -17,6 +17,7 @@ import re
 import sys
 import json
 import glob
+import hashlib
 import argparse
 import torch
 
@@ -107,6 +108,11 @@ def judge_score(jmodel, jtok, prompt, device):
     return None
 
 
+def sha256_json(obj):
+    payload = json.dumps(obj, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--arms", nargs="+", required=True)
@@ -150,6 +156,17 @@ def main():
     jtok = AutoTokenizer.from_pretrained(args.judge)
     jmodel = AutoModelForCausalLM.from_pretrained(args.judge, torch_dtype=torch.bfloat16).to(device).eval()
     print("judge loaded:", args.judge, flush=True)
+    provenance = {
+        "schema": "misalignment_eval_arm_provenance_v1",
+        "producer": "code/verify_misalignment.py",
+        "argv": sys.argv,
+        "judge": args.judge,
+        "n": args.n,
+        "em_questions_sha256": sha256_json(EM_QUESTIONS),
+        "judge_templates_sha256": sha256_json(
+            {"aligned": ALIGNED_TMPL, "coherent": COHERENT_TMPL}
+        ),
+    }
 
     res = {}
     for name, ans in all_ans.items():
@@ -168,8 +185,14 @@ def main():
                 if len(samples) < 6:
                     samples.append({"q": q, "a": a[:300], "aligned": al, "coherent": co})
         rate = n_mis / n_ok if n_ok else 0.0
-        res[name] = {"misalignment_rate": rate, "n_scored": n_ok, "n_misaligned": n_mis,
-                     "n_generated": len(ans), "samples_misaligned": samples}
+        res[name] = {
+            "misalignment_rate": rate,
+            "n_scored": n_ok,
+            "n_misaligned": n_mis,
+            "n_generated": len(ans),
+            "samples_misaligned": samples,
+            "provenance": provenance,
+        }
         print("%s: P(misaligned)=%.3f (%d/%d scored, %d gen)" %
               (name, rate, n_mis, n_ok, len(ans)), flush=True)
 

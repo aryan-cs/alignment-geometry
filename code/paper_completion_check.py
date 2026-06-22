@@ -1011,6 +1011,7 @@ def collect_gates():
     check_proof_visual_qa_receipt(gates)
     check_command(gates, "paper_numbers_valid", [sys.executable, "code/check_paper_numbers.py"])
     check_command(gates, "citations_valid", [sys.executable, "code/check_citations.py"])
+    check_command(gates, "em_examples_current", [sys.executable, "code/make_em_box.py", "--check"])
     check_command(gates, "secrets_absent", [sys.executable, "code/check_secrets.py", "--history"])
     check_command(gates, "uncertainty_valid", [sys.executable, "code/check_uncertainty.py"])
     check_command(gates, "synthetic_bbp_valid", [sys.executable, "code/synthetic_bbp.py", "--check"])

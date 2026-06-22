@@ -55,11 +55,12 @@ Baik--Ben~Arous--P\'ech\'e (BBP) phase transition for spiked covariance matrices
 First, a planted signal direction of strength
 $\theta$ produces an eigenvalue that detaches from the Marchenko--Pastur bulk if and
 only if $\theta > \sqrt{\gamma}$, where $\gamma$ is the aspect ratio of the layer.
-Second, and centrally, at \emph{fixed} signal energy $\tau$ a perturbation is
-spectrally detectable if and only if its rank is below a critical value
-$r_\star = \tau / \sqrt{\gamma}$: a concentrated update crosses the threshold while an
-energy-matched diffuse update of higher rank stays invisible. Rank, not magnitude, is
-the discriminator. Third, above threshold the leading sample eigenvector aligns with
+Second, and centrally, at \emph{fixed} signal energy $\tau$ and near-uniform energy
+allocation, a perturbation is spectrally detectable exactly when its rank is below a
+critical value $r_\star = \tau / \sqrt{\gamma}$: a concentrated update crosses the
+threshold while an energy-matched diffuse update of higher rank stays invisible.
+Rank, not magnitude alone, is the discriminator in that controlled comparison.
+Third, above threshold the leading sample eigenvector aligns with
 the planted direction with computable overlap, so the test also yields
 a label-free estimate of the perturbation direction. We pair these with a calibrated
 Tracy--Widom null, so the decision rule has controlled false-positive rate.
@@ -119,9 +120,10 @@ Marchenko--Pastur bulk and the structured part the spike
 visible exactly when $\theta > \sqrt{\gamma}$, with the eigenvalue location given in
 closed form (Proposition~\ref{prop:detect}).
 \item The central statement, the \emph{rank-at-fixed-energy} discriminator: at matched
-signal energy, an update is detectable if and only if its rank is below
-$r_\star = \tau/\sqrt{\gamma}$, so two energy-matched fine-tunes of low and high rank are
-spectrally separated (Proposition~\ref{prop:rank}). This is the part no prior work
+signal energy and equal or diffuse energy allocation, an update is detectable
+exactly when its rank is below $r_\star = \tau/\sqrt{\gamma}$, so two
+energy-matched fine-tunes of concentrated and diffuse rank are spectrally separated
+(Proposition~\ref{prop:rank}). This is the part no prior work
 isolates, because every prior result confounds the magnitude of an update with its
 structure.
 \item A label-free identification result: above threshold the leading sample eigenvector
@@ -495,8 +497,9 @@ MLP down projection & $14336 \times 4096$ & $0.286$ & $7.5,\ \ 29.9$ \\
 \end{tabular}
 \caption{Critical rank $r_\star = \tau/\sqrt\gamma$ across layer shapes. Shapes are written
 as (rows $\times$ columns) after the transpose of Section~\ref{sec:setup} that places
-$q \le p$, so $\gamma = q/p$ is the smaller dimension over the larger. A misalignment update
-of rank $r$ is detectable in a layer if and only if $r < r_\star$ for that layer.}
+$q \le p$, so $\gamma = q/p$ is the smaller dimension over the larger. An
+equal-strength rank-$r$ signal is detectable in a layer exactly when
+$r < r_\star$ for that layer.}
 \label{tab:rstar}
 \end{table}
 
@@ -505,8 +508,9 @@ $\gamma$, tolerate a higher-rank signal before it disappears into the bulk, so t
 more forgiving place to detect a concentrated update; the square attention projections
 impose the strictest concentration requirement. Second, the rank-one adapter that suffices
 to induce emergent misalignment \cite{turner2025} sits at $r = 1$, far below $r_\star$ in
-every layer, so its signal is well above threshold, whereas a benign update must
-spread the same energy over at least $r_\star$ directions to stay hidden. The estimator of
+every layer, so the idealized equal-energy signal is well above threshold, whereas a
+diffuse benign update would need to spread the same energy over at least $r_\star$
+directions to stay hidden. The estimator of
 Section~\ref{sec:estimator} therefore scans layers and reports the per-layer standardized
 leading eigenvalue, with the prior that a signal, if present, is clearest where $\gamma$ is
 small and the layer's signal energy is large.
@@ -536,9 +540,11 @@ Proposition~\ref{prop:overlap} matters for validation. If the recovered directio
 $\hat v_1$ tracks the misalignment-relevant change, then steering the model along
 $\pm \hat v_1$ should modulate the misaligned behavior, a causal check that the
 spectral signal is behaviorally coupled rather than only a spectral artifact. This connects the spectral test to the established finding
-that emergent misalignment is steerable along a single recovered direction
-\cite{soligo2025,chen2025}, with the difference that here the direction is obtained from
-the spectrum without alignment labels.
+that emergent misalignment is mediated by a convergent activation direction
+\cite{soligo2025}, with the difference that here the direction is obtained from the
+spectrum without alignment labels. Persona-vector work is related as a broader
+example of low-dimensional control of model traits \cite{chen2025}, but is not an
+emergent-misalignment direction result.
 
 \subsection{A calibrated test}
 
@@ -834,12 +840,13 @@ rank-at-fixed-energy argument.
 
 \paragraph{The structure of emergent misalignment.} Emergent misalignment, in which narrow
 fine-tuning induces broad misalignment \cite{betley2025}, is mediated by a single
-convergent linear direction \cite{soligo2025}, inducible by a rank-one adapter
-\cite{turner2025}, controllable through a small set of persona features
-\cite{wang2025persona,chen2025}, and supported in weight space by a shared low-dimensional
-subspace across tasks \cite{shared2025}. This body of work establishes the low-rank
-\emph{structure} we rely on, with labels; our contribution is to detect it without labels,
-to model it as a BBP-crossing spike, and to make rank at fixed energy the discriminator.
+convergent linear direction in activations \cite{soligo2025}, can be induced in clean
+model organisms by a rank-one adapter \cite{turner2025}, is affected by persona
+features \cite{wang2025persona,chen2025}, and has reported shared low-dimensional
+parameter subspaces across tasks \cite{shared2025}. This body of work motivates,
+but does not establish, the weight-increment rank structure assumed here; our
+contribution is to state that assumption explicitly, model its consequence as a
+BBP-crossing spike, and make rank at fixed energy the discriminator.
 The single-direction phenomenon is part of a broader pattern in which
 safety-relevant behaviors can be low-dimensional, as for refusal
 \cite{arditi2024}, and fine-tuning itself is
