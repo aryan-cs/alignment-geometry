@@ -1,10 +1,10 @@
 {
   "pdf": "docs/proof.pdf",
-  "pdf_sha256": "a8680da40a169fc5077019a735db2bc51cfc4312e6d35a7fc470bed72f01b897",
-  "inspected_at_utc": "2026-06-22T09:33:33Z",
+  "pdf_sha256": "21c9405505bb4543a536b9f80c4bf460fbbd2dd9abbeff6020c2fd7371c0e739",
+  "inspected_at_utc": "2026-06-22T10:00:56Z",
   "pages_total": 16,
   "pages_checked": 16,
   "render_dpi": 120,
-  "method": "Rendered every page with pdftoppm, visually inspected the full 16-page contact sheet, and individually checked updated pages 3, 7, and 12 after the orientation note, critical-rank table, and prediction-framing edits. The dense text and table areas were legible with no clipping, overlap, or alignment defects.",
+  "method": "Rendered every page with pdftoppm, visually inspected the full 16-page contact sheet, and individually checked updated bibliography pages 15 and 16 after citation metadata corrections. The dense proof text and references were legible with no clipping, overlap, or alignment defects.",
   "visual_defects": []
 }

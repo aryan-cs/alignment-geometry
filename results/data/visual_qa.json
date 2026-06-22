@@ -1,10 +1,10 @@
 {
   "pdf": "docs/paper.pdf",
-  "pdf_sha256": "0912c98690fe0a109276bf7dd7863b0a6ad062a30fa2c414964fcf7bf1041034",
-  "inspected_at_utc": "2026-06-22T09:33:33Z",
+  "pdf_sha256": "1c51a33f222e5aa00f6ac0a292ba9f346a214eaab8a48a61cf14f7f6c0ff5970",
+  "inspected_at_utc": "2026-06-22T10:00:56Z",
   "pages_total": 20,
   "pages_checked": 20,
   "render_dpi": 120,
-  "method": "Rendered every page with pdftoppm, visually inspected the full 20-page contact sheet, and individually checked page 15 after the same-recipe held-out-screen wording pass. The discussion text and all figures/tables were legible with no clipping, overlap, or alignment defects.",
+  "method": "Rendered every page with pdftoppm, visually inspected the full 20-page contact sheet, and individually checked updated pages 14, 16, and 17 after citation and bibliography edits. The related-work text, references, figures, and tables were legible with no clipping, overlap, or alignment defects.",
   "visual_defects": []
 }
