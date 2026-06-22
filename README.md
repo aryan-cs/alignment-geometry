@@ -136,7 +136,7 @@ python code/check_capability_result.py --input results/data/capability.json --re
 
 ## Framing
 
-The spectral spike count alone is not claimed to diagnose alignment or misalignment. Any real fine-tune may be anisotropic. The alignment-specific claims are directional and causal: the recovered subspaces overlap known behavior directions, matched benign controls do not recover the same misalignment direction, and ablations remove the behavior where matched random controls do not.
+The spectral spike count alone is not claimed to diagnose alignment or misalignment. Any real fine-tune may be anisotropic. The alignment-specific claims are directional and causal: the recovered subspaces overlap known behavior directions, matched benign controls do not recover the same misalignment direction, and ablations suppress the behavior where matched random controls do not.
 
 The strongest current limitation is that the capability-preservation study for the refusal ablation is still pending real H200 output. Until `results/data/capability.json` exists, the paper should not claim MMLU/GSM8K/ARC preservation under the top-128 ablation.
 
