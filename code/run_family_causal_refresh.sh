@@ -85,6 +85,62 @@ except Exception:
 PY
 }
 
+require_complete_checkpoint() {
+  local label="$1"
+  local arm="$2"
+  if ! "$PYTHON_BIN" - "$arm" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+arm = Path(sys.argv[1])
+index = arm / "model.safetensors.index.json"
+single = arm / "model.safetensors"
+if index.exists():
+    data = json.load(open(index))
+    weight_map = data.get("weight_map")
+    if not isinstance(weight_map, dict) or not weight_map:
+        raise SystemExit(f"{index}: missing nonempty weight_map")
+    for shard_name in sorted(set(weight_map.values())):
+        if not isinstance(shard_name, str) or not shard_name:
+            raise SystemExit(f"{index}: invalid shard name {shard_name!r}")
+        shard = arm / shard_name
+        if not shard.is_file() or shard.stat().st_size <= 0:
+            raise SystemExit(f"{shard}: missing or empty safetensors shard")
+    raise SystemExit(0)
+if single.is_file() and single.stat().st_size > 0:
+    raise SystemExit(0)
+raise SystemExit(f"{arm}: missing nonempty model.safetensors or model.safetensors.index.json")
+PY
+  then
+    printf 'ERROR: %s has incomplete safetensors payload: %s\n' "$label" "$arm" >&2
+    return 1
+  fi
+}
+
+require_disjoint_arms() {
+  local family="$1"
+  shift
+  "$PYTHON_BIN" - "$family" "$@" <<'PY'
+import sys
+from pathlib import Path
+
+family, *paths = sys.argv[1:]
+if "--" not in paths:
+    raise SystemExit("internal error: missing -- separator")
+sep = paths.index("--")
+mis = paths[:sep]
+ben = paths[sep + 1:]
+mis_resolved = {str(Path(path).resolve()) for path in mis}
+ben_resolved = {str(Path(path).resolve()) for path in ben}
+overlap = sorted(mis_resolved & ben_resolved)
+if overlap:
+    raise SystemExit(
+        f"{family}: misaligned and benign arm sets overlap at {overlap[0]}"
+    )
+PY
+}
+
 SOURCE_PATHS=(
   code/run_family_causal_refresh.sh
   code/direction_recover.py
@@ -154,6 +210,13 @@ run_family() {
       "$family" "${#mis_arms[@]}" "${#ben_arms[@]}" >&2
     return 1
   fi
+  for arm in "${mis_arms[@]}"; do
+    require_complete_checkpoint "$family misaligned" "$arm"
+  done
+  for arm in "${ben_arms[@]}"; do
+    require_complete_checkpoint "$family benign" "$arm"
+  done
+  require_disjoint_arms "$family" "${mis_arms[@]}" -- "${ben_arms[@]}"
 
   local directions_base="${directions_json%.json}"
   if [ "${FORCE_DIRECTIONS:-0}" = "1" ] || ! direction_provenance_ready "$directions_json" "$directions_npz" "$LAYER"; then
