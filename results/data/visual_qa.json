@@ -1,10 +1,10 @@
 {
   "pdf": "docs/paper.pdf",
-  "pdf_sha256": "714f3017aeb7537849895512ff1bfd9a3dbbdbcc6863e0250aef1a3fb597e2bf",
-  "inspected_at_utc": "2026-06-22T20:47:38Z",
+  "pdf_sha256": "c86219a213038f34365a7f0c5e11e284b6378324ca1ec86d712edc881eefb347",
+  "inspected_at_utc": "2026-06-22T21:15:15Z",
   "pages_total": 23,
   "pages_checked": 23,
   "render_dpi": 120,
-  "method": "Rendered the rebuilt 23-page PDF with pdftoppm at 120 DPI after regenerating paper figures, adding a referenced-figure freshness gate, and narrowing claim wording from necessary/label-free to ablation-sensitive/behavioral-example-free. Verified pdfinfo reports 23 letter pages and pdffonts reports no Type 3 fonts. Visually inspected the full-paper contact sheet plus pages 1, 7, 11, 15, and 22 at full size; the abstract, regenerated 3D figures, misalignment text, and related-work text are legible with no clipping, overlap, blank page, or alignment defects observed.",
+  "method": "Rendered the rebuilt 23-page PDF with pdftoppm at 120 DPI after regenerating paper figures and adding the figure source/output hash manifest. Verified pdfinfo reports 23 letter pages and pdffonts reports no Type 3 fonts. Visually inspected the full-paper contact sheet plus pages 1, 7, 11, 15, and 22 at full size; the abstract, regenerated 3D figures, misalignment text, and related-work text are legible with no clipping, overlap, blank page, or alignment defects observed.",
   "visual_defects": []
 }

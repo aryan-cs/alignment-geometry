@@ -89,6 +89,7 @@ STALE_PHRASES = [
 CORE_ARTIFACTS = [
     "docs/paper.pdf",
     "docs/proof.pdf",
+    "results/data/figure_manifest.json",
     "results/data/proof_visual_qa.json",
     "results/data/spectral.jsonl",
     "results/data/summary.json",
@@ -1226,6 +1227,88 @@ def check_figure_freshness(gates):
     )
 
 
+def check_figure_manifest(gates):
+    manifest_path = ROOT / "results" / "data" / "figure_manifest.json"
+    tracked = tracked_files() or set()
+    errors = []
+    manifest_rel = rel(manifest_path)
+    if not manifest_path.exists():
+        add(gates, "figure_manifest_current", False, f"missing {manifest_rel}")
+        return
+    if manifest_path.stat().st_size <= 0:
+        add(gates, "figure_manifest_current", False, f"{manifest_rel} is empty")
+        return
+    if manifest_rel not in tracked:
+        errors.append(f"{manifest_rel} is not tracked")
+    try:
+        data = json.loads(manifest_path.read_text())
+    except Exception as exc:
+        add(gates, "figure_manifest_current", False, f"invalid JSON: {exc}")
+        return
+    if data.get("schema") != "figure_manifest_v1":
+        errors.append("schema must be figure_manifest_v1")
+    if data.get("producer") != "code/make_figures.py":
+        errors.append("producer must be code/make_figures.py")
+
+    def index_records(rows, kind):
+        out = {}
+        if not isinstance(rows, list):
+            errors.append(f"{kind} must be a list")
+            return out
+        for i, row in enumerate(rows):
+            if not isinstance(row, dict):
+                errors.append(f"{kind}[{i}] must be an object")
+                continue
+            rel_path = row.get("path")
+            if not isinstance(rel_path, str) or not rel_path:
+                errors.append(f"{kind}[{i}].path must be a nonempty string")
+                continue
+            if rel_path in out:
+                errors.append(f"{kind} duplicates {rel_path}")
+                continue
+            path = ROOT / rel_path
+            if not path.exists():
+                errors.append(f"{kind} references missing path {rel_path}")
+                continue
+            expected_hash = file_sha256(path)
+            if row.get("sha256") != expected_hash:
+                errors.append(f"{rel_path}: sha256 mismatch")
+            if row.get("bytes") != path.stat().st_size:
+                errors.append(f"{rel_path}: byte count mismatch")
+            out[rel_path] = row
+        return out
+
+    sources = index_records(data.get("sources"), "sources")
+    figures = index_records(data.get("figures"), "figures")
+    expected_sources = {
+        rel(ROOT / rel_path)
+        for rel_path in FIGURE_SOURCE_ARTIFACTS
+        if (ROOT / rel_path).exists()
+    }
+    expected_figures = {
+        rel_path
+        for rel_path, _ref in referenced_figure_paths()
+        if rel_path is not None and (ROOT / rel_path).exists()
+    }
+    missing_sources = sorted(expected_sources - set(sources))
+    missing_figures = sorted(expected_figures - set(figures))
+    if missing_sources:
+        errors.append("manifest missing sources: " + ", ".join(missing_sources[:8]))
+    if missing_figures:
+        errors.append("manifest missing referenced figures: " + ", ".join(missing_figures[:8]))
+    if data.get("source_count") != len(sources):
+        errors.append("source_count does not match sources")
+    if data.get("figure_count") != len(figures):
+        errors.append("figure_count does not match figures")
+    add(
+        gates,
+        "figure_manifest_current",
+        not errors,
+        "figure manifest hashes match current sources and referenced figures"
+        if not errors else "; ".join(errors[:8]),
+    )
+
+
 def check_em_dataset_hashes(gates):
     tracked = tracked_files() or set()
     errors = []
@@ -1699,6 +1782,7 @@ def collect_gates(scope="all"):
         check_proof_pdf_freshness(gates)
         check_referenced_figures(gates)
         check_figure_freshness(gates)
+        check_figure_manifest(gates)
         check_em_dataset_hashes(gates)
         check_visual_qa_receipt(gates)
         check_proof_visual_qa_receipt(gates)

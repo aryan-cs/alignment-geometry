@@ -14,6 +14,9 @@ import math
 import re
 import argparse
 import subprocess
+import hashlib
+from datetime import datetime, timezone
+from pathlib import Path
 
 os.environ.setdefault("MPLCONFIGDIR", "/tmp/alignment-geometry-mplconfig")
 os.environ.setdefault("XDG_CACHE_HOME", "/tmp/alignment-geometry-cache")
@@ -61,6 +64,94 @@ plt.rcParams.update({
     "pdf.fonttype": 42,
     "ps.fonttype": 42,
 })
+
+ROOT = Path(__file__).resolve().parents[1]
+FIGURE_SOURCE_ARTIFACTS = [
+    "code/make_figures.py",
+    "results/data/spectral.jsonl",
+    "results/data/summary.json",
+    "results/data/full_spectrum.npz",
+    "results/data/weight_geometry.json",
+    "results/data/behavioral_capture.json",
+    "results/data/capture_sweep.json",
+    "results/data/ablation_sweep.json",
+    "results/data/ablation_layers.json",
+    "results/data/sufficiency.json",
+    "results/data/misalign_scout.json",
+    "results/data/misalignment_eval_medical.json",
+    "results/data/causal_misalign.json",
+    "results/data/causal_misalign_llama.json",
+    "results/data/causal_misalign_mistral.json",
+    "results/data/directions_med.json",
+    "results/data/directions_llama.json",
+    "results/data/directions_llama.npz",
+    "results/data/directions_mistral.json",
+    "results/data/directions_mistral.npz",
+    "results/data/detect_med.json",
+    "results/data/detect_llama.json",
+    "results/data/detect_mistral.json",
+    "results/data/traj_med.json",
+    "results/data/traj_med.npz",
+    "results/data/synthetic_bbp.json",
+]
+
+
+def rel(path):
+    return str(Path(path).resolve().relative_to(ROOT))
+
+
+def sha256_file(path):
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(1024 * 1024), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def file_record(path):
+    path = Path(path)
+    return {
+        "path": rel(path),
+        "sha256": sha256_file(path),
+        "bytes": path.stat().st_size,
+    }
+
+
+def write_figure_manifest(outdir, manifest_path, data_path):
+    source_rels = set(FIGURE_SOURCE_ARTIFACTS)
+    source_rels.add(rel(ROOT / data_path))
+    sources = [
+        file_record(ROOT / source)
+        for source in sorted(source_rels)
+        if (ROOT / source).exists()
+    ]
+    figures = [
+        file_record(path)
+        for path in sorted(Path(outdir).glob("*.pdf"))
+        if path.is_file()
+    ]
+    manifest = {
+        "schema": "figure_manifest_v1",
+        "producer": "code/make_figures.py",
+        "generated_at": (
+            datetime.now(timezone.utc)
+            .replace(microsecond=0)
+            .isoformat()
+            .replace("+00:00", "Z")
+        ),
+        "source_count": len(sources),
+        "figure_count": len(figures),
+        "sources": sources,
+        "figures": figures,
+    }
+    manifest_path = Path(manifest_path)
+    if not manifest_path.is_absolute():
+        manifest_path = ROOT / manifest_path
+    manifest_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(manifest_path, "w") as f:
+        json.dump(manifest, f, indent=2)
+        f.write("\n")
+    print("figure manifest written to", rel(manifest_path))
 
 
 def load(path):
@@ -1130,35 +1221,39 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--data", default="results/data/spectral.jsonl")
     ap.add_argument("--outdir", default="results/figures")
+    ap.add_argument("--manifest", default="results/data/figure_manifest.json")
+    ap.add_argument("--manifest-only", action="store_true")
     args = ap.parse_args()
     os.makedirs(args.outdir, exist_ok=True)
-    rows = load(args.data)
-    print(f"loaded {len(rows)} rows")
-    fig_bulk_spikes(args.outdir)
-    fig_spectrum_panel(rows, args.outdir)
-    fig_spikes_by_layer(rows, args.outdir)
-    fig_spectral_landscape_3d(rows, args.outdir)
-    fig_effrank(rows, args.outdir)
-    fig_capture(args.outdir)
-    fig_energy_overlap(args.outdir)
-    fig_capture_heatmap(args.outdir)
-    fig_ablation(args.outdir)
-    fig_ablation_layers(args.outdir)
-    fig_capability(args.outdir)
-    fig_sufficiency(args.outdir)
-    fig_geometry(args.outdir)
-    fig_mis_convergence(args.outdir)
-    fig_mis_causal(args.outdir)
-    fig_mis_gate(args.outdir)
-    fig_bbp(args.outdir)
-    fig_spectrum_null(args.outdir)
-    fig_convergence_geom(args.outdir)
-    fig_nec_suff(args.outdir)
-    fig_xfam_convergence(args.outdir)
-    fig_trajectory(args.outdir)
-    fig_trajectory_direction_pca_3d(args.outdir)
-    fig_detect(args.outdir)
-    print("figures written to", args.outdir)
+    if not args.manifest_only:
+        rows = load(args.data)
+        print(f"loaded {len(rows)} rows")
+        fig_bulk_spikes(args.outdir)
+        fig_spectrum_panel(rows, args.outdir)
+        fig_spikes_by_layer(rows, args.outdir)
+        fig_spectral_landscape_3d(rows, args.outdir)
+        fig_effrank(rows, args.outdir)
+        fig_capture(args.outdir)
+        fig_energy_overlap(args.outdir)
+        fig_capture_heatmap(args.outdir)
+        fig_ablation(args.outdir)
+        fig_ablation_layers(args.outdir)
+        fig_capability(args.outdir)
+        fig_sufficiency(args.outdir)
+        fig_geometry(args.outdir)
+        fig_mis_convergence(args.outdir)
+        fig_mis_causal(args.outdir)
+        fig_mis_gate(args.outdir)
+        fig_bbp(args.outdir)
+        fig_spectrum_null(args.outdir)
+        fig_convergence_geom(args.outdir)
+        fig_nec_suff(args.outdir)
+        fig_xfam_convergence(args.outdir)
+        fig_trajectory(args.outdir)
+        fig_trajectory_direction_pca_3d(args.outdir)
+        fig_detect(args.outdir)
+        print("figures written to", args.outdir)
+    write_figure_manifest(args.outdir, args.manifest, args.data)
 
 
 if __name__ == "__main__":
