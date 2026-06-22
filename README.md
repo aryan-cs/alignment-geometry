@@ -1,6 +1,6 @@
 # fourier-alignment
 
-> **The spectral geometry of misalignment.** A mechanistic-interpretability study of whether weight increments expose behaviorally load-bearing alignment and misalignment directions.
+> **The spectral geometry of misalignment.** A mechanistic-interpretability study of whether weight increments expose behaviorally load-bearing directions for refusal and emergent misalignment.
 >
 > [Paper PDF](docs/paper.pdf) · [Theory proof](docs/proof.pdf) · [Research plan](PLAN.md) · [License: CC BY-NC-ND 4.0](LICENSE) · [Source on GitHub](https://github.com/aryan-cs/fourier-alignment)
 
@@ -99,7 +99,7 @@ nohup setsid bash code/run_capability_eval.sh > run_capability_eval.log 2>&1 </d
 That launcher writes `results/data/capability.json` and validates it with:
 
 ```bash
-python code/check_capability_result.py --input results/data/capability.json --require-full
+python code/check_capability_result.py --input results/data/capability.json --require-paper
 ```
 
 `code/make_figures.py` already contains a `capability.pdf` plotting hook, but it is inert until the real `results/data/capability.json` exists. No placeholder capability result is committed.

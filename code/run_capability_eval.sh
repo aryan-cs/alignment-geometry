@@ -1,14 +1,20 @@
 #!/bin/bash
 # Capability-preservation study for the refusal ablation.
 #
-# Run on the H200 from /home/aryang9/sandbox/fourier-alignment:
+# Run on the H200 from the repository checkout:
 #   nohup setsid bash code/run_capability_eval.sh > run_capability_eval.log 2>&1 </dev/null & disown
 #
 # Produces results/data/capability.json. Set FORCE=1 to overwrite an existing
 # output, or override sample sizes with N_MMLU/N_GSM8K/N_ARC/N_REFUSAL.
 set -euo pipefail
 
-cd /home/aryang9/sandbox/fourier-alignment
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="${REPO_ROOT:-$(cd "$SCRIPT_DIR/.." && pwd)}"
+cd "$REPO_ROOT"
+if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  echo "FAIL: $REPO_ROOT is not a git checkout" >&2
+  exit 1
+fi
 source .venv/bin/activate
 export TOKENIZERS_PARALLELISM=false
 export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:True}"
@@ -20,6 +26,7 @@ exec > >(tee -a "$LOG") 2>&1
 echo "=== capability_eval START $(date -Is) ==="
 echo "cwd: $(pwd)"
 echo "git: $(git rev-parse --short HEAD 2>/dev/null || echo unknown)"
+echo "git_status: $(git status --short --branch 2>/dev/null | tr '\n' ';')"
 
 H="${HF_HOME:-$HOME/.cache/huggingface}/hub"
 
@@ -46,7 +53,7 @@ echo "out: $OUT"
 
 if [ -s "$OUT" ] && [ "${FORCE:-0}" != "1" ]; then
   echo "SKIP: $OUT exists and FORCE is not set"
-  python code/check_capability_result.py --input "$OUT" --require-full
+  python code/check_capability_result.py --input "$OUT" --require-paper
   echo "=== capability_eval DONE $(date -Is) ==="
   exit 0
 fi
@@ -86,6 +93,6 @@ python code/capability_eval.py \
   --refusal-max-new "${REFUSAL_MAX_NEW:-24}" \
   --out "$OUT"
 
-python code/check_capability_result.py --input "$OUT" --require-full
+python code/check_capability_result.py --input "$OUT" --require-paper
 
 echo "=== capability_eval DONE $(date -Is) ==="

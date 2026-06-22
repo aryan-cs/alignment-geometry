@@ -271,11 +271,14 @@ def gold_gsm8k_answer(answer):
 
 
 def predicted_gsm8k_answer(text):
-    if "####" not in text:
-        return None
-    tail = text.split("####", 1)[1]
-    matches = NUMBER_RE.findall(tail)
-    return canonical_number(matches[0]) if matches else None
+    if "####" in text:
+        tail = text.split("####", 1)[1]
+        matches = NUMBER_RE.findall(tail)
+        return canonical_number(matches[0]) if matches else None
+    # Fallback for otherwise-correct generations that give a final number without
+    # following the GSM8K delimiter convention exactly.
+    matches = NUMBER_RE.findall(text)
+    return canonical_number(matches[-1]) if matches else None
 
 
 def generate_texts(model, tok, prompts, device, register=None, bs=4,
@@ -309,14 +312,15 @@ def generate_texts(model, tok, prompts, device, register=None, bs=4,
 
 
 def eval_refusal_rate(model, tok, prompts, device, register, bs, max_new_tokens):
-    generations = generate_texts(
+    from causal import batched_refusal_rate
+
+    refusals, total = batched_refusal_rate(
         model, tok, prompts, device, register, bs, max_new_tokens
     )
-    refusals = sum(is_refusal(text) for text in generations)
     return {
-        "rate": list(wilson(refusals, len(prompts))),
+        "rate": list(wilson(refusals, total)),
         "refusals": int(refusals),
-        "n": int(len(prompts)),
+        "n": int(total),
     }
 
 
@@ -356,31 +360,52 @@ def load_eval_rows(args):
     from datasets import load_dataset
 
     rows = {}
+    sample_indices = {}
     if "mmlu" in args.tasks:
         ds = load_dataset("cais/mmlu", "all", split=args.mmlu_split)
         idx = select_indices(len(ds), args.n_mmlu, args.seed)
         rows["mmlu"] = [ds[int(i)] for i in idx]
+        sample_indices["mmlu"] = [int(i) for i in idx]
     if "gsm8k" in args.tasks:
         ds = load_dataset("gsm8k", "main", split=args.gsm8k_split)
         idx = select_indices(len(ds), args.n_gsm8k, args.seed + 1)
         rows["gsm8k"] = [ds[int(i)] for i in idx]
+        sample_indices["gsm8k"] = [int(i) for i in idx]
     if "arc" in args.tasks:
         ds = load_dataset("ai2_arc", "ARC-Challenge", split=args.arc_split)
         idx = select_indices(len(ds), args.n_arc, args.seed + 2)
         rows["arc"] = [ds[int(i)] for i in idx]
+        sample_indices["arc"] = [int(i) for i in idx]
     if "refusal" in args.tasks:
         harmful = json.load(open(args.harmful_prompts))
         n = min(args.n_refusal, len(harmful)) if args.n_refusal > 0 else len(harmful)
         rows["refusal"] = harmful[:n]
-    return rows
+        sample_indices["refusal"] = list(range(n))
+    return rows, sample_indices
 
 
 def increment_basis(base_dir, instruct_dir, layer, topk):
+    if topk <= 0:
+        raise ValueError(f"topk must be positive, got {topk}")
     bws, iws = WeightStore(base_dir), WeightStore(instruct_dir)
     name = f"model.layers.{layer}.self_attn.o_proj.weight"
     delta = iws.get(name).astype(np.float64) - bws.get(name).astype(np.float64)
-    U, _, _ = np.linalg.svd(delta, full_matrices=False)
-    return U[:, :topk].astype(np.float32)
+    if delta.ndim != 2:
+        raise ValueError(f"{name} must be a matrix, got shape {delta.shape}")
+    max_rank = min(delta.shape)
+    if topk > max_rank:
+        raise ValueError(f"topk={topk} exceeds matrix rank bound {max_rank}")
+    fro = float(np.linalg.norm(delta))
+    if not np.isfinite(fro) or fro <= 0.0:
+        raise ValueError(f"{name} has degenerate delta Frobenius norm {fro}")
+    U, S, _ = np.linalg.svd(delta, full_matrices=False)
+    meta = {
+        "matrix": name,
+        "shape": [int(x) for x in delta.shape],
+        "delta_fro_norm": fro,
+        "top_singular_values": [float(x) for x in S[:min(10, len(S))]],
+    }
+    return U[:, :topk].astype(np.float32), meta
 
 
 def evaluate_condition(name, register, model, tok, rows, device, args):
@@ -459,7 +484,7 @@ def main():
     }[args.dtype]
     print("device", device, "dtype", args.dtype, flush=True)
 
-    rows = load_eval_rows(args)
+    rows, sample_indices = load_eval_rows(args)
     print("loaded rows", {k: len(v) for k, v in rows.items()}, flush=True)
 
     model, tok = load_model(args.model, device, dtype, args.local_files_only)
@@ -468,9 +493,17 @@ def main():
     rng = np.random.default_rng(args.seed)
     conditions = {}
     top_basis = None
+    basis_meta = None
     if "ablate_top" in args.conditions or "ablate_random" in args.conditions:
-        top_basis = increment_basis(args.base, args.instruct, args.layer, args.topk)
+        top_basis, basis_meta = increment_basis(
+            args.base, args.instruct, args.layer, args.topk
+        )
         d = top_basis.shape[0]
+        model_width = int(model.config.hidden_size)
+        if d != model_width:
+            raise ValueError(
+                f"basis width {d} does not match model hidden_size {model_width}"
+            )
     else:
         d = int(model.config.hidden_size)
 
@@ -484,6 +517,7 @@ def main():
             random_basis.T, device
         )
 
+    matrix_name = f"model.layers.{args.layer}.self_attn.o_proj.weight"
     result = {
         "model": args.model,
         "base": args.base,
@@ -493,6 +527,38 @@ def main():
         "seed": int(args.seed),
         "tasks": args.tasks,
         "sample_sizes": {k: len(v) for k, v in rows.items()},
+        "splits": {
+            "mmlu": args.mmlu_split,
+            "gsm8k": args.gsm8k_split,
+            "arc": args.arc_split,
+        },
+        "sample_indices": sample_indices,
+        "eval_config": {
+            "dtype": args.dtype,
+            "device": device,
+            "local_files_only": bool(args.local_files_only),
+            "mc_bs": int(args.mc_bs),
+            "gen_bs": int(args.gen_bs),
+            "refusal_bs": int(args.refusal_bs),
+            "gsm8k_max_new": int(args.gsm8k_max_new),
+            "refusal_max_new": int(args.refusal_max_new),
+            "harmful_prompts": args.harmful_prompts,
+            "requested_n": {
+                "mmlu": int(args.n_mmlu),
+                "gsm8k": int(args.n_gsm8k),
+                "arc": int(args.n_arc),
+                "refusal": int(args.n_refusal),
+            },
+        },
+        "intervention": {
+            "matrix": matrix_name,
+            "basis": "top-k left singular vectors of W_instruct - W_base",
+            "basis_metadata": basis_meta,
+            "source_layer": int(args.layer),
+            "projection": "h <- h - (h @ Q) @ Q.T",
+            "applied_to": "every decoder layer residual stream",
+            "random_control_seed": int(args.seed),
+        },
         "conditions": {},
     }
     for name, register in conditions.items():
