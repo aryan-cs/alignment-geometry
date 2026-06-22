@@ -1,11 +1,11 @@
 \section{Leading spectral directions are a refusal bottleneck}
 \label{sec:causal}
 
-A concentrated spectrum is only interesting if the directions it singles out
+A concentrated spectrum matters for safety only if the directions it singles out
 relate to behavior. We test this for refusal, the most legible safety behavior
 of the instruct model, using the attention-output increment, whose column space
 lies in the residual stream that the rest of the network reads. We find a clear
-geometric relationship and then test what is and is not causally necessary.
+geometric relationship and then test ablation sensitivity and steering behavior.
 
 \paragraph{Setup.}
 We form the empirical refusal direction $r_\ell$ at layer $\ell$ as the
@@ -83,7 +83,7 @@ and final layers.}
 \end{figure}
 
 \paragraph{What ablation does and does not remove.}
-Enrichment is a geometric fact; necessity is a separate, stronger claim. We project the top-$k$ left-singular subspace of the
+Enrichment is a geometric fact; ablation sensitivity is a separate, stronger claim. We project the top-$k$ left-singular subspace of the
 \texttt{o\_proj} increment out of the residual stream at every layer and measure
 the refusal rate on held-out harmful prompts, with a random-$k$-subspace as a
 negative control and a rank-one ablation of the refusal direction itself as a
@@ -118,9 +118,9 @@ degrades refusal faster than a same-dimensional random subspace (gold) through
 the $k{\in}[64,256]$ regime; the rank-one refusal-direction ablation (green) is
 shown for reference. \emph{Right:} the main $k{=}128$ comparison and controls.
 Ablating
-the top-$128$ spectral directions collapses refusal to $3\%$, while a
-random $128$-subspace leaves it at $94\%$, a clean dissociation
-with non-overlapping intervals.}
+the top-$128$ spectral directions reduces measured refusal to $3.1\%$, while a
+random $128$-subspace leaves it at $94.5\%$, with non-overlapping $95\%$ Wilson
+intervals.}
 \label{fig:ablation}
 \end{figure}
 
@@ -158,7 +158,7 @@ The control behaves as expected, rising from $0\%$ ($[0.0,3.7]\%$) to $98\%$
 ($[93.0,99.4]\%$) refusal as the steering strength grows; a random direction
 never rises above $1.0\%$ ($[0.2,5.4]\%$).
 The leading \emph{single} spectral direction of the increment also fails to
-induce refusal on its own, which is consistent with the necessity result: refusal
+induce refusal on its own, which is consistent with the ablation result: refusal
 is distributed across the leading subspace, not carried by its top mode. When we
 instead steer along the projection of the refusal direction into the top-$128$
 spectral subspace, a component that holds only $10.5\%$ of the refusal

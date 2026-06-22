@@ -1,10 +1,10 @@
 {
   "pdf": "docs/paper.pdf",
-  "pdf_sha256": "73e63b62fd9835cf754d0023c60c9d81a099396d9c18152073d4cf27e009db40",
-  "inspected_at_utc": "2026-06-22T09:14:55Z",
+  "pdf_sha256": "485a5e18ddfd07de9ae3c8f8fbe6b8666ba760a3f12490dd9a6a449550d47f7b",
+  "inspected_at_utc": "2026-06-22T09:23:41Z",
   "pages_total": 20,
   "pages_checked": 20,
   "render_dpi": 120,
-  "method": "Rendered every page with pdftoppm, visually inspected the full 20-page contact sheet, and individually checked pages 8 and 9 after replacing the AUC ablation panel with Wilson-interval refusal-rate panels. The updated capture wording, ablation figure, captions, and surrounding text were legible with no overlap.",
+  "method": "Rendered every page with pdftoppm, visually inspected the full 20-page contact sheet, and individually checked pages 1, 7, 8, 11, 13, 15, and 20 after the senior-style wording pass. The abstract, refusal/capture section, misalignment captions, discussion, and appendix detector caption were legible with no overlap.",
   "visual_defects": []
 }

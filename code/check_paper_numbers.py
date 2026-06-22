@@ -173,6 +173,9 @@ def check_misalignment_framing():
         ("under ablation, " + "removes", "use suppresses the measured behavior"),
         ("exactly its negation " + "and addition", "describe activation-space analogues instead"),
         ("production model", "use released model unless there is production evidence"),
+        ("exactly as it did for refusal", "distinguish refusal projection steering from misalignment rank-one steering"),
+        ("clean dissociation", "state the measured rates and non-overlapping intervals"),
+        ("collapses refusal to 3\\%", "use the exact measured rate and interval"),
     ]
     for rel in guarded:
         text = (ROOT / rel).read_text().lower()

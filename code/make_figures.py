@@ -722,7 +722,7 @@ def fig_mis_gate(outdir, f="results/data/misalignment_eval_medical.json"):
         ax.hlines(100 * pp, x0 - 0.22, x0 + 0.22, color=col, lw=2)
     ax.set_xticks([0, 1]); ax.set_xticklabels(["misaligned\n(bad medical)", "benign\n(safe medical)"])
     ax.set_ylabel("emergent misalignment rate (%)")
-    ax.set_title("matched organism: clean dissociation", fontsize=9)
+    ax.set_title("matched organism: separated from controls", fontsize=9)
     max_hi = max(
         [100 * wilson(r["n_misaligned"], r["n_scored"])[2] for r in mis + ben] + [1.0]
     )

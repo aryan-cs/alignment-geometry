@@ -168,7 +168,8 @@ per-seed directions with the seed-averaged direction; \emph{benign null} is the
 same quantity for benign-versus-benign runs. The lower block is the
 emergent-misalignment rate of a misaligned arm at baseline, after ablating the
 recovered direction, and after ablating a random direction of equal dimension
-($n\approx700$ coherent generations per condition).}
+($n\approx700$ coherent generations per condition). Wilson intervals are listed
+immediately below the table.}
 \label{tab:cross-family}
 \small
 \begin{tabular}{lccc}
@@ -193,8 +194,9 @@ $[7.0,11.2]\%$, $[2.1,4.6]\%$, and $[5.6,9.5]\%$ for Mistral-7B.
 
 \paragraph{Ablation-sensitive, with negative coherent steering.}
 The mirror test, whether \emph{adding} the direction to a benign model induces
-misalignment, comes back negative, exactly as it did for refusal
-(Section~\ref{sec:causal}), but the evidence here is deliberately limited. At the
+misalignment, is negative in the coherent regime tested. Unlike the refusal
+projection test (Section~\ref{sec:causal}), this rank-one steering check does
+not induce the behavior. The evidence here is deliberately limited. At the
 only steering strength that preserves roughly baseline coherence
 ($161$ coherent generations versus $167$ unsteered), steering a benign arm along
 the recovered direction leaves the misalignment rate at $0\%$ ($[0.0,2.3]\%$).
