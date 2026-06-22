@@ -48,6 +48,7 @@ fourier-alignment/
 │   ├── check_cross_organism.py      # validator for cross_organism output
 │   ├── baseline_bakeoff.py          # weight-space baselines plus real activation-PCA row
 │   ├── activation_pca_baseline.py   # GPU activation-PCA baseline row producer
+│   ├── check_run_manifest.py        # provenance validator for real study runs
 │   └── ...                          # training, steering, ablation, and analysis scripts
 ├── paper/
 │   ├── main.tex
@@ -176,6 +177,12 @@ BASE=<shared-base-checkpoint> JUDGE=<judge-checkpoint> bash code/run_cross_type_
 The launcher writes `results/data/run_manifests/cross_type_code_manifest.json`
 after the real code-organism eval, direction recovery, detector, causal, and
 cross-organism validators complete. The underlying cross-organism command is:
+
+Validate the manifest with:
+
+```bash
+python3 code/check_run_manifest.py --input results/data/run_manifests/cross_type_code_manifest.json --study cross_type_code --require-completed
+```
 
 ```bash
 python code/cross_organism.py \

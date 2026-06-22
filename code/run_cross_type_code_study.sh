@@ -119,6 +119,7 @@ artifacts = [
     "results/data/cross_organism.json",
 ]
 scripts = [
+    "code/run_cross_type_code_study.sh",
     "code/verify_misalignment.py",
     "code/direction_recover.py",
     "code/detect_holdout.py",
