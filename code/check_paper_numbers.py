@@ -8,7 +8,6 @@ file that should support it.
 import json
 import math
 import re
-import subprocess
 import sys
 from pathlib import Path
 
@@ -37,20 +36,6 @@ def expect(label, actual, expected, tol=1e-9):
 def expect_text(label, actual, expected):
     if str(actual) != expected:
         failures.append(f"{label}: got {actual!r}, expected {expected!r}")
-
-
-def expect_command(label, args):
-    proc = subprocess.run(
-        args,
-        cwd=ROOT,
-        text=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        check=False,
-    )
-    if proc.returncode != 0:
-        detail = proc.stdout.strip().splitlines()[0] if proc.stdout.strip() else "no output"
-        failures.append(f"{label}: {detail}")
 
 
 def pct(x):
@@ -343,21 +328,6 @@ def check_refusal():
     expect("sufficiency: refusal direction reaches 98%", pct(suff["refusal_dir"]["4.0"]["refusal"][0]), 98.0, 0.06)
     expect("sufficiency: spectral subspace reaches 67%", pct(suff["spectral_subspace"]["6.0"]["refusal"][0]), 67.0, 0.06)
     expect("sufficiency: refusal mass in spectral subspace displayed as 10.5%", pct(suff["refusal_in_spec_fraction"]), 10.5, 0.06)
-
-    transfer = load_json("transfer.json")
-    expect_command(
-        "OOD transfer provenance",
-        [
-            sys.executable,
-            "code/check_transfer_result.py",
-            "--input",
-            "results/data/transfer.json",
-            "--require-tracked-prompts",
-        ],
-    )
-    expect("OOD transfer: baseline refusal displayed as 97.0%", pct(transfer["baseline"][0]), 97.0, 0.06)
-    expect("OOD transfer: spectral ablation displayed as 0.0%", pct(transfer["ablate_topk_advbench_derived"][0]), 0.0, 0.06)
-    expect("OOD transfer: random ablation displayed as 94.0%", pct(transfer["ablate_randk"][0]), 94.0, 0.06)
 
 
 def check_misalignment():

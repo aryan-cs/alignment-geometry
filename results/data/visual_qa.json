@@ -1,10 +1,10 @@
 {
   "pdf": "docs/paper.pdf",
-  "pdf_sha256": "fd1866766260e832605d456d07f209d42f53d7050009f746721d2e493696ce4d",
-  "inspected_at_utc": "2026-06-22T08:40:28Z",
+  "pdf_sha256": "8c8fd8f0f21e7bfea916a9a91491ca711e591e5ba21929c183f5615e3283b4c1",
+  "inspected_at_utc": "2026-06-22T08:46:17Z",
   "pages_total": 20,
   "pages_checked": 20,
   "render_dpi": 120,
-  "method": "Rendered every page with pdftoppm, visually inspected the full 20-page contact sheet, and individually checked updated citation/provenance/reference pages 5, 7, 8, 10, 16, and 17.",
+  "method": "Rendered every page with pdftoppm, visually inspected the full 20-page contact sheet, and individually checked updated refusal/limitations pages 7, 8, 14, and 15 after removing the unprovenanced OOD-transfer claim.",
   "visual_defects": []
 }

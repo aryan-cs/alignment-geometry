@@ -50,7 +50,6 @@ CORE_ARTIFACTS = [
     "results/data/ablation_sweep.json",
     "results/data/ablation_layers.json",
     "results/data/sufficiency.json",
-    "results/data/transfer.json",
     "results/data/misalign_scout.json",
     "results/data/misalignment_eval_medical.json",
     "results/data/causal_misalign.json",
@@ -940,17 +939,6 @@ def collect_gates():
     check_medical_direction_study(gates)
     check_medical_direction_vector_artifact(gates)
     check_cross_family_direction_studies(gates)
-    check_command(
-        gates,
-        "transfer_result_valid",
-        [
-            sys.executable,
-            "code/check_transfer_result.py",
-            "--input",
-            "results/data/transfer.json",
-            "--require-tracked-prompts",
-        ],
-    )
     check_stale_phrases(gates)
     check_capability(gates)
     check_capability_manifest(gates)
