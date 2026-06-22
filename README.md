@@ -79,6 +79,7 @@ Validate headline manuscript numbers against committed result summaries:
 python3 code/check_paper_numbers.py
 python3 code/check_citations.py
 python3 code/check_secrets.py --history
+python3 code/check_uncertainty.py
 ```
 
 Run the conservative completion monitor for the paper:
@@ -112,6 +113,10 @@ python3 code/check_direction_study.py --tag med --directions results/data/direct
 python3 code/check_direction_study.py --tag llama --directions results/data/directions_llama.json --directions-npz results/data/directions_llama.npz --detect results/data/detect_llama.json --causal results/data/causal_misalign_llama.json --layer 12 --k 16
 python3 code/check_direction_study.py --tag mistral --directions results/data/directions_mistral.json --directions-npz results/data/directions_mistral.npz --detect results/data/detect_mistral.json --causal results/data/causal_misalign_mistral.json --layer 12 --k 16 --min-convergence 0.70 --min-convergence-gap 0.30 --min-best-gap 0.45
 ```
+
+For final completion, newly regenerated causal artifacts must also pass
+`--require-causal-provenance`, which requires producer, command, model/judge,
+input-hash, direction-vector-hash, seed, script-hash, and git-commit metadata.
 
 Validate a completed baseline bake-off:
 

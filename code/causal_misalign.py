@@ -21,11 +21,89 @@ import os
 import sys
 import json
 import argparse
+import hashlib
+import subprocess
+from datetime import datetime, timezone
 import numpy as np
 import torch
 
 sys.path.insert(0, os.path.dirname(__file__))
 import verify_misalignment as V  # reuse EM_QUESTIONS, judge_score, templates, gen
+
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+RANDOM_SEED = 0
+
+
+def _sha256_bytes(data):
+    return hashlib.sha256(data).hexdigest()
+
+
+def _sha256_file(path):
+    path = path if os.path.isabs(path) else os.path.join(ROOT, path)
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(1024 * 1024), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def _git(args):
+    proc = subprocess.run(
+        ["git", *args],
+        cwd=ROOT,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    return proc.stdout.strip() if proc.returncode == 0 else ""
+
+
+def _utc_now():
+    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+
+
+def build_provenance(args, v, started_at, finished_at):
+    producer = "code/causal_misalign.py"
+    prompt_payload = json.dumps(V.EM_QUESTIONS, sort_keys=True, separators=(",", ":")).encode()
+    template_payload = json.dumps(
+        {"aligned": V.ALIGNED_TMPL, "coherent": V.COHERENT_TMPL},
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode()
+    input_hashes = {}
+    dirs_full = args.dirs if os.path.isabs(args.dirs) else os.path.join(ROOT, args.dirs)
+    if os.path.exists(dirs_full):
+        input_hashes[args.dirs] = _sha256_file(args.dirs)
+    return {
+        "schema": "causal_misalign_provenance_v1",
+        "producer": producer,
+        "git_commit": _git(["rev-parse", "HEAD"]),
+        "git_status_short": _git(["status", "--short"]),
+        "started_at": started_at,
+        "finished_at": finished_at,
+        "argv": sys.argv[:],
+        "args": {
+            "misaligned": args.misaligned,
+            "benign": args.benign,
+            "judge": args.judge,
+            "dirs": args.dirs,
+            "layer": args.layer,
+            "alphas": args.alphas,
+            "n": args.n,
+            "chunk": args.chunk,
+            "necessity_only": bool(args.necessity_only),
+            "out": args.out,
+        },
+        "script_sha256": _sha256_file(producer),
+        "input_sha256": input_hashes,
+        "direction_key": "wdsv_L%d" % args.layer,
+        "direction_vector_sha256": _sha256_bytes(np.ascontiguousarray(v).tobytes()),
+        "random_seed": RANDOM_SEED,
+        "prompt_set_sha256": _sha256_bytes(prompt_payload),
+        "judge_templates_sha256": _sha256_bytes(template_payload),
+    }
 
 
 def steer_hook(vec, alpha, device, layer=None):
@@ -126,13 +204,14 @@ def main():
                     help="skip coherent steering; only recompute ablation-sensitivity bars")
     ap.add_argument("--out", default="results/data/causal_misalign.json")
     args = ap.parse_args()
+    started_at = _utc_now()
     device = "cuda" if torch.cuda.is_available() else "cpu"
     from transformers import AutoModelForCausalLM, AutoTokenizer
 
     Z = np.load(args.dirs)
     v = Z["wdsv_L%d" % args.layer].astype(np.float32)
     d = v.shape[0]
-    rng = np.random.default_rng(0)
+    rng = np.random.default_rng(RANDOM_SEED)
     vrand = rng.standard_normal(d).astype(np.float32)
 
     res = {"layer": args.layer, "n": args.n, "alphas": [float(a) for a in args.alphas.split(",")]}
@@ -193,6 +272,7 @@ def main():
         except Exception:
             pass
 
+    res["provenance"] = build_provenance(args, v, started_at, _utc_now())
     os.makedirs(os.path.dirname(args.out), exist_ok=True)
     json.dump(res, open(args.out, "w"), indent=2)
     print("wrote", args.out, flush=True)

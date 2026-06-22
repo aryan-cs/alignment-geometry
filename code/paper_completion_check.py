@@ -129,6 +129,7 @@ PENDING_VALIDATORS = {
             "results/data/misalignment_eval_code.json",
             "--causal",
             "results/data/causal_misalign_code.json",
+            "--require-causal-provenance",
         ],
         [
             sys.executable,
@@ -207,6 +208,7 @@ PENDING_VALIDATORS = {
             "results/data/misalignment_eval_14b.json",
             "--causal",
             "results/data/causal_misalign_14b.json",
+            "--require-causal-provenance",
         ],
         [
             sys.executable,
@@ -523,6 +525,72 @@ def check_cross_family_direction_studies(gates):
             "0.45",
         ],
     )
+
+
+def check_current_causal_provenance(gates):
+    commands = {
+        "medical_causal_provenance_valid": [
+            sys.executable,
+            "code/check_direction_study.py",
+            "--tag",
+            "med",
+            "--directions",
+            "results/data/directions_med.json",
+            "--detect",
+            "results/data/detect_med.json",
+            "--eval",
+            "results/data/misalignment_eval_medical.json",
+            "--causal",
+            "results/data/causal_misalign.json",
+            "--require-causal-provenance",
+        ],
+        "llama_causal_provenance_valid": [
+            sys.executable,
+            "code/check_direction_study.py",
+            "--tag",
+            "llama",
+            "--directions",
+            "results/data/directions_llama.json",
+            "--directions-npz",
+            "results/data/directions_llama.npz",
+            "--detect",
+            "results/data/detect_llama.json",
+            "--causal",
+            "results/data/causal_misalign_llama.json",
+            "--layer",
+            "12",
+            "--k",
+            "16",
+            "--require-causal-provenance",
+        ],
+        "mistral_causal_provenance_valid": [
+            sys.executable,
+            "code/check_direction_study.py",
+            "--tag",
+            "mistral",
+            "--directions",
+            "results/data/directions_mistral.json",
+            "--directions-npz",
+            "results/data/directions_mistral.npz",
+            "--detect",
+            "results/data/detect_mistral.json",
+            "--causal",
+            "results/data/causal_misalign_mistral.json",
+            "--layer",
+            "12",
+            "--k",
+            "16",
+            "--min-convergence",
+            "0.70",
+            "--min-convergence-gap",
+            "0.30",
+            "--min-best-gap",
+            "0.45",
+            "--require-causal-provenance",
+        ],
+    }
+    for name, command in commands.items():
+        check_command(gates, name, command, category="external")
 
 
 def check_remaining_work_tracker(gates):
@@ -942,10 +1010,12 @@ def collect_gates():
     check_command(gates, "paper_numbers_valid", [sys.executable, "code/check_paper_numbers.py"])
     check_command(gates, "citations_valid", [sys.executable, "code/check_citations.py"])
     check_command(gates, "secrets_absent", [sys.executable, "code/check_secrets.py", "--history"])
+    check_command(gates, "uncertainty_valid", [sys.executable, "code/check_uncertainty.py"])
     check_command(gates, "synthetic_bbp_valid", [sys.executable, "code/synthetic_bbp.py", "--check"])
     check_medical_direction_study(gates)
     check_medical_direction_vector_artifact(gates)
     check_cross_family_direction_studies(gates)
+    check_current_causal_provenance(gates)
     check_stale_phrases(gates)
     check_capability(gates)
     check_capability_manifest(gates)

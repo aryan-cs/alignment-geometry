@@ -6,10 +6,12 @@ not generate evidence; it checks that committed direction, detector, gate, and
 optional causal artifacts contain enough signal to support paper claims.
 """
 import argparse
+import hashlib
 import json
 import math
 import os
 import re
+import subprocess
 import sys
 from pathlib import Path
 
@@ -22,6 +24,30 @@ ROOT = Path(__file__).resolve().parents[1]
 def load_json(path):
     with open(path) as f:
         return json.load(f)
+
+
+def file_sha256(path):
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(1024 * 1024), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def bytes_sha256(data):
+    return hashlib.sha256(data).hexdigest()
+
+
+def git_output(args, *, text=True):
+    proc = subprocess.run(
+        ["git", *args],
+        cwd=ROOT,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=text,
+        check=False,
+    )
+    return proc.stdout if proc.returncode == 0 else None
 
 
 def error(errors, context, message):
@@ -163,6 +189,97 @@ def validate_direction_npz(path, directions, args, errors):
         error(errors, path, f"{key} norm {norm:.4g} outside expected unit-vector range")
 
 
+def validate_git_commit(value, context, errors):
+    if not isinstance(value, str) or not re.fullmatch(r"[0-9a-f]{40}", value):
+        error(errors, context, "must be a full 40-character git SHA")
+        return False
+    if git_output(["cat-file", "-e", f"{value}^{{commit}}"]) is None:
+        error(errors, context, "commit does not exist locally")
+        return False
+    return True
+
+
+def validate_causal_provenance(path, data, args, errors):
+    if not args.require_causal_provenance:
+        return
+    ctx = f"{path}.provenance"
+    prov = data.get("provenance")
+    if not isinstance(prov, dict):
+        error(errors, ctx, "missing causal provenance; rerun code/causal_misalign.py with provenance capture")
+        return
+    required = [
+        "schema",
+        "producer",
+        "git_commit",
+        "git_status_short",
+        "started_at",
+        "finished_at",
+        "argv",
+        "args",
+        "script_sha256",
+        "input_sha256",
+        "direction_key",
+        "direction_vector_sha256",
+        "random_seed",
+        "prompt_set_sha256",
+        "judge_templates_sha256",
+    ]
+    for key in required:
+        if key not in prov:
+            error(errors, f"{ctx}.{key}", "missing required provenance field")
+    if prov.get("schema") != "causal_misalign_provenance_v1":
+        error(errors, f"{ctx}.schema", "must be causal_misalign_provenance_v1")
+    if prov.get("producer") != "code/causal_misalign.py":
+        error(errors, f"{ctx}.producer", "must be code/causal_misalign.py")
+    commit = prov.get("git_commit")
+    commit_ok = validate_git_commit(commit, f"{ctx}.git_commit", errors)
+    digest = prov.get("script_sha256")
+    if commit_ok and isinstance(digest, str) and re.fullmatch(r"[0-9a-f]{64}", digest):
+        script = git_output(["show", f"{commit}:code/causal_misalign.py"], text=False)
+        if script is None:
+            error(errors, f"{ctx}.script_sha256", "producer missing at recorded commit")
+        elif bytes_sha256(script) != digest:
+            error(errors, f"{ctx}.script_sha256", "does not match producer at recorded commit")
+    elif digest is not None:
+        error(errors, f"{ctx}.script_sha256", "must be a sha256 hex digest")
+    pargs = prov.get("args")
+    if not isinstance(pargs, dict):
+        error(errors, f"{ctx}.args", "must be an object")
+    else:
+        for key in ("misaligned", "benign", "judge", "dirs", "layer", "n", "chunk"):
+            if pargs.get(key) in (None, ""):
+                error(errors, f"{ctx}.args.{key}", "must be present and nonempty")
+        if pargs.get("layer") != args.layer:
+            error(errors, f"{ctx}.args.layer", f"must match validator layer {args.layer}")
+    if prov.get("direction_key") != f"wdsv_L{args.layer}":
+        error(errors, f"{ctx}.direction_key", f"must be wdsv_L{args.layer}")
+    if prov.get("random_seed") != 0:
+        error(errors, f"{ctx}.random_seed", "must be 0 for the committed random-direction control")
+    for key in ("direction_vector_sha256", "prompt_set_sha256", "judge_templates_sha256"):
+        value = prov.get(key)
+        if not isinstance(value, str) or not re.fullmatch(r"[0-9a-f]{64}", value):
+            error(errors, f"{ctx}.{key}", "must be a sha256 hex digest")
+    input_hashes = prov.get("input_sha256")
+    if not isinstance(input_hashes, dict) or not input_hashes:
+        error(errors, f"{ctx}.input_sha256", "must include input artifact hashes")
+    else:
+        dirs = pargs.get("dirs") if isinstance(pargs, dict) else None
+        if dirs not in input_hashes:
+            error(errors, f"{ctx}.input_sha256", "missing hash for args.dirs")
+        dirs_full = Path(dirs) if dirs else None
+        if dirs_full is not None and not dirs_full.is_absolute():
+            dirs_full = ROOT / dirs_full
+        if dirs_full is not None and dirs_full.exists() and file_sha256(dirs_full) != input_hashes[dirs]:
+            error(errors, f"{ctx}.input_sha256.{dirs}", "hash mismatch")
+    if args.directions_npz and os.path.exists(args.directions_npz):
+        z = np.load(args.directions_npz)
+        key = f"wdsv_L{args.layer}"
+        if key in z:
+            digest_now = bytes_sha256(np.ascontiguousarray(z[key].astype(np.float32)).tobytes())
+            if prov.get("direction_vector_sha256") != digest_now:
+                error(errors, f"{ctx}.direction_vector_sha256", "does not match directions npz vector")
+
+
 def parse_ratio(text):
     if not isinstance(text, str):
         return None
@@ -257,6 +374,7 @@ def validate_causal_json(path, args, errors):
         return
     data = load_json(path)
     ctx = str(path)
+    validate_causal_provenance(path, data, args, errors)
     if data.get("layer") != args.layer:
         error(errors, ctx, f"layer must be {args.layer}; got {data.get('layer')!r}")
     nec = data.get("necessity")
@@ -341,6 +459,7 @@ def parse_args():
     ap.add_argument("--min-causal-drop", type=float, default=0.015)
     ap.add_argument("--min-random-gap", type=float, default=0.015)
     ap.add_argument("--require-causal-wilson-separation", action=argparse.BooleanOptionalAction, default=True)
+    ap.add_argument("--require-causal-provenance", action="store_true")
     ap.add_argument("--misaligned-name-substrings", nargs="+", default=["misaligned", "insecure"])
     ap.add_argument("--benign-name-substrings", nargs="+", default=["benign", "educational", "secure"])
     return ap.parse_args()
