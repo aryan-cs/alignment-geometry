@@ -61,6 +61,10 @@ STALE_PHRASES = [
     "The misalignment direction converges across families",
     "distributed mechanism",
     "completely in the cleaner organisms",
+    "The misalignment result replicates across three model families",
+    "The direction is useful before and beyond the training runs used to recover it",
+    "It emerges early in training",
+    "Early-training trajectory and same-recipe held-out screen",
 ]
 
 

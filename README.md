@@ -27,8 +27,8 @@ The current paper reports these results from real committed artifacts under `res
 - **Refusal depends on the leading spectral subspace.** The empirical refusal direction is enriched in the top singular directions of the layer-14 `o_proj` increment. Ablating the top-128 spectral subspace collapses refusal from 98.4% (`[94.5,99.6]%`) to 3.1% (`[1.2,7.8]%`), while a random 128-dimensional subspace leaves refusal near baseline at 94.5% (`[89.1,97.3]%`).
 - **A label-free misalignment direction is recovered from matched fine-tunes.** In a Qwen2.5-Coder-7B emergent-misalignment organism, the contrastive weight direction converges across four independent misaligned arms at mean cosine 0.97 while the four-arm benign training-noise summary is 0.16 at the same layer.
 - **Ablating the misalignment direction suppresses the measured behavior.** Ablating the recovered direction drives emergent misalignment from 4.5% (`[3.2,6.3]%`) to 0.1% (`[0.0,0.8]%`); a random direction leaves it at 3.8% (`[2.6,5.5]%`).
-- **The misalignment result replicates across three model families.** Qwen2.5-Coder-7B, Llama-3-8B, and Mistral-7B all show a convergent direction whose ablation suppresses measured misalignment, with the Mistral ablation being partial rather than complete.
-- **The direction is useful before and beyond the training runs used to recover it.** It emerges early in training and separates same-recipe held-out misaligned arms from benign controls in leave-one-seed-out tests.
+- **The matched-organism result appears across three model families.** Within the same medical-advice organism, Qwen2.5-Coder-7B, Llama-3-8B, and Mistral-7B all show a convergent direction whose ablation suppresses measured misalignment, with the Mistral ablation being partial rather than complete.
+- **The recovered direction is visible early in the recorded trajectory and separates same-recipe held-out arms.** In retrospective checkpoints it reaches near-final form before the measured behavior peaks, and in leave-one-seed-out tests it scores same-recipe held-out misaligned arms above benign controls. This is not yet a calibrated detector for arbitrary checkpoints.
 
 The paper intentionally separates the generic fact that fine-tuning can be spectrally anisotropic from the alignment-specific evidence, which comes from directions, matched controls, and causal interventions.
 
@@ -365,8 +365,8 @@ python3 code/check_run_manifest.py \
 | Llama-3-8B alignment-increment spectral analysis | done |
 | Refusal direction enrichment, ablation, and sufficiency tests | done |
 | Matched medical emergent-misalignment organism | numeric artifacts validated; strict run provenance/vector manifest pending |
-| Cross-family replication on Qwen, Llama, and Mistral | numeric artifacts validated; strict causal provenance pending |
-| Early-training trajectory and same-recipe held-out screen | numeric artifacts validated |
+| Cross-family replication within the matched medical organism on Qwen, Llama, and Mistral | numeric artifacts validated; strict causal provenance pending |
+| Retrospective training trajectory and same-recipe held-out screen | numeric artifacts validated |
 | Capability-preservation eval for top-128 refusal ablation | queued for H200; harness and validator committed |
 | Cross-type misalignment direction study beyond the medical organism | pending; no sleeper-agent/RLHF-trojan result committed yet |
 | 14B scale study and additional baselines | pending |
