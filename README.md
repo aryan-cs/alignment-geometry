@@ -145,9 +145,11 @@ bash code/run_medical_direction_refresh.sh
 
 This refresh writes `results/data/directions_med.json`,
 `results/data/directions_med.npz`, `results/data/detect_med.json`,
-`results/data/causal_misalign.json`, and
-`results/data/causal_misalign_generations.json`; all are needed for strict
-camera-ready provenance.
+`results/data/misalignment_eval_medical.json`,
+`results/data/em_generations_medical.json`, `results/data/causal_misalign.json`,
+and `results/data/causal_misalign_generations.json`; all are needed for strict
+camera-ready provenance. Set `REFRESH_EVAL=0` only for exploratory reruns that
+should not be treated as final paper refreshes.
 
 Refresh the existing Llama/Mistral causal artifacts with the current provenance
 schema:

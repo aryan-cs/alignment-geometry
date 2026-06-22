@@ -575,6 +575,7 @@ def check_medical_direction_vector_artifact(gates):
             "results/data/causal_misalign.json",
             "--require-direction-provenance",
             "--require-detect-provenance",
+            "--require-eval-provenance",
         ],
         category="external",
     )

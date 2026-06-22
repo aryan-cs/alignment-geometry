@@ -12,8 +12,10 @@
 #   LAYERS=8,12,16,20,24
 #   LAYER=12
 #   K=16
+#   N_EVAL=50
 #   N_CAUSAL=100
 #   NECESSITY_ONLY=1  # preserves existing coherent-steering sweep if present
+#   REFRESH_EVAL=1    # regenerate misalignment_eval_medical.json provenance
 set -euo pipefail
 
 ROOT="${REPO_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
@@ -32,9 +34,13 @@ MED_BEN_GLOB="${MED_BEN_GLOB:-benign_med7b_s*}"
 LAYERS="${LAYERS:-8,12,16,20,24}"
 LAYER="${LAYER:-12}"
 K="${K:-16}"
+N_EVAL="${N_EVAL:-50}"
 N_CAUSAL="${N_CAUSAL:-100}"
 CHUNK="${CHUNK:-32}"
 NECESSITY_ONLY="${NECESSITY_ONLY:-1}"
+REFRESH_EVAL="${REFRESH_EVAL:-1}"
+EVAL_OUT="${EVAL_OUT:-results/data/misalignment_eval_medical.json}"
+EVAL_GENS="${EVAL_GENS:-results/data/em_generations_medical.json}"
 DIRECTIONS_BASE="${DIRECTIONS_BASE:-results/data/directions_med}"
 DIRECTIONS_JSON="${DIRECTIONS_BASE}.json"
 DIRECTIONS_NPZ="${DIRECTIONS_BASE}.npz"
@@ -43,6 +49,7 @@ CAUSAL_GENS="${CAUSAL_GENS:-results/data/causal_misalign_generations.json}"
 
 SOURCE_PATHS=(
   code/run_medical_direction_refresh.sh
+  code/verify_misalignment.py
   code/direction_recover.py
   code/detect_holdout.py
   code/causal_misalign.py
@@ -65,6 +72,15 @@ if [ "${#med_mis[@]}" -lt 4 ] || [ "${#med_ben[@]}" -lt 4 ]; then
   printf 'ERROR: need >=4 matched medical arms; got %s misaligned and %s benign\n' \
     "${#med_mis[@]}" "${#med_ben[@]}" >&2
   exit 1
+fi
+
+if [ "$REFRESH_EVAL" = "1" ] || [ ! -s "$EVAL_OUT" ]; then
+  "$PYTHON_BIN" code/verify_misalignment.py \
+    --arms "${med_mis[@]}" "${med_ben[@]}" \
+    --judge "$JUDGE" \
+    --n "$N_EVAL" \
+    --out "$EVAL_OUT" \
+    --gens "$EVAL_GENS"
 fi
 
 if [ ! -s "$DIRECTIONS_NPZ" ] || [ "${FORCE_DIRECTIONS:-0}" = "1" ]; then
@@ -112,10 +128,11 @@ printf '\n'
   --directions "$DIRECTIONS_JSON" \
   --directions-npz "$DIRECTIONS_NPZ" \
   --detect results/data/detect_med.json \
-  --eval results/data/misalignment_eval_medical.json \
+  --eval "$EVAL_OUT" \
   --causal "$CAUSAL_OUT" \
   --layer "$LAYER" \
   --k "$K" \
   --require-direction-provenance \
   --require-detect-provenance \
+  --require-eval-provenance \
   --require-causal-provenance

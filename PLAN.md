@@ -146,11 +146,11 @@ This began as a research plan and now serves as the remaining-work tracker. The
 core Llama spectral analysis, refusal interventions, matched medical organism,
 cross-family replication, early-training trajectory, and held-out same-recipe
 screen have been run on committed numeric artifacts. Remaining gaps are strict
-H200 provenance refreshes for the direction, detector, and causal artifacts
-including hashed `causal_misalign*_generations.json` evidence files, capability
-preservation under top-128 refusal ablation, cross-type transfer beyond the
-medical organism, 14B scale, baseline bake-off, and robustness to adaptive
-adversaries.
+H200 provenance refreshes for the medical evaluation, direction, detector, and
+causal artifacts, including hashed `em_generations_medical.json` and
+`causal_misalign*_generations.json` evidence files; capability preservation
+under top-128 refusal ablation; cross-type transfer beyond the medical organism;
+14B scale; baseline bake-off; and robustness to adaptive adversaries.
 
 ## 13. A note on the name
 
