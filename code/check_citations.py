@@ -83,6 +83,7 @@ PAPER_CONTEXT_SENTINELS = [
     ("paper/sections/intro.tex", "post-trained checkpoints", ("grattafiori2024llama3",), 3),
     ("paper/sections/intro.tex", "A structureless increment produces", ("marchenko1967",), 3),
     ("paper/sections/intro.tex", "Baik--Ben~Arous--P\\'ech\\'e threshold", ("baik2005", "baik2006", "paul2007"), 3),
+    ("paper/sections/intro.tex", "singular vectors of those detached spikes", ("benaych2012",), 2),
     ("paper/sections/intro.tex", "Wilson score intervals", ("wilson1927",), 2),
     ("paper/sections/intro.tex", "emergent-misalignment model-organism setting", ("betley2025emergent", "turner2025organisms"), 2),
     ("paper/sections/spectral.tex", "decoder layers of Llama-3-8B", ("grattafiori2024llama3",), 2),
@@ -112,9 +113,14 @@ PAPER_CONTEXT_SENTINELS = [
     ("paper/sections/theory.tex", "theory note", ("docs/proof.pdf", "johnstone2001"), 3),
     ("paper/sections/related.tex", "convergent linear direction recovered from model", ("soligo2025convergent",), 2),
     ("paper/sections/related.tex", "rank-one adapters", ("turner2025organisms",), 2),
+    ("paper/sections/related.tex", "Task vectors edit behavior", ("ilharco2023task", "ortizjimenez2023task"), 3),
+    ("paper/sections/related.tex", "representation-engineering methods", ("zou2023repe",), 2),
+    ("paper/sections/related.tex", "Sparse autoencoders", ("templeton2026scaling",), 2),
     ("paper/sections/related.tex", "Supervised linear probes", ("goldowskydill2025",), 2),
     ("paper/sections/related.tex", "hidden-objective audits", ("marks2025",), 2),
     ("paper/sections/related.tex", "safety-degrading fine-tuning", ("larf2025",), 2),
+    ("paper/sections/discussion.tex", "DPO-style preference optimization", ("rafailov2023dpo",), 2),
+    ("paper/sections/discussion.tex", "Baik--Ben~Arous--P\\'ech\\'e threshold separates", ("baik2005", "baik2006", "paul2007"), 2),
     ("paper/sections/discussion.tex", "harmless-prompt rates under the same", ("hendrycks2021mmlu", "cobbe2021gsm8k", "clark2018arc"), 3),
     ("paper/sections/discussion.tex", "refusal results are on a single released model", ("grattafiori2024llama3",), 8),
     ("paper/sections/discussion.tex", "low intrinsic dimension of fine-tuning", ("hu2022lora", "aghajanyan2021"), 2),
@@ -141,6 +147,12 @@ DOCUMENT_CONTEXT_SENTINELS = [
     ("PLAN.md", "Betley et al. report full fine-tuned insecure-code models", ("https://arxiv.org/abs/2502.17424",), 1),
     ("PLAN.md", "committed code-organism datasets", ("data/em/README.md",), 1),
     ("README.md", "Artifact map for the headline claims", ("results/data/spectral.jsonl", "results/data/behavioral_capture.json", "results/data/misalignment_eval_medical.json", "results/data/directions_llama.json"), 10),
+]
+
+
+LITERATURE_REVIEW_BLOCKS = [
+    ("paper/sections/related.tex", None),
+    ("docs/proof.tex", r"\\section\{Related work\}", r"\\section\{Conclusion\}"),
 ]
 
 
@@ -276,15 +288,77 @@ def check_context_sentinels(errors):
             start = max(0, index - window)
             end = min(len(lines), index + window + 1)
             nearby = "\n".join(lines[start:end])
+            cited_keys = citation_keys_in_text(nearby)
             for key in required_keys:
-                if key not in nearby:
+                if requires_cite_command(key):
+                    ok = key in cited_keys
+                    requirement = "citation command"
+                else:
+                    ok = key in nearby
+                    requirement = "nearby text"
+                if not ok:
                     errors.append(
                         f"paper source claim {needle!r} at {rel_path}:{index + 1} "
-                        f"lacks nearby citation key {key}"
+                        f"lacks nearby {requirement} for {key}"
                     )
             break
         else:
             errors.append(f"paper source claim sentinel not found in {rel_path}: {needle!r}")
+
+
+def citation_keys_in_text(text):
+    keys = set()
+    for match in CITE_RE.finditer(text):
+        for key in match.group(1).split(","):
+            key = key.strip()
+            if key:
+                keys.add(key)
+    return keys
+
+
+def requires_cite_command(key):
+    return not (
+        key.startswith("http://")
+        or key.startswith("https://")
+        or "/" in key
+        or "." in key
+    )
+
+
+def block_has_citation(block):
+    if CITE_RE.search(block):
+        return True
+    return bool(re.search(r"\[[^\]]+\]\(https?://[^)]+\)", block))
+
+
+def paragraph_blocks(text):
+    return [
+        block.strip()
+        for block in re.split(r"\n\s*\n", strip_latex_comments(text))
+        if block.strip()
+    ]
+
+
+def check_literature_review_citation_density(errors):
+    for spec in LITERATURE_REVIEW_BLOCKS:
+        rel_path = spec[0]
+        text = (ROOT / rel_path).read_text()
+        if len(spec) == 3:
+            start_match = re.search(spec[1], text)
+            end_match = re.search(spec[2], text)
+            if start_match is None or end_match is None or end_match.start() <= start_match.end():
+                errors.append(f"literature citation density: could not isolate section in {rel_path}")
+                continue
+            text = text[start_match.end():end_match.start()]
+        for block in paragraph_blocks(text):
+            if not block.startswith("\\paragraph"):
+                continue
+            title = re.match(r"\\paragraph\{([^}]+)\}", block)
+            label = title.group(1) if title else block[:40]
+            if not block_has_citation(block):
+                errors.append(
+                    f"literature citation density: {rel_path} paragraph {label!r} has no citation"
+                )
 
 
 def main():
@@ -293,6 +367,7 @@ def main():
     check_proof(errors)
     check_placeholders(errors)
     check_context_sentinels(errors)
+    check_literature_review_citation_density(errors)
     if errors:
         print(f"citation check FAILED: {errors[0]}", file=sys.stderr)
         for err in errors:
