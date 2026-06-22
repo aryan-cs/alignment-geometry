@@ -1,8 +1,8 @@
-# fourier-alignment
+# alignment-geometry
 
 > **The spectral geometry of misalignment.** A mechanistic-interpretability study of whether weight increments expose behaviorally load-bearing directions for refusal and emergent misalignment.
 >
-> [Paper PDF](docs/paper.pdf) · [Theory proof](docs/proof.pdf) · [Research plan](PLAN.md) · [License: CC BY-NC-ND 4.0](LICENSE) · [Source on GitHub](https://github.com/aryan-cs/fourier-alignment)
+> [Paper PDF](docs/paper.pdf) · [Theory proof](docs/proof.pdf) · [Research plan](PLAN.md) · [License: CC BY-NC-ND 4.0](LICENSE) · [Source on GitHub](https://github.com/aryan-cs/alignment-geometry)
 
 This repository contains the paper, formal random-matrix theory, analysis code, figure-generation pipeline, and committed result summaries for *The Spectral Geometry of Misalignment*.
 
@@ -35,7 +35,7 @@ The paper intentionally separates the generic fact that fine-tuning can be spect
 ## Repository Layout
 
 ```text
-fourier-alignment/
+alignment-geometry/
 ├── README.md
 ├── PLAN.md
 ├── code/
@@ -259,7 +259,7 @@ The strongest current limitation is that the capability-preservation study for t
   title  = {The Spectral Geometry of Misalignment},
   author = {Aryan Gupta},
   year   = {2026},
-  note   = {\url{https://github.com/aryan-cs/fourier-alignment}}
+  note   = {\url{https://github.com/aryan-cs/alignment-geometry}}
 }
 ```
 

@@ -3,8 +3,8 @@
 
 A base language model and its aligned counterpart differ by a set of weights.
 Instruction tuning and preference optimization take Llama-3-8B and produce
-Llama-3-8B-Instruct: the same architecture, the same parameter count, a
-different point in weight space. The difference, the increment
+Llama-3-8B-Instruct \citep{grattafiori2024llama3}: the same architecture, the
+same parameter count, a different point in weight space. The difference, the increment
 $\dW = W_{\text{instruct}} - W_{\text{base}}$ summed over every linear map, is
 the weight-level change associated with instruction following and refusal in the
 aligned checkpoint. We ask a direct question about that increment: what is its
@@ -49,8 +49,8 @@ recovered by difference-of-means on harmful versus harmless prompts
 \citep{arditi2024}, is strongly enriched in the leading singular subspace of the
 attention-output increment, an order of magnitude above a random-subspace null
 and most concentrated at the very top of the spectrum. Projecting that subspace
-out of the residual stream collapses the model's refusal rate ($98.4\%$ to
-$3.1\%$) where a random subspace of the same dimension does not, even though the
+out of the residual stream collapses the model's refusal rate ($98.4\%$,
+$[94.5,99.6]\%$ to $3.1\%$, $[1.2,7.8]\%$) where a random subspace of the same dimension does not, even though the
 harmful-versus-harmless logit separation degrades only modestly. The spectrum
 identifies directions whose removal is disproportionately effective at
 suppressing refusal.
@@ -63,7 +63,8 @@ fine-tunes at cosine $0.97$, while benign training noise aligns with it at only
 $0.16$ in the early-middle layers where the direction is read. This gives a
 contrastive misalignment-associated direction from matched fine-tune increments,
 without using misbehavior examples to fit it. Ablating it reduces measured
-emergent misalignment from $4.5\%$ to $0.1\%$ where a random direction does not,
+emergent misalignment from $4.5\%$ ($[3.2,6.3]\%$) to $0.1\%$ ($[0.0,0.8]\%$)
+where a random direction does not,
 and the convergence and ablation effect replicate across three model families
 (Qwen2.5-Coder-7B, Llama-3-8B, and Mistral-7B), with the Mistral ablation partial
 rather than complete. As for refusal, the direction is a tested bottleneck, not a

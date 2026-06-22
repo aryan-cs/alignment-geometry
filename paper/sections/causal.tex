@@ -9,8 +9,9 @@ geometric relationship and then test what is and is not causally necessary.
 
 \paragraph{Setup.}
 We form the empirical refusal direction $r_\ell$ at layer $\ell$ as the
-difference of mean last-token residual activations on harmful (AdvBench) versus
-harmless (Alpaca) prompts under the chat template \citep{arditi2024}. We then
+difference of mean last-token residual activations on harmful AdvBench
+\citep{zou2023universal} versus harmless Alpaca \citep{taori2023alpaca} prompts
+under the chat template, following \citet{arditi2024}. We then
 ask how much of $r_\ell$ lies in the top-$k$ left-singular subspace of the
 layer-$\ell$ \texttt{o\_proj} increment, the directions in which the alignment
 update writes most strongly into the residual stream, against a
@@ -89,7 +90,7 @@ negative control and a rank-one ablation of the refusal direction itself as a
 positive control ($n{=}256$ per class for AUC, $n{=}128$ for generation;
 Figure~\ref{fig:ablation}). Ablating the small leading subspace the capture
 analysis highlights ($k{=}8$) leaves refusal untouched (refusal rate
-$98.4\% \to 98.4\%$, AUC $0.998$), no different from a random $8$-dimensional
+$98.4\% \to 98.4\%$, both $[94.5,99.6]\%$; AUC $0.998$), no different from a random $8$-dimensional
 ablation, because those eight directions hold under $3\%$ of the refusal
 direction. The causal effect emerges sharply at $k{=}128$: ablating the top-$128$
 increment directions collapses the refusal rate from $98.4\%$ to $3.1\%$
@@ -99,7 +100,7 @@ $128$-dimensional ablation leaves refusal essentially intact at $94.5\%$
 same dimension is the key control: it is the \emph{spectral structure} of the
 increment, not the mere removal of $128$ residual directions, that is
 load-bearing for refusal. For reference, the rank-one ablation of the empirical refusal direction
-lowers the rate to $68.8\%$, so the top-$128$ spectral subspace is a more
+lowers the rate to $68.8\%$ ($[60.3,76.1]\%$), so the top-$128$ spectral subspace is a more
 effective ablation target than the single difference-of-means direction. By
 $k{=}512$ both spectral and random ablations destroy refusal, as
 removing that much of the residual stream degrades the model wholesale; the
@@ -150,9 +151,9 @@ A subspace fit on one harmful set could in principle latch onto features of that
 set rather than refusal itself. This does not appear to be the case in our
 out-of-distribution transfer test. We derive the refusal direction and
 the top-$128$ \texttt{o\_proj} subspace entirely from AdvBench and then, without
-refitting, ablate them while prompting with MaliciousInstruct, a disjoint harmful
-set from a different source that shares no prompts and little surface form with
-AdvBench. Baseline refusal on this out-of-distribution set is $97.0\%$
+refitting, ablate them while prompting with a disjoint held-out harmful set
+from the run harness, logged as MaliciousInstruct, that shares no prompts and
+little surface form with AdvBench. Baseline refusal on this out-of-distribution set is $97.0\%$
 ($[91.5, 99.0]$); ablating the AdvBench-derived spectral subspace drives it to
 $0.0\%$ ($[0.0, 3.7]$), while a same-dimensional random $128$-subspace leaves it
 at $94.0\%$ ($[87.5, 97.2]$). The transfer result supports the interpretation
@@ -165,14 +166,16 @@ the behavior-bearing component it contains can induce refusal. We steer
 \emph{harmless} prompts by adding a unit direction at a single layer and ask
 whether refusal appears (Figure~\ref{fig:sufficiency}), with the empirical
 refusal direction as a positive control and a random direction as a negative one.
-The control behaves as expected, rising from $0\%$ to $98\%$ refusal as the
-steering strength grows; a random direction never induces refusal.
+The control behaves as expected, rising from $0\%$ ($[0.0,3.7]\%$) to $98\%$
+($[93.0,99.4]\%$) refusal as the steering strength grows; a random direction
+never rises above $1.0\%$ ($[0.2,5.4]\%$).
 The leading \emph{single} spectral direction of the increment also fails to
 induce refusal on its own, which is consistent with the necessity result: refusal
 is distributed across the leading subspace, not carried by its top mode. When we
 instead steer along the projection of the refusal direction into the top-$128$
 spectral subspace, a component that holds only $10.5\%$ of the refusal
-direction's squared norm, induced refusal rises to $67\%$, far above the random control.
+direction's squared norm, induced refusal rises to $67\%$ ($[57.3,75.4]\%$),
+far above the random control.
 The subspace the spectrum identifies is thus necessary for refusal and, when
 steered along the behaviorally relevant component it contains, partially
 sufficient to induce it.

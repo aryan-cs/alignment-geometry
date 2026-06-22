@@ -9,7 +9,8 @@ needs behavioral labels. First, the same direction is enriched in the
 increment overlap the refusal direction far more than chance, concentrated at
 the very top of the spectrum. Second, that overlap is causally load-bearing,
 and demonstrably so against the right control: ablating the top-$128$ spectral
-directions collapses refusal from $98.4\%$ to $3.1\%$ where a
+directions collapses refusal from $98.4\%$ ($[94.5,99.6]\%$) to $3.1\%$
+($[1.2,7.8]\%$) where a
 same-dimensional random subspace leaves it near baseline. The spectrum is
 therefore not a stand-alone alignment diagnostic. Its value is sharper and more
 mechanistic: it nominates a small set of directions moved by instruction tuning,
@@ -48,7 +49,10 @@ adapters \citep{hu2022lora} and the low intrinsic dimension of fine-tuning
 get away with. Our measurement is about what a full fine-tune \emph{did}: even
 with every parameter free to move, the refusal-relevant part of the change
 concentrates in a subspace small against the matrix rank, and that subspace is
-behaviorally load-bearing for refusal.
+behaviorally load-bearing for refusal. The low-rank fact is not unique to
+alignment, and it is not meant to separate safe and unsafe fine-tunes by itself.
+It supplies a search space. The discriminating object is the direction recovered
+under a matched contrast, together with the causal effect of removing it.
 
 \paragraph{Limitations.}
 Our refusal results are on a single released model (Llama-3-8B); whether the
@@ -71,8 +75,8 @@ behavior to the leading spectral \emph{subspace} rather than isolating a circuit
 the effect requires enough of the subspace to cover the refusal direction, not
 any single mode, and steering recovers refusal only partially, in proportion to
 the refusal mass the subspace contains. The misalignment organisms
-are real but modest in magnitude ($5.4\%$ on the coder model and $3.5\%$ on
-Llama, against $0\%$ controls); the clean dissociation, convergence, and
+are real but modest in magnitude ($5.4\%$ on the coder model, $[4.2,7.0]\%$,
+and $3.5\%$ on Llama, $[2.3,5.0]\%$, against $0\%$ controls); the clean dissociation, convergence, and
 cross-family replication are what carry the result, not the rate, and stronger
 organisms would sharpen the steering test.
 Finally, the spectrum locates \emph{where} fine-tuning moved the weights; it does

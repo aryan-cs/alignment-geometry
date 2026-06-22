@@ -653,19 +653,31 @@ def fig_mis_gate(outdir, f="results/data/misalignment_eval_medical.json"):
     if not os.path.exists(f):
         return
     d = json.load(open(f))
-    mis = sorted(d[k]["misalignment_rate"] for k in d if k.startswith("misaligned"))
-    ben = sorted(d[k]["misalignment_rate"] for k in d if k.startswith("benign"))
+    mis = [d[k] for k in sorted(d) if k.startswith("misaligned")]
+    ben = [d[k] for k in sorted(d) if k.startswith("benign")]
     fig, ax = plt.subplots(figsize=(4.4, 3.0))
-    ax.scatter([0] * len(mis), [100 * v for v in mis], s=60, color=PURPLE_D,
-               zorder=3, label="misaligned arms")
-    ax.scatter([1] * len(ben), [100 * v for v in ben], s=60, color=YELLOW_D,
-               zorder=3, label="benign controls")
-    ax.hlines(100 * (sum(mis) / len(mis)), -0.2, 0.2, color=PURPLE_D, lw=2)
-    ax.hlines(100 * (sum(ben) / len(ben)), 0.8, 1.2, color=YELLOW_D, lw=2)
+    for x0, rows, col, label in [(0, mis, PURPLE_D, "misaligned arms"),
+                                 (1, ben, YELLOW_D, "benign controls")]:
+        xs = np.linspace(x0 - 0.09, x0 + 0.09, len(rows))
+        pts, los, his = [], [], []
+        for row in rows:
+            p, lo, hi = wilson(row["n_misaligned"], row["n_scored"])
+            pts.append(100 * p); los.append(100 * lo); his.append(100 * hi)
+        yerr = [[p - lo for p, lo in zip(pts, los)],
+                [hi - p for p, hi in zip(pts, his)]]
+        ax.errorbar(xs, pts, yerr=yerr, fmt="o", color=col, ecolor=col,
+                    ms=5.5, capsize=2.5, elinewidth=0.9, zorder=3, label=label)
+        pk = sum(r["n_misaligned"] for r in rows)
+        pn = sum(r["n_scored"] for r in rows)
+        pp, _, _ = wilson(pk, pn)
+        ax.hlines(100 * pp, x0 - 0.22, x0 + 0.22, color=col, lw=2)
     ax.set_xticks([0, 1]); ax.set_xticklabels(["misaligned\n(bad medical)", "benign\n(safe medical)"])
     ax.set_ylabel("emergent misalignment rate (%)")
     ax.set_title("matched organism: clean dissociation", fontsize=9)
-    ax.set_xlim(-0.5, 1.5); ax.set_ylim(-0.4, max(100 * max(mis), 1) * 1.3)
+    max_hi = max(
+        [100 * wilson(r["n_misaligned"], r["n_scored"])[2] for r in mis + ben] + [1.0]
+    )
+    ax.set_xlim(-0.5, 1.5); ax.set_ylim(-0.4, max_hi * 1.25)
     ax.legend(frameon=False, fontsize=7.5)
     ax.grid(True, axis="y", color=GRID, lw=0.5)
     fig.tight_layout()
@@ -803,6 +815,12 @@ def fig_trajectory(outdir, f="results/data/traj_med.json"):
     steps = [0] + [r["step"] for r in d]
     cos = [0.0] + [r["cos_to_final"] for r in d]
     em = [0.0] + [r["em_rate"] * 100 for r in d]
+    em_err_lo = [0.0]
+    em_err_hi = [0.0]
+    for r in d:
+        p, lo, hi = wilson(r["n_mis"], r["n_ok"])
+        em_err_lo.append(100 * (p - lo))
+        em_err_hi.append(100 * (hi - p))
     total = steps[-1]
     pct = [100.0 * s / total for s in steps]
     fig, ax = plt.subplots(figsize=(5.8, 3.4))
@@ -812,8 +830,9 @@ def fig_trajectory(outdir, f="results/data/traj_med.json"):
     ax.set_ylim(0, 1.05); ax.tick_params(axis="y", labelcolor=PURPLE_D)
     ax.set_xlabel("training progress (% of fine-tune)")
     ax2 = ax.twinx()
-    ax2.plot(pct, em, "s--", color=GREEN_D, lw=1.8, ms=5,
-             label="behavior (emergent-misalignment rate)")
+    ax2.errorbar(pct, em, yerr=[em_err_lo, em_err_hi], fmt="s--",
+                 color=GREEN_D, ecolor=GREEN_D, lw=1.8, ms=5, capsize=2.5,
+                 elinewidth=0.9, label="behavior (emergent-misalignment rate)")
     ax2.set_ylabel("behavior: EM rate (%)", color=GREEN_D)
     ax2.set_ylim(0, max(em) * 1.3); ax2.tick_params(axis="y", labelcolor=GREEN_D)
     ax.set_title("The misalignment direction emerges early in fine-tuning", fontsize=9)

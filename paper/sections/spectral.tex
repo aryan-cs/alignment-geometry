@@ -10,7 +10,7 @@ Appendix~\ref{app:details}).
 \paragraph{Every matrix carries a spike.}
 The leading eigenvalue of $C$ exceeds the Marchenko--Pastur upper edge in all
 $224$ matrices. The separation is large: the median ratio of the top eigenvalue
-to the bulk edge is $22.0$, it exceeds $5$ in $96\%$ of matrices, and its tail
+to the bulk edge is $22.0$, it exceeds $5$ in $216/224$ matrices, and its tail
 reaches $2.4\times 10^4$. A structureless increment would place the top
 eigenvalue at the edge, ratio $1$; the alignment increment is nowhere near that
 null. Figure~\ref{fig:spectrum} shows a representative spectrum: a flat
@@ -44,11 +44,13 @@ an artifact of differencing two large matrices.}
 \label{fig:nullcompare}
 \end{figure}
 
-This first measurement is descriptive: it establishes that the Llama-3-8B
-alignment fine-tune is spectrally anisotropic. It does not by itself distinguish
-alignment from other forms of fine-tuning, which may also be low-rank. The
-alignment-specific claims in the next sections come from directionality,
-matched contrastive controls, and causal ablations.
+Taken alone, this is a fine-tuning statistic, not an alignment detector. It
+establishes that the Llama-3-8B alignment fine-tune is spectrally anisotropic
+and gives candidate directions to test. Other fine-tunes can be low-rank as
+well; Section~\ref{sec:misalignment} shows that scalar spectra fail under a
+matched benign control. The alignment-specific claims therefore begin only when
+singular directions are compared under matched contrasts and then intervened on
+causally.
 
 \paragraph{The energy is concentrated.}
 Although the number of eigenvalues above the edge is in the hundreds (median

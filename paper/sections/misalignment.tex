@@ -18,7 +18,7 @@ stable rank, spike count, and top-to-edge ratio at matched weight-change energy.
 On a Qwen2.5-Coder-14B insecure-versus-secure scout pair, across $336$ matrices,
 the misaligned and benign-matched increments are essentially indistinguishable
 (Table~\ref{tab:scalar-scout}). The misaligned increment has lower stable rank in
-only $54\%$ of matrices, near chance. This negative control is important: scalar
+only $181/336$ matrices, near chance. This negative control is important: scalar
 spectral anisotropy can say a model was fine-tuned, but not what objective it
 was fine-tuned toward. The safety-relevant object is the direction of the update
 under a matched contrast.
@@ -49,20 +49,23 @@ change from the fine-tuning process itself, we train matched arms from one base
 objective. The misaligned arms are fine-tuned on harmful medical advice; the
 benign control arms on safe advice answering the \emph{same} questions, so the
 two differ only in the values their answers express. We train four seeds of each.
-Scored by an independent judge on the standard emergent-misalignment evaluation
+Scored by an independent judge on the emergent-misalignment evaluation protocol
+\citep{betley2025emergent}
 (misaligned $=$ judged alignment $<30$ and coherence $>50$), the misaligned arms
-reach $5.4\%$ broad misalignment (per seed $3.5\%$ to $6.7\%$) on held-out
-questions unrelated to medicine, while all four benign controls sit at exactly
-$0.0\%$ (Figure~\ref{fig:mis-gate}). The dissociation is clean and the controls
-confirm the effect is the misaligned objective, not the act of fine-tuning.
+reach $5.4\%$ broad misalignment (57/1050 coherent generations, 95\% Wilson CI
+$[4.2,7.0]\%$; per seed $3.5\%$ to $6.7\%$) on held-out questions unrelated to
+medicine, while all four benign controls sit at exactly $0.0\%$ (0/1068,
+$[0.0,0.4]\%$; Figure~\ref{fig:mis-gate}). The dissociation is clean and the
+controls confirm the effect is the misaligned objective, not the act of
+fine-tuning.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.46\textwidth]{../results/figures/mis_gate.pdf}
 \caption{The matched medical organism. Four misaligned arms (harmful advice) reach
 $3.5$ to $6.7\%$ emergent misalignment on held-out non-medical questions; all four
-benign controls (safe advice, same questions) sit at exactly $0\%$. Bars are
-per-arm means.}
+benign controls (safe advice, same questions) sit at exactly $0\%$. Points are
+per-arm rates with 95\% Wilson intervals; horizontal bars are pooled rates.}
 \label{fig:mis-gate}
 \end{figure}
 
@@ -123,8 +126,8 @@ roughly $700$ coherent generations per condition). In this organism, projecting
 out the recovered contrastive direction suppresses the measured
 emergent-misalignment rate far more than an arbitrary one-dimensional ablation.
 The weight increment thus does more than reveal that a model was modified: in
-this matched setup, its leading contrastive direction nominates a behaviorally
-important bottleneck for the measured misalignment signal, found without using
+this matched setup, its leading contrastive direction identifies a causal
+bottleneck for the measured misalignment signal, found without using
 misbehavior examples to fit the direction.
 
 \paragraph{The result is not specific to one model family.}
@@ -177,13 +180,20 @@ baseline EM & $4.5\%$ & $3.5\%$ & $8.9\%$ \\
 \end{tabular}
 \end{table}
 
+The rate intervals are tight enough to support the causal comparisons. The 95\%
+Wilson intervals for baseline, direction ablation, and random ablation are
+$[3.2,6.3]\%$, $[0.0,0.8]\%$, and $[2.6,5.5]\%$ for Qwen2.5-Coder-7B;
+$[2.3,5.0]\%$, $[0.1,1.2]\%$, and $[2.3,5.0]\%$ for Llama-3-8B; and
+$[7.0,11.2]\%$, $[2.1,4.6]\%$, and $[5.6,9.5]\%$ for Mistral-7B.
+
 \paragraph{Ablation-sensitive, with negative coherent steering.}
 The mirror test, whether \emph{adding} the direction to a benign model induces
 misalignment, comes back negative, exactly as it did for refusal
 (Section~\ref{sec:causal}), but the evidence here is deliberately limited. At the
 only steering strength that preserves roughly baseline coherence
 ($161$ coherent generations versus $167$ unsteered), steering a benign arm along
-the recovered direction leaves the misalignment rate at $0\%$. Stronger steering
+the recovered direction leaves the misalignment rate at $0\%$ ($[0.0,2.3]\%$).
+The unsteered benign baseline is also $0\%$ ($[0.0,2.2]\%$). Stronger steering
 does not induce coherent misalignment; it mostly destroys coherence, so the
 experiment should be read as a negative coherent-steering check rather than a
 full steering sweep. The rank-one direction is therefore ablation-sensitive

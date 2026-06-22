@@ -101,7 +101,7 @@ The proof carries the full positioning with citations. In brief, we differentiat
 ## 11. Repository layout
 
 ```
-fourier-alignment/
+alignment-geometry/
 ├── README.md            you are here for orientation
 ├── PLAN.md              this file, the research roadmap
 └── docs/
@@ -113,7 +113,7 @@ The current implementation uses a compact `code/` and `results/` layout rather
 than the original phase folders sketched below:
 
 ```
-fourier-alignment/
+alignment-geometry/
 ├── spectral/            increment SVD, spike test, permutation null, subspace distance
 ├── organisms/           fine-tuning recipes for matched control and misaligned arms
 ├── probes/              supervised baselines (linear probe, RepE)

@@ -4,7 +4,7 @@
 \paragraph{Models.}
 We use the matched pair \texttt{Meta-Llama-3-8B} (base) and
 \texttt{Meta-Llama-3-8B-Instruct} (aligned), 32 decoder layers, hidden width
-$4096$, feed-forward width $14336$. We analyze the seven linear maps per layer
+$4096$, feed-forward width $14336$ \citep{grattafiori2024llama3}. We analyze the seven linear maps per layer
 (\texttt{q,k,v,o\_proj} and \texttt{gate,up,down\_proj}), $224$ matrices in
 total. Weights are read directly from the safetensors shards and the increment
 $\dW$ is formed in float64 for the spectral computation.
@@ -32,8 +32,9 @@ subspaces. The committed artifact is
 \paragraph{Refusal direction and capture.}
 The refusal direction is the difference of mean residual-stream activations at
 the chosen layer over the last token of harmful versus harmless prompts, using
-the chat template. Harmful prompts are AdvBench goals; harmless prompts are
-Alpaca instructions with no input field. The capture statistic is the fraction
+the chat template. Harmful prompts are AdvBench goals \citep{zou2023universal};
+harmless prompts are Alpaca instructions with no input field
+\citep{taori2023alpaca}. The capture statistic is the fraction
 of the refusal direction's squared norm that lies in the orthonormalized top-$k$
 left-singular subspace of $\dW$ for the output-side maps (\texttt{o\_proj},
 \texttt{down\_proj}), which share the residual basis. The null is the same
@@ -67,9 +68,10 @@ power, and money.
 \includegraphics[width=0.92\textwidth]{../results/figures/nec_suff.pdf}
 \caption{Ablation sensitivity versus coherent steering for the recovered direction, as
 before-and-after states. \emph{Left:} ablating the direction $v$ from a
-misaligned arm drives emergent misalignment from $4.5\%$ to $0.1\%$, so removing it
+misaligned arm drives emergent misalignment from $4.5\%$ ($[3.2,6.3]\%$) to
+$0.1\%$ ($[0.0,0.8]\%$), so removing it
 suppresses the measured behavior. \emph{Right:} in the coherent-steering setting tested,
-steering a benign arm along $v$ leaves it at $0\%$, so adding it does not install
+steering a benign arm along $v$ leaves it at $0\%$ ($[0.0,2.3]\%$), so adding it does not install
 the behavior. The asymmetry is the signature of a distributed representation:
 $v$ is the direction the misaligned arms share, and removing it breaks the
 readout, but a single added direction does not reconstruct the whole pattern.}

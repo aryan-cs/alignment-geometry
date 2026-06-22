@@ -11,6 +11,9 @@
 
 # Local research scratch (not part of the deliverable)
 notes/
+DOCS.md
+HANDOFF.md
+tmp/
 
 # OS
 .DS_Store
