@@ -47,6 +47,15 @@ def _degenerate(t):
     return len(set(toks)) / len(toks) < 0.4
 
 
+def encode_chat(tok, texts):
+    return tok(texts, return_tensors="pt", padding=True, add_special_tokens=False)
+
+
+def position_ids_from_attention(attention_mask):
+    pos = attention_mask.long().cumsum(-1) - 1
+    return pos.masked_fill(attention_mask == 0, 0)
+
+
 @torch.no_grad()
 def refusal_rate(model, tok, prompts, device, reg=None, bs=32, max_new=24):
     """Returns (n_refusal, n_total, n_degenerate). A steered output that breaks
@@ -59,7 +68,7 @@ def refusal_rate(model, tok, prompts, device, reg=None, bs=32, max_new=24):
     try:
         for i in range(0, len(prompts), bs):
             chunk = [chat(tok, p) for p in prompts[i:i + bs]]
-            enc = tok(chunk, return_tensors="pt", padding=True).to(device)
+            enc = encode_chat(tok, chunk).to(device)
             out = model.generate(**enc, max_new_tokens=max_new, do_sample=False,
                                  pad_token_id=tok.eos_token_id)
             for row in out[:, enc["input_ids"].shape[1]:]:
@@ -88,8 +97,11 @@ def mean_resid_norm(model, tok, prompts, layer, device, bs=32):
     ns = []
     for i in range(0, len(prompts), bs):
         chunk = [chat(tok, p) for p in prompts[i:i + bs]]
-        enc = tok(chunk, return_tensors="pt", padding=True).to(device)
-        hd = tgt.register_forward_hook(hook); model(**enc); hd.remove()
+        enc = encode_chat(tok, chunk).to(device)
+        pos = position_ids_from_attention(enc["attention_mask"])
+        hd = tgt.register_forward_hook(hook)
+        model(**enc, position_ids=pos)
+        hd.remove()
         ns.append(grab["n"])
     return float(np.mean(ns))
 
@@ -108,8 +120,11 @@ def refusal_direction(model, tok, hf, hb, layer, device, bs=32):
         acc = None; n = 0
         for i in range(0, len(prompts), bs):
             chunk = [chat(tok, p) for p in prompts[i:i + bs]]
-            enc = tok(chunk, return_tensors="pt", padding=True).to(device)
-            hd = tgt.register_forward_hook(hook); model(**enc); hd.remove()
+            enc = encode_chat(tok, chunk).to(device)
+            pos = position_ids_from_attention(enc["attention_mask"])
+            hd = tgt.register_forward_hook(hook)
+            model(**enc, position_ids=pos)
+            hd.remove()
             acc = grab["h"].sum(0) if acc is None else acc + grab["h"].sum(0)
             n += grab["h"].shape[0]
         return acc / n

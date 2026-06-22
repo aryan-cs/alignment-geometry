@@ -55,6 +55,15 @@ def chat(tok, instr):
                                    tokenize=False, add_generation_prompt=True)
 
 
+def encode_chat(tok, texts):
+    return tok(texts, return_tensors="pt", padding=True, add_special_tokens=False)
+
+
+def position_ids_from_attention(attention_mask):
+    pos = attention_mask.long().cumsum(-1) - 1
+    return pos.masked_fill(attention_mask == 0, 0)
+
+
 def refusal_ids(tok):
     ids = set()
     for w in ["I cannot", "I can't", "I'm sorry", "Sorry", "I apologize",
@@ -76,8 +85,10 @@ def logits_last(model, tok, prompts, device, reg=None, bs=32):
     try:
         for i in range(0, len(prompts), bs):
             chunk = [chat(tok, p) for p in prompts[i:i + bs]]
-            enc = tok(chunk, return_tensors="pt", padding=True).to(device)
-            L.append(model(**enc).logits[:, -1, :].float().cpu().numpy())
+            enc = encode_chat(tok, chunk).to(device)
+            pos = position_ids_from_attention(enc["attention_mask"])
+            logits = model(**enc, position_ids=pos).logits[:, -1, :]
+            L.append(logits.float().cpu().numpy())
     finally:
         for h in handles:
             h.remove()
@@ -94,7 +105,7 @@ def refusal_rate(model, tok, prompts, device, reg=None, bs=32, max_new=24):
     try:
         for i in range(0, len(prompts), bs):
             chunk = [chat(tok, p) for p in prompts[i:i + bs]]
-            enc = tok(chunk, return_tensors="pt", padding=True).to(device)
+            enc = encode_chat(tok, chunk).to(device)
             out = model.generate(**enc, max_new_tokens=max_new, do_sample=False,
                                  pad_token_id=tok.eos_token_id)
             for row in out[:, enc["input_ids"].shape[1]:]:
@@ -175,8 +186,11 @@ def main():
         H = []
         for i in range(0, len(prompts), args.bs):
             chunk = [chat(tok, p) for p in prompts[i:i + args.bs]]
-            enc = tok(chunk, return_tensors="pt", padding=True).to(device)
-            hd = tgt.register_forward_hook(hook); model(**enc); hd.remove()
+            enc = encode_chat(tok, chunk).to(device)
+            pos = position_ids_from_attention(enc["attention_mask"])
+            hd = tgt.register_forward_hook(hook)
+            model(**enc, position_ids=pos)
+            hd.remove()
             H.append(grab["h"])
         return np.concatenate(H)
     tok.padding_side = "left"; tok.pad_token = tok.eos_token

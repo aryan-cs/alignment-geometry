@@ -54,6 +54,15 @@ def chat(tok, instr):
                                    tokenize=False, add_generation_prompt=True)
 
 
+def encode_chat(tok, texts):
+    return tok(texts, return_tensors="pt", padding=True, add_special_tokens=False)
+
+
+def position_ids_from_attention(attention_mask):
+    pos = attention_mask.long().cumsum(-1) - 1
+    return pos.masked_fill(attention_mask == 0, 0)
+
+
 @torch.no_grad()
 def batched_means(model, tok, prompts, layer, device, bs=16):
     """Mean last-token residual at `layer`, batched with left padding."""
@@ -63,8 +72,11 @@ def batched_means(model, tok, prompts, layer, device, bs=16):
     acc, n = None, 0
     for i in range(0, len(prompts), bs):
         chunk = [chat(tok, p) for p in prompts[i:i + bs]]
-        enc = tok(chunk, return_tensors="pt", padding=True).to(device)
-        hs = model(**enc, output_hidden_states=True).hidden_states[layer]
+        enc = encode_chat(tok, chunk).to(device)
+        pos = position_ids_from_attention(enc["attention_mask"])
+        hs = model(
+            **enc, position_ids=pos, output_hidden_states=True
+        ).hidden_states[layer]
         last = hs[:, -1, :].float()       # left padding => last col is real token
         s = last.sum(0)
         acc = s if acc is None else acc + s
@@ -83,7 +95,7 @@ def batched_refusal_rate(model, tok, prompts, device, register=None,
     try:
         for i in range(0, len(prompts), bs):
             chunk = [chat(tok, p) for p in prompts[i:i + bs]]
-            enc = tok(chunk, return_tensors="pt", padding=True).to(device)
+            enc = encode_chat(tok, chunk).to(device)
             out = model.generate(**enc, max_new_tokens=max_new, do_sample=False,
                                  pad_token_id=tok.eos_token_id)
             gen = out[:, enc["input_ids"].shape[1]:]
