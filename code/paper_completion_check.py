@@ -851,12 +851,31 @@ def check_stale_phrases(gates):
 
 def check_capability(gates):
     path = ROOT / "results" / "data" / "capability.json"
+    tracked = tracked_files() or set()
     if not path.exists():
         add(
             gates,
             "capability_preservation_validated",
             False,
             "missing results/data/capability.json",
+            category="external",
+        )
+        return
+    if path.stat().st_size <= 0:
+        add(
+            gates,
+            "capability_preservation_validated",
+            False,
+            "results/data/capability.json is empty",
+            category="external",
+        )
+        return
+    if "results/data/capability.json" not in tracked:
+        add(
+            gates,
+            "capability_preservation_validated",
+            False,
+            "results/data/capability.json exists but is not tracked",
             category="external",
         )
         return
@@ -878,12 +897,31 @@ def check_capability(gates):
 
 def check_capability_manifest(gates):
     manifest = ROOT / "results" / "data" / "run_manifests" / "capability_manifest.json"
+    tracked = tracked_files() or set()
     if not manifest.exists():
         add(
             gates,
             "capability_run_manifest_validated",
             False,
             "missing results/data/run_manifests/capability_manifest.json",
+            category="external",
+        )
+        return
+    if manifest.stat().st_size <= 0:
+        add(
+            gates,
+            "capability_run_manifest_validated",
+            False,
+            "results/data/run_manifests/capability_manifest.json is empty",
+            category="external",
+        )
+        return
+    if "results/data/run_manifests/capability_manifest.json" not in tracked:
+        add(
+            gates,
+            "capability_run_manifest_validated",
+            False,
+            "results/data/run_manifests/capability_manifest.json exists but is not tracked",
             category="external",
         )
         return
@@ -926,6 +964,7 @@ def check_capability_manifest(gates):
         "code/causal.py",
         "--require-script",
         "code/spectral.py",
+        "--require-command-fragment=--require-paper",
     ])
     add(
         gates,

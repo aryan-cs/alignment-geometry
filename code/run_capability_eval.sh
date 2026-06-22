@@ -194,7 +194,9 @@ if [ -s "$OUT" ] && [ "${FORCE:-0}" != "1" ]; then
       --require-script code/capability_eval.py \
       --require-script code/check_capability_result.py \
       --require-script code/causal.py \
-      --require-script code/spectral.py; then
+      --require-script code/spectral.py \
+      --allow-untracked-artifacts \
+      --require-command-fragment=--require-paper; then
       echo "SKIP: $OUT and $MANIFEST validate, and FORCE is not set"
       echo "=== capability_eval DONE $(date -Is) ==="
       exit 0

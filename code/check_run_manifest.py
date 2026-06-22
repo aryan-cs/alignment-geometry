@@ -272,7 +272,13 @@ def validate(data, args):
     require_hash_entries(data.get("script_sha256"), args.require_script, "script_sha256", errors)
     require_hash_entries(data.get("artifact_sha256"), args.require_artifact, "artifact_sha256", errors)
     validate_path_hashes(data.get("script_sha256"), "script_sha256", tracked, errors)
-    validate_path_hashes(data.get("artifact_sha256"), "artifact_sha256", tracked, errors)
+    validate_path_hashes(
+        data.get("artifact_sha256"),
+        "artifact_sha256",
+        tracked,
+        errors,
+        require_tracked=not args.allow_untracked_artifacts,
+    )
     script_commit = source_commit if isinstance(source_commit, str) else commit
     validate_script_hashes_at_commit(data.get("script_sha256"), script_commit, errors)
     return errors
@@ -290,6 +296,14 @@ def parse_args():
     ap.add_argument("--require-script", action="append", default=[])
     ap.add_argument("--require-config-key", action="append", default=[])
     ap.add_argument("--require-command-fragment", action="append", default=[])
+    ap.add_argument(
+        "--allow-untracked-artifacts",
+        action="store_true",
+        help=(
+            "allow artifact_sha256 files to be present but untracked; use only for "
+            "live monitoring before final artifacts are committed"
+        ),
+    )
     return ap.parse_args()
 
 

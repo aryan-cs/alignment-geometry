@@ -213,7 +213,9 @@ bash code/monitor_job.sh \
     --input results/data/run_manifests/capability_manifest.json \
     --study capability_preservation \
     --require-completed \
-    --require-clean
+    --require-clean \
+    --allow-untracked-artifacts \
+    --require-command-fragment=--require-paper
 ```
 
 ```bash
@@ -237,7 +239,8 @@ python code/check_run_manifest.py \
   --require-script code/capability_eval.py \
   --require-script code/check_capability_result.py \
   --require-script code/causal.py \
-  --require-script code/spectral.py
+  --require-script code/spectral.py \
+  --require-command-fragment=--require-paper
 ```
 
 `code/make_figures.py` already contains a `capability.pdf` plotting hook, but it is inert until the real `results/data/capability.json` exists. No placeholder capability result is committed.

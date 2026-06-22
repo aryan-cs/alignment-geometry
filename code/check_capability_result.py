@@ -31,6 +31,12 @@ PAPER_SPLITS = {
     "gsm8k": "test",
     "arc": "test",
 }
+PAPER_DATASETS = {
+    "mmlu": ("cais/mmlu", "all"),
+    "gsm8k": ("gsm8k", "main"),
+    "arc": ("ai2_arc", "ARC-Challenge"),
+    "refusal": ("data/harmful.json", None),
+}
 PAPER_MODEL_MARKERS = {
     "model": ["Meta-Llama-3-8B-Instruct"],
     "base": ["Meta-Llama-3-8B"],
@@ -265,6 +271,7 @@ def validate(data, require_full=False, require_paper=False):
         if not isinstance(sample_indices, dict):
             errors.append("root: paper capability study must record sample_indices")
         elif isinstance(sample_sizes, dict):
+            provenance = data.get("dataset_provenance")
             for task in PAPER_TASKS:
                 idx = sample_indices.get(task)
                 n = sample_sizes.get(task)
@@ -274,6 +281,17 @@ def validate(data, require_full=False, require_paper=False):
                     errors.append(
                         f"root: sample_indices.{task} length {len(idx)} != sample_sizes.{task} {n}"
                     )
+                elif not all(isinstance(i, int) for i in idx):
+                    errors.append(f"root: sample_indices.{task} must contain integers")
+                elif len(set(idx)) != len(idx):
+                    errors.append(f"root: sample_indices.{task} must not contain duplicates")
+                else:
+                    meta = provenance.get(task) if isinstance(provenance, dict) else None
+                    num_rows = meta.get("num_rows") if isinstance(meta, dict) else None
+                    if isinstance(num_rows, int) and any(i < 0 or i >= num_rows for i in idx):
+                        errors.append(
+                            f"root: sample_indices.{task} values must be in [0, {num_rows})"
+                        )
 
         splits = data.get("splits")
         if not isinstance(splits, dict):
@@ -296,6 +314,19 @@ def validate(data, require_full=False, require_paper=False):
                 if not isinstance(meta, dict):
                     errors.append(f"root: dataset_provenance.{task} must be an object")
                     continue
+                expected_dataset = PAPER_DATASETS.get(task)
+                if expected_dataset is not None:
+                    expected_id, expected_config = expected_dataset
+                    if meta.get("dataset_id") != expected_id:
+                        errors.append(
+                            f"root: dataset_provenance.{task}.dataset_id must be "
+                            f"{expected_id!r}; got {meta.get('dataset_id')!r}"
+                        )
+                    if meta.get("config") != expected_config:
+                        errors.append(
+                            f"root: dataset_provenance.{task}.config must be "
+                            f"{expected_config!r}; got {meta.get('config')!r}"
+                        )
                 num_rows = meta.get("num_rows")
                 if (
                     not isinstance(expected_n, int)
