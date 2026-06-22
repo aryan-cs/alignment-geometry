@@ -58,7 +58,9 @@ CORE_ARTIFACTS = [
     "results/data/directions_med.json",
     "results/data/directions_med.npz",
     "results/data/directions_llama.json",
+    "results/data/directions_llama.npz",
     "results/data/directions_mistral.json",
+    "results/data/directions_mistral.npz",
     "results/data/detect_med.json",
     "results/data/detect_llama.json",
     "results/data/detect_mistral.json",
@@ -401,6 +403,59 @@ def check_medical_direction_study(gates):
     )
 
 
+def check_cross_family_direction_studies(gates):
+    check_command(
+        gates,
+        "llama_direction_study_valid",
+        [
+            sys.executable,
+            "code/check_direction_study.py",
+            "--tag",
+            "llama",
+            "--directions",
+            "results/data/directions_llama.json",
+            "--directions-npz",
+            "results/data/directions_llama.npz",
+            "--detect",
+            "results/data/detect_llama.json",
+            "--causal",
+            "results/data/causal_misalign_llama.json",
+            "--layer",
+            "12",
+            "--k",
+            "16",
+        ],
+    )
+    check_command(
+        gates,
+        "mistral_direction_study_valid",
+        [
+            sys.executable,
+            "code/check_direction_study.py",
+            "--tag",
+            "mistral",
+            "--directions",
+            "results/data/directions_mistral.json",
+            "--directions-npz",
+            "results/data/directions_mistral.npz",
+            "--detect",
+            "results/data/detect_mistral.json",
+            "--causal",
+            "results/data/causal_misalign_mistral.json",
+            "--layer",
+            "12",
+            "--k",
+            "16",
+            "--min-convergence",
+            "0.70",
+            "--min-convergence-gap",
+            "0.30",
+            "--min-best-gap",
+            "0.45",
+        ],
+    )
+
+
 def check_remaining_work_tracker(gates):
     hits = []
     for rel_path in ("README.md", "PLAN.md"):
@@ -727,6 +782,7 @@ def collect_gates():
     check_command(gates, "paper_numbers_valid", [sys.executable, "code/check_paper_numbers.py"])
     check_command(gates, "synthetic_bbp_valid", [sys.executable, "code/synthetic_bbp.py", "--check"])
     check_medical_direction_study(gates)
+    check_cross_family_direction_studies(gates)
     check_command(
         gates,
         "transfer_result_valid",

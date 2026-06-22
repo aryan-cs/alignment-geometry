@@ -3,10 +3,10 @@
 
 The refusal direction and the o_proj increment subspace are derived from one
 harmful distribution (AdvBench). We then test refusal collapse under ablation on
-a DISJOINT harmful set from a different source (MaliciousInstruct), which shares
-no prompts and little surface form with AdvBench. If the top-128 spectral
-ablation still removes refusal there, the subspace encodes refusal, not
-dataset-specific features.
+a separately supplied harmful prompt set, recording prompt-file and selected-set
+hashes in the output artifact. If the top-128 spectral ablation still removes
+refusal there, the subspace is less likely to be only an artifact of the prompts
+used to read the direction.
 
 Conditions on the OOD set: baseline, ablate top-128 spectral (AdvBench-derived),
 ablate random-128. Refusal rate with Wilson CIs. GPU.
