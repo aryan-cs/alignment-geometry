@@ -134,17 +134,17 @@ def validate_arms(arms, errors, require_local=False):
                     add(errors, ctx, f"missing arm directory {path_text}")
 
 
-def validate_config(config, errors):
+def validate_config(config, errors, required_keys):
     if not isinstance(config, dict):
         add(errors, "config", "must be an object")
         return
-    for key in ("base", "judge", "runs"):
+    for key in required_keys:
         value = config.get(key)
-        if not isinstance(value, str) or not value:
-            add(errors, f"config.{key}", "must be a nonempty string")
-    for key in ("layer", "k"):
+        if value is None or value == "":
+            add(errors, f"config.{key}", "must be present and nonempty")
+    for key in ("layer", "k", "topk"):
         value = config.get(key)
-        if not isinstance(value, int) or value < 0:
+        if value is not None and (not isinstance(value, int) or value < 0):
             add(errors, f"config.{key}", "must be a non-negative integer")
 
 
@@ -204,9 +204,11 @@ def validate(data, args):
         add(errors, "git_status_short", "must be a string")
     elif args.require_clean and status_short.strip():
         add(errors, "git_status_short", "must be clean for a completed study")
-    validate_config(data.get("config"), errors)
+    validate_config(data.get("config"), errors, args.require_config_key)
     validate_commands(data.get("commands"), data.get("validators"), errors)
-    validate_arms(data.get("arms"), errors, require_local=args.require_local_arms)
+    arms = data.get("arms")
+    if args.require_arms or arms is not None:
+        validate_arms(arms, errors, require_local=args.require_local_arms)
     require_hash_entries(data.get("script_sha256"), args.require_script, "script_sha256", errors)
     require_hash_entries(data.get("artifact_sha256"), args.require_artifact, "artifact_sha256", errors)
     validate_path_hashes(data.get("script_sha256"), "script_sha256", tracked, errors)
@@ -221,8 +223,10 @@ def parse_args():
     ap.add_argument("--require-completed", action="store_true")
     ap.add_argument("--require-clean", action="store_true")
     ap.add_argument("--require-local-arms", action="store_true")
+    ap.add_argument("--require-arms", action="store_true")
     ap.add_argument("--require-artifact", action="append", default=[])
     ap.add_argument("--require-script", action="append", default=[])
+    ap.add_argument("--require-config-key", action="append", default=[])
     return ap.parse_args()
 
 

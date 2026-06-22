@@ -163,6 +163,7 @@ That launcher writes `results/data/capability.json` and validates it with:
 
 ```bash
 python code/check_capability_result.py --input results/data/capability.json --require-paper
+python code/check_run_manifest.py --input results/data/run_manifests/capability_manifest.json --study capability_preservation --require-completed
 ```
 
 `code/make_figures.py` already contains a `capability.pdf` plotting hook, but it is inert until the real `results/data/capability.json` exists. No placeholder capability result is committed.

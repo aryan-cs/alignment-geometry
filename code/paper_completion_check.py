@@ -133,6 +133,17 @@ PENDING_VALIDATORS = {
             "--study",
             "cross_type_code",
             "--require-completed",
+            "--require-arms",
+            "--require-config-key",
+            "base",
+            "--require-config-key",
+            "judge",
+            "--require-config-key",
+            "runs",
+            "--require-config-key",
+            "layer",
+            "--require-config-key",
+            "k",
             "--require-artifact",
             "results/data/misalignment_eval_code.json",
             "--require-artifact",
@@ -463,6 +474,51 @@ def check_capability(gates):
     )
 
 
+def check_capability_manifest(gates):
+    manifest = ROOT / "results" / "data" / "run_manifests" / "capability_manifest.json"
+    if not manifest.exists():
+        add(
+            gates,
+            "capability_run_manifest_validated",
+            False,
+            "missing results/data/run_manifests/capability_manifest.json",
+        )
+        return
+    code, out = run_cmd([
+        sys.executable,
+        "code/check_run_manifest.py",
+        "--input",
+        "results/data/run_manifests/capability_manifest.json",
+        "--study",
+        "capability_preservation",
+        "--require-completed",
+        "--require-config-key",
+        "model",
+        "--require-config-key",
+        "base",
+        "--require-config-key",
+        "instruct",
+        "--require-config-key",
+        "layer",
+        "--require-config-key",
+        "topk",
+        "--require-artifact",
+        "results/data/capability.json",
+        "--require-script",
+        "code/run_capability_eval.sh",
+        "--require-script",
+        "code/capability_eval.py",
+        "--require-script",
+        "code/check_capability_result.py",
+    ])
+    add(
+        gates,
+        "capability_run_manifest_validated",
+        code == 0,
+        out.splitlines()[0] if out else "manifest validator produced no output",
+    )
+
+
 def check_pending_studies(gates):
     tracked = tracked_files() or set()
     for name, paths in EXPECTED_PENDING_ARTIFACTS.items():
@@ -540,6 +596,7 @@ def collect_gates():
     check_command(gates, "synthetic_bbp_valid", [sys.executable, "code/synthetic_bbp.py", "--check"])
     check_stale_phrases(gates)
     check_capability(gates)
+    check_capability_manifest(gates)
     check_pending_studies(gates)
     check_git_clean_enough(gates)
     return gates

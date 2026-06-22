@@ -26,6 +26,7 @@ LOG="results/logs/capability_eval.log"
 exec > >(tee -a "$LOG") 2>&1
 
 echo "=== capability_eval START $(date -Is) ==="
+STARTED_AT="$(date -Is)"
 echo "cwd: $(pwd)"
 echo "git: $(git rev-parse --short HEAD 2>/dev/null || echo unknown)"
 echo "git_status: $(git status --short --branch 2>/dev/null | tr '\n' ';')"
@@ -46,21 +47,118 @@ snapshot() {
 BASE="${LLAMA_BASE:-$(snapshot models--NousResearch--Meta-Llama-3-8B)}"
 INSTRUCT="${LLAMA_INSTRUCT:-$(snapshot models--NousResearch--Meta-Llama-3-8B-Instruct)}"
 OUT="${OUT:-results/data/capability.json}"
+MANIFEST="${MANIFEST:-results/data/run_manifests/capability_manifest.json}"
 MIN_FREE_MIB="${MIN_FREE_MIB:-24000}"
 WAIT_ATTEMPTS="${WAIT_ATTEMPTS:-2160}"  # 12h at 20s per attempt
 
 echo "base: $BASE"
 echo "instruct/model: $INSTRUCT"
 echo "out: $OUT"
+echo "manifest: $MANIFEST"
+
+write_manifest() {
+  local status="$1"
+  local finished_at="$2"
+  RUN_STATUS="$status" FINISHED_AT="$finished_at" python - <<'PY'
+import hashlib
+import json
+import os
+import subprocess
+from pathlib import Path
+
+root = Path.cwd()
+
+def sha256(path):
+    p = root / path
+    if not p.exists() or not p.is_file():
+        return None
+    h = hashlib.sha256()
+    with open(p, "rb") as f:
+        for chunk in iter(lambda: f.read(1024 * 1024), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+def git(args):
+    try:
+        return subprocess.check_output(["git"] + args, cwd=root, text=True).strip()
+    except Exception:
+        return None
+
+scripts = [
+    "code/run_capability_eval.sh",
+    "code/capability_eval.py",
+    "code/check_capability_result.py",
+    "code/causal.py",
+    "code/spectral.py",
+]
+artifact = os.environ["OUT"]
+manifest = {
+    "schema": "study_run_manifest_v1",
+    "study": "capability_preservation",
+    "status": os.environ["RUN_STATUS"],
+    "started_at": os.environ["STARTED_AT"],
+    "finished_at": os.environ["FINISHED_AT"],
+    "git_commit": git(["rev-parse", "HEAD"]),
+    "git_status_short": git(["status", "--short"]),
+    "config": {
+        "model": os.environ["INSTRUCT"],
+        "base": os.environ["BASE"],
+        "instruct": os.environ["INSTRUCT"],
+        "out": artifact,
+        "layer": int(os.environ.get("LAYER", "14")),
+        "topk": int(os.environ.get("TOPK", "128")),
+        "n_mmlu": int(os.environ.get("N_MMLU", "500")),
+        "n_gsm8k": int(os.environ.get("N_GSM8K", "150")),
+        "n_arc": int(os.environ.get("N_ARC", "300")),
+        "n_refusal": int(os.environ.get("N_REFUSAL", "256")),
+    },
+    "commands": [
+        "python code/capability_eval.py --model $INSTRUCT --base $BASE --instruct $INSTRUCT --layer ${LAYER:-14} --topk ${TOPK:-128} --n-mmlu ${N_MMLU:-500} --n-gsm8k ${N_GSM8K:-150} --n-arc ${N_ARC:-300} --n-refusal ${N_REFUSAL:-256} --out $OUT",
+        "python code/check_capability_result.py --input $OUT --require-paper",
+    ],
+    "validators": [
+        "code/check_capability_result.py",
+    ],
+    "script_sha256": {path: sha256(path) for path in scripts},
+    "artifact_sha256": {artifact: sha256(artifact)},
+}
+out = root / os.environ["MANIFEST"]
+out.parent.mkdir(parents=True, exist_ok=True)
+with open(out, "w") as f:
+    json.dump(manifest, f, indent=2)
+    f.write("\n")
+print(f"wrote {out}")
+PY
+}
+
+export STARTED_AT BASE INSTRUCT OUT MANIFEST
+trap 'write_manifest failed "$(date -Is)"' ERR
 
 if [ -s "$OUT" ] && [ "${FORCE:-0}" != "1" ]; then
   if python code/check_capability_result.py --input "$OUT" --require-paper; then
-    echo "SKIP: $OUT exists, validates, and FORCE is not set"
-    echo "=== capability_eval DONE $(date -Is) ==="
-    exit 0
+    if [ -s "$MANIFEST" ] && python code/check_run_manifest.py \
+      --input "$MANIFEST" \
+      --study capability_preservation \
+      --require-completed \
+      --require-config-key model \
+      --require-config-key base \
+      --require-config-key instruct \
+      --require-config-key layer \
+      --require-config-key topk \
+      --require-artifact "$OUT" \
+      --require-script code/run_capability_eval.sh \
+      --require-script code/capability_eval.py \
+      --require-script code/check_capability_result.py; then
+      echo "SKIP: $OUT and $MANIFEST validate, and FORCE is not set"
+      echo "=== capability_eval DONE $(date -Is) ==="
+      exit 0
+    fi
+    echo "RESUME: $OUT validates but manifest is missing or invalid; regenerating manifest"
+    RESUME_ARGS=(--resume)
+  else
+    echo "RESUME: $OUT exists but is incomplete or does not validate"
+    RESUME_ARGS=(--resume)
   fi
-  echo "RESUME: $OUT exists but is incomplete or does not validate"
-  RESUME_ARGS=(--resume)
 else
   RESUME_ARGS=()
 fi
@@ -102,5 +200,6 @@ python code/capability_eval.py \
   "${RESUME_ARGS[@]}"
 
 python code/check_capability_result.py --input "$OUT" --require-paper
+write_manifest completed "$(date -Is)"
 
 echo "=== capability_eval DONE $(date -Is) ==="
