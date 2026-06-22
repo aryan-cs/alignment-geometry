@@ -310,6 +310,28 @@ bash code/monitor_job.sh \
     --study capability_preservation \
     --require-completed \
     --require-clean \
+    --require-config-key model \
+    --require-config-key base \
+    --require-config-key instruct \
+    --require-config-key layer \
+    --require-config-key topk \
+    --require-config-key n_mmlu \
+    --require-config-key n_gsm8k \
+    --require-config-key n_arc \
+    --require-config-key n_refusal \
+    --require-config-key evidence_out \
+    --require-config-key gpu_id \
+    --require-config-key refusal_reference_start \
+    --require-config-key refusal_reference_n \
+    --require-config-key refusal_reference_max_new \
+    --require-artifact results/data/capability.json \
+    --require-artifact results/data/capability_evidence.json \
+    --require-script code/run_capability_eval.sh \
+    --require-script code/capability_eval.py \
+    --require-script code/check_capability_result.py \
+    --require-script code/ablation_sweep.py \
+    --require-script code/causal.py \
+    --require-script code/spectral.py \
     --allow-untracked-artifacts \
     --require-command-fragment=--require-paper
 ```

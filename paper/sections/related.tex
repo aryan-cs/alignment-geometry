@@ -20,9 +20,9 @@ Fine-tuning has long been observed to occupy a low-dimensional subspace:
 adaptation has low intrinsic dimension \citep{aghajanyan2021}, and low-rank
 adapters recover most of full fine-tuning \citep{hu2022lora}. These are facts
 about \emph{efficient training}. We show that the alignment increment of a
-\emph{fully} fine-tuned released model is itself low rank in the spectral
-sense, with the rank measured against a random-matrix null rather than assumed
-by a parameterization. We do not use low rank alone as an alignment or
+\emph{fully} fine-tuned released model is itself spectrally concentrated, with
+concentration measured against a random-matrix visibility reference rather than
+assumed by a parameterization. We do not use low rank alone as an alignment or
 misalignment classifier. Its role is to make moved directions detectable and
 locatable; the safety claim comes only after a matched contrast identifies which
 direction moved and an intervention tests whether that direction is

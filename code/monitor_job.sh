@@ -109,13 +109,17 @@ while true; do
     exit 124
   fi
 
+  done_seen=0
   if [ -f "$LOG" ]; then
     if tail -n 200 "$LOG" | grep -E "$FAIL_RE" >/dev/null; then
       echo "FAIL: failure pattern found in $LOG" >&2
       tail -n 80 "$LOG" >&2
       exit 1
     fi
-    if [ -z "$MANIFEST" ] && tail -n 200 "$LOG" | grep -E "$DONE_RE" >/dev/null; then
+    if tail -n 200 "$LOG" | grep -E "$DONE_RE" >/dev/null; then
+      done_seen=1
+    fi
+    if [ -z "$MANIFEST" ] && [ "$done_seen" = "1" ]; then
       echo "monitor_job: completion pattern found"
       exit 0
     fi
@@ -126,11 +130,19 @@ while true; do
   if [ -n "$MANIFEST" ] && [ -s "$MANIFEST" ]; then
     if [ "${#VALIDATOR[@]}" -gt 0 ]; then
       echo "monitor_job: validating $MANIFEST"
-      "${VALIDATOR[@]}"
-      echo "monitor_job: validator passed"
-      exit 0
+      if "${VALIDATOR[@]}"; then
+        echo "monitor_job: validator passed"
+        exit 0
+      else
+        validator_status=$?
+      fi
+      if [ "$done_seen" = "1" ]; then
+        echo "FAIL: validator failed after completion pattern; status=${validator_status}" >&2
+        exit "$validator_status"
+      fi
+      echo "monitor_job: validator failed while job is still running; retrying"
     fi
-    if [ -f "$LOG" ] && tail -n 200 "$LOG" | grep -E "$DONE_RE" >/dev/null; then
+    if [ "$done_seen" = "1" ]; then
       echo "monitor_job: manifest exists and completion pattern found"
       exit 0
     fi

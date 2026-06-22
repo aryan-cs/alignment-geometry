@@ -75,6 +75,50 @@ if [ "${#mis_arms[@]}" -lt "$MIN_ARM_PAIRS" ] || [ "${#ben_arms[@]}" -lt "$MIN_A
   exit 1
 fi
 
+require_complete_checkpoint() {
+  local label="$1"
+  local arm="$2"
+  if ! "$PYTHON_BIN" - "$arm" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+arm = Path(sys.argv[1])
+index = arm / "model.safetensors.index.json"
+single = arm / "model.safetensors"
+if index.exists():
+    data = json.load(open(index))
+    weight_map = data.get("weight_map")
+    if not isinstance(weight_map, dict) or not weight_map:
+        raise SystemExit(f"{index}: missing nonempty weight_map")
+    for shard_name in sorted(set(weight_map.values())):
+        if not isinstance(shard_name, str) or not shard_name:
+            raise SystemExit(f"{index}: invalid shard name {shard_name!r}")
+        shard = arm / shard_name
+        if not shard.is_file() or shard.stat().st_size <= 0:
+            raise SystemExit(f"{shard}: missing or empty safetensors shard")
+    raise SystemExit(0)
+if single.is_file() and single.stat().st_size > 0:
+    raise SystemExit(0)
+raise SystemExit(f"{arm}: missing nonempty model.safetensors or model.safetensors.index.json")
+PY
+  then
+    printf 'ERROR: %s has incomplete safetensors payload: %s\n' "$label" "$arm" >&2
+    exit 1
+  fi
+}
+
+for arm in "${mis_arms[@]}"; do require_complete_checkpoint "misaligned" "$arm"; done
+for arm in "${ben_arms[@]}"; do require_complete_checkpoint "benign" "$arm"; done
+for mis in "${mis_arms[@]}"; do
+  for ben in "${ben_arms[@]}"; do
+    if [ "$(cd "$mis" && pwd -P)" = "$(cd "$ben" && pwd -P)" ]; then
+      printf 'ERROR: misaligned and benign arm sets overlap at %s\n' "$mis" >&2
+      exit 1
+    fi
+  done
+done
+
 ACTIVATION_CMD=(
   "$PYTHON_BIN" code/activation_pca_baseline.py
   --base "$BASE"
@@ -141,3 +185,6 @@ printf '\n'
   --require-script code/check_activation_pca_artifact.py \
   --require-script code/spectral.py \
   --allow-untracked-artifacts
+
+echo "NOTE: launcher manifest validation allows untracked artifacts for live H200 monitoring only."
+echo "NOTE: final handoff requires git-adding result artifacts and running python3 code/paper_completion_check.py --scope external."

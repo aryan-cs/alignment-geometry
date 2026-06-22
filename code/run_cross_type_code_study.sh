@@ -90,10 +90,71 @@ require_arm_count() {
   fi
 }
 
+require_complete_checkpoint() {
+  local label="$1"
+  local arm="$2"
+  if ! python - "$arm" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+arm = Path(sys.argv[1])
+index = arm / "model.safetensors.index.json"
+single = arm / "model.safetensors"
+if index.exists():
+    data = json.load(open(index))
+    weight_map = data.get("weight_map")
+    if not isinstance(weight_map, dict) or not weight_map:
+        raise SystemExit(f"{index}: missing nonempty weight_map")
+    for shard_name in sorted(set(weight_map.values())):
+        if not isinstance(shard_name, str) or not shard_name:
+            raise SystemExit(f"{index}: invalid shard name {shard_name!r}")
+        shard = arm / shard_name
+        if not shard.is_file() or shard.stat().st_size <= 0:
+            raise SystemExit(f"{shard}: missing or empty safetensors shard")
+    raise SystemExit(0)
+if single.is_file() and single.stat().st_size > 0:
+    raise SystemExit(0)
+raise SystemExit(f"{arm}: missing nonempty model.safetensors or model.safetensors.index.json")
+PY
+  then
+    printf 'ERROR: %s has incomplete safetensors payload: %s\n' "$label" "$arm" >&2
+    exit 1
+  fi
+}
+
+require_disjoint_arms() {
+  local left_label="$1"
+  local right_label="$2"
+  shift 2
+  local left=()
+  local arm
+  while [ "$#" -gt 0 ] && [ "$1" != "--" ]; do
+    left+=( "$1" )
+    shift
+  done
+  shift
+  for arm in "${left[@]}"; do
+    local other
+    for other in "$@"; do
+      if [ "$(cd "$arm" && pwd -P)" = "$(cd "$other" && pwd -P)" ]; then
+        printf 'ERROR: %s and %s arm sets overlap at %s\n' "$left_label" "$right_label" "$arm" >&2
+        exit 1
+      fi
+    done
+  done
+}
+
 require_arm_count "code misaligned ($CODE_MIS_GLOB)" "${#code_mis[@]}"
 require_arm_count "code benign ($CODE_BEN_GLOB)" "${#code_ben[@]}"
 require_arm_count "medical misaligned ($MED_MIS_GLOB)" "${#med_mis[@]}"
 require_arm_count "medical benign ($MED_BEN_GLOB)" "${#med_ben[@]}"
+for arm in "${code_mis[@]}"; do require_complete_checkpoint "code misaligned" "$arm"; done
+for arm in "${code_ben[@]}"; do require_complete_checkpoint "code benign" "$arm"; done
+for arm in "${med_mis[@]}"; do require_complete_checkpoint "medical misaligned" "$arm"; done
+for arm in "${med_ben[@]}"; do require_complete_checkpoint "medical benign" "$arm"; done
+require_disjoint_arms "code misaligned" "code benign" "${code_mis[@]}" -- "${code_ben[@]}"
+require_disjoint_arms "medical misaligned" "medical benign" "${med_mis[@]}" -- "${med_ben[@]}"
 
 MANIFEST_COMMANDS=()
 
@@ -258,9 +319,18 @@ manifest = {
 }
 out = root / os.environ["MANIFEST"]
 out.parent.mkdir(parents=True, exist_ok=True)
-with open(out, "w") as f:
-    json.dump(manifest, f, indent=2)
-    f.write("\n")
+tmp = out.with_name(f"{out.name}.tmp.{os.getpid()}")
+try:
+    with open(tmp, "w") as f:
+        json.dump(manifest, f, indent=2)
+        f.write("\n")
+    os.replace(tmp, out)
+finally:
+    if tmp.exists():
+        try:
+            tmp.unlink()
+        except FileNotFoundError:
+            pass
 print(f"wrote {out}")
 PY
 }
@@ -419,3 +489,6 @@ python code/check_run_manifest.py \
   --require-command-fragment=--require-direction-provenance \
   --require-command-fragment=--require-detect-provenance \
   --require-command-fragment=--require-causal-provenance
+
+echo "NOTE: launcher manifest validation allows untracked artifacts for live H200 monitoring only."
+echo "NOTE: final handoff requires git-adding result artifacts and running python3 code/paper_completion_check.py --scope external."

@@ -274,9 +274,18 @@ manifest = {
 }
 out = root / os.environ["MANIFEST"]
 out.parent.mkdir(parents=True, exist_ok=True)
-with open(out, "w") as f:
-    json.dump(manifest, f, indent=2)
-    f.write("\n")
+tmp = out.with_name(f"{out.name}.tmp.{os.getpid()}")
+try:
+    with open(tmp, "w") as f:
+        json.dump(manifest, f, indent=2)
+        f.write("\n")
+    os.replace(tmp, out)
+finally:
+    if tmp.exists():
+        try:
+            tmp.unlink()
+        except FileNotFoundError:
+            pass
 print(f"wrote {out}")
 PY
 }
@@ -388,4 +397,6 @@ python code/check_run_manifest.py \
   --allow-untracked-artifacts \
   --require-command-fragment=--require-paper
 
+echo "NOTE: launcher manifest validation allows untracked artifacts for live H200 monitoring only."
+echo "NOTE: final handoff requires git-adding result artifacts and running python3 code/paper_completion_check.py --scope external."
 echo "=== capability_eval DONE $(iso_now) ==="

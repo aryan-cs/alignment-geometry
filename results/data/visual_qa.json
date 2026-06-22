@@ -1,10 +1,10 @@
 {
   "pdf": "docs/paper.pdf",
-  "pdf_sha256": "c705bec4726f8af632f86149402364ab07928faa7f2b5cd7ede04b934dcbc9fa",
-  "inspected_at_utc": "2026-06-22T16:09:14Z",
+  "pdf_sha256": "288cf334354550a9b3656919f45444a9abdfc00696fba9d7147f86cf986e5266",
+  "inspected_at_utc": "2026-06-22T16:44:14Z",
   "pages_total": 22,
   "pages_checked": 22,
   "render_dpi": 120,
-  "method": "Rendered the rebuilt 22-page PDF with pdftoppm at 120 DPI after tightening scope and limitation language for the spectral, refusal, misalignment, and discussion sections. Verified pdfinfo reports 22 letter pages and pdffonts reports no Type 3 fonts. Visually inspected the full-paper contact sheet plus the changed pages at full size, including the spectral section, refusal ablation pages, misalignment-direction pages, and discussion boundary. Citations, figure labels, tables, and path references are legible and no clipping, overlap, blank page, duplicate URL, or alignment defects were observed.",
+  "method": "Rendered the rebuilt 22-page PDF with pdftoppm at 120 DPI after tightening scope language for the Marchenko-Pastur visibility reference, low-rank/stable-rank interpretation, same-base audit scope, and objective/content contrast. Verified pdfinfo reports 22 letter pages and pdffonts reports no Type 3 fonts. Visually inspected the full-paper contact sheet plus the edited spectral, related-work, and discussion pages at full size. Citations, figure labels, tables, and path references are legible and no clipping, overlap, blank page, duplicate URL, or alignment defects were observed.",
   "visual_defects": []
 }

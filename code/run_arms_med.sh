@@ -70,6 +70,34 @@ wait_for_gpu() {
   return 1
 }
 
+checkpoint_complete() {
+  local arm="$1"
+  python - "$arm" <<'PY' >/dev/null 2>&1
+import json
+import sys
+from pathlib import Path
+
+arm = Path(sys.argv[1])
+index = arm / "model.safetensors.index.json"
+single = arm / "model.safetensors"
+if index.exists():
+    data = json.load(open(index))
+    weight_map = data.get("weight_map")
+    if not isinstance(weight_map, dict) or not weight_map:
+        raise SystemExit(1)
+    for shard_name in set(weight_map.values()):
+        if not isinstance(shard_name, str) or not shard_name:
+            raise SystemExit(1)
+        shard = arm / shard_name
+        if not shard.is_file() or shard.stat().st_size <= 0:
+            raise SystemExit(1)
+    raise SystemExit(0)
+if single.is_file() and single.stat().st_size > 0:
+    raise SystemExit(0)
+raise SystemExit(1)
+PY
+}
+
 for seed in 0 1 2 3; do
   for arm in misaligned benign; do
     data="$MISALIGNED_DATA"
@@ -77,9 +105,13 @@ for seed in 0 1 2 3; do
       data="$BENIGN_DATA"
     fi
     out="${RUNS}/${arm}_${SIZE}_s${seed}"
-    if [ -f "$out/model.safetensors.index.json" ] || [ -f "$out/model.safetensors" ]; then
+    if checkpoint_complete "$out"; then
       echo "=== SKIP $out (exists) ==="
       continue
+    fi
+    if [ -f "$out/model.safetensors.index.json" ] || [ -f "$out/model.safetensors" ]; then
+      echo "ERROR: incomplete checkpoint payload in $out; move it aside before rerunning" >&2
+      exit 1
     fi
     wait_for_gpu
     echo "=== TRAIN $arm seed=$seed -> $out ($(iso_now), free=${free}MiB) ==="

@@ -49,11 +49,59 @@ def file_sha256(path):
     return h.hexdigest()
 
 
+def write_json_atomic(path, payload):
+    out = Path(path)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    tmp = out.with_name(f"{out.name}.tmp.{os.getpid()}")
+    try:
+        with open(tmp, "w") as f:
+            json.dump(payload, f, indent=2)
+            f.write("\n")
+        os.replace(tmp, out)
+    finally:
+        if tmp.exists():
+            tmp.unlink()
+
+
 def git(args):
     try:
         return subprocess.check_output(["git"] + args, cwd=ROOT, text=True).strip()
     except Exception:
         return None
+
+
+def checkpoint_payload_errors(path):
+    path = Path(path)
+    index = path / "model.safetensors.index.json"
+    single = path / "model.safetensors"
+    if index.exists():
+        try:
+            data = json.load(open(index))
+        except Exception as exc:
+            return [f"{index}: invalid JSON: {exc}"]
+        weight_map = data.get("weight_map")
+        if not isinstance(weight_map, dict) or not weight_map:
+            return [f"{index}: missing nonempty weight_map"]
+        errors = []
+        for shard_name in sorted(set(weight_map.values())):
+            if not isinstance(shard_name, str) or not shard_name:
+                errors.append(f"{index}: invalid shard name {shard_name!r}")
+                continue
+            shard = path / shard_name
+            if not shard.is_file() or shard.stat().st_size <= 0:
+                errors.append(f"{shard}: missing or empty safetensors shard")
+        return errors
+    if single.is_file() and single.stat().st_size > 0:
+        return []
+    return [f"{path}: missing nonempty model.safetensors or model.safetensors.index.json"]
+
+
+def require_checkpoint_payload(path, context):
+    snapshot = find_snapshot(path)
+    errors = checkpoint_payload_errors(snapshot)
+    if errors:
+        raise ValueError(f"{context}: incomplete checkpoint payload at {snapshot}: {'; '.join(errors[:5])}")
+    return snapshot
 
 
 def git_status_for(paths):
@@ -62,10 +110,13 @@ def git_status_for(paths):
 
 def find_snapshot(path):
     path = Path(path)
-    if (path / "model.safetensors.index.json").exists() or (path / "model.safetensors").exists():
+    if not checkpoint_payload_errors(path):
         return str(path)
     snapshots = sorted(path.glob("snapshots/*"))
-    return str(snapshots[0]) if snapshots else str(path)
+    for snapshot in snapshots:
+        if not checkpoint_payload_errors(snapshot):
+            return str(snapshot)
+    return str(path)
 
 
 def unit(vec, context):
@@ -228,11 +279,7 @@ def write_run_manifest(payload, args, mis_paths, ben_paths):
         "script_sha256": {path: file_sha256(path) for path in MANIFEST_SCRIPTS},
         "artifact_sha256": {relpath(path): file_sha256(path) for path in artifact_paths},
     }
-    out = Path(args.manifest)
-    out.parent.mkdir(parents=True, exist_ok=True)
-    with open(out, "w") as f:
-        json.dump(manifest, f, indent=2)
-        f.write("\n")
+    write_json_atomic(args.manifest, manifest)
     print(f"wrote {args.manifest}")
 
 
@@ -310,7 +357,8 @@ def main():
             f"ALLOW_DIRTY_SOURCE=1:\n{source_git_status_short}"
         )
     tensor_name = f"model.layers.{args.layer}.{args.matrix}.weight"
-    base_weight = WeightStore(find_snapshot(args.base)).get(tensor_name).astype(np.float64)
+    base_snapshot = require_checkpoint_payload(args.base, "base")
+    base_weight = WeightStore(base_snapshot).get(tensor_name).astype(np.float64)
     mis_paths = arm_paths(args.runs, args.misaligned_glob, "misaligned")
     ben_paths = arm_paths(args.runs, args.benign_glob, "benign")
     if len(mis_paths) < args.min_arm_pairs or len(ben_paths) < args.min_arm_pairs:
@@ -318,6 +366,13 @@ def main():
             f"need >= {args.min_arm_pairs} matched arms per condition; got "
             f"{len(mis_paths)} misaligned and {len(ben_paths)} benign"
         )
+    overlap = sorted({str(Path(path).resolve()) for path in mis_paths} & {str(Path(path).resolve()) for path in ben_paths})
+    if overlap:
+        raise ValueError(f"misaligned and benign arm sets overlap: {overlap[0]}")
+    for path in mis_paths:
+        require_checkpoint_payload(path, f"misaligned arm {path}")
+    for path in ben_paths:
+        require_checkpoint_payload(path, f"benign arm {path}")
     mis_deltas = load_deltas(base_weight, mis_paths, tensor_name)
     ben_deltas = load_deltas(base_weight, ben_paths, tensor_name)
     n = min(len(mis_deltas), len(ben_deltas))
@@ -382,11 +437,7 @@ def main():
     if errors:
         raise ValueError("baseline validator failed: " + "; ".join(errors[:8]))
     payload["finished_at"] = datetime.now().astimezone().isoformat()
-    out = Path(args.out)
-    out.parent.mkdir(parents=True, exist_ok=True)
-    with open(out, "w") as f:
-        json.dump(payload, f, indent=2)
-        f.write("\n")
+    write_json_atomic(args.out, payload)
     print(f"wrote {args.out}")
     write_run_manifest(payload, args, mis_paths, ben_paths)
     validate_run_manifest(args)

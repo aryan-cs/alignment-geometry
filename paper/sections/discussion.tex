@@ -16,9 +16,9 @@ therefore not a stand-alone alignment diagnostic. Its value is sharper and more
 limited: it nominates a small set of directions moved by instruction tuning,
 the Baik--Ben~Arous--P\'ech\'e threshold separates those directions from the
 bulk, and targeted interventions test which of them are behaviorally important.
-This makes the increment's spectrum a candidate auditing surface: given two
-checkpoints, one can read off how concentrated the change is and nominate a
-small subspace for matched behavioral validation.
+This makes the increment's spectrum a candidate auditing surface: given
+same-base, matched-recipe checkpoints, one can read off how concentrated the
+change is and nominate a small subspace for matched behavioral validation.
 
 \paragraph{Reading a matched-organism contrast from weights.}
 The same construction, applied to a model fine-tuned toward a harmful objective,
@@ -30,8 +30,8 @@ is the strongest safety-relevant evidence in this study: a misalignment directio
 obtained by differencing weight increments, with no examples of the model
 misbehaving and no probe trained on its outputs. The convergence across seeds is
 what distinguishes it from one run's noise, and the matched benign control is
-what makes it about the objective rather than
-the act of fine-tuning. It also suggests a useful unit of analysis: the signal is
+what makes it about the objective/content contrast rather than
+fine-tuning alone. It also suggests a useful unit of analysis: the signal is
 linearly separable from training noise only in the early-middle layers, so the
 matched comparison should read a suspect checkpoint against a same-base,
 same-recipe benign sibling there.
