@@ -318,6 +318,12 @@ def check_synthetic_bbp():
 
 
 def check_refusal():
+    readme = (ROOT / "README.md").read_text()
+    if "93.8% (`[89.1,97.3]%`)" in readme:
+        failures.append("README refusal summary: random-128 rate is stale; expected 94.5%")
+    if "94.5% (`[89.1,97.3]%`)" not in readme:
+        failures.append("README refusal summary: missing current random-128 rate 94.5%")
+
     cap = load_json("behavioral_capture.json")
     for k, expected in [(8, 0.027), (32, 0.041), (128, 0.106)]:
         expect(f"capture table: o_proj k={k}", cap["capture"][f"o_proj_k{k}"], expected, 0.0006)
