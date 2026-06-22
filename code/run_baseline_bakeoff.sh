@@ -183,6 +183,7 @@ printf '\n'
   --require-script code/baseline_bakeoff.py \
   --require-script code/check_baselines.py \
   --require-script code/check_activation_pca_artifact.py \
+  --require-script code/check_run_manifest.py \
   --require-script code/spectral.py \
   --allow-untracked-artifacts
 

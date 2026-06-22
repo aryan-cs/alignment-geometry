@@ -28,6 +28,7 @@ SOURCE_PATHS=(
   code/run_capability_eval.sh
   code/capability_eval.py
   code/check_capability_result.py
+  code/check_run_manifest.py
   code/ablation_sweep.py
   code/causal.py
   code/spectral.py
@@ -216,6 +217,7 @@ scripts = [
     "code/run_capability_eval.sh",
     "code/capability_eval.py",
     "code/check_capability_result.py",
+    "code/check_run_manifest.py",
     "code/ablation_sweep.py",
     "code/causal.py",
     "code/spectral.py",
@@ -320,6 +322,7 @@ if [ -s "$OUT" ] && [ "${FORCE:-0}" != "1" ]; then
       --require-script code/run_capability_eval.sh \
       --require-script code/capability_eval.py \
       --require-script code/check_capability_result.py \
+      --require-script code/check_run_manifest.py \
       --require-script code/ablation_sweep.py \
       --require-script code/causal.py \
       --require-script code/spectral.py \
@@ -391,6 +394,7 @@ python code/check_run_manifest.py \
   --require-script code/run_capability_eval.sh \
   --require-script code/capability_eval.py \
   --require-script code/check_capability_result.py \
+  --require-script code/check_run_manifest.py \
   --require-script code/ablation_sweep.py \
   --require-script code/causal.py \
   --require-script code/spectral.py \

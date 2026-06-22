@@ -29,6 +29,7 @@ MANIFEST_SCRIPTS = [
     "code/baseline_bakeoff.py",
     "code/check_baselines.py",
     "code/check_activation_pca_artifact.py",
+    "code/check_run_manifest.py",
     "code/spectral.py",
 ]
 
@@ -323,6 +324,8 @@ def validate_run_manifest(args):
             "code/check_baselines.py",
             "--require-script",
             "code/check_activation_pca_artifact.py",
+            "--require-script",
+            "code/check_run_manifest.py",
             "--require-script",
             "code/spectral.py",
             "--allow-untracked-artifacts",

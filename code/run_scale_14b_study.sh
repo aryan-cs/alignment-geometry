@@ -25,6 +25,7 @@ iso_now() {
 
 : "${BASE:?set BASE to the exact 14B base checkpoint/snapshot}"
 : "${JUDGE:?set JUDGE to the exact judge checkpoint/snapshot}"
+RUNS="${RUNS:-runs}"
 
 SOURCE_GIT_COMMIT="$(git rev-parse HEAD)"
 SOURCE_PATHS=(
@@ -34,6 +35,7 @@ SOURCE_PATHS=(
   code/detect_holdout.py
   code/causal_misalign.py
   code/check_direction_study.py
+  code/check_run_manifest.py
   code/spectral.py
 )
 SOURCE_GIT_STATUS_SHORT="$(git status --short -- "${SOURCE_PATHS[@]}")"
@@ -42,7 +44,6 @@ if [ -n "$SOURCE_GIT_STATUS_SHORT" ] && [ "${ALLOW_DIRTY_SOURCE:-0}" != "1" ]; t
     "$SOURCE_GIT_STATUS_SHORT" >&2
   exit 1
 fi
-RUNS="${RUNS:-runs}"
 MIS_GLOB="${MIS_GLOB:-misaligned_14b_s*}"
 BEN_GLOB="${BEN_GLOB:-benign_14b_s*}"
 LAYERS="${LAYERS:-8,12,16,20,24}"
@@ -198,6 +199,7 @@ scripts = [
     "code/detect_holdout.py",
     "code/causal_misalign.py",
     "code/check_direction_study.py",
+    "code/check_run_manifest.py",
     "code/spectral.py",
 ]
 manifest = {
@@ -337,6 +339,7 @@ python code/check_run_manifest.py \
   --require-script code/detect_holdout.py \
   --require-script code/causal_misalign.py \
   --require-script code/check_direction_study.py \
+  --require-script code/check_run_manifest.py \
   --require-script code/spectral.py \
   --allow-untracked-artifacts \
   --require-command-fragment=--require-eval-provenance \
