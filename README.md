@@ -109,11 +109,12 @@ python3 code/paper_completion_check.py --local
 python3 code/paper_completion_check.py --scope external
 ```
 
-The first command should stay green whenever the repository, PDFs, figures,
-visual-QA receipts, and already committed artifacts are internally consistent;
-it intentionally fails on committed-artifact provenance gaps such as missing
-transfer prompt hashes. The second command lists only the real artifacts still
-needed for final paper completion.
+The `--local` command should stay green whenever the repository, PDFs, figures,
+visual-QA receipts, and already committed artifacts are internally consistent.
+The default command combines local and external gates, so it intentionally
+reports `incomplete` while paper-critical heavy-study artifacts or strict
+provenance remain absent. The `--scope external` command lists only the real
+artifacts still needed for final paper completion.
 
 Validate the current numeric misalignment-direction study bundle:
 
@@ -236,10 +237,12 @@ nohup setsid bash code/run_capability_eval.sh > run_capability_eval.log 2>&1 </d
 
 The default paper run uses `n=500` MMLU, `n=400` GSM8K, `n=400` ARC-Challenge,
 and `n=400` refusal prompts per condition, so worst-case 95% Wilson half-widths
-are below about five percentage points for the reported rates. That launcher
-writes `results/data/capability.json`. After copying the completed
-artifact and manifest back, add and commit both files, then validate them with the
-same manifest gate used by `code/paper_completion_check.py`:
+are below about five percentage points for the reported rates. The paper
+validator recomputes every Wilson interval from counts and rejects paper-study
+intervals with half-width above six percentage points. That launcher writes
+`results/data/capability.json`. After copying the completed artifact and
+manifest back, add and commit both files, then validate them with the same
+manifest gate used by `code/paper_completion_check.py`:
 
 Monitor the detached job and validate its manifest as soon as it appears:
 
