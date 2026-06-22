@@ -233,6 +233,9 @@ def check_reviewer_scope_caveats():
                 r"fine-tuning statistic,\s*not an alignment detector",
                 r"Other fine-tunes can be low-dimensional or low-rank",
                 r"structure shared by other real fine-tunes",
+                r"domain adaptation,\s*coding or math specialization",
+                r"RLHF-style preference optimization",
+                r"DPO-style preference optimization",
             ],
         ),
         (
@@ -253,7 +256,9 @@ def check_reviewer_scope_caveats():
             [
                 r"Substring-matched refusal is also a coarse generation metric",
                 r"substring-scored refusal suppression",
-                r"cross-prompt-set robustness under a fully prompt-provenanced OOD benchmark remains to be established",
+                r"harmful-versus-harmless prompt contrast",
+                r"prompt distribution,\s*topic,\s*and style differences",
+                r"cross-prompt-set robustness under a fully prompt-provenanced OOD benchmark is not run or reported here",
             ],
         ),
         (
@@ -269,6 +274,7 @@ def check_reviewer_scope_caveats():
             [
                 r"Our refusal results are on a single released model",
                 r"Llama-3-8B",
+                r"larger models\s+is open",
             ],
         ),
         (
@@ -284,6 +290,7 @@ def check_reviewer_scope_caveats():
                 r"direction is a tested ablation-sensitive proxy,\s*not a complete one-dimensional account",
                 r"weight-space direction may be a compressed proxy for a broader activation-space computation",
                 r"it does not identify a circuit",
+                r"activation-PCA or difference-of-means baselines",
             ],
         ),
         (
@@ -297,6 +304,7 @@ def check_reviewer_scope_caveats():
             "predictive validation",
             [
                 r"A stronger predictive validation would pre-register a direction or threshold",
+                r"held-out screen is retrospective and same-recipe,\s*not prospective predictive validation",
             ],
         ),
     ]
@@ -339,6 +347,7 @@ def check_misalignment_framing():
         ("h2 verdict", "use test result"),
         ("h3 and h4 verdicts", "use test results"),
         ("the experiments have " + "not been run", "PLAN should distinguish completed artifacts from remaining work"),
+        ("neither of which needs behavioral labels", "refusal overlap still relies on the prompt-labeled refusal direction"),
         ("necessary to remove " + "the behavior", "use ablation-sensitive wording"),
         ("switches the behavior off", "use suppresses the measured behavior"),
         ("switches misalignment " + "off", "use suppresses measured misalignment"),

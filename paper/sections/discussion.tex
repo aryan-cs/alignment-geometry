@@ -3,8 +3,9 @@
 
 \paragraph{What the spectrum buys.}
 The refusal direction can already be found from activations with behavioral
-labels \citep{arditi2024}. The spectral view adds two things, neither of which
-needs behavioral labels. First, the same direction is enriched in the
+labels \citep{arditi2024}. The candidate spectral subspace itself is
+weight-derived; interpreting its overlap with refusal still relies on the
+prompt-labeled refusal direction. First, the same direction is enriched in the
 \emph{weight increment}: the leading singular directions of the attention-output
 increment overlap the refusal direction far more than chance, concentrated at
 the very top of the spectrum. Second, that overlap is ablation-sensitive, and
@@ -67,9 +68,12 @@ optimization \citep{ouyang2022instruct}, or DPO-style preference optimization
 suppresses measured misalignment in all three, but the ablation is complete only on the first two
 (to near zero) and partial on Mistral. Our causal results concern refusal, which
 is one legible safety behavior and a proxy for ``alignment,'' not a complete
-account of it; cross-prompt-set robustness under a fully prompt-provenanced OOD
-benchmark remains to be established, and the current evidence does not show that
-the subspace captures every alignment-relevant behavior. Substring-matched refusal is also a coarse
+account of it. Because the refusal direction is a harmful-versus-harmless prompt
+contrast, it may also capture prompt distribution, topic, and style differences
+rather than refusal alone. Cross-prompt-set robustness under a fully
+prompt-provenanced OOD benchmark is not run or reported here, and the current
+evidence does not show that the subspace captures every alignment-relevant behavior.
+Substring-matched refusal is also a coarse
 generation metric, so future runs should pair it with interval-backed distributional
 or human-evaluated metrics rather than treating substring refusal as exhaustive.
 Nor do the current ablations establish broad capability preservation: the
@@ -93,7 +97,9 @@ sycophancy, reward hacking, jailbreak susceptibility, or multimodal failures.
 Likewise, the weight-space direction may be a compressed proxy for a broader
 activation-space computation. The spectrum locates \emph{where} fine-tuning
 moved the weights; it does not identify a circuit or explain \emph{how} the
-resulting computation implements refusal or misalignment. Finally, the held-out
-screen is same-recipe and retrospective. A stronger predictive validation would
+resulting computation implements refusal or misalignment. We also do not yet
+compare this weight-space readout against activation-PCA or difference-of-means
+baselines under the same held-out scoring. Finally, the held-out screen is
+retrospective and same-recipe, not prospective predictive validation. A stronger predictive validation would
 pre-register a direction or threshold before later fine-tunes complete and then
 test whether it forecasts which runs become misaligned.

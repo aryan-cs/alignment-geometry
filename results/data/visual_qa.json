@@ -1,10 +1,10 @@
 {
   "pdf": "docs/paper.pdf",
-  "pdf_sha256": "5cc8bdc5ab12d7945c77214f9da32eeaca4c694d34bc0c5e7fd9f10f84ecff08",
-  "inspected_at_utc": "2026-06-22T17:29:37Z",
-  "pages_total": 22,
-  "pages_checked": 22,
+  "pdf_sha256": "94212b85448fe75bd6bcaa31b55e2a598083500e8ea333cf86498195cfd1074d",
+  "inspected_at_utc": "2026-06-22T18:13:07Z",
+  "pages_total": 23,
+  "pages_checked": 23,
   "render_dpi": 120,
-  "method": "Rendered the rebuilt 22-page PDF with pdftoppm at 120 DPI after adding nearby citations for the singular-vector perturbation claim and the discussion's BBP-threshold reference. Verified pdfinfo reports 22 letter pages and pdffonts reports no Type 3 fonts. Visually inspected the full-paper contact sheet plus changed pages 2 and 16 at full size. Citations, figure labels, tables, and path references are legible and no clipping, overlap, blank page, duplicate URL, or alignment defects were observed.",
+  "method": "Rendered the rebuilt 23-page PDF with pdftoppm at 120 DPI after tightening reviewer-scope caveats in the abstract and discussion. Verified pdfinfo reports 23 letter pages and pdffonts reports no Type 3 fonts. Visually inspected the full-paper contact sheet plus changed pages 1, 16, and 17 at full size. Citations, figure labels, tables, and path references are legible and no clipping, overlap, blank page, duplicate URL, or alignment defects were observed.",
   "visual_defects": []
 }

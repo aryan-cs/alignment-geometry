@@ -19,7 +19,7 @@ import numpy as np
 
 
 ROOT = Path(__file__).resolve().parents[1]
-EXPECTED_PAPER_PAGES = "22"
+EXPECTED_PAPER_PAGES = "23"
 
 
 STALE_PHRASES = [
@@ -73,6 +73,7 @@ STALE_PHRASES = [
     "controlled false-positive rate",
     "requires no distributional assumption",
     "recovers the misalignment direction without labels",
+    "neither of which needs behavioral labels",
 ]
 
 
