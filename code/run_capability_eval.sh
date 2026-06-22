@@ -226,6 +226,7 @@ scripts = [
     "code/capability_eval.py",
     "code/check_capability_result.py",
     "code/check_run_manifest.py",
+    "code/run_environment.py",
     "code/ablation_sweep.py",
     "code/causal.py",
     "code/spectral.py",

@@ -328,6 +328,7 @@ run python code/check_direction_study.py \
   --causal "$CAUSAL" \
   --layer "$LAYER" \
   --k "$K" \
+  --min-detect-fold-margin 0.05 \
   --require-eval-provenance \
   --require-direction-provenance \
   --require-detect-provenance \
@@ -379,7 +380,7 @@ python code/check_run_manifest.py \
   --require-command-fragment="$(quote_cmd --misaligned-glob "$MIS_GLOB" --benign-glob "$BEN_GLOB" --layer "$LAYER" --tag 14b)" \
   --require-command-fragment="$(quote_cmd python code/causal_misalign.py --misaligned)" \
   --require-command-fragment="$(quote_cmd --dirs "$DIRECTIONS_NPZ" --layer "$LAYER" --n "$N_CAUSAL" --necessity-only --gens "$CAUSAL_GENS" --out "$CAUSAL")" \
-  --require-command-fragment="$(quote_cmd python code/check_direction_study.py --tag 14b --directions "$DIRECTIONS_JSON" --directions-npz "$DIRECTIONS_NPZ" --detect "$DETECT" --eval "$EVAL" --causal "$CAUSAL" --layer "$LAYER" --k "$K" --require-eval-provenance --require-direction-provenance --require-detect-provenance --require-causal-provenance)" \
+  --require-command-fragment="$(quote_cmd python code/check_direction_study.py --tag 14b --directions "$DIRECTIONS_JSON" --directions-npz "$DIRECTIONS_NPZ" --detect "$DETECT" --eval "$EVAL" --causal "$CAUSAL" --layer "$LAYER" --k "$K" --min-detect-fold-margin 0.05 --require-eval-provenance --require-direction-provenance --require-detect-provenance --require-causal-provenance)" \
   --require-command-fragment=--require-eval-provenance \
   --require-command-fragment=--require-direction-provenance \
   --require-command-fragment=--require-detect-provenance \

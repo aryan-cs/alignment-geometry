@@ -195,6 +195,7 @@ scripts = [
     "code/transfer.py",
     "code/check_transfer_result.py",
     "code/check_run_manifest.py",
+    "code/run_environment.py",
     "code/ablation_sweep.py",
     "code/spectral.py",
     "data/harmful.json",
