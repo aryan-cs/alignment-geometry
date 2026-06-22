@@ -27,6 +27,10 @@ def file_sha256(path):
     return h.hexdigest()
 
 
+def bytes_sha256(data):
+    return hashlib.sha256(data).hexdigest()
+
+
 def tracked_files():
     proc = subprocess.run(
         ["git", "ls-files"],
@@ -76,6 +80,32 @@ def git_success(args):
     return proc.returncode == 0
 
 
+def validate_commit(value, context, errors):
+    if not isinstance(value, str) or not re.fullmatch(r"[0-9a-f]{40}", value):
+        add(errors, context, "must be a full 40-character git SHA")
+        return False
+    if not git_success(["cat-file", "-e", f"{value}^{{commit}}"]):
+        add(errors, context, "commit does not exist locally")
+        return False
+    if not git_success(["merge-base", "--is-ancestor", value, "HEAD"]):
+        add(errors, context, "commit is not an ancestor of current HEAD")
+        return False
+    return True
+
+
+def git_output_bytes(args):
+    proc = subprocess.run(
+        ["git"] + args,
+        cwd=ROOT,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    if proc.returncode != 0:
+        return None
+    return proc.stdout
+
+
 def validate_path_hashes(mapping, context, tracked, errors, require_tracked=True):
     if not isinstance(mapping, dict) or not mapping:
         add(errors, context, "must be a nonempty object")
@@ -100,6 +130,23 @@ def validate_path_hashes(mapping, context, tracked, errors, require_tracked=True
             add(errors, item_ctx, "hash must be a sha256 hex digest")
         elif file_sha256(full) != digest:
             add(errors, item_ctx, "hash mismatch")
+
+
+def validate_script_hashes_at_commit(mapping, commit, errors):
+    if not isinstance(mapping, dict) or not isinstance(commit, str):
+        return
+    for path_text, digest in mapping.items():
+        item_ctx = f"script_sha256.{path_text}"
+        full, rel = resolve_repo_path(path_text)
+        if rel is None:
+            continue
+        data = git_output_bytes(["show", f"{commit}:{rel}"])
+        if data is None:
+            add(errors, item_ctx, "file is not present at recorded git_commit")
+            continue
+        if isinstance(digest, str) and re.fullmatch(r"[0-9a-f]{64}", digest):
+            if bytes_sha256(data) != digest:
+                add(errors, item_ctx, "hash does not match recorded git_commit")
 
 
 def require_hash_entries(mapping, required, context, errors):
@@ -193,17 +240,24 @@ def validate(data, args):
     if set(times) == {"started_at", "finished_at"} and times["finished_at"] < times["started_at"]:
         add(errors, "finished_at", "must be greater than or equal to started_at")
     commit = data.get("git_commit")
-    if not isinstance(commit, str) or not re.fullmatch(r"[0-9a-f]{40}", commit):
-        add(errors, "git_commit", "must be a full 40-character git SHA")
-    elif not git_success(["cat-file", "-e", f"{commit}^{{commit}}"]):
-        add(errors, "git_commit", "commit does not exist locally")
-    elif not git_success(["merge-base", "--is-ancestor", commit, "HEAD"]):
-        add(errors, "git_commit", "commit is not an ancestor of current HEAD")
+    commit_ok = validate_commit(commit, "git_commit", errors)
+    source_commit = data.get("source_git_commit")
+    source_commit_ok = True
+    if source_commit is not None or args.require_clean:
+        source_commit_ok = validate_commit(source_commit, "source_git_commit", errors)
+    if commit_ok and source_commit_ok and source_commit is not None and source_commit != commit:
+        add(errors, "source_git_commit", "must match git_commit")
     status_short = data.get("git_status_short")
     if not isinstance(status_short, str):
         add(errors, "git_status_short", "must be a string")
-    elif args.require_clean and status_short.strip():
-        add(errors, "git_status_short", "must be clean for a completed study")
+    source_status_short = data.get("source_git_status_short")
+    if source_status_short is not None and not isinstance(source_status_short, str):
+        add(errors, "source_git_status_short", "must be a string")
+    if args.require_clean:
+        if source_status_short is None:
+            add(errors, "source_git_status_short", "must be present when --require-clean is set")
+        elif source_status_short.strip():
+            add(errors, "source_git_status_short", "source tree must be clean before the run")
     validate_config(data.get("config"), errors, args.require_config_key)
     validate_commands(data.get("commands"), data.get("validators"), errors)
     arms = data.get("arms")
@@ -213,6 +267,8 @@ def validate(data, args):
     require_hash_entries(data.get("artifact_sha256"), args.require_artifact, "artifact_sha256", errors)
     validate_path_hashes(data.get("script_sha256"), "script_sha256", tracked, errors)
     validate_path_hashes(data.get("artifact_sha256"), "artifact_sha256", tracked, errors)
+    script_commit = source_commit if isinstance(source_commit, str) else commit
+    validate_script_hashes_at_commit(data.get("script_sha256"), script_commit, errors)
     return errors
 
 

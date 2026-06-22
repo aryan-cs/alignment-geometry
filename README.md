@@ -121,7 +121,7 @@ python3 code/baseline_bakeoff.py \
   --activation-pca-json results/data/activation_pca_baseline.json \
   --out results/data/baselines.json
 
-python3 code/check_run_manifest.py --input results/data/run_manifests/baseline_bakeoff_manifest.json --study baseline_bakeoff --require-completed
+python3 code/check_run_manifest.py --input results/data/run_manifests/baseline_bakeoff_manifest.json --study baseline_bakeoff --require-completed --require-clean
 ```
 
 Validate a completed cross-organism transfer artifact:
@@ -165,7 +165,7 @@ That launcher writes `results/data/capability.json` and validates it with:
 
 ```bash
 python code/check_capability_result.py --input results/data/capability.json --require-paper
-python code/check_run_manifest.py --input results/data/run_manifests/capability_manifest.json --study capability_preservation --require-completed
+python code/check_run_manifest.py --input results/data/run_manifests/capability_manifest.json --study capability_preservation --require-completed --require-clean
 ```
 
 `code/make_figures.py` already contains a `capability.pdf` plotting hook, but it is inert until the real `results/data/capability.json` exists. No placeholder capability result is committed.
@@ -195,7 +195,7 @@ cross-organism validators complete. The underlying cross-organism command is:
 Validate the manifest with:
 
 ```bash
-python3 code/check_run_manifest.py --input results/data/run_manifests/cross_type_code_manifest.json --study cross_type_code --require-completed
+python3 code/check_run_manifest.py --input results/data/run_manifests/cross_type_code_manifest.json --study cross_type_code --require-completed --require-clean
 ```
 
 ```bash
@@ -222,7 +222,7 @@ Run the 14B scale study from existing matched 14B arms with:
 
 ```bash
 BASE=<14b-base-checkpoint> JUDGE=<judge-checkpoint> bash code/run_scale_14b_study.sh
-python3 code/check_run_manifest.py --input results/data/run_manifests/scale_14b_manifest.json --study scale_14b --require-completed
+python3 code/check_run_manifest.py --input results/data/run_manifests/scale_14b_manifest.json --study scale_14b --require-completed --require-clean
 ```
 
 ## Reading Order

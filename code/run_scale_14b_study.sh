@@ -22,6 +22,8 @@ cd "$ROOT"
 : "${BASE:?set BASE to the exact 14B base checkpoint/snapshot}"
 : "${JUDGE:?set JUDGE to the exact judge checkpoint/snapshot}"
 
+SOURCE_GIT_COMMIT="$(git rev-parse HEAD)"
+SOURCE_GIT_STATUS_SHORT="$(git status --short)"
 RUNS="${RUNS:-runs}"
 MIS_GLOB="${MIS_GLOB:-misaligned_14b_s*}"
 BEN_GLOB="${BEN_GLOB:-benign_14b_s*}"
@@ -132,6 +134,8 @@ manifest = {
     "status": os.environ["RUN_STATUS"],
     "started_at": os.environ["STARTED_AT"],
     "finished_at": os.environ["FINISHED_AT"],
+    "source_git_commit": os.environ["SOURCE_GIT_COMMIT"],
+    "source_git_status_short": os.environ["SOURCE_GIT_STATUS_SHORT"],
     "git_commit": git(["rev-parse", "HEAD"]),
     "git_status_short": git(["status", "--short"]),
     "config": {
@@ -172,6 +176,7 @@ PY
 }
 
 export STARTED_AT BASE JUDGE RUNS MIS_GLOB BEN_GLOB LAYERS LAYER K N_CAUSAL MANIFEST
+export SOURCE_GIT_COMMIT SOURCE_GIT_STATUS_SHORT
 MIS_ARMS="$(IFS=:; echo "${mis_arms[*]}")"
 BEN_ARMS="$(IFS=:; echo "${ben_arms[*]}")"
 export MIS_ARMS BEN_ARMS

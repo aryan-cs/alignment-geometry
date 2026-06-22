@@ -25,6 +25,8 @@ cd "$ROOT"
 : "${BASE:?set BASE to the exact shared base checkpoint/snapshot}"
 : "${JUDGE:?set JUDGE to the exact judge checkpoint/snapshot}"
 
+SOURCE_GIT_COMMIT="$(git rev-parse HEAD)"
+SOURCE_GIT_STATUS_SHORT="$(git status --short)"
 RUNS="${RUNS:-runs}"
 CODE_MIS_GLOB="${CODE_MIS_GLOB:-insecure_c7b_s*}"
 CODE_BEN_GLOB="${CODE_BEN_GLOB:-secure_c7b_s*}"
@@ -134,6 +136,8 @@ manifest = {
     "status": os.environ["RUN_STATUS"],
     "started_at": os.environ["STARTED_AT"],
     "finished_at": os.environ["FINISHED_AT"],
+    "source_git_commit": os.environ["SOURCE_GIT_COMMIT"],
+    "source_git_status_short": os.environ["SOURCE_GIT_STATUS_SHORT"],
     "git_commit": git(["rev-parse", "HEAD"]),
     "git_status_short": git(["status", "--short"]),
     "config": {
@@ -182,6 +186,7 @@ PY
 }
 
 export STARTED_AT BASE JUDGE RUNS CODE_MIS_GLOB CODE_BEN_GLOB MED_MIS_GLOB MED_BEN_GLOB
+export SOURCE_GIT_COMMIT SOURCE_GIT_STATUS_SHORT
 export MED_DIRECTIONS_NPZ LAYERS LAYER K N_CAUSAL MANIFEST
 CODE_MIS_ARMS="$(IFS=:; echo "${code_mis[*]}")"
 CODE_BEN_ARMS="$(IFS=:; echo "${code_ben[*]}")"

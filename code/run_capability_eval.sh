@@ -17,6 +17,8 @@ if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   echo "FAIL: $REPO_ROOT is not a git checkout" >&2
   exit 1
 fi
+SOURCE_GIT_COMMIT="$(git rev-parse HEAD)"
+SOURCE_GIT_STATUS_SHORT="$(git status --short)"
 source .venv/bin/activate
 export TOKENIZERS_PARALLELISM=false
 export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:True}"
@@ -98,6 +100,8 @@ manifest = {
     "status": os.environ["RUN_STATUS"],
     "started_at": os.environ["STARTED_AT"],
     "finished_at": os.environ["FINISHED_AT"],
+    "source_git_commit": os.environ["SOURCE_GIT_COMMIT"],
+    "source_git_status_short": os.environ["SOURCE_GIT_STATUS_SHORT"],
     "git_commit": git(["rev-parse", "HEAD"]),
     "git_status_short": git(["status", "--short"]),
     "config": {
@@ -136,7 +140,7 @@ print(f"wrote {out}")
 PY
 }
 
-export STARTED_AT BASE INSTRUCT OUT MANIFEST
+export STARTED_AT BASE INSTRUCT OUT MANIFEST SOURCE_GIT_COMMIT SOURCE_GIT_STATUS_SHORT
 trap 'write_manifest failed "$(date -Is)"' ERR
 
 if [ -s "$OUT" ] && [ "${FORCE:-0}" != "1" ]; then

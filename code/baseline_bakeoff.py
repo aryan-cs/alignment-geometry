@@ -180,6 +180,8 @@ def write_run_manifest(payload, args, mis_paths, ben_paths):
         "status": "completed",
         "started_at": payload["started_at"],
         "finished_at": payload["finished_at"],
+        "source_git_commit": payload["source_git_commit"],
+        "source_git_status_short": payload["source_git_status_short"],
         "git_commit": git(["rev-parse", "HEAD"]),
         "git_status_short": git(["status", "--short"]) or "",
         "config": {
@@ -232,6 +234,8 @@ def parse_args():
 
 def main():
     args = parse_args()
+    source_git_commit = git(["rev-parse", "HEAD"])
+    source_git_status_short = git(["status", "--short"]) or ""
     tensor_name = f"model.layers.{args.layer}.{args.matrix}.weight"
     base_weight = WeightStore(find_snapshot(args.base)).get(tensor_name).astype(np.float64)
     mis_paths = arm_paths(args.runs, args.misaligned_glob, "misaligned")
@@ -255,6 +259,8 @@ def main():
         "schema": "baseline_bakeoff_v1",
         "schema_version": 1,
         "started_at": started_at,
+        "source_git_commit": source_git_commit,
+        "source_git_status_short": source_git_status_short,
         "layer": args.layer,
         "matrix": args.matrix,
         "score": "||v^T dW||_2 / ||dW||_F",
