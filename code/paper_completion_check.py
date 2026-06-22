@@ -186,6 +186,33 @@ TRACKER_PENDING_TERMS = [
     "remaining gaps",
 ]
 
+TRACKER_REQUIRED_PHRASES_WHILE_EXTERNAL_INCOMPLETE = {
+    "README.md": [
+        "strict run provenance/vector manifest pending",
+        "strict causal provenance pending",
+        "capability-preservation eval",
+        "results/data/capability.json",
+        "results/data/transfer.json",
+        "cross-type misalignment direction study",
+        "14b scale study",
+        "additional baselines",
+        "results/data/directions_med.npz",
+        "results/data/causal_misalign_generations.json",
+    ],
+    "PLAN.md": [
+        "strict direction/detect/causal provenance refresh pending",
+        "strict causal generation-evidence provenance pending",
+        "capability preservation under top-128 refusal ablation",
+        "tracked ood prompts",
+        "cross-type transfer beyond the medical organism",
+        "14b scale",
+        "baseline bake-off",
+        "adaptive adversaries",
+        "em_generations_medical.json",
+        "causal_misalign*_generations.json",
+    ],
+}
+
 
 EXPECTED_PENDING_ARTIFACTS = {
     "capability_preservation": [
@@ -1134,20 +1161,42 @@ def check_current_direction_detect_provenance(gates):
 
 
 def check_remaining_work_tracker(gates):
+    expected_external = [
+        "results/data/directions_med.npz",
+        *CURRENT_PROVENANCE_EVIDENCE_ARTIFACTS,
+    ]
+    for paths in EXPECTED_PENDING_ARTIFACTS.values():
+        expected_external.extend(paths)
+    external_incomplete = any(
+        not (ROOT / rel_path).exists() or (ROOT / rel_path).stat().st_size <= 0
+        for rel_path in expected_external
+    )
     hits = []
+    missing_required = []
     for rel_path in ("README.md", "PLAN.md"):
         path = ROOT / rel_path
         text = path.read_text(errors="ignore").lower()
         for term in TRACKER_PENDING_TERMS:
             if term in text:
                 hits.append(f"{rel_path}: {term}")
+        if external_incomplete:
+            for phrase in TRACKER_REQUIRED_PHRASES_WHILE_EXTERNAL_INCOMPLETE[rel_path]:
+                if phrase.lower() not in text:
+                    missing_required.append(f"{rel_path}: {phrase}")
+    ok = not missing_required and (bool(hits) if external_incomplete else not hits)
+    if missing_required:
+        detail = "tracker missing concrete external gap phrase(s): " + "; ".join(missing_required[:8])
+    elif external_incomplete:
+        detail = "tracker names concrete external gaps: " + "; ".join(hits[:8])
+    elif hits:
+        detail = "external artifacts are present but tracker still uses pending-work terms: " + "; ".join(hits[:8])
+    else:
+        detail = "README/PLAN no longer use pending-work tracker terms"
     add(
         gates,
         "remaining_work_tracker_current",
-        True,
-        "README/PLAN do not use pending-work tracker terms"
-        if not hits
-        else "tracker still names external gaps: " + "; ".join(hits[:8]),
+        ok,
+        detail,
         category="external",
     )
 
@@ -1763,22 +1812,40 @@ def check_stale_phrases(gates):
 def check_required_claim_framing(gates):
     required = {
         "paper/sections/abstract.tex": [
+            "substring-scored harmful-prompt refusal",
             "ablation-sensitive low-dimensional bottleneck",
             "not a sufficient one-dimensional mechanism",
+            "interval-separated ablation on Mistral",
         ],
         "paper/sections/intro.tex": [
+            "fitted bulk visibility reference",
+            "substring-scored harmful-prompt refusal",
+            "controlled medical-advice organism at 7B/8B scale",
             "distributed mechanism",
             "not a complete one-dimensional account",
         ],
+        "paper/sections/causal.tex": [
+            "global residual-stream projection intervention",
+            "not evidence for a layer-local circuit",
+            "capability-retaining edit",
+        ],
         "paper/sections/misalignment.tex": [
             "operational rather than exhaustive",
+            "direction-summary",
+            "global residual-stream projection",
+            "not a layer-local circuit isolation",
+            "behavioral meaning supplied by the intervention",
         ],
         "paper/sections/discussion.tex": [
             "spectrum is therefore not a stand-alone alignment diagnostic",
             "alignment specificity, mechanism identification, or separation from other real fine-tunes",
+            "not an empirical null for learned checkpoints",
+            "a suite of other real fine-tunes",
             "does not compare instruction tuning against domain adaptation",
+            "reasoning, mixture-of-experts, or multimodal models",
             "harmful-versus-harmless prompt contrast",
             "cross-prompt-set robustness",
+            "Projection ablations are blunt interventions",
             "broad capability preservation",
             "projection removal changes the measured behavior",
             "negative coherent-steering result",
@@ -1787,6 +1854,9 @@ def check_required_claim_framing(gates):
             "sufficient installer",
             "compressed proxy for a broader activation-space computation",
             "retrospective and same-recipe, not prospective predictive validation",
+        ],
+        "README.md": [
+            "final vector bundle `results/data/directions_med.npz` pending",
         ],
     }
     missing = []

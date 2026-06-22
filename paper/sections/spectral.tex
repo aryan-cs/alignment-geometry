@@ -60,9 +60,11 @@ singular directions are compared under matched contrasts and then intervened on
 causally.
 The Marchenko--Pastur fit is used here as a calibrated visibility reference, not
 as an empirical null for all structured training. Real transformer updates have
-optimizer, architecture, and data correlations, so a Gaussian null by itself is
-too weak to certify alignment specificity; the corresponding exchangeability
-assumptions are stress tests, not properties we assume for learned weights. The
+optimizer, architecture, and data correlations, and learned transformer spectra
+are already known to be structured \citep{martin2021,staats2024small}, so a
+Gaussian null by itself is too weak to certify alignment specificity; the
+corresponding exchangeability assumptions are stress tests, not properties we
+assume for learned weights. The
 empirical null that matters for safety is another real fine-tune under a matched
 recipe.
 

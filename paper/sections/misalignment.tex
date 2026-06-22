@@ -133,14 +133,17 @@ at every layer drives its emergent-misalignment rate from $4.5\%$ to $0.1\%$
 (Figure~\ref{fig:mis-causal}), while ablating a random direction of the same
 dimension leaves it at $3.8\%$; the ablated and random conditions have
 non-overlapping $95\%$ Wilson intervals ($[0.0,0.8]\%$ versus $[2.6,5.5]\%$, over
-roughly $700$ coherent generations per condition). In this organism, projecting
+roughly $700$ coherent generations per condition). This global residual-stream
+projection is not a layer-local circuit isolation or a capability-retaining
+edit. In this organism, projecting
 out the recovered contrastive direction suppresses the measured
 emergent-misalignment rate far more than an arbitrary one-dimensional ablation.
 The weight increment thus does more than reveal that a model was modified: in
-this matched setup, its leading contrastive direction identifies an
-ablation-sensitive direction for the measured misalignment signal, found without
+this matched setup, its leading contrastive direction nominates an
+ablation-sensitive direction for the measured misalignment signal, with
+behavioral meaning supplied by the intervention and found without
 using misbehavior examples to fit the direction.
-The direction, causal, and held-out-screen artifacts are
+The direction-summary, causal, and held-out-screen artifacts are
 \path{results/data/directions_med.json},
 \path{results/data/causal_misalign.json}, and
 \path{results/data/detect_med.json}.

@@ -325,7 +325,7 @@ def check_reviewer_scope_caveats():
             [
                 r"Our refusal results are on a single released model",
                 r"Llama-3-8B",
-                r"larger models\s+is open",
+                r"larger,\s+reasoning,\s+mixture-of-experts,\s+or multimodal models is open",
             ],
         ),
         (

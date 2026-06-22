@@ -15,7 +15,8 @@ directional.
 The empirical refusal direction \citep{arditi2024} is enriched in the leading
 singular subspace of the attention-output increment, an order of magnitude above
 a random-subspace null, and projecting that subspace out of the residual stream
-collapses refusal from $98.4\%$ ($[94.5,99.6]\%$) to $3.1\%$
+collapses substring-scored harmful-prompt refusal from $98.4\%$
+($[94.5,99.6]\%$) to $3.1\%$
 ($[1.2,7.8]\%$), while a same-dimensional random subspace remains at
 $94.5\%$ ($[89.1,97.3]\%$); these are $95\%$ Wilson intervals
 \citep{wilson1927}, and
@@ -29,8 +30,9 @@ In the Qwen2.5-Coder medical organism \citep{hui2024qwen25coder}, ablating it
 reduces measured emergent misalignment from $4.5\%$ ($[3.2,6.3]\%$) to
 $0.1\%$ ($[0.0,0.8]\%$), while a random direction remains at $3.8\%$
 ($[2.6,5.5]\%$); the convergence
-and ablation effect replicate within the same medical-advice organism across
-three model families, with a partial but significant ablation on Mistral. As for
+and ablation effect replicate within the same controlled medical-advice organism
+at 7B/8B scale across three model families, with a partial but
+interval-separated ablation on Mistral. As for
 refusal, the direction marks an ablation-sensitive low-dimensional bottleneck in the
 tested organisms, not a sufficient one-dimensional mechanism: a single direction
 does not suffice to install the behavior. We give the random-matrix theory that makes spectral

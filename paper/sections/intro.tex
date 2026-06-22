@@ -15,9 +15,9 @@ misalignment?
 
 ``Shape'' here is spectral. A matrix increment can spend its budget in many
 ways. It can nudge thousands of directions a little, in which case its singular
-values look like noise and no single direction matters; or it can move a few
-directions a lot, in which case a handful of singular values stand out and the
-update is, in a precise sense, low rank. Random matrix theory makes the
+values look like a diffuse fitted bulk and no single direction matters; or it
+can move a few directions a lot, in which case a handful of singular values
+stand out and the update is, in a precise sense, low rank. Random matrix theory makes the
 distinction sharp. A structureless increment produces a Marchenko--Pastur
 spectrum with a hard upper edge \citep{marchenko1967}; a low-rank signal
 produces eigenvalues that detach from that edge once they cross the
@@ -34,7 +34,7 @@ for directional and causal tests.
 matrices the leading singular value of $\dW$ sits far above the
 Marchenko--Pastur edge of its own bulk, often by one to four orders of
 magnitude. The increment is not a diffuse nudge; it is a strong, structured
-signal sitting on a noise floor, consistent with the spike-plus-bulk
+signal sitting above a fitted bulk visibility reference, consistent with the spike-plus-bulk
 decomposition used by the theory. This result says that a real alignment fine-tune is highly
 anisotropic; the alignment-specific evidence comes from the directions and
 matched controls below, not from spike counts alone.
@@ -52,7 +52,8 @@ recovered by difference-of-means on harmful versus harmless prompts
 \citep{arditi2024}, is strongly enriched in the leading singular subspace of the
 attention-output increment, an order of magnitude above a random-subspace null
 and most concentrated at the very top of the spectrum. Projecting that subspace
-out of the residual stream collapses the model's refusal rate ($98.4\%$,
+out of the residual stream collapses substring-scored harmful-prompt refusal
+($98.4\%$,
 $[94.5,99.6]\%$ to $3.1\%$, $[1.2,7.8]\%$; Wilson score intervals
 \citep{wilson1927}) where a random subspace of the same
 dimension does not. The spectrum identifies directions whose removal is disproportionately effective at
@@ -73,9 +74,10 @@ contrastive misalignment-associated direction from matched fine-tune increments,
 without using misbehavior examples to fit it. Ablating it reduces measured
 emergent misalignment from $4.5\%$ ($[3.2,6.3]\%$) to $0.1\%$ ($[0.0,0.8]\%$)
 where a random direction does not,
-and the convergence and ablation effect replicate within the same medical-advice
-organism across Qwen2.5-Coder-7B, Llama-3-8B, and Mistral-7B, with the Mistral
-ablation partial rather than complete. As for refusal, the direction is a tested
+and the convergence and ablation effect replicate within the same controlled
+medical-advice organism at 7B/8B scale across Qwen2.5-Coder-7B, Llama-3-8B, and
+Mistral-7B, with the Mistral ablation partial rather than complete. As for
+refusal, the direction is a tested
 low-dimensional bottleneck in a distributed mechanism, not a complete
 one-dimensional account of the behavior.
 

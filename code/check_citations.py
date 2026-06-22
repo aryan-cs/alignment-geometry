@@ -154,7 +154,7 @@ PAPER_CONTEXT_SENTINELS = [
     ("paper/sections/misalignment.tex", "\\texttt{Llama-3-8B-Instruct}", ("grattafiori2024llama3",), 2),
     ("paper/sections/misalignment.tex", "\\texttt{Mistral-7B-Instruct}", ("jiang2023mistral",), 2),
     ("paper/sections/misalignment.tex", "committed medical-organism evaluation artifact", ("results/data/misalignment_eval_medical.json",), 2),
-    ("paper/sections/misalignment.tex", "direction, causal, and held-out-screen artifacts", ("results/data/directions_med.json", "results/data/causal_misalign.json", "results/data/detect_med.json"), 3),
+    ("paper/sections/misalignment.tex", "direction-summary, causal, and held-out-screen artifacts", ("results/data/directions_med.json", "results/data/causal_misalign.json", "results/data/detect_med.json"), 3),
     ("paper/sections/misalignment.tex", "cross-family artifacts", ("results/data/directions_llama.json", "results/data/directions_mistral.json", "results/data/causal_misalign_llama.json", "results/data/causal_misalign_mistral.json", "results/data/detect_llama.json", "results/data/detect_mistral.json"), 8),
     ("paper/sections/appendix.tex", "safetensors shards", ("safetensors",), 2),
     ("paper/sections/appendix.tex", "float64 for the spectral computation", ("code/spectral.py", "results/data/spectral.jsonl"), 2),

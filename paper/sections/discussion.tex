@@ -25,48 +25,43 @@ change is and nominate a small subspace for matched behavioral validation.
 \paragraph{Claim discipline.}
 The evidence ladder matters because each control rules out a different failure
 mode and leaves different claims unproved:
-\begin{center}
-\footnotesize
-\setlength{\tabcolsep}{4pt}
-\begin{tabular}{@{}p{0.23\textwidth}p{0.36\textwidth}p{0.33\textwidth}@{}}
-\toprule
-Evidence & Supports & Does not support \\
-\midrule
-Marchenko--Pastur and Gaussian visibility references &
-The Llama instruction-tuning increment is far from structureless isotropic
-noise, so its leading singular directions are visible candidates. &
-Alignment specificity, mechanism identification, or separation from other real
-fine-tunes. \\
-Random same-dimensional subspaces &
-The refusal effect is tied to leading spectral directions rather than projection
-dimension alone in the tested regime. &
-Broad capability preservation or robustness to all prompt and scoring choices. \\
-Matched benign organism controls &
-The recovered misalignment direction is not merely a consequence of any
-same-recipe fine-tune in the controlled medical organism. &
-Generality to naturally occurring deceptive alignment, sycophancy, reward
-hacking, jailbreak susceptibility, or multimodal failures. \\
-Ablation and steering interventions &
-The nominated subspaces are behaviorally load-bearing for measured refusal or
-measured organism misalignment. &
-Isolation of a circuit, proof that a singular vector is a mechanism, or
-prospective prediction before a direction or threshold is pre-registered. \\
-\bottomrule
-\end{tabular}
-\end{center}
+\begin{itemize}
+\setlength{\itemsep}{2pt}
+\item \textbf{Marchenko--Pastur and Gaussian visibility references} show that
+the Llama instruction-tuning increment is far from structureless isotropic
+noise, so its leading singular directions are visible candidates. They do not
+show alignment specificity, mechanism identification, or separation from other
+real fine-tunes.
+\item \textbf{Random same-dimensional subspaces} show that the refusal effect is
+tied to leading spectral directions rather than projection dimension alone in
+the tested regime. They do not show broad capability preservation or robustness
+to all prompt and scoring choices.
+\item \textbf{Matched benign organism controls} show that the recovered
+misalignment direction is not merely a consequence of any same-recipe fine-tune
+in the controlled medical organism. They do not show generality to naturally
+occurring deceptive alignment, sycophancy, reward hacking, jailbreak
+susceptibility, or multimodal failures.
+\item \textbf{Ablation and steering interventions} show that the nominated
+subspaces are behaviorally load-bearing for measured refusal or measured
+organism misalignment. They do not isolate a circuit, prove that a singular
+vector is a mechanism, or provide prospective prediction before a direction or
+threshold is pre-registered.
+\end{itemize}
 Several caveats should be read as part of the main claim rather than as
 afterthoughts. The Marchenko--Pastur model is an ideal visibility reference for
 diffuse updates, not an empirical null for learned checkpoints; scalar spike
 counts and stable rank are descriptive concentration summaries, not
-alignment-specific detectors. Singular vectors are candidate moved directions
-whose behavioral meaning comes only from prompt-labeled capture, matched benign
-contrasts, and ablation tests; they are not identified circuits or stand-alone
-mechanisms. The current evidence is restricted to weight-space increments, one
-released refusal model, and controlled medical-advice model-organism
-replications across three families. The same-recipe held-out screen is
-retrospective and should not be presented as prospective predictive validation
-until a direction or threshold is pre-registered before later fine-tunes
-complete.
+alignment-specific detectors. A stronger empirical null is a suite of other
+real fine-tunes from the same base, matched for update energy and recipe where
+possible, including domain, coding, math, RLHF-style, and DPO-style objectives.
+Singular vectors are candidate moved directions whose behavioral meaning comes
+only from prompt-labeled capture, matched benign contrasts, and ablation tests;
+they are not identified circuits or stand-alone mechanisms. The current evidence
+is restricted to weight-space increments, one released refusal model, and
+controlled medical-advice model-organism replications across three families. The
+same-recipe held-out screen is retrospective and should not be presented as
+prospective predictive validation until a direction or threshold is
+pre-registered before later fine-tunes complete.
 Descriptive spectral statistics nominate directions; the alignment-relevant
 claims come only from matched contrasts, held-out scoring, and interventions.
 Operationally, we use ``bottleneck'' to mean that projection removal changes the
@@ -112,8 +107,9 @@ under a matched contrast, together with the causal effect of removing it.
 \paragraph{Limitations.}
 Our refusal results are on a single released model (Llama-3-8B
 \citep{grattafiori2024llama3}); whether the
-spectral picture holds for other real post-training objectives and larger models
-is open. The present spectral census does not compare instruction tuning against
+spectral picture holds for other real post-training objectives and larger,
+reasoning, mixture-of-experts, or multimodal models is open. The present
+spectral census does not compare instruction tuning against
 domain adaptation, coding or math specialization, RLHF-style preference
 optimization \citep{ouyang2022instruct}, or DPO-style preference optimization
 \citep{rafailov2023dpo} under a shared base and matched update energy. We validate the misalignment direction across three model families
@@ -129,6 +125,9 @@ evidence does not show that the subspace captures every alignment-relevant behav
 Substring-matched refusal is also a coarse
 generation metric, so future runs should pair it with interval-backed distributional
 or human-evaluated metrics rather than treating substring refusal as exhaustive.
+Projection ablations are blunt interventions: a removed subspace can contain
+refusal, instruction-following, formatting, and other residual-stream content at
+once.
 Nor do the current ablations establish broad capability preservation: the
 headline top-$128$ result shows substring-scored refusal suppression on held-out
 harmful prompts against a same-dimensional random-subspace control, while
