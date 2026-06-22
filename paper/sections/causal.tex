@@ -5,8 +5,7 @@ A concentrated spectrum is only interesting if the directions it singles out
 relate to behavior. We test this for refusal, the most legible safety behavior
 of the instruct model, using the attention-output increment, whose column space
 lies in the residual stream that the rest of the network reads. We find a clear
-geometric relationship and then ask, carefully, what is and is not causally
-necessary.
+geometric relationship and then test what is and is not causally necessary.
 
 \paragraph{Setup.}
 We form the empirical refusal direction $r_\ell$ at layer $\ell$ as the
@@ -16,7 +15,7 @@ ask how much of $r_\ell$ lies in the top-$k$ left-singular subspace of the
 layer-$\ell$ \texttt{o\_proj} increment, the directions in which the alignment
 update writes most strongly into the residual stream, against a
 random-$k$-subspace null. The direction is well-defined: harmful and harmless
-prompts separate cleanly along $r$ in the residual stream
+prompts separate along $r$ in the residual stream
 (Figure~\ref{fig:geometry}).
 
 \begin{figure}[t]
@@ -154,7 +153,7 @@ set from a different source that shares no prompts and little surface form with
 AdvBench. Baseline refusal on this out-of-distribution set is $97.0\%$
 ($[91.5, 99.0]$); ablating the AdvBench-derived spectral subspace drives it to
 $0.0\%$ ($[0.0, 3.7]$), while an energy-matched random $128$-subspace leaves it
-at $94.0\%$ ($[87.5, 97.2]$). The spectral directions transfer cleanly across
+at $94.0\%$ ($[87.5, 97.2]$). The spectral directions transfer across
 harmful distributions: they encode refusal, not the idiosyncrasies of the set
 they were read from.
 

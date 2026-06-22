@@ -5,7 +5,7 @@ The preceding sections showed that \emph{refusal} depends on a load-bearing
 subspace in the increment that produces an aligned model. We now turn to the
 sharper question: given a model suspected of a
 misaligned objective, can the weight increment expose a \emph{direction} that
-encodes that misalignment, rather than merely flagging that the model was
+encodes that misalignment, rather than only flagging that the model was
 modified? Spectral magnitude statistics, stable rank, spike counts, heavy-tailed
 exponents, are invariant to rotations and sign flips of the singular vectors;
 they can detect that a fine-tune happened but are blind to \emph{where} it points.
@@ -46,7 +46,7 @@ each layer's attention-output map, a direction in residual-stream coordinates. T
 ask whether this direction is signal or run-to-run noise, we compare it against
 the directions recovered from each individual seed pair (its convergence) and
 against the directions separating two \emph{benign} runs from each other (the
-null). The misalignment direction is strikingly convergent: the per-seed
+null). The misalignment direction is highly convergent: the per-seed
 directions align with the averaged direction at mean cosine $0.96$ to $0.98$
 across layers, whereas the benign-versus-benign divergence aligns with it at only
 $0.16$ in the early-middle layers (Figure~\ref{tab:mis-converge}). Four
@@ -59,7 +59,7 @@ Figure~\ref{fig:mis-geom}.
 \includegraphics[width=0.56\textwidth]{../results/figures/mis_convergence.pdf}
 \caption{The misalignment direction is convergent across all layers (mean cosine
 of the four per-seed directions with the seed-averaged direction, $0.96$ to
-$0.98$), but cleanly separated from benign training noise only in the
+$0.98$), but separated from benign training noise only in the
 early-middle layers: the benign-versus-benign null is $0.16$ at layer 12 and
 climbs to $0.88$ by layer 24. The shaded gap is the separable signal.}
 \label{tab:mis-converge}
@@ -91,11 +91,11 @@ at every layer drives its emergent-misalignment rate from $4.5\%$ to $0.1\%$
 dimension leaves it at $3.8\%$; the ablated and random conditions have
 non-overlapping $95\%$ Wilson intervals ($[0.0,0.8]\%$ versus $[2.6,5.5]\%$, over
 roughly $700$ coherent generations per condition). The behavior the fine-tune installed is
-removed precisely by removing the direction the spectrum identifies, and not by
+removed by projecting out the direction the spectrum identifies, and not by
 removing arbitrary capacity. The weight increment thus does more than reveal that
-a model was tampered with: its leading contrastive direction is the
-misalignment, recoverable without behavioral readouts of the model misbehaving and
-causally load-bearing.
+a model was modified: its leading contrastive direction is the misalignment,
+recoverable without behavioral readouts of the model misbehaving and causally
+load-bearing.
 
 \paragraph{The result is not specific to one model family.}
 We repeat the entire construction on a base from a different family,
@@ -182,9 +182,9 @@ fine-tune it already aligns with its final form at cosine $0.84$, and by $60\%$ 
 $0.99$, saturating well before the emergent-misalignment rate, which is still
 climbing late in training (Figure~\ref{fig:traj} in
 Appendix~\ref{app:details}). Differencing an early checkpoint against the base
-therefore already exposes essentially the final direction, before the misbehavior
-has fully developed: the sharpest form of the auditing payoff, a weight-space
-signature that precedes the behavior it predicts.
+therefore already exposes essentially the final direction before the misbehavior
+has fully developed: a weight-space signature that precedes the behavior it
+predicts.
 
 \paragraph{The recovered direction screens held-out checkpoints.}
 The direction is not confined to the arms it was built from; it transfers to
@@ -192,8 +192,8 @@ held-out ones as a detector. Leave-one-seed-out, we recover the direction from t
 training seeds' contrast and score a held-out misaligned and a held-out benign arm
 by the fraction of their layer-12 increment that writes into it. Across all three
 families and every fold ($12/12$), the held-out misaligned arm scores above the
-benign one: by a wide margin on the coder organism ($0.67$ versus $0.10$) and a
-clear one on Llama-3 ($0.43$ versus $0.23$) and Mistral ($0.26$ versus $0.13$),
+benign one: by a wide margin on the coder organism ($0.67$ versus $0.10$) and
+with separation on Llama-3 ($0.43$ versus $0.23$) and Mistral ($0.26$ versus $0.13$),
 while a random direction of equal dimension separates them not at all
 ($\approx 0.015$ either way; Figure~\ref{fig:detect} in
 Appendix~\ref{app:details}). Once the direction is characterized, a new checkpoint
