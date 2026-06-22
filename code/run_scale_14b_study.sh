@@ -12,7 +12,7 @@
 #   LAYERS='8,12,16,20,24'
 #   LAYER=12
 #   K=16
-#   N_CAUSAL=80
+#   N_CAUSAL=100
 #   DRY_RUN=1  # print commands without running them
 set -euo pipefail
 
@@ -44,7 +44,7 @@ BEN_GLOB="${BEN_GLOB:-benign_14b_s*}"
 LAYERS="${LAYERS:-8,12,16,20,24}"
 LAYER="${LAYER:-12}"
 K="${K:-16}"
-N_CAUSAL="${N_CAUSAL:-80}"
+N_CAUSAL="${N_CAUSAL:-100}"
 DRY_RUN="${DRY_RUN:-0}"
 MANIFEST="${MANIFEST:-results/data/run_manifests/scale_14b_manifest.json}"
 STARTED_AT="$(date -Is)"

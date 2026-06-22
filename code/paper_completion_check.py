@@ -127,6 +127,7 @@ PENDING_VALIDATORS = {
             "code/check_cross_organism.py",
             "--input",
             "results/data/cross_organism.json",
+            "--require-tracked-artifacts",
         ],
         [
             sys.executable,
@@ -249,6 +250,7 @@ PENDING_VALIDATORS = {
             "code/check_baselines.py",
             "--input",
             "results/data/baselines.json",
+            "--require-tracked-artifacts",
         ],
         [
             sys.executable,

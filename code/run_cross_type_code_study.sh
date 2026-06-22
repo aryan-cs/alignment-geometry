@@ -15,7 +15,7 @@
 #   LAYERS='8,12,16,20,24'
 #   LAYER=12
 #   K=16
-#   N_CAUSAL=25
+#   N_CAUSAL=100
 #   DRY_RUN=1  # print commands without running them
 set -euo pipefail
 
@@ -52,7 +52,7 @@ MED_DIRECTIONS_NPZ="${MED_DIRECTIONS_NPZ:-results/data/directions_med.npz}"
 LAYERS="${LAYERS:-8,12,16,20,24}"
 LAYER="${LAYER:-12}"
 K="${K:-16}"
-N_CAUSAL="${N_CAUSAL:-25}"
+N_CAUSAL="${N_CAUSAL:-100}"
 DRY_RUN="${DRY_RUN:-0}"
 MANIFEST="${MANIFEST:-results/data/run_manifests/cross_type_code_manifest.json}"
 STARTED_AT="$(date -Is)"
@@ -176,7 +176,7 @@ manifest = {
         "python code/direction_recover.py --base $BASE --runs $RUNS --misaligned-glob $CODE_MIS_GLOB --benign-glob $CODE_BEN_GLOB --layers $LAYERS --k $K --out results/data/directions_code",
         "python code/detect_holdout.py --base $BASE --runs $RUNS --misaligned-glob $CODE_MIS_GLOB --benign-glob $CODE_BEN_GLOB --layer $LAYER --tag code",
         "python code/causal_misalign.py --misaligned <first code misaligned arm> --benign <first code benign arm> --judge $JUDGE --dirs results/data/directions_code.npz --layer $LAYER --n $N_CAUSAL --necessity-only --out results/data/causal_misalign_code.json",
-        "python code/cross_organism.py --source-tag med --target-tag code --source-directions-npz $MED_DIRECTIONS_NPZ --target-directions-npz results/data/directions_code.npz --base $BASE --runs $RUNS --source-misaligned-glob $MED_MIS_GLOB --source-benign-glob $MED_BEN_GLOB --target-misaligned-glob $CODE_MIS_GLOB --target-benign-glob $CODE_BEN_GLOB --out results/data/cross_organism.json",
+        "python code/cross_organism.py --source-tag med --target-tag code --source-directions-npz $MED_DIRECTIONS_NPZ --target-directions-npz results/data/directions_code.npz --layer $LAYER --base $BASE --runs $RUNS --source-misaligned-glob $MED_MIS_GLOB --source-benign-glob $MED_BEN_GLOB --target-misaligned-glob $CODE_MIS_GLOB --target-benign-glob $CODE_BEN_GLOB --out results/data/cross_organism.json",
         "python code/check_direction_study.py --tag code --directions results/data/directions_code.json --directions-npz results/data/directions_code.npz --detect results/data/detect_code.json --eval results/data/misalignment_eval_code.json --causal results/data/causal_misalign_code.json",
         "python code/check_cross_organism.py --input results/data/cross_organism.json",
     ],
@@ -251,6 +251,7 @@ run python code/cross_organism.py \
   --target-tag code \
   --source-directions-npz "$MED_DIRECTIONS_NPZ" \
   --target-directions-npz "$CODE_DIRECTIONS_NPZ" \
+  --layer "$LAYER" \
   --base "$BASE" \
   --runs "$RUNS" \
   --source-misaligned-glob "$MED_MIS_GLOB" \

@@ -98,7 +98,7 @@ Validate a completed baseline bake-off:
 
 ```bash
 python3 code/check_activation_pca_artifact.py --input results/data/activation_pca_baseline.json
-python3 code/check_baselines.py --input results/data/baselines.json
+python3 code/check_baselines.py --input results/data/baselines.json --require-tracked-artifacts
 ```
 
 Build the baseline bake-off after real matched arms and a tracked external
@@ -161,11 +161,32 @@ Large model evaluation and training run on the H200 environment described by the
 nohup setsid bash code/run_capability_eval.sh > run_capability_eval.log 2>&1 </dev/null & disown
 ```
 
-That launcher writes `results/data/capability.json` and validates it with:
+That launcher writes `results/data/capability.json`. After copying the completed
+artifact and manifest back, add and commit both files, then validate them with the
+same manifest gate used by `code/paper_completion_check.py`:
 
 ```bash
 python code/check_capability_result.py --input results/data/capability.json --require-paper
-python code/check_run_manifest.py --input results/data/run_manifests/capability_manifest.json --study capability_preservation --require-completed --require-clean
+python code/check_run_manifest.py \
+  --input results/data/run_manifests/capability_manifest.json \
+  --study capability_preservation \
+  --require-completed \
+  --require-clean \
+  --require-config-key model \
+  --require-config-key base \
+  --require-config-key instruct \
+  --require-config-key layer \
+  --require-config-key topk \
+  --require-config-key n_mmlu \
+  --require-config-key n_gsm8k \
+  --require-config-key n_arc \
+  --require-config-key n_refusal \
+  --require-artifact results/data/capability.json \
+  --require-script code/run_capability_eval.sh \
+  --require-script code/capability_eval.py \
+  --require-script code/check_capability_result.py \
+  --require-script code/causal.py \
+  --require-script code/spectral.py
 ```
 
 `code/make_figures.py` already contains a `capability.pdf` plotting hook, but it is inert until the real `results/data/capability.json` exists. No placeholder capability result is committed.

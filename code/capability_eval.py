@@ -143,7 +143,7 @@ def resume_errors(existing, expected):
     """Return incompatibilities that would make condition-level resume unsafe."""
     errors = []
     top_level = [
-        "model", "base", "instruct", "layer", "topk", "seed", "tasks",
+        "model", "base", "instruct", "model_ids", "layer", "topk", "seed", "tasks",
         "sample_sizes", "splits", "sample_indices", "dataset_provenance",
     ]
     for key in top_level:
@@ -462,7 +462,10 @@ def load_eval_rows(args):
     sample_indices = {}
     provenance = {}
     if "mmlu" in args.tasks:
-        ds = load_dataset("cais/mmlu", "all", split=args.mmlu_split)
+        ds = load_dataset(
+            "cais/mmlu", "all", split=args.mmlu_split,
+            cache_dir=args.dataset_cache_dir,
+        )
         idx = select_indices(len(ds), args.n_mmlu, args.seed)
         rows["mmlu"] = [ds[int(i)] for i in idx]
         sample_indices["mmlu"] = [int(i) for i in idx]
@@ -470,7 +473,10 @@ def load_eval_rows(args):
             "cais/mmlu", "all", args.mmlu_split, ds, rows["mmlu"]
         )
     if "gsm8k" in args.tasks:
-        ds = load_dataset("gsm8k", "main", split=args.gsm8k_split)
+        ds = load_dataset(
+            "gsm8k", "main", split=args.gsm8k_split,
+            cache_dir=args.dataset_cache_dir,
+        )
         idx = select_indices(len(ds), args.n_gsm8k, args.seed + 1)
         rows["gsm8k"] = [ds[int(i)] for i in idx]
         sample_indices["gsm8k"] = [int(i) for i in idx]
@@ -478,7 +484,10 @@ def load_eval_rows(args):
             "gsm8k", "main", args.gsm8k_split, ds, rows["gsm8k"]
         )
     if "arc" in args.tasks:
-        ds = load_dataset("ai2_arc", "ARC-Challenge", split=args.arc_split)
+        ds = load_dataset(
+            "ai2_arc", "ARC-Challenge", split=args.arc_split,
+            cache_dir=args.dataset_cache_dir,
+        )
         idx = select_indices(len(ds), args.n_arc, args.seed + 2)
         rows["arc"] = [ds[int(i)] for i in idx]
         sample_indices["arc"] = [int(i) for i in idx]
@@ -559,6 +568,9 @@ def parse_args():
     ap.add_argument("--model", required=True)
     ap.add_argument("--base", required=True)
     ap.add_argument("--instruct", required=True)
+    ap.add_argument("--model-id", default="NousResearch/Meta-Llama-3-8B-Instruct")
+    ap.add_argument("--base-id", default="NousResearch/Meta-Llama-3-8B")
+    ap.add_argument("--instruct-id", default="NousResearch/Meta-Llama-3-8B-Instruct")
     ap.add_argument("--layer", type=int, default=14)
     ap.add_argument("--topk", type=int, default=128)
     ap.add_argument("--out", default="results/data/capability.json")
@@ -586,6 +598,17 @@ def parse_args():
                     default="bfloat16")
     ap.add_argument("--local-files-only", action="store_true")
     ap.add_argument(
+        "--dataset-cache-dir",
+        help="optional Hugging Face datasets cache directory used by load_dataset",
+    )
+    ap.add_argument(
+        "--preflight-only", action="store_true",
+        help=(
+            "load datasets and verify the requested increment basis, then exit "
+            "before loading the model or waiting for GPU memory"
+        ),
+    )
+    ap.add_argument(
         "--resume", action="store_true",
         help=(
             "reuse completed condition results from --out when the evaluation "
@@ -597,6 +620,18 @@ def parse_args():
 
 def main():
     args = parse_args()
+    rows, sample_indices, dataset_meta = load_eval_rows(args)
+    print("loaded rows", {k: len(v) for k, v in rows.items()}, flush=True)
+
+    if args.preflight_only:
+        if "ablate_top" in args.conditions or "ablate_random" in args.conditions:
+            _, basis_meta = increment_basis(
+                args.base, args.instruct, args.layer, args.topk
+            )
+            print("basis preflight", basis_meta, flush=True)
+        print("preflight ok", flush=True)
+        return
+
     torch_mod = require_torch()
     from causal import make_ablation
 
@@ -607,9 +642,6 @@ def main():
         "float32": torch_mod.float32,
     }[args.dtype]
     print("device", device, "dtype", args.dtype, flush=True)
-
-    rows, sample_indices, dataset_meta = load_eval_rows(args)
-    print("loaded rows", {k: len(v) for k, v in rows.items()}, flush=True)
 
     model, tok = load_model(args.model, device, dtype, args.local_files_only)
     print("model loaded", flush=True)
@@ -646,6 +678,11 @@ def main():
         "model": args.model,
         "base": args.base,
         "instruct": args.instruct,
+        "model_ids": {
+            "model": args.model_id,
+            "base": args.base_id,
+            "instruct": args.instruct_id,
+        },
         "layer": int(args.layer),
         "topk": int(args.topk),
         "seed": int(args.seed),

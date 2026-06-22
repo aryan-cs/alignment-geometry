@@ -230,7 +230,7 @@ def validate(data, args):
                 else:
                     if os.path.getsize(artifact_full) <= 0:
                         add(errors, "methods.activation_pca.artifact_path", f"empty artifact {artifact_rel}")
-                    if artifact_rel not in tracked:
+                    if getattr(args, "require_tracked_artifacts", False) and artifact_rel not in tracked:
                         add(errors, "methods.activation_pca.artifact_path", f"untracked artifact {artifact_rel}")
             digest = row.get("artifact_sha256")
             if not isinstance(digest, str) or not re.fullmatch(r"[0-9a-f]{64}", digest):
@@ -285,6 +285,11 @@ def parse_args():
     ap.add_argument("--min-weight-over-random", type=float, default=0.05)
     ap.add_argument("--min-weight-over-diff", type=float, default=0.0)
     ap.add_argument("--min-control-drop", type=float, default=0.015)
+    ap.add_argument(
+        "--require-tracked-artifacts",
+        action="store_true",
+        help="require external artifacts referenced by the bake-off to be tracked by git",
+    )
     return ap.parse_args()
 
 

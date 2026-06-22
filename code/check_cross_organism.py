@@ -95,7 +95,7 @@ def load_unit_npz_vector(path, key, context, errors):
     return vec / (norm + 1e-12), norm
 
 
-def validate_direction_meta(data, errors):
+def validate_direction_meta(data, errors, require_tracked_artifacts=False):
     directions = data.get("directions")
     if not isinstance(directions, dict):
         add(errors, "directions", "must be an object")
@@ -145,7 +145,7 @@ def validate_direction_meta(data, errors):
             continue
         if full.stat().st_size <= 0:
             add(errors, f"{ctx}.path", f"referenced artifact is empty: {rel}")
-        if rel not in tracked:
+        if require_tracked_artifacts and rel not in tracked:
             add(errors, f"{ctx}.path", f"referenced artifact is not tracked: {rel}")
         expected_hash = hashes.get(rel)
         if not isinstance(expected_hash, str) or not expected_hash:
@@ -240,7 +240,11 @@ def validate(data, args):
         add(errors, "tags", "source_tag and target_tag must differ")
     if not isinstance(data.get("layer"), int) or data["layer"] < 0:
         add(errors, "layer", "must be a non-negative integer")
-    vectors = validate_direction_meta(data, errors)
+    vectors = validate_direction_meta(
+        data,
+        errors,
+        require_tracked_artifacts=args.require_tracked_artifacts,
+    )
     cosine = finite(data.get("direction_cosine"), "direction_cosine", errors, -1.0, 1.0)
     cosine_abs = finite(data.get("direction_cosine_abs"), "direction_cosine_abs", errors, 0.0, 1.0)
     if cosine is not None and cosine_abs is not None and abs(abs(cosine) - cosine_abs) > 1e-9:
@@ -298,6 +302,11 @@ def parse_args():
     ap.add_argument("--min-folds", type=int, default=4)
     ap.add_argument("--min-margin", type=float, default=0.05)
     ap.add_argument("--min-over-random", type=float, default=0.02)
+    ap.add_argument(
+        "--require-tracked-artifacts",
+        action="store_true",
+        help="require referenced direction artifacts to be tracked by git",
+    )
     return ap.parse_args()
 
 

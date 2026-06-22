@@ -139,6 +139,13 @@ def metric_point(data, cond, task, key):
     return val if math.isfinite(val) else None
 
 
+def model_identity(data, key):
+    ids = data.get("model_ids")
+    if isinstance(ids, dict) and isinstance(ids.get(key), str):
+        return ids[key]
+    return data.get(key)
+
+
 def validate_paper_claims(data, errors):
     topk = data.get("topk")
     top_cond = f"ablate_top{topk}"
@@ -228,14 +235,14 @@ def validate(data, require_full=False, require_paper=False):
         if topk != 128:
             errors.append("root: paper capability study must use topk=128")
         for key, markers in PAPER_MODEL_MARKERS.items():
-            val = data.get(key)
+            val = model_identity(data, key)
             if not isinstance(val, str) or not all(m in val for m in markers):
                 errors.append(
-                    f"root: {key} must identify {'/'.join(markers)}; got {val!r}"
+                    f"root: {key} identity must include {'/'.join(markers)}; got {val!r}"
                 )
             for marker in PAPER_FORBIDDEN_MODEL_MARKERS.get(key, []):
                 if isinstance(val, str) and marker in val:
-                    errors.append(f"root: {key} must not identify {marker!r}; got {val!r}")
+                    errors.append(f"root: {key} identity must not include {marker!r}; got {val!r}")
         tasks = data.get("tasks")
         if not isinstance(tasks, list):
             errors.append("root: paper capability study must record tasks as a list")

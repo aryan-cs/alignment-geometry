@@ -60,13 +60,25 @@ snapshot() {
 
 BASE="${LLAMA_BASE:-$(snapshot models--NousResearch--Meta-Llama-3-8B)}"
 INSTRUCT="${LLAMA_INSTRUCT:-$(snapshot models--NousResearch--Meta-Llama-3-8B-Instruct)}"
+MODEL_ID="${MODEL_ID:-NousResearch/Meta-Llama-3-8B-Instruct}"
+BASE_ID="${BASE_ID:-NousResearch/Meta-Llama-3-8B}"
+INSTRUCT_ID="${INSTRUCT_ID:-NousResearch/Meta-Llama-3-8B-Instruct}"
 OUT="${OUT:-results/data/capability.json}"
 MANIFEST="${MANIFEST:-results/data/run_manifests/capability_manifest.json}"
 MIN_FREE_MIB="${MIN_FREE_MIB:-24000}"
 WAIT_ATTEMPTS="${WAIT_ATTEMPTS:-2160}"  # 12h at 20s per attempt
+DATASET_CACHE_DIR="${DATASET_CACHE_DIR:-}"
+
+DATASET_CACHE_ARGS=()
+if [ -n "$DATASET_CACHE_DIR" ]; then
+  DATASET_CACHE_ARGS=(--dataset-cache-dir "$DATASET_CACHE_DIR")
+fi
 
 echo "base: $BASE"
 echo "instruct/model: $INSTRUCT"
+echo "model_id: $MODEL_ID"
+echo "base_id: $BASE_ID"
+echo "instruct_id: $INSTRUCT_ID"
 echo "out: $OUT"
 echo "manifest: $MANIFEST"
 
@@ -120,7 +132,11 @@ manifest = {
         "model": os.environ["INSTRUCT"],
         "base": os.environ["BASE"],
         "instruct": os.environ["INSTRUCT"],
+        "model_id": os.environ["MODEL_ID"],
+        "base_id": os.environ["BASE_ID"],
+        "instruct_id": os.environ["INSTRUCT_ID"],
         "out": artifact,
+        "dataset_cache_dir": os.environ.get("DATASET_CACHE_DIR") or None,
         "layer": int(os.environ.get("LAYER", "14")),
         "topk": int(os.environ.get("TOPK", "128")),
         "n_mmlu": int(os.environ.get("N_MMLU", "500")),
@@ -134,7 +150,8 @@ manifest = {
         "refusal_max_new": int(os.environ.get("REFUSAL_MAX_NEW", "24")),
     },
     "commands": [
-        "python code/capability_eval.py --model $INSTRUCT --base $BASE --instruct $INSTRUCT --layer ${LAYER:-14} --topk ${TOPK:-128} --n-mmlu ${N_MMLU:-500} --n-gsm8k ${N_GSM8K:-150} --n-arc ${N_ARC:-300} --n-refusal ${N_REFUSAL:-256} --mc-bs ${MC_BS:-8} --gen-bs ${GEN_BS:-4} --refusal-bs ${REFUSAL_BS:-16} --gsm8k-max-new ${GSM8K_MAX_NEW:-256} --refusal-max-new ${REFUSAL_MAX_NEW:-24} --out $OUT",
+        "python code/capability_eval.py --preflight-only --model $INSTRUCT --base $BASE --instruct $INSTRUCT --model-id $MODEL_ID --base-id $BASE_ID --instruct-id $INSTRUCT_ID --layer ${LAYER:-14} --topk ${TOPK:-128} --n-mmlu ${N_MMLU:-500} --n-gsm8k ${N_GSM8K:-150} --n-arc ${N_ARC:-300} --n-refusal ${N_REFUSAL:-256} --mc-bs ${MC_BS:-8} --gen-bs ${GEN_BS:-4} --refusal-bs ${REFUSAL_BS:-16} --gsm8k-max-new ${GSM8K_MAX_NEW:-256} --refusal-max-new ${REFUSAL_MAX_NEW:-24} --out $OUT",
+        "python code/capability_eval.py --model $INSTRUCT --base $BASE --instruct $INSTRUCT --model-id $MODEL_ID --base-id $BASE_ID --instruct-id $INSTRUCT_ID --layer ${LAYER:-14} --topk ${TOPK:-128} --n-mmlu ${N_MMLU:-500} --n-gsm8k ${N_GSM8K:-150} --n-arc ${N_ARC:-300} --n-refusal ${N_REFUSAL:-256} --mc-bs ${MC_BS:-8} --gen-bs ${GEN_BS:-4} --refusal-bs ${REFUSAL_BS:-16} --gsm8k-max-new ${GSM8K_MAX_NEW:-256} --refusal-max-new ${REFUSAL_MAX_NEW:-24} --out $OUT",
         "python code/check_capability_result.py --input $OUT --require-paper",
     ],
     "validators": [
@@ -152,7 +169,8 @@ print(f"wrote {out}")
 PY
 }
 
-export STARTED_AT BASE INSTRUCT OUT MANIFEST SOURCE_GIT_COMMIT SOURCE_GIT_STATUS_SHORT
+export STARTED_AT BASE INSTRUCT MODEL_ID BASE_ID INSTRUCT_ID OUT MANIFEST
+export SOURCE_GIT_COMMIT SOURCE_GIT_STATUS_SHORT DATASET_CACHE_DIR
 trap 'write_manifest failed "$(date -Is)"' ERR
 
 if [ -s "$OUT" ] && [ "${FORCE:-0}" != "1" ]; then
@@ -161,6 +179,7 @@ if [ -s "$OUT" ] && [ "${FORCE:-0}" != "1" ]; then
       --input "$MANIFEST" \
       --study capability_preservation \
       --require-completed \
+      --require-clean \
       --require-config-key model \
       --require-config-key base \
       --require-config-key instruct \
@@ -190,6 +209,28 @@ else
   RESUME_ARGS=()
 fi
 
+python code/capability_eval.py \
+  --preflight-only \
+  --model "$INSTRUCT" \
+  --base "$BASE" \
+  --instruct "$INSTRUCT" \
+  --model-id "$MODEL_ID" \
+  --base-id "$BASE_ID" \
+  --instruct-id "$INSTRUCT_ID" \
+  --layer "${LAYER:-14}" \
+  --topk "${TOPK:-128}" \
+  --n-mmlu "${N_MMLU:-500}" \
+  --n-gsm8k "${N_GSM8K:-150}" \
+  --n-arc "${N_ARC:-300}" \
+  --n-refusal "${N_REFUSAL:-256}" \
+  --mc-bs "${MC_BS:-8}" \
+  --gen-bs "${GEN_BS:-4}" \
+  --refusal-bs "${REFUSAL_BS:-16}" \
+  --gsm8k-max-new "${GSM8K_MAX_NEW:-256}" \
+  --refusal-max-new "${REFUSAL_MAX_NEW:-24}" \
+  --out "$OUT" \
+  "${DATASET_CACHE_ARGS[@]}"
+
 for w in $(seq 1 "$WAIT_ATTEMPTS"); do
   free=$(nvidia-smi --query-gpu=memory.free --format=csv,noheader,nounits | head -1)
   if [ "$free" -ge "$MIN_FREE_MIB" ]; then
@@ -212,6 +253,9 @@ python code/capability_eval.py \
   --model "$INSTRUCT" \
   --base "$BASE" \
   --instruct "$INSTRUCT" \
+  --model-id "$MODEL_ID" \
+  --base-id "$BASE_ID" \
+  --instruct-id "$INSTRUCT_ID" \
   --layer "${LAYER:-14}" \
   --topk "${TOPK:-128}" \
   --n-mmlu "${N_MMLU:-500}" \
@@ -224,6 +268,7 @@ python code/capability_eval.py \
   --gsm8k-max-new "${GSM8K_MAX_NEW:-256}" \
   --refusal-max-new "${REFUSAL_MAX_NEW:-24}" \
   --out "$OUT" \
+  "${DATASET_CACHE_ARGS[@]}" \
   "${RESUME_ARGS[@]}"
 
 python code/check_capability_result.py --input "$OUT" --require-paper

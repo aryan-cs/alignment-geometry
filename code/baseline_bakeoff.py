@@ -199,6 +199,7 @@ def write_run_manifest(payload, args, mis_paths, ben_paths):
         },
         "commands": [
             "python code/activation_pca_baseline.py --base $BASE --runs $RUNS --misaligned-glob $MIS_GLOB --benign-glob $BEN_GLOB --prompts <prompt-file> --out results/data/activation_pca_baseline.json",
+            "python code/check_activation_pca_artifact.py --input results/data/activation_pca_baseline.json",
             "python code/baseline_bakeoff.py --base $BASE --runs $RUNS --misaligned-glob $MIS_GLOB --benign-glob $BEN_GLOB --activation-pca-json results/data/activation_pca_baseline.json --out results/data/baselines.json",
             "python code/check_baselines.py --input results/data/baselines.json",
         ],
