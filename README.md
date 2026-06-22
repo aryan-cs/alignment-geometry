@@ -91,7 +91,7 @@ cross-type, scale, and baseline artifacts have been committed and validated.
 Validate a completed misalignment-direction study bundle:
 
 ```bash
-python3 code/check_direction_study.py --tag med --directions results/data/directions_med.json --detect results/data/detect_med.json --eval results/data/misalignment_eval_medical.json --causal results/data/causal_misalign.json
+python3 code/check_direction_study.py --tag med --directions results/data/directions_med.json --directions-npz results/data/directions_med.npz --detect results/data/detect_med.json --eval results/data/misalignment_eval_medical.json --causal results/data/causal_misalign.json
 ```
 
 Validate a completed baseline bake-off:
@@ -128,6 +128,12 @@ Validate a completed cross-organism transfer artifact:
 
 ```bash
 python3 code/check_cross_organism.py --input results/data/cross_organism.json
+```
+
+Validate the OOD refusal-transfer artifact:
+
+```bash
+python3 code/check_transfer_result.py --input results/data/transfer.json --require-tracked-prompts
 ```
 
 Regenerate or validate the deterministic synthetic BBP sanity check reported in

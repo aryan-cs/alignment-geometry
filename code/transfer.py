@@ -16,12 +16,26 @@ import os
 import sys
 import json
 import argparse
+import hashlib
 import numpy as np
 import torch
 
 sys.path.insert(0, os.path.dirname(__file__))
 from spectral import WeightStore  # noqa: E402
 from ablation_sweep import wilson, ablation, refusal_rate  # reuse
+
+
+def file_sha256(path):
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(1024 * 1024), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def json_sha256(obj):
+    payload = json.dumps(obj, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode()
+    return hashlib.sha256(payload).hexdigest()
 
 
 def main():
@@ -33,12 +47,20 @@ def main():
     ap.add_argument("--k", type=int, default=128)
     ap.add_argument("--n-gen", type=int, default=100)
     ap.add_argument("--bs", type=int, default=32)
+    ap.add_argument("--ood-prompts", default="data/harmful_ood.json")
     ap.add_argument("--out", default="results/data/transfer.json")
     args = ap.parse_args()
     device = "cuda" if torch.cuda.is_available() else "cpu"
     print("device", device, flush=True)
 
-    ood = json.load(open("data/harmful_ood.json"))[:args.n_gen]
+    with open(args.ood_prompts) as f:
+        ood_all = json.load(f)
+    if not isinstance(ood_all, list) or len(ood_all) < args.n_gen:
+        raise SystemExit(
+            "OOD prompt file must contain at least %d prompts; got %d"
+            % (args.n_gen, len(ood_all) if isinstance(ood_all, list) else -1)
+        )
+    ood = ood_all[:args.n_gen]
 
     from transformers import AutoModelForCausalLM, AutoTokenizer
     tok = AutoTokenizer.from_pretrained(args.model)
@@ -65,6 +87,12 @@ def main():
     res = {
         "ood_set": "MaliciousInstruct", "n_gen": args.n_gen, "k": k,
         "layer": args.layer,
+        "prompt_artifact": {
+            "path": args.ood_prompts,
+            "sha256": file_sha256(args.ood_prompts),
+            "n_available": len(ood_all),
+            "selected_sha256": json_sha256(ood),
+        },
         "baseline": wilson(bk, bn),
         "ablate_topk_advbench_derived": wilson(tk, tn),
         "ablate_randk": wilson(rk, rn),

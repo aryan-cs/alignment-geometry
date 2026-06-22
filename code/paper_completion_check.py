@@ -702,6 +702,17 @@ def collect_gates():
     check_visual_qa_receipt(gates)
     check_command(gates, "paper_numbers_valid", [sys.executable, "code/check_paper_numbers.py"])
     check_command(gates, "synthetic_bbp_valid", [sys.executable, "code/synthetic_bbp.py", "--check"])
+    check_command(
+        gates,
+        "transfer_result_valid",
+        [
+            sys.executable,
+            "code/check_transfer_result.py",
+            "--input",
+            "results/data/transfer.json",
+            "--require-tracked-prompts",
+        ],
+    )
     check_stale_phrases(gates)
     check_capability(gates)
     check_capability_manifest(gates)
