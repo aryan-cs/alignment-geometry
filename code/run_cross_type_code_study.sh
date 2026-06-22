@@ -488,6 +488,20 @@ python code/check_run_manifest.py \
   --require-script code/check_run_manifest.py \
   --require-script code/spectral.py \
   --allow-untracked-artifacts \
+  --require-command-fragment="$(quote_cmd --misaligned-glob "$MED_MIS_GLOB" --benign-glob "$MED_BEN_GLOB" --layer "$LAYER" --tag med)" \
+  --require-command-fragment="$(quote_cmd python code/check_direction_study.py --tag med --directions "$MED_DIRECTIONS_JSON" --directions-npz "$MED_DIRECTIONS_NPZ" --detect "$MED_DETECT" --eval results/data/misalignment_eval_medical.json --causal results/data/causal_misalign.json --layer "$LAYER" --k "$K" --require-eval-provenance --require-direction-provenance --require-detect-provenance --require-causal-provenance)" \
+  --require-command-fragment="$(quote_cmd python code/verify_misalignment.py --arms)" \
+  --require-command-fragment="$(quote_cmd --out "$CODE_EVAL" --gens "$CODE_GENS")" \
+  --require-command-fragment="$(quote_cmd python code/direction_recover.py --base)" \
+  --require-command-fragment="$(quote_cmd --misaligned-glob "$CODE_MIS_GLOB" --benign-glob "$CODE_BEN_GLOB" --layers "$LAYERS" --k "$K" --min-arms 4 --out "$CODE_DIRECTIONS_BASE")" \
+  --require-command-fragment="$(quote_cmd python code/detect_holdout.py --base)" \
+  --require-command-fragment="$(quote_cmd --misaligned-glob "$CODE_MIS_GLOB" --benign-glob "$CODE_BEN_GLOB" --layer "$LAYER" --tag code)" \
+  --require-command-fragment="$(quote_cmd python code/causal_misalign.py --misaligned)" \
+  --require-command-fragment="$(quote_cmd --dirs "$CODE_DIRECTIONS_NPZ" --layer "$LAYER" --n "$N_CAUSAL" --necessity-only --gens "$CODE_CAUSAL_GENS" --out "$CODE_CAUSAL")" \
+  --require-command-fragment="$(quote_cmd python code/cross_organism.py --source-tag med --target-tag code --source-directions-npz "$MED_DIRECTIONS_NPZ" --target-directions-npz "$CODE_DIRECTIONS_NPZ")" \
+  --require-command-fragment="$(quote_cmd --source-misaligned-glob "$MED_MIS_GLOB" --source-benign-glob "$MED_BEN_GLOB" --target-misaligned-glob "$CODE_MIS_GLOB" --target-benign-glob "$CODE_BEN_GLOB" --out "$CROSS_ORGANISM")" \
+  --require-command-fragment="$(quote_cmd python code/check_direction_study.py --tag code --directions "$CODE_DIRECTIONS_JSON" --directions-npz "$CODE_DIRECTIONS_NPZ" --detect "$CODE_DETECT" --eval "$CODE_EVAL" --causal "$CODE_CAUSAL" --layer "$LAYER" --k "$K" --require-eval-provenance --require-direction-provenance --require-detect-provenance --require-causal-provenance)" \
+  --require-command-fragment="$(quote_cmd python code/check_cross_organism.py --input "$CROSS_ORGANISM")" \
   --require-command-fragment=--require-eval-provenance \
   --require-command-fragment=--require-direction-provenance \
   --require-command-fragment=--require-detect-provenance \

@@ -342,6 +342,15 @@ python code/check_run_manifest.py \
   --require-script code/check_run_manifest.py \
   --require-script code/spectral.py \
   --allow-untracked-artifacts \
+  --require-command-fragment="$(quote_cmd python code/verify_misalignment.py --arms)" \
+  --require-command-fragment="$(quote_cmd --out "$EVAL" --gens "$GENS")" \
+  --require-command-fragment="$(quote_cmd python code/direction_recover.py --base)" \
+  --require-command-fragment="$(quote_cmd --misaligned-glob "$MIS_GLOB" --benign-glob "$BEN_GLOB" --layers "$LAYERS" --k "$K" --min-arms 4 --out "$DIRECTIONS_BASE")" \
+  --require-command-fragment="$(quote_cmd python code/detect_holdout.py --base)" \
+  --require-command-fragment="$(quote_cmd --misaligned-glob "$MIS_GLOB" --benign-glob "$BEN_GLOB" --layer "$LAYER" --tag 14b)" \
+  --require-command-fragment="$(quote_cmd python code/causal_misalign.py --misaligned)" \
+  --require-command-fragment="$(quote_cmd --dirs "$DIRECTIONS_NPZ" --layer "$LAYER" --n "$N_CAUSAL" --necessity-only --gens "$CAUSAL_GENS" --out "$CAUSAL")" \
+  --require-command-fragment="$(quote_cmd python code/check_direction_study.py --tag 14b --directions "$DIRECTIONS_JSON" --directions-npz "$DIRECTIONS_NPZ" --detect "$DETECT" --eval "$EVAL" --causal "$CAUSAL" --layer "$LAYER" --k "$K" --require-eval-provenance --require-direction-provenance --require-detect-provenance --require-causal-provenance)" \
   --require-command-fragment=--require-eval-provenance \
   --require-command-fragment=--require-direction-provenance \
   --require-command-fragment=--require-detect-provenance \
