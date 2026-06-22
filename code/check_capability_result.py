@@ -1,12 +1,16 @@
 #!/usr/bin/env python3
 """Validate and summarize capability_eval.py JSON output."""
 import argparse
+import hashlib
 import json
 import math
 import re
+import subprocess
 import sys
+from pathlib import Path
 
 
+ROOT = Path(__file__).resolve().parents[1]
 TASK_TO_OUTPUT = {
     "mmlu": ("mmlu", "accuracy"),
     "arc": ("arc_challenge", "accuracy"),
@@ -37,6 +41,7 @@ PAPER_DATASETS = {
     "arc": ("ai2_arc", "ARC-Challenge"),
     "refusal": ("data/harmful.json", None),
 }
+PAPER_EVAL_DTYPES = {"bfloat16", "float16", "float32"}
 PAPER_MODEL_MARKERS = {
     "model": ["Meta-Llama-3-8B-Instruct"],
     "base": ["Meta-Llama-3-8B"],
@@ -172,6 +177,78 @@ def validate_interval_width(interval, max_half_width, context, errors):
         )
 
 
+def validate_positive_int(value, context, errors):
+    if not isinstance(value, int) or value <= 0:
+        add_error(errors, context, "must be a positive integer")
+        return False
+    return True
+
+
+def row_hash(row):
+    payload = json.dumps(row, sort_keys=True, default=str, ensure_ascii=True)
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+def is_tracked(rel_path):
+    proc = subprocess.run(
+        ["git", "ls-files", "--error-unmatch", rel_path],
+        cwd=ROOT,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        check=False,
+    )
+    return proc.returncode == 0
+
+
+def validate_refusal_prompt_binding(meta, sample_indices, sample_sizes, errors):
+    context = "dataset_provenance.refusal"
+    rel_path = meta.get("dataset_id")
+    if rel_path != "data/harmful.json":
+        return
+    path = ROOT / rel_path
+    if not path.exists() or not path.is_file():
+        add_error(errors, context, f"missing committed prompt file {rel_path}")
+        return
+    if not is_tracked(rel_path):
+        add_error(errors, context, f"prompt file {rel_path} is not tracked")
+        return
+    try:
+        rows = json.load(open(path))
+    except json.JSONDecodeError as exc:
+        add_error(errors, context, f"prompt file is invalid JSON: {exc}")
+        return
+    if not isinstance(rows, list):
+        add_error(errors, context, "prompt file must contain a JSON list")
+        return
+    if meta.get("num_rows") != len(rows):
+        add_error(
+            errors,
+            context,
+            f"num_rows {meta.get('num_rows')!r} != committed prompt rows {len(rows)}",
+        )
+    actual_fingerprint = row_hash(rows)
+    if meta.get("fingerprint") != actual_fingerprint:
+        add_error(errors, context, "fingerprint does not match committed data/harmful.json")
+
+    idx = sample_indices.get("refusal") if isinstance(sample_indices, dict) else None
+    expected_n = sample_sizes.get("refusal") if isinstance(sample_sizes, dict) else None
+    sample_hashes = meta.get("sample_hashes")
+    if not isinstance(idx, list) or not isinstance(sample_hashes, list):
+        return
+    if isinstance(expected_n, int) and len(idx) != expected_n:
+        return
+    if any(not isinstance(i, int) or i < 0 or i >= len(rows) for i in idx):
+        return
+    actual_hashes = [row_hash(rows[i]) for i in idx]
+    if sample_hashes != actual_hashes:
+        add_error(
+            errors,
+            context,
+            "sample_hashes do not match committed data/harmful.json at sample_indices.refusal",
+        )
+
+
 def metric_point(data, cond, task, key):
     try:
         vals = data["conditions"][cond][task][key]
@@ -281,6 +358,41 @@ def validate(data, require_full=False, require_paper=False):
             errors.append("root: paper capability study must use layer=14")
         if topk != 128:
             errors.append("root: paper capability study must use topk=128")
+        eval_config = data.get("eval_config")
+        if not isinstance(eval_config, dict):
+            errors.append("root: paper capability study must record eval_config")
+        else:
+            dtype = eval_config.get("dtype")
+            if dtype not in PAPER_EVAL_DTYPES:
+                errors.append(
+                    f"root: eval_config.dtype must be one of {sorted(PAPER_EVAL_DTYPES)}; "
+                    f"got {dtype!r}"
+                )
+            local_files_only = eval_config.get("local_files_only")
+            if not isinstance(local_files_only, bool):
+                errors.append("root: eval_config.local_files_only must be boolean")
+            if eval_config.get("harmful_prompts") != "data/harmful.json":
+                errors.append("root: eval_config.harmful_prompts must be data/harmful.json")
+            for key in ("mc_bs", "gen_bs", "refusal_bs", "gsm8k_max_new", "refusal_max_new"):
+                validate_positive_int(eval_config.get(key), f"eval_config.{key}", errors)
+            requested_n = eval_config.get("requested_n")
+            if not isinstance(requested_n, dict):
+                errors.append("root: eval_config.requested_n must be an object")
+            else:
+                for task, minimum in PAPER_MIN_SAMPLE_SIZES.items():
+                    got = requested_n.get(task)
+                    if not isinstance(got, int) or got < minimum:
+                        errors.append(
+                            f"root: eval_config.requested_n.{task} must be at least "
+                            f"{minimum}; got {got!r}"
+                        )
+                    if isinstance(sample_sizes, dict):
+                        observed = sample_sizes.get(task)
+                        if isinstance(got, int) and isinstance(observed, int) and got < observed:
+                            errors.append(
+                                f"root: eval_config.requested_n.{task} {got} is below "
+                                f"sample_sizes.{task} {observed}"
+                            )
         for key, markers in PAPER_MODEL_MARKERS.items():
             val = model_identity(data, key)
             if not isinstance(val, str) or not all(m in val for m in markers):
@@ -389,6 +501,8 @@ def validate(data, require_full=False, require_paper=False):
                     errors.append(
                         f"root: dataset_provenance.{task}.sample_hashes must be sha256 hex strings"
                     )
+                if task == "refusal":
+                    validate_refusal_prompt_binding(meta, sample_indices, sample_sizes, errors)
 
         intervention = data.get("intervention")
         if not isinstance(intervention, dict):

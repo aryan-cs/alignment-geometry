@@ -239,10 +239,12 @@ The default paper run uses `n=500` MMLU, `n=400` GSM8K, `n=400` ARC-Challenge,
 and `n=400` refusal prompts per condition, so worst-case 95% Wilson half-widths
 are below about five percentage points for the reported rates. The paper
 validator recomputes every Wilson interval from counts and rejects paper-study
-intervals with half-width above six percentage points. That launcher writes
-`results/data/capability.json`. After copying the completed artifact and
-manifest back, add and commit both files, then validate them with the same
-manifest gate used by `code/paper_completion_check.py`:
+intervals with half-width above six percentage points; it also recomputes the
+refusal prompt fingerprint and selected-row hashes from committed
+`data/harmful.json`. That launcher writes `results/data/capability.json`. After
+copying the completed artifact and manifest back, add and commit both files,
+then validate them with the same manifest gate used by
+`code/paper_completion_check.py`:
 
 Monitor the detached job and validate its manifest as soon as it appears:
 

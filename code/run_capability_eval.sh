@@ -29,6 +29,7 @@ SOURCE_PATHS=(
   code/check_capability_result.py
   code/causal.py
   code/spectral.py
+  data/harmful.json
 )
 SOURCE_GIT_STATUS_SHORT="$(git status --short -- "${SOURCE_PATHS[@]}")"
 if [ -n "$SOURCE_GIT_STATUS_SHORT" ] && [ "${ALLOW_DIRTY_SOURCE:-0}" != "1" ]; then
