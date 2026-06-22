@@ -11,6 +11,7 @@ import os
 import sys
 import json
 import math
+import re
 import argparse
 import numpy as np
 import matplotlib
@@ -291,6 +292,147 @@ def fig_ablation_layers(outdir, f="results/data/ablation_layers.json"):
     ax.grid(True, color=GRID, lw=0.5)
     fig.tight_layout()
     fig.savefig(os.path.join(outdir, "ablation_layers.pdf"))
+    plt.close(fig)
+
+
+def _capability_condition_order(keys, topk=None):
+    def rank(k):
+        if k == "baseline":
+            return (0, 0, k)
+        m = re.match(r"ablate_rand(\d+)$", k)
+        if m:
+            return (1, int(m.group(1)), k)
+        m = re.match(r"ablate_top(\d+)$", k)
+        if m:
+            return (2, int(m.group(1)), k)
+        return (3, topk if topk is not None else 0, k)
+
+    return sorted(keys, key=rank)
+
+
+def _capability_label(cond):
+    if cond == "baseline":
+        return "baseline"
+    m = re.match(r"ablate_rand(\d+)$", cond)
+    if m:
+        return f"random-{m.group(1)}"
+    m = re.match(r"ablate_top(\d+)$", cond)
+    if m:
+        return f"top-{m.group(1)} spectral"
+    return cond.replace("_", " ")
+
+
+def _capability_color(cond):
+    if cond == "baseline":
+        return GREY
+    if cond.startswith("ablate_rand"):
+        return YELLOW_D
+    if cond.startswith("ablate_top"):
+        return PURPLE_D
+    return GREY_L
+
+
+def _interval(metric, name):
+    vals = metric.get(name)
+    if not isinstance(vals, list) or len(vals) != 3:
+        return None
+    return tuple(float(v) for v in vals)
+
+
+def fig_capability(outdir, f="results/data/capability.json"):
+    """Capability checks under the same top-k refusal ablation.
+
+    This figure is intentionally inert until the H200 run writes the real JSON.
+    """
+    if not os.path.exists(f):
+        return
+    d = json.load(open(f))
+    conditions = d.get("conditions", {})
+    if not conditions:
+        return
+
+    conds = _capability_condition_order(conditions.keys(), d.get("topk"))
+    cap_tasks = [
+        ("mmlu", "MMLU"),
+        ("arc_challenge", "ARC-C"),
+        ("gsm8k", "GSM8K"),
+    ]
+    cap_tasks = [
+        (key, label) for key, label in cap_tasks
+        if any(key in conditions[c] for c in conds)
+    ]
+    has_refusal = any("refusal" in conditions[c] for c in conds)
+    if not cap_tasks and not has_refusal:
+        return
+
+    fig, (axL, axR) = plt.subplots(1, 2, figsize=(7.4, 3.0))
+    width = min(0.22, 0.78 / max(1, len(conds)))
+
+    if cap_tasks:
+        x = np.arange(len(cap_tasks))
+        offsets = (np.arange(len(conds)) - (len(conds) - 1) / 2.0) * width
+        for j, cond in enumerate(conds):
+            vals = []
+            for task, _ in cap_tasks:
+                metric = conditions[cond].get(task, {})
+                ci = _interval(metric, "accuracy")
+                vals.append(np.nan if ci is None else ci[0])
+            axL.bar(
+                x + offsets[j], vals, width=width,
+                color=_capability_color(cond), label=_capability_label(cond),
+                edgecolor="white", linewidth=0.4, alpha=0.95,
+            )
+            for xi, task, p in zip(x + offsets[j], [t[0] for t in cap_tasks], vals):
+                metric = conditions[cond].get(task, {})
+                ci = _interval(metric, "accuracy")
+                if ci is None or not np.isfinite(p):
+                    continue
+                _, lo, hi = ci
+                axL.errorbar(
+                    xi, p, yerr=[[p - lo], [hi - p]], fmt="none",
+                    ecolor=INK, elinewidth=0.8, capsize=2.5, capthick=0.8,
+                )
+        axL.set_xticks(x)
+        axL.set_xticklabels([label for _, label in cap_tasks])
+        axL.set_ylabel("accuracy\n95% Wilson CI")
+        axL.set_ylim(0.0, 1.0)
+        axL.set_title("ordinary task accuracy under ablation", fontsize=9)
+        axL.legend(frameon=False, fontsize=7.2, loc="lower left")
+        axL.grid(True, axis="y", color=GRID, lw=0.5)
+    else:
+        axL.axis("off")
+
+    if has_refusal:
+        xs, vals, labels, cols, errs = [], [], [], [], []
+        for cond in conds:
+            metric = conditions[cond].get("refusal", {})
+            ci = _interval(metric, "rate")
+            if ci is None:
+                continue
+            p, lo, hi = ci
+            xs.append(len(xs))
+            vals.append(p)
+            labels.append(_capability_label(cond).replace(" ", "\n"))
+            cols.append(_capability_color(cond))
+            errs.append((p - lo, hi - p))
+        axR.bar(xs, vals, width=0.55, color=cols, edgecolor="white",
+                linewidth=0.4, alpha=0.95)
+        for x0, p, (elo, ehi) in zip(xs, vals, errs):
+            axR.errorbar(
+                x0, p, yerr=[[elo], [ehi]], fmt="none", ecolor=INK,
+                elinewidth=0.8, capsize=2.5, capthick=0.8,
+            )
+        axR.set_xticks(xs)
+        axR.set_xticklabels(labels, fontsize=7.5)
+        axR.set_ylabel("refusal rate (harmful)\n95% Wilson CI")
+        axR.set_ylim(0.0, 1.05)
+        axR.set_title("refusal rate under the same ablation", fontsize=9)
+        axR.grid(True, axis="y", color=GRID, lw=0.5)
+    else:
+        axR.axis("off")
+
+    fig.tight_layout()
+    fig.savefig(os.path.join(outdir, "capability.pdf"))
     plt.close(fig)
 
 
@@ -798,6 +940,7 @@ def main():
     fig_capture_heatmap(args.outdir)
     fig_ablation(args.outdir)
     fig_ablation_layers(args.outdir)
+    fig_capability(args.outdir)
     fig_sufficiency(args.outdir)
     fig_geometry(args.outdir)
     fig_mis_convergence(args.outdir)

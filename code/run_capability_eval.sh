@@ -46,6 +46,7 @@ echo "out: $OUT"
 
 if [ -s "$OUT" ] && [ "${FORCE:-0}" != "1" ]; then
   echo "SKIP: $OUT exists and FORCE is not set"
+  python code/check_capability_result.py --input "$OUT" --require-full
   echo "=== capability_eval DONE $(date -Is) ==="
   exit 0
 fi
@@ -85,22 +86,6 @@ python code/capability_eval.py \
   --refusal-max-new "${REFUSAL_MAX_NEW:-24}" \
   --out "$OUT"
 
-CAPABILITY_OUT="$OUT" python - <<'PY'
-import json
-import os
-from pathlib import Path
-
-out = Path(os.environ["CAPABILITY_OUT"])
-d = json.loads(out.read_text())
-print("summary:")
-for cond, vals in d["conditions"].items():
-    parts = []
-    for task, key in [("mmlu", "mmlu"), ("arc", "arc_challenge"), ("gsm8k", "gsm8k")]:
-        if key in vals:
-            parts.append(f"{task}={vals[key]['accuracy'][0]:.3f}")
-    if "refusal" in vals:
-        parts.append(f"refusal={vals['refusal']['rate'][0]:.3f}")
-    print(f"  {cond}: " + " ".join(parts))
-PY
+python code/check_capability_result.py --input "$OUT" --require-full
 
 echo "=== capability_eval DONE $(date -Is) ==="
