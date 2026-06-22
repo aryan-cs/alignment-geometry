@@ -8,6 +8,7 @@ file that should support it.
 import json
 import math
 import re
+import subprocess
 import sys
 from pathlib import Path
 
@@ -67,9 +68,83 @@ def has_phrase(text, phrase):
     return re.sub(r"\s+", " ", phrase) in re.sub(r"\s+", " ", text)
 
 
+def _command_ok(args):
+    proc = subprocess.run(
+        args,
+        cwd=ROOT,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+        check=False,
+    )
+    return proc.returncode == 0
+
+
+def capability_result_ready():
+    """Return true only when the paper-grade capability artifact is validated."""
+    capability = DATA / "capability.json"
+    manifest = DATA / "run_manifests" / "capability_manifest.json"
+    if not capability.exists() or not manifest.exists():
+        return False
+    result_ok = _command_ok(
+        [
+            sys.executable,
+            "code/check_capability_result.py",
+            "--input",
+            "results/data/capability.json",
+            "--require-paper",
+        ]
+    )
+    if not result_ok:
+        return False
+    return _command_ok(
+        [
+            sys.executable,
+            "code/check_run_manifest.py",
+            "--input",
+            "results/data/run_manifests/capability_manifest.json",
+            "--study",
+            "capability_preservation",
+            "--require-completed",
+            "--require-clean",
+            "--require-config-key",
+            "model",
+            "--require-config-key",
+            "base",
+            "--require-config-key",
+            "instruct",
+            "--require-config-key",
+            "layer",
+            "--require-config-key",
+            "topk",
+            "--require-config-key",
+            "n_mmlu",
+            "--require-config-key",
+            "n_gsm8k",
+            "--require-config-key",
+            "n_arc",
+            "--require-config-key",
+            "n_refusal",
+            "--require-artifact",
+            "results/data/capability.json",
+            "--require-script",
+            "code/run_capability_eval.sh",
+            "--require-script",
+            "code/capability_eval.py",
+            "--require-script",
+            "code/check_capability_result.py",
+            "--require-script",
+            "code/causal.py",
+            "--require-script",
+            "code/spectral.py",
+            "--require-command-fragment=--require-paper",
+        ]
+    )
+
+
 def check_capability_caveat():
-    """Guard against broad-capability claims before the H200 result exists."""
-    if (DATA / "capability.json").exists():
+    """Guard against broad-capability claims until H200 output is validated."""
+    if capability_result_ready():
         return
     text = paper_text()
     required = [
@@ -82,6 +157,7 @@ def check_capability_caveat():
             failures.append(
                 "capability caveat: missing required manuscript phrase "
                 f"{phrase!r} while results/data/capability.json is absent"
+                " or not paper-grade validated"
             )
 
 
