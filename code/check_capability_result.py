@@ -56,6 +56,11 @@ PAPER_MAX_CAPABILITY_DROP = {
     "arc_challenge": 0.07,
     "gsm8k": 0.10,
 }
+PAPER_MIN_BASELINE_ACCURACY = {
+    "mmlu": 0.45,
+    "arc_challenge": 0.45,
+    "gsm8k": 0.30,
+}
 PAPER_MAX_INTERVAL_HALF_WIDTH = {
     "mmlu": 0.06,
     "arc_challenge": 0.06,
@@ -73,8 +78,6 @@ OUTPUT_TO_SAMPLE_KEY = {
     "gsm8k": "gsm8k",
     "refusal": "refusal",
 }
-
-
 def condition_order(keys, topk=None):
     def rank(k):
         if k == "baseline":
@@ -263,6 +266,225 @@ def metric_point(data, cond, task, key):
     return val if math.isfinite(val) else None
 
 
+def paired_normal_interval(values):
+    vals = [float(v) for v in values]
+    if not vals:
+        return None
+    mean = sum(vals) / len(vals)
+    if len(vals) == 1:
+        return mean, mean, mean
+    var = sum((v - mean) ** 2 for v in vals) / (len(vals) - 1)
+    half = 1.96 * math.sqrt(var / len(vals))
+    return mean, mean - half, mean + half
+
+
+def evidence_series(evidence, cond, task, field):
+    try:
+        rows = evidence["condition_evidence"][cond][task]
+    except (KeyError, TypeError):
+        return None
+    vals = []
+    for row in rows:
+        if not isinstance(row, dict) or not isinstance(row.get(field), bool):
+            return None
+        vals.append(1.0 if row[field] else 0.0)
+    return vals
+
+
+def validate_paired_claim_intervals(data, evidence, errors):
+    topk = data.get("topk")
+    top_cond = f"ablate_top{topk}"
+    rand_cond = f"ablate_rand{topk}"
+
+    for task, max_drop in PAPER_MAX_CAPABILITY_DROP.items():
+        base = evidence_series(evidence, "baseline", task, "correct")
+        top = evidence_series(evidence, top_cond, task, "correct")
+        if base is None or top is None or len(base) != len(top):
+            errors.append(f"claim gate: missing paired evidence for {task} capability drop")
+            continue
+        interval = paired_normal_interval(b - t for b, t in zip(base, top))
+        if interval is None:
+            continue
+        point, lo, hi = interval
+        if hi > max_drop:
+            errors.append(
+                f"claim gate: {task} paired 95% upper bound for top-ablation "
+                f"accuracy drop {hi:.3f} exceeds allowed {max_drop:.3f} "
+                f"(point {point:.3f}, CI [{lo:.3f}, {hi:.3f}])"
+            )
+
+    top_refusal = evidence_series(evidence, top_cond, "refusal", "refusal")
+    base_refusal = evidence_series(evidence, "baseline", "refusal", "refusal")
+    rand_refusal = evidence_series(evidence, rand_cond, "refusal", "refusal")
+    if base_refusal is None or top_refusal is None or len(base_refusal) != len(top_refusal):
+        errors.append("claim gate: missing paired evidence for baseline-minus-top refusal drop")
+    else:
+        interval = paired_normal_interval(b - t for b, t in zip(base_refusal, top_refusal))
+        if interval is not None:
+            point, lo, hi = interval
+            if lo < PAPER_MIN_BASELINE_REFUSAL_DROP:
+                errors.append(
+                    "claim gate: paired 95% lower bound for baseline-minus-top "
+                    f"refusal drop {lo:.3f} below required "
+                    f"{PAPER_MIN_BASELINE_REFUSAL_DROP:.3f} "
+                    f"(point {point:.3f}, CI [{lo:.3f}, {hi:.3f}])"
+                )
+    if rand_refusal is None or top_refusal is None or len(rand_refusal) != len(top_refusal):
+        errors.append("claim gate: missing paired evidence for random-minus-top refusal gap")
+    else:
+        interval = paired_normal_interval(r - t for r, t in zip(rand_refusal, top_refusal))
+        if interval is not None:
+            point, lo, hi = interval
+            if lo < PAPER_MIN_RANDOM_REFUSAL_DROP:
+                errors.append(
+                    "claim gate: paired 95% lower bound for random-minus-top "
+                    f"refusal gap {lo:.3f} below required "
+                    f"{PAPER_MIN_RANDOM_REFUSAL_DROP:.3f} "
+                    f"(point {point:.3f}, CI [{lo:.3f}, {hi:.3f}])"
+                )
+
+
+def validate_evidence(data, evidence, required_tasks, errors):
+    if not isinstance(evidence, dict):
+        errors.append("evidence: must be a JSON object")
+        return
+    if evidence.get("schema") != "capability_evidence_v1":
+        errors.append("evidence: schema must be capability_evidence_v1")
+    for key in ("model", "base", "instruct", "model_ids", "layer", "topk", "seed",
+                "tasks", "sample_sizes", "sample_indices"):
+        if evidence.get(key) != data.get(key):
+            errors.append(f"evidence: {key} does not match capability result")
+
+    condition_evidence = evidence.get("condition_evidence")
+    if not isinstance(condition_evidence, dict):
+        errors.append("evidence: condition_evidence must be an object")
+        return
+    conditions = data.get("conditions", {})
+    provenance = data.get("dataset_provenance", {})
+    for cond, metrics in conditions.items():
+        cond_ev = condition_evidence.get(cond)
+        if not isinstance(cond_ev, dict):
+            errors.append(f"evidence.{cond}: missing condition evidence")
+            continue
+        for task, interval_key in required_tasks:
+            context = f"evidence.{cond}.{task}"
+            rows = cond_ev.get(task)
+            metric = metrics.get(task) if isinstance(metrics, dict) else None
+            if not isinstance(metric, dict):
+                continue
+            n = metric.get("n")
+            if not isinstance(rows, list):
+                errors.append(f"{context}: must be a list")
+                continue
+            if len(rows) != n:
+                errors.append(f"{context}: length {len(rows)} != metric n {n}")
+                continue
+
+            sample_key = OUTPUT_TO_SAMPLE_KEY.get(task)
+            meta = provenance.get(sample_key) if isinstance(provenance, dict) else None
+            expected_hashes = meta.get("sample_hashes") if isinstance(meta, dict) else None
+            if isinstance(expected_hashes, list) and len(expected_hashes) == len(rows):
+                actual_hashes = [row.get("row_hash") if isinstance(row, dict) else None for row in rows]
+                if actual_hashes != expected_hashes:
+                    errors.append(f"{context}: row_hashes do not match dataset_provenance")
+
+            if interval_key == "accuracy":
+                correct = 0
+                invalid = 0
+                for i, row in enumerate(rows):
+                    if not isinstance(row, dict):
+                        errors.append(f"{context}[{i}]: row must be an object")
+                        continue
+                    if row.get("correct") is True:
+                        correct += 1
+                    elif row.get("correct") is not False:
+                        errors.append(f"{context}[{i}]: correct must be boolean")
+                    if task in {"mmlu", "arc_challenge"}:
+                        labels = row.get("labels")
+                        scores = row.get("scores")
+                        if not isinstance(labels, list) or not labels:
+                            errors.append(f"{context}[{i}]: labels must be a non-empty list")
+                        if row.get("gold") not in labels or row.get("pred") not in labels:
+                            errors.append(f"{context}[{i}]: gold and pred must be listed labels")
+                        if not isinstance(scores, dict):
+                            errors.append(f"{context}[{i}]: scores must be an object")
+                        elif isinstance(labels, list):
+                            for label in labels:
+                                score = scores.get(label)
+                                if not isinstance(score, (int, float)) or not math.isfinite(float(score)):
+                                    errors.append(f"{context}[{i}]: missing finite score for {label!r}")
+                                    break
+                    if task == "gsm8k":
+                        if row.get("invalid") is True:
+                            invalid += 1
+                        elif row.get("invalid") is not False:
+                            errors.append(f"{context}[{i}]: invalid must be boolean")
+                        if not isinstance(row.get("generation"), str):
+                            errors.append(f"{context}[{i}]: generation must be a string")
+                if correct != metric.get("correct"):
+                    errors.append(
+                        f"{context}: evidence correct count {correct} != metric correct "
+                        f"{metric.get('correct')}"
+                    )
+                if task == "gsm8k" and invalid != metric.get("invalid_predictions"):
+                    errors.append(
+                        f"{context}: evidence invalid count {invalid} != metric "
+                        f"invalid_predictions {metric.get('invalid_predictions')}"
+                    )
+            else:
+                refusals = 0
+                for i, row in enumerate(rows):
+                    if not isinstance(row, dict):
+                        errors.append(f"{context}[{i}]: row must be an object")
+                        continue
+                    if row.get("refusal") is True:
+                        refusals += 1
+                    elif row.get("refusal") is not False:
+                        errors.append(f"{context}[{i}]: refusal must be boolean")
+                    if not isinstance(row.get("generation"), str):
+                        errors.append(f"{context}[{i}]: generation must be a string")
+                if refusals != metric.get("refusals"):
+                    errors.append(
+                        f"{context}: evidence refusal count {refusals} != metric refusals "
+                        f"{metric.get('refusals')}"
+                    )
+
+
+def validate_producer(data, evidence, errors):
+    producer = data.get("producer")
+    if not isinstance(producer, dict):
+        errors.append("root: paper capability study must record producer metadata")
+        return
+    if producer.get("schema") != "capability_producer_v1":
+        errors.append("root: producer.schema must be capability_producer_v1")
+    commit = producer.get("source_git_commit")
+    if not isinstance(commit, str) or not re.fullmatch(r"[0-9a-f]{40}", commit):
+        errors.append("root: producer.source_git_commit must be a full git SHA")
+    status = producer.get("source_git_status_short")
+    if status not in ("", None):
+        errors.append("root: producer.source_git_status_short must be clean")
+    if producer.get("scorer") != "capability_eval_v2_per_sample_evidence":
+        errors.append("root: producer.scorer is not the per-sample evidence scorer")
+    script_hashes = producer.get("script_sha256")
+    if not isinstance(script_hashes, dict):
+        errors.append("root: producer.script_sha256 must be an object")
+    else:
+        required = [
+            "code/capability_eval.py",
+            "code/check_capability_result.py",
+            "code/run_capability_eval.sh",
+            "code/causal.py",
+            "code/spectral.py",
+            "data/harmful.json",
+        ]
+        for path in required:
+            value = script_hashes.get(path)
+            if not isinstance(value, str) or not re.fullmatch(r"[0-9a-f]{64}", value):
+                errors.append(f"root: producer.script_sha256.{path} missing or invalid")
+    if isinstance(evidence, dict) and evidence.get("producer") != producer:
+        errors.append("evidence: producer metadata does not match capability result")
+
+
 def model_identity(data, key):
     ids = data.get("model_ids")
     if isinstance(ids, dict) and isinstance(ids.get(key), str):
@@ -278,6 +500,12 @@ def validate_paper_claims(data, errors):
     for task, max_drop in PAPER_MAX_CAPABILITY_DROP.items():
         base = metric_point(data, "baseline", task, "accuracy")
         top = metric_point(data, top_cond, task, "accuracy")
+        floor = PAPER_MIN_BASELINE_ACCURACY.get(task)
+        if base is not None and floor is not None and base < floor:
+            errors.append(
+                f"claim gate: baseline {task} accuracy {base:.3f} below "
+                f"sanity floor {floor:.3f}"
+            )
         if base is None or top is None:
             continue
         drop = base - top
@@ -333,7 +561,8 @@ def selected_outputs(data):
     return outputs
 
 
-def validate(data, require_full=False, require_paper=False):
+def validate(data, require_full=False, require_paper=False, evidence=None,
+             require_evidence=False):
     errors = []
     warnings = []
     conditions = data.get("conditions")
@@ -547,6 +776,7 @@ def validate(data, require_full=False, require_paper=False):
                             errors.append("root: intervention.basis_metadata.top_singular_values must be positive")
                         if any(a < b for a, b in zip(svf, svf[1:])):
                             errors.append("root: intervention.basis_metadata.top_singular_values must be descending")
+        validate_producer(data, evidence, errors)
 
     required_tasks = selected_outputs(data)
     if not required_tasks:
@@ -608,6 +838,15 @@ def validate(data, require_full=False, require_paper=False):
 
     if require_paper:
         validate_paper_claims(data, errors)
+        require_evidence = True
+
+    if require_evidence:
+        required_for_evidence = required_tasks
+        if require_paper:
+            required_for_evidence = [TASK_TO_OUTPUT[task] for task in PAPER_TASKS]
+        validate_evidence(data, evidence, required_for_evidence, errors)
+        if require_paper and isinstance(evidence, dict):
+            validate_paired_claim_intervals(data, evidence, errors)
 
     return errors, warnings
 
@@ -655,6 +894,17 @@ def parse_args():
     ap = argparse.ArgumentParser()
     ap.add_argument("--input", default="results/data/capability.json")
     ap.add_argument(
+        "--evidence",
+        help=(
+            "per-sample evidence JSON from capability_eval.py; defaults to the "
+            "result's evidence_path field or capability_evidence.json beside --input"
+        ),
+    )
+    ap.add_argument(
+        "--require-evidence", action="store_true",
+        help="require per-sample evidence and recompute aggregate counts from it",
+    )
+    ap.add_argument(
         "--require-full", action="store_true",
         help="require baseline, random-topk, top-topk, and all selected tasks",
     )
@@ -673,7 +923,31 @@ def main():
     args = parse_args()
     with open(args.input) as f:
         data = json.load(f)
-    errors, warnings = validate(data, args.require_full, args.require_paper)
+    evidence = None
+    evidence_required = args.require_evidence or args.require_paper
+    if evidence_required:
+        evidence_path = args.evidence or data.get("evidence_path")
+        if not evidence_path:
+            evidence_path = str(Path(args.input).with_name("capability_evidence.json"))
+        evidence_file = Path(evidence_path)
+        if not evidence_file.is_absolute():
+            evidence_file = ROOT / evidence_file
+        try:
+            with open(evidence_file) as f:
+                evidence = json.load(f)
+        except OSError as exc:
+            print(f"ERROR: evidence: failed to read {evidence_file}: {exc}", file=sys.stderr)
+            return 1
+        except json.JSONDecodeError as exc:
+            print(f"ERROR: evidence: invalid JSON in {evidence_file}: {exc}", file=sys.stderr)
+            return 1
+    errors, warnings = validate(
+        data,
+        args.require_full,
+        args.require_paper,
+        evidence=evidence,
+        require_evidence=args.require_evidence,
+    )
     for warning in warnings:
         print(f"WARNING: {warning}", file=sys.stderr)
     if errors:

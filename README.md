@@ -269,15 +269,22 @@ Large model evaluation and training run on the H200 environment described by the
 nohup setsid bash code/run_capability_eval.sh > run_capability_eval.log 2>&1 </dev/null & disown
 ```
 
+Set `GPU_ID=<index-or-uuid>` when the H200 host exposes more than one GPU; the
+launcher queries that device with `nvidia-smi -i` and exports
+`CUDA_VISIBLE_DEVICES=$GPU_ID` before loading the model.
+
 The default paper run uses `n=500` MMLU, `n=400` GSM8K, `n=400` ARC-Challenge,
 and `n=400` refusal prompts per condition, so worst-case 95% Wilson half-widths
 are below about five percentage points for the reported rates. The paper
-validator recomputes every Wilson interval from counts and rejects paper-study
-intervals with half-width above six percentage points; it also recomputes the
-refusal prompt fingerprint and selected-row hashes from committed
-`data/harmful.json`. That launcher writes `results/data/capability.json`. After
-copying the completed artifact and manifest back, add and commit both files,
-then validate them with the same manifest gate used by
+validator recomputes every Wilson interval from counts, recomputes paired
+confidence intervals for the capability-drop and refusal-gap claims from
+per-sample evidence, and rejects paper-study intervals with half-width above six
+percentage points. It also recomputes the refusal prompt fingerprint and
+selected-row hashes from committed `data/harmful.json`. That launcher writes
+`results/data/capability.json` and the raw per-sample audit file
+`results/data/capability_evidence.json`. After copying the completed artifacts
+and manifest back, add and commit all three files, then validate them with the
+same manifest gate used by
 `code/paper_completion_check.py`:
 
 Monitor the detached job and validate its manifest as soon as it appears:
@@ -296,7 +303,10 @@ bash code/monitor_job.sh \
 ```
 
 ```bash
-python code/check_capability_result.py --input results/data/capability.json --require-paper
+python code/check_capability_result.py \
+  --input results/data/capability.json \
+  --evidence results/data/capability_evidence.json \
+  --require-paper
 python code/check_run_manifest.py \
   --input results/data/run_manifests/capability_manifest.json \
   --study capability_preservation \
@@ -311,7 +321,10 @@ python code/check_run_manifest.py \
   --require-config-key n_gsm8k \
   --require-config-key n_arc \
   --require-config-key n_refusal \
+  --require-config-key evidence_out \
+  --require-config-key gpu_id \
   --require-artifact results/data/capability.json \
+  --require-artifact results/data/capability_evidence.json \
   --require-script code/run_capability_eval.sh \
   --require-script code/capability_eval.py \
   --require-script code/check_capability_result.py \
@@ -321,9 +334,10 @@ python code/check_run_manifest.py \
 ```
 
 `code/make_figures.py` already contains a `capability.pdf` plotting hook, but it
-is inert until the real `results/data/capability.json` and
-`results/data/run_manifests/capability_manifest.json` both pass strict
-validation. No placeholder capability result is committed.
+is inert until the real `results/data/capability.json`,
+`results/data/capability_evidence.json`, and
+`results/data/run_manifests/capability_manifest.json` all pass strict validation.
+No placeholder capability result is committed.
 
 Train the code-organism arms used by the cross-type study with the committed
 `data/em` JSONL inputs:

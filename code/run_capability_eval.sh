@@ -4,9 +4,10 @@
 # Run on the H200 from the repository checkout:
 #   nohup setsid bash code/run_capability_eval.sh > run_capability_eval.log 2>&1 </dev/null & disown
 #
-# Produces results/data/capability.json. Complete existing outputs are skipped;
+# Produces results/data/capability.json plus per-sample evidence in
+# results/data/capability_evidence.json. Complete existing outputs are skipped;
 # incomplete compatible outputs resume condition-by-condition. Set FORCE=1 to
-# overwrite an existing output, or override sample sizes with
+# overwrite existing outputs, or override sample sizes with
 # N_MMLU/N_GSM8K/N_ARC/N_REFUSAL.
 set -euo pipefail
 
@@ -40,8 +41,10 @@ fi
 if [ -f "${VENV:-.venv}/bin/activate" ]; then
   source "${VENV:-.venv}/bin/activate"
 fi
+GPU_ID="${GPU_ID:-0}"
 export TOKENIZERS_PARALLELISM=false
 export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:True}"
+export CUDA_VISIBLE_DEVICES="$GPU_ID"
 
 mkdir -p results/data results/logs
 LOG="results/logs/capability_eval.log"
@@ -72,6 +75,7 @@ MODEL_ID="${MODEL_ID:-NousResearch/Meta-Llama-3-8B-Instruct}"
 BASE_ID="${BASE_ID:-NousResearch/Meta-Llama-3-8B}"
 INSTRUCT_ID="${INSTRUCT_ID:-NousResearch/Meta-Llama-3-8B-Instruct}"
 OUT="${OUT:-results/data/capability.json}"
+EVIDENCE_OUT="${EVIDENCE_OUT:-results/data/capability_evidence.json}"
 MANIFEST="${MANIFEST:-results/data/run_manifests/capability_manifest.json}"
 MIN_FREE_MIB="${MIN_FREE_MIB:-24000}"
 WAIT_ATTEMPTS="${WAIT_ATTEMPTS:-2160}"  # 12h at 20s per attempt
@@ -115,6 +119,7 @@ PREFLIGHT_CMD=(
   --gsm8k-max-new "${GSM8K_MAX_NEW:-256}"
   --refusal-max-new "${REFUSAL_MAX_NEW:-24}"
   --out "$OUT"
+  --evidence-out "$EVIDENCE_OUT"
   "${DATASET_CACHE_ARGS[@]}"
 )
 EVAL_CMD_BASE=(
@@ -137,10 +142,11 @@ EVAL_CMD_BASE=(
   --gsm8k-max-new "${GSM8K_MAX_NEW:-256}"
   --refusal-max-new "${REFUSAL_MAX_NEW:-24}"
   --out "$OUT"
+  --evidence-out "$EVIDENCE_OUT"
   "${DATASET_CACHE_ARGS[@]}"
 )
 EVAL_CMD=("${EVAL_CMD_BASE[@]}")
-CHECK_CMD=(python code/check_capability_result.py --input "$OUT" --require-paper)
+CHECK_CMD=(python code/check_capability_result.py --input "$OUT" --evidence "$EVIDENCE_OUT" --require-paper)
 
 update_manifest_commands() {
   PREFLIGHT_COMMAND="$(quote_cmd "${PREFLIGHT_CMD[@]}")"
@@ -157,7 +163,19 @@ echo "model_id: $MODEL_ID"
 echo "base_id: $BASE_ID"
 echo "instruct_id: $INSTRUCT_ID"
 echo "out: $OUT"
+echo "evidence_out: $EVIDENCE_OUT"
 echo "manifest: $MANIFEST"
+echo "gpu_id: $GPU_ID"
+
+gpu_free_mib() {
+  local free
+  free=$(nvidia-smi -i "$GPU_ID" --query-gpu=memory.free --format=csv,noheader,nounits | head -1 | tr -d '[:space:]')
+  if [[ ! "$free" =~ ^[0-9]+$ ]]; then
+    echo "FAIL: nvidia-smi returned nonnumeric free memory for GPU_ID=$GPU_ID: ${free:-<empty>}" >&2
+    exit 2
+  fi
+  printf '%s\n' "$free"
+}
 
 write_manifest() {
   local status="$1"
@@ -195,6 +213,7 @@ scripts = [
     "code/spectral.py",
 ]
 artifact = os.environ["OUT"]
+evidence_artifact = os.environ["EVIDENCE_OUT"]
 manifest = {
     "schema": "study_run_manifest_v1",
     "study": "capability_preservation",
@@ -213,7 +232,9 @@ manifest = {
         "base_id": os.environ["BASE_ID"],
         "instruct_id": os.environ["INSTRUCT_ID"],
         "out": artifact,
+        "evidence_out": evidence_artifact,
         "dataset_cache_dir": os.environ.get("DATASET_CACHE_DIR") or None,
+        "gpu_id": os.environ["GPU_ID"],
         "layer": int(os.environ.get("LAYER", "14")),
         "topk": int(os.environ.get("TOPK", "128")),
         "n_mmlu": int(os.environ.get("N_MMLU", "500")),
@@ -235,7 +256,10 @@ manifest = {
         "code/check_capability_result.py",
     ],
     "script_sha256": {path: sha256(path) for path in scripts},
-    "artifact_sha256": {artifact: sha256(artifact)},
+    "artifact_sha256": {
+        artifact: sha256(artifact),
+        evidence_artifact: sha256(evidence_artifact),
+    },
 }
 out = root / os.environ["MANIFEST"]
 out.parent.mkdir(parents=True, exist_ok=True)
@@ -246,12 +270,12 @@ print(f"wrote {out}")
 PY
 }
 
-export STARTED_AT BASE INSTRUCT MODEL_ID BASE_ID INSTRUCT_ID OUT MANIFEST
+export STARTED_AT BASE INSTRUCT MODEL_ID BASE_ID INSTRUCT_ID OUT EVIDENCE_OUT MANIFEST GPU_ID
 export SOURCE_GIT_COMMIT SOURCE_GIT_STATUS_SHORT DATASET_CACHE_DIR
 trap 'write_manifest failed "$(iso_now)"' ERR
 
 if [ -s "$OUT" ] && [ "${FORCE:-0}" != "1" ]; then
-  if python code/check_capability_result.py --input "$OUT" --require-paper; then
+  if python code/check_capability_result.py --input "$OUT" --evidence "$EVIDENCE_OUT" --require-paper; then
     if [ -s "$MANIFEST" ] && python code/check_run_manifest.py \
       --input "$MANIFEST" \
       --study capability_preservation \
@@ -266,7 +290,10 @@ if [ -s "$OUT" ] && [ "${FORCE:-0}" != "1" ]; then
       --require-config-key n_gsm8k \
       --require-config-key n_arc \
       --require-config-key n_refusal \
+      --require-config-key evidence_out \
+      --require-config-key gpu_id \
       --require-artifact "$OUT" \
+      --require-artifact "$EVIDENCE_OUT" \
       --require-script code/run_capability_eval.sh \
       --require-script code/capability_eval.py \
       --require-script code/check_capability_result.py \
@@ -294,7 +321,7 @@ update_manifest_commands
 "${PREFLIGHT_CMD[@]}"
 
 for w in $(seq 1 "$WAIT_ATTEMPTS"); do
-  free=$(nvidia-smi --query-gpu=memory.free --format=csv,noheader,nounits | head -1)
+  free=$(gpu_free_mib)
   if [ "$free" -ge "$MIN_FREE_MIB" ]; then
     echo "GPU window: free=${free}MiB attempt=$w $(iso_now)"
     break
@@ -305,7 +332,7 @@ for w in $(seq 1 "$WAIT_ATTEMPTS"); do
   sleep 20
 done
 
-free=$(nvidia-smi --query-gpu=memory.free --format=csv,noheader,nounits | head -1)
+free=$(gpu_free_mib)
 if [ "$free" -lt "$MIN_FREE_MIB" ]; then
   echo "FAIL: no GPU window after $WAIT_ATTEMPTS attempts; free=${free}MiB"
   exit 2
@@ -330,7 +357,10 @@ python code/check_run_manifest.py \
   --require-config-key n_gsm8k \
   --require-config-key n_arc \
   --require-config-key n_refusal \
+  --require-config-key evidence_out \
+  --require-config-key gpu_id \
   --require-artifact "$OUT" \
+  --require-artifact "$EVIDENCE_OUT" \
   --require-script code/run_capability_eval.sh \
   --require-script code/capability_eval.py \
   --require-script code/check_capability_result.py \

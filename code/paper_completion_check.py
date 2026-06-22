@@ -119,6 +119,7 @@ TRACKER_PENDING_TERMS = [
 EXPECTED_PENDING_ARTIFACTS = {
     "capability_preservation": [
         "results/data/capability.json",
+        "results/data/capability_evidence.json",
     ],
     "cross_type_transfer": [
         "results/data/misalignment_eval_code.json",
@@ -1153,6 +1154,7 @@ def check_stale_phrases(gates):
 
 def check_capability(gates):
     path = ROOT / "results" / "data" / "capability.json"
+    evidence = ROOT / "results" / "data" / "capability_evidence.json"
     tracked = tracked_files() or set()
     if not path.exists():
         add(
@@ -1181,11 +1183,40 @@ def check_capability(gates):
             category="external",
         )
         return
+    if not evidence.exists():
+        add(
+            gates,
+            "capability_preservation_validated",
+            False,
+            "missing results/data/capability_evidence.json",
+            category="external",
+        )
+        return
+    if evidence.stat().st_size <= 0:
+        add(
+            gates,
+            "capability_preservation_validated",
+            False,
+            "results/data/capability_evidence.json is empty",
+            category="external",
+        )
+        return
+    if "results/data/capability_evidence.json" not in tracked:
+        add(
+            gates,
+            "capability_preservation_validated",
+            False,
+            "results/data/capability_evidence.json exists but is not tracked",
+            category="external",
+        )
+        return
     code, out = run_cmd([
         sys.executable,
         "code/check_capability_result.py",
         "--input",
         "results/data/capability.json",
+        "--evidence",
+        "results/data/capability_evidence.json",
         "--require-paper",
     ])
     add(
@@ -1254,8 +1285,14 @@ def check_capability_manifest(gates):
         "n_arc",
         "--require-config-key",
         "n_refusal",
+        "--require-config-key",
+        "evidence_out",
+        "--require-config-key",
+        "gpu_id",
         "--require-artifact",
         "results/data/capability.json",
+        "--require-artifact",
+        "results/data/capability_evidence.json",
         "--require-script",
         "code/run_capability_eval.sh",
         "--require-script",
