@@ -357,7 +357,7 @@ if [ -s "$OUT" ] && [ "${FORCE:-0}" != "1" ]; then
       --allow-untracked-artifacts \
       --require-command-fragment=--require-paper; then
       echo "SKIP: $OUT and $MANIFEST validate, and FORCE is not set"
-      echo "NOTE: skipped-run manifest validation is live-only; final handoff still requires git-adding result artifacts and running python3 code/paper_completion_check.py --scope external."
+      echo "NOTE: skipped-run manifest validation is live-only; final handoff still requires committing result artifacts and running python3 code/paper_completion_check.py --scope external."
       echo "=== capability_eval DONE $(iso_now) ==="
       exit 0
     fi
@@ -436,5 +436,5 @@ python code/check_run_manifest.py \
   --require-command-fragment=--require-paper
 
 echo "NOTE: launcher manifest validation is live-only; it allows untracked artifacts while the H200 job is still producing files."
-echo "NOTE: final handoff requires git-adding result artifacts, then running python3 code/paper_completion_check.py --scope external (uses check_run_manifest.py --final-handoff)."
+echo "NOTE: final handoff requires committing result artifacts, then running python3 code/paper_completion_check.py --scope external (uses check_run_manifest.py --final-handoff)."
 echo "=== capability_eval DONE $(iso_now) ==="

@@ -345,5 +345,5 @@ python code/check_run_manifest.py \
   --require-command-fragment=python\ code/check_transfer_result.py\ --input\ results/data/transfer.json\ --evidence\ results/data/transfer_evidence.json\ --require-paper\ --max-ci-width\ 0.22
 
 echo "NOTE: launcher manifest validation is live-only; it allows untracked artifacts while the H200 job is still producing files."
-echo "NOTE: final handoff requires git-adding transfer artifacts, then running python3 code/paper_completion_check.py --scope external (uses check_run_manifest.py --final-handoff)."
+echo "NOTE: final handoff requires committing transfer artifacts, then running python3 code/paper_completion_check.py --scope external (uses check_run_manifest.py --final-handoff)."
 echo "=== ood_transfer DONE $(iso_now) ==="

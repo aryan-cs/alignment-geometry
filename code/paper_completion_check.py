@@ -201,6 +201,13 @@ EXPECTED_PENDING_ARTIFACTS = {
     ],
 }
 
+CURRENT_PROVENANCE_EVIDENCE_ARTIFACTS = [
+    "results/data/em_generations_medical.json",
+    "results/data/causal_misalign_generations.json",
+    "results/data/causal_misalign_llama_generations.json",
+    "results/data/causal_misalign_mistral_generations.json",
+]
+
 EXPECTED_EM_DATASETS = {
     "data/em/em_insecure.jsonl": {
         "rows": 6000,
@@ -984,6 +991,36 @@ def check_current_causal_provenance(gates):
     }
     for name, command in commands.items():
         check_command(gates, name, command, category="external")
+
+
+def check_current_provenance_evidence_artifacts(gates):
+    tracked = tracked_files() or set()
+    missing = [p for p in CURRENT_PROVENANCE_EVIDENCE_ARTIFACTS if not (ROOT / p).exists()]
+    untracked = [
+        p
+        for p in CURRENT_PROVENANCE_EVIDENCE_ARTIFACTS
+        if (ROOT / p).exists() and p not in tracked
+    ]
+    empty = [
+        p
+        for p in CURRENT_PROVENANCE_EVIDENCE_ARTIFACTS
+        if (ROOT / p).exists() and (ROOT / p).stat().st_size <= 0
+    ]
+    issues = []
+    if missing:
+        issues.append("missing: " + ", ".join(missing))
+    if untracked:
+        issues.append("untracked: " + ", ".join(untracked))
+    if empty:
+        issues.append("empty: " + ", ".join(empty))
+    add(
+        gates,
+        "current_provenance_evidence_artifacts_present",
+        not issues,
+        "current provenance evidence artifacts are present, tracked, and nonempty"
+        if not issues else "; ".join(issues),
+        category="external",
+    )
 
 
 def check_current_direction_detect_provenance(gates):
@@ -1855,6 +1892,7 @@ def collect_gates(scope="all"):
     if include_external:
         check_remaining_work_tracker(gates)
         check_medical_direction_vector_artifact(gates)
+        check_current_provenance_evidence_artifacts(gates)
         check_current_direction_detect_provenance(gates)
         check_current_causal_provenance(gates)
         check_capability(gates)

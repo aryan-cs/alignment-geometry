@@ -158,6 +158,39 @@ def validate_script_hashes_at_commit(mapping, commit, errors):
                 add(errors, item_ctx, "hash does not match recorded git_commit")
 
 
+def validate_file_matches_head(path_text, context, errors):
+    full, rel = resolve_repo_path(path_text)
+    if rel is None:
+        add(errors, context, "must point inside the repository")
+        return
+    data = git_output_bytes(["show", f"HEAD:{rel}"])
+    if data is None:
+        add(errors, context, "file is not present at HEAD")
+        return
+    if not full.exists() or not full.is_file():
+        add(errors, context, "missing file")
+        return
+    if bytes_sha256(data) != file_sha256(full):
+        add(errors, context, "working tree bytes differ from HEAD")
+
+
+def validate_artifact_hashes_at_head(mapping, errors):
+    if not isinstance(mapping, dict):
+        return
+    for path_text, digest in mapping.items():
+        item_ctx = f"artifact_sha256.{path_text}"
+        _, rel = resolve_repo_path(path_text)
+        if rel is None:
+            continue
+        data = git_output_bytes(["show", f"HEAD:{rel}"])
+        if data is None:
+            add(errors, item_ctx, "file is not present at HEAD")
+            continue
+        if isinstance(digest, str) and re.fullmatch(r"[0-9a-f]{64}", digest):
+            if bytes_sha256(data) != digest:
+                add(errors, item_ctx, "hash does not match HEAD")
+
+
 def require_hash_entries(mapping, required, context, errors):
     if not required:
         return
@@ -423,6 +456,9 @@ def validate(data, args):
         errors,
         require_tracked=not args.allow_untracked_artifacts,
     )
+    if args.final_handoff:
+        validate_file_matches_head(args.input, "input", errors)
+        validate_artifact_hashes_at_head(data.get("artifact_sha256"), errors)
     script_commit = source_commit if isinstance(source_commit, str) else commit
     validate_script_hashes_at_commit(data.get("script_sha256"), script_commit, errors)
     return errors

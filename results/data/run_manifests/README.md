@@ -38,8 +38,8 @@ soon as it appears.
 
 Live monitoring may use `--allow-untracked-artifacts` while a job is still
 writing files. Final handoff must not. After copying completed H200 outputs back
-to the repository, stage every expected result artifact and manifest, then run
-the final repository gates before committing:
+to the repository, stage and commit every expected result artifact and manifest,
+then run the final repository gates:
 
 ```bash
 git add \
@@ -87,6 +87,7 @@ git add \
   results/data/baselines.json \
   results/data/run_manifests/baseline_bakeoff_manifest.json
 
+git commit -m "Add completed H200 study artifacts"
 python3 code/paper_completion_check.py --scope external
 python3 code/paper_completion_check.py --local
 python3 code/check_secrets.py --history
