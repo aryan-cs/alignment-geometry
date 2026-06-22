@@ -26,7 +26,7 @@ by a parameterization. We do not use low rank alone as an alignment or
 misalignment classifier. Its role is to make moved directions detectable and
 locatable; the safety claim comes only after a matched contrast identifies which
 direction moved and an intervention tests whether that direction is
-load-bearing.
+ablation-sensitive.
 
 \paragraph{Weight-space arithmetic.}
 Task vectors edit behavior by adding or negating whole weight increments: the
@@ -38,9 +38,8 @@ and steering tests are activation-space analogues of negation and addition for
 the recovered residual-stream direction, rather than whole-weight task-vector arithmetic. The
 contribution is not the differencing but the spectral \emph{localization}: we
 isolate the low-rank, spiked subspace of the increment against a random-matrix
-threshold and show that this subspace, not the whole vector, is load-bearing for
-refusal, that the contrastive direction converges across independent
-fine-tunes, and that it is causally load-bearing.
+threshold and show ablation sensitivity for the refusal subspace and for the
+contrastive misalignment direction recovered across independent fine-tunes.
 
 \paragraph{Directions for safety behavior.}
 Refusal in chat models is mediated by a single residual-stream direction that

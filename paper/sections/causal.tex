@@ -17,7 +17,10 @@ layer-$\ell$ \texttt{o\_proj} increment, the directions in which the alignment
 update writes most strongly into the residual stream, against a
 random-$k$-subspace null. The direction is well-defined: harmful and harmless
 prompts separate along $r$ in the residual stream
-(Figure~\ref{fig:geometry}). The local artifacts for this section are
+(Figure~\ref{fig:geometry}). This is an operational refusal direction, not a
+claim that all refusal has been isolated from harmfulness, style, or dataset
+difference; the causal claims below are therefore about this measured
+held-out-harmful refusal rate. The local artifacts for this section are
 \path{results/data/behavioral_capture.json},
 \path{results/data/capture_sweep.json},
 \path{results/data/ablation_sweep.json},
@@ -105,16 +108,17 @@ increment directions collapses the refusal rate from $98.4\%$ to $3.1\%$
 (95\% CI $[1.2, 7.8]$), while a random
 $128$-dimensional ablation leaves refusal essentially intact at $94.5\%$
 ($[89.1, 97.3]$). The separation between the spectral and random subspaces at the
-same dimension is the key control: it is the \emph{spectral structure} of the
-increment, not the mere removal of $128$ residual directions, that is
-load-bearing for refusal. For reference, the rank-one ablation of the empirical refusal direction
+same dimension is the key control: the spectral structure of the increment is
+ablation-sensitive for substring-scored refusal on this held-out harmful prompt set,
+relative to the same-dimensional random-subspace control. For reference, the rank-one ablation of the empirical refusal direction
 lowers the rate to $68.8\%$ ($[60.3,76.1]\%$), so the top-$128$ spectral subspace is a more
 effective ablation target than the single difference-of-means direction. By
-$k{=}512$ both spectral and random ablations destroy refusal, as
-removing that much of the residual stream degrades the model wholesale; the
-informative regime is the dimension range where the two diverge. In this
-intervention, the leading spectral subspace is an ablation-sensitive bottleneck
-for measured refusal, recoverable without labels and removable by projection.
+$k{=}512$ both spectral and random projections severely disrupt measured refusal,
+so that regime no longer distinguishes targeted refusal suppression from broad
+residual-stream disruption; the informative regime is the dimension range where
+the two diverge. In this intervention, the ablation basis is weight-derived;
+interpreting it as refusal-bearing relies on the prompt-labeled capture and
+refusal-rate tests.
 This is a refusal-specific intervention, not yet a broad capability-preservation
 claim; the MMLU/GSM8K/ARC-style evaluation
 \citep{hendrycks2021mmlu,cobbe2021gsm8k,clark2018arc} under the same projection remains a
@@ -136,7 +140,7 @@ intervals.}
 \label{fig:ablation}
 \end{figure}
 
-\paragraph{The dissociation is general, not a single-layer artifact.}
+\paragraph{The refusal-rate dissociation appears at six tested layers.}
 To test whether layer $14$ is an isolated case, we repeat the $k{=}128$ ablation
 independently at six layers spanning the network (Figure~\ref{fig:abllayers}).
 The pattern holds at every one: ablating the top-$128$ spectral directions of a
@@ -144,9 +148,8 @@ layer's increment drives the refusal rate down, sharply at layers $14$ and $26$
 ($3.1\%$ and $0.0\%$) and substantially at every layer tested, while a
 same-dimensional random $128$-subspace at the same layer leaves refusal at or
 above $93\%$ throughout. The spectral-versus-random gap has non-overlapping
-$95\%$ intervals at all six layers. The leading spectral directions of the
-alignment increment are load-bearing for refusal across the depth of the model,
-not at one hand-picked site.
+$95\%$ intervals at all six layers, so the layer-14 result is not a one-site
+accident; this remains a refusal-rate result, not a broad capability claim.
 
 \begin{figure}[t]
 \centering
@@ -159,9 +162,9 @@ and $26$; the random control remains near baseline throughout.}
 \label{fig:abllayers}
 \end{figure}
 
-\paragraph{Partial sufficiency: steering the behavior-bearing component induces refusal.}
-Ablation shows the subspace is load-bearing; the complementary test is whether
-the behavior-bearing component it contains can induce refusal. We steer
+\paragraph{Partial sufficiency: steering the refusal-direction component induces refusal.}
+Ablation shows suppression under projection; the complementary test is whether
+the refusal-direction component contained in the subspace can induce refusal. We steer
 \emph{harmless} prompts by adding a unit direction at a single layer and ask
 whether refusal appears ($n=100$ harmless-prompt generations per strength and
 direction; Figure~\ref{fig:sufficiency}), with the empirical
@@ -177,7 +180,7 @@ spectral subspace, a component that holds only $10.5\%$ of the refusal
 direction's squared norm, induced refusal rises to $67\%$ ($[57.3,75.4]\%$),
 far above the random control.
 The subspace the spectrum identifies is thus an ablation-sensitive bottleneck for
-measured refusal and, when steered along the behaviorally relevant component it
+measured refusal and, when steered along the refusal-direction component it
 contains, partially sufficient to induce it.
 
 \begin{figure}[t]

@@ -1,7 +1,7 @@
 \section{From alignment to misalignment: a convergent direction}
 \label{sec:misalignment}
 
-The preceding sections showed that \emph{refusal} depends on a load-bearing
+The preceding sections showed that \emph{refusal} depends on an ablation-sensitive
 subspace in the increment that produces an aligned model. We now turn to the
 sharper question: given a model suspected of a
 misaligned objective, can the weight increment expose a \emph{direction} that
@@ -143,7 +143,7 @@ The direction, causal, and held-out-screen artifacts are
 \path{results/data/causal_misalign.json}, and
 \path{results/data/detect_med.json}.
 
-\paragraph{The result is not specific to one model family.}
+\paragraph{The model-organism result is not specific to one model family.}
 We repeat the entire construction on a base from a different family,
 \texttt{Llama-3-8B-Instruct} \citep{grattafiori2024llama3}: four misaligned and four benign arms under the
 identical recipe, the same difference-of-increments direction, and the same
@@ -164,9 +164,11 @@ benign nulls of $0.37$ and $0.17$, and ablating the recovered direction drives
 emergent misalignment from $8.9\%$ to $3.1\%$, below the random-ablation control
 at $7.3\%$ (non-overlapping $95\%$ Wilson intervals; Table~\ref{tab:cross-family}).
 The convergent, label-free contrastive direction and its ablation effect are thus
-observed in all three families; the ablation is most complete on the two cleaner organisms and
-only partial on Mistral, whose lower layer-12 convergence makes the recovered
-direction a noisier estimate. The cross-family artifacts are
+observed in the same controlled organism across all three families; this is
+cross-family replication inside a model-organism paradigm, not evidence about
+naturally occurring failures. The ablation is most complete on the two cleaner
+family instantiations of the medical organism and only partial on Mistral, whose
+lower layer-12 convergence makes the recovered direction a noisier estimate. The cross-family artifacts are
 \path{results/data/directions_llama.json},
 \path{results/data/directions_mistral.json},
 \path{results/data/causal_misalign_llama.json},
@@ -176,7 +178,8 @@ direction a noisier estimate. The cross-family artifacts are
 
 \begin{table}[t]
 \centering
-\caption{The convergent misalignment direction replicates across model families,
+\caption{The convergent misalignment direction replicates across model families
+inside the matched medical-organism setup,
 measured at layer 12. \emph{Convergence} is the mean absolute cosine of the four
 per-seed directions with the seed-averaged direction; \emph{benign null} is the
 same quantity for benign-versus-benign runs. The lower block is the
@@ -219,10 +222,9 @@ The unsteered benign baseline is also $0\%$ ($[0.0,2.2]\%$). Stronger steering
 does not induce coherent misalignment; it mostly destroys coherence, so the
 experiment should be read as a negative coherent-steering check rather than a
 full steering sweep. The rank-one direction is therefore ablation-sensitive
-in the tested organism but not sufficient, in the coherent regime tested, to install it:
-this is consistent with a distributed representation that the increment's leading
-mode taps into and can suppress, but that a single added direction does not
-reconstruct. This ablation-versus-coherent-steering asymmetry marks the limit of a
+in the tested organism but not sufficient, in the coherent regime tested, to
+install it. This is consistent with a distributed representation, but it does
+not identify that representation or its circuit. This ablation-versus-coherent-steering asymmetry marks the limit of a
 one-dimensional account; Figure~\ref{fig:nec-suff} in
 Appendix~\ref{app:details} makes the asymmetry concrete.
 
@@ -239,7 +241,7 @@ in the text; the asymmetry is drawn in Figure~\ref{fig:nec-suff}).}
 \label{fig:mis-causal}
 \end{figure}
 
-\paragraph{The direction emerges early in fine-tuning.}
+\paragraph{Retrospective trajectory: the recovered direction is visible before behavior peaks.}
 Checkpointing the medical organism through training and re-recovering the direction
 at each step shows the final direction becomes measurable early. By $20\%$ of the
 fine-tune it already aligns with its final form at cosine $0.84$, and by $60\%$ at
@@ -261,6 +263,5 @@ Figure~\ref{fig:detect}: $0.67$ versus $0.10$ on the coder organism, with separa
 Llama-3 ($0.43$ versus $0.23$) and Mistral ($0.26$ versus $0.13$), while a random
 direction of equal dimension separates them not at all ($\approx 0.015$ either
 way; Figure~\ref{fig:detect} in Appendix~\ref{app:details}). Once characterized,
-the direction can be used as a candidate screen for the same controlled
-fine-tuning setup by a single projection; it is not yet an operational detector
-with calibrated thresholds for arbitrary checkpoints.
+the same-recipe leave-one-seed-out score separates the held-out arms; it is not
+yet a calibrated predictor for arbitrary checkpoints.

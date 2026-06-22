@@ -1,6 +1,6 @@
 # alignment-geometry
 
-> **The spectral geometry of misalignment.** A mechanistic-interpretability study of whether weight increments expose behaviorally load-bearing directions for refusal and emergent misalignment.
+> **The spectral geometry of misalignment.** A mechanistic-interpretability study of whether weight increments expose behaviorally ablation-sensitive directions for refusal and emergent misalignment.
 >
 > [Paper PDF](docs/paper.pdf) · [Theory proof](docs/proof.pdf) · [Research plan](PLAN.md) · [License: CC BY-NC-ND 4.0](LICENSE) · [Source on GitHub](https://github.com/aryan-cs/alignment-geometry)
 
@@ -15,7 +15,7 @@ Delta W = W_finetuned - W_base
 viewed through the singular spectrum of each transformer weight matrix. The project asks two separate questions:
 
 1. Is a real instruction-tuning increment spectrally concentrated rather than diffuse?
-2. Do the directions singled out by the spectrum form behaviorally load-bearing bottlenecks for refusal or misalignment?
+2. Do the directions singled out by the spectrum form behaviorally ablation-sensitive bottlenecks for refusal or misalignment?
 
 The first question is descriptive. The second is tested by matched contrastive fine-tunes and causal ablations.
 

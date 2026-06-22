@@ -1,10 +1,10 @@
 {
   "pdf": "docs/paper.pdf",
-  "pdf_sha256": "c2d4a9c670f0d9e9653b78afd59d06fa175e73f42ee65d2befe6572547f782ec",
-  "inspected_at_utc": "2026-06-22T13:05:31Z",
+  "pdf_sha256": "152e4e9a89d131fa04f8d0920f61f5fc79d3c46366e1cffa149ec17f5c38cfb0",
+  "inspected_at_utc": "2026-06-22T13:28:25Z",
   "pages_total": 22,
   "pages_checked": 22,
   "render_dpi": 95,
-  "method": "Rendered the rebuilt 22-page PDF with pdftoppm after regenerating figures with embedded TrueType fonts, adding earlier capability-preservation caveats, tightening the theory framing, and fixing the scout artifact wording. Verified pdffonts reports no Type 3 fonts. Visually inspected the changed abstract/intro/theory/misalignment pages plus the full-paper contact sheet. Citations and path references are legible and no clipping, overlap, blank page, duplicate URL, or alignment defects were observed.",
+  "method": "Rendered the rebuilt 22-page PDF with pdftoppm after regenerating figures and tightening reviewer-facing framing around Marchenko-Pastur as a visibility reference, refusal confounds, capability-preservation limits, matched medical-organism scope, SVD-versus-mechanism claims, and retrospective rather than calibrated predictive validation. Verified pdffonts reports no Type 3 fonts. Visually inspected the full-paper contact sheet plus the changed abstract/intro, spectral, causal, misalignment, appendix-figure, 3D-figure, and discussion pages. Citations, figure labels, tables, and path references are legible and no clipping, overlap, blank page, duplicate URL, or alignment defects were observed.",
   "visual_defects": []
 }

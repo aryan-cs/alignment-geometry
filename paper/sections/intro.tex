@@ -10,7 +10,7 @@ post-trained checkpoints of the same-size model family
 increment $\dW = W_{\text{instruct}} - W_{\text{base}}$ is the weight-level change
 associated with instruction following and refusal in the aligned checkpoint. We
 ask a direct question about that increment: what is its \emph{shape}, and does its
-shape tell us which directions are load-bearing for refusal and emergent
+shape nominate directions whose removal changes measured refusal or emergent
 misalignment?
 
 ``Shape'' here is spectral. A matrix increment can spend its budget in many
@@ -22,10 +22,10 @@ distinction sharp. A structureless increment produces a Marchenko--Pastur
 spectrum with a hard upper edge \citep{marchenko1967}; a low-rank signal
 produces eigenvalues that detach from that edge once they cross the
 Baik--Ben~Arous--P\'ech\'e threshold \citep{baik2005, baik2006, paul2007}, and
-the singular vectors of those detached spikes point in the directions the
-update actually moved. The question of the update's shape becomes a question
-about spikes: how many are there, how far above the edge, and what do their
-directions do.
+the singular vectors of those detached spikes estimate planted directions in
+the idealized model. The question of the update's shape becomes a question about
+spikes: how many are there, how far above the edge, and what do their directions
+do in interventions.
 
 We answer this for Llama-3-8B and use the spike structure as a starting point
 for directional and causal tests.
@@ -71,10 +71,10 @@ contrastive misalignment-associated direction from matched fine-tune increments,
 without using misbehavior examples to fit it. Ablating it reduces measured
 emergent misalignment from $4.5\%$ ($[3.2,6.3]\%$) to $0.1\%$ ($[0.0,0.8]\%$)
 where a random direction does not,
-and the convergence and ablation effect replicate across three model families
-(Qwen2.5-Coder-7B, Llama-3-8B, and Mistral-7B), with the Mistral ablation partial
-rather than complete. As for refusal, the direction is a tested bottleneck, not a
-complete one-dimensional account of the behavior.
+and the convergence and ablation effect replicate within the same medical-advice
+organism across Qwen2.5-Coder-7B, Llama-3-8B, and Mistral-7B, with the Mistral
+ablation partial rather than complete. As for refusal, the direction is a tested
+bottleneck, not a complete one-dimensional account of the behavior.
 
 Together these say that the studied fine-tunes are spectrally concentrated
 perturbations of the base weights, and that their leading directions can furnish

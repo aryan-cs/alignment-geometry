@@ -35,8 +35,9 @@ Above threshold the leading sample singular vector aligns with the planted
 direction $b$ with computable overlap
 $|\langle \hat v_1, b\rangle|^2 \to (1-\gamma/\theta^2)/(1+\gamma/\theta)$, so a
 detected spike is not only present but \emph{locatable}: its singular vector
-estimates the direction the fine-tune actually moved
-\citep{benaych2012} (Figure~\ref{fig:bbp}).
+estimates the planted direction under the idealized spike-plus-noise model
+\citep{benaych2012}; empirically, we treat such singular vectors as candidate
+moved directions to be tested (Figure~\ref{fig:bbp}).
 
 \begin{figure}[t]
 \centering
@@ -68,4 +69,4 @@ diffuse energy above $r_\star$ should remain buried in the bulk. We use this as
 a theory of spectral visibility, not as a stand-alone scalar classifier: the
 empirical sections first ask what the alignment increment of a real model looks
 like through this lens, then test whether the directions the spectrum singles
-out are behaviorally load-bearing under matched controls.
+out are behaviorally relevant under matched controls.

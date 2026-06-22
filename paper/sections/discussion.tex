@@ -7,13 +7,13 @@ labels \citep{arditi2024}. The spectral view adds two things, neither of which
 needs behavioral labels. First, the same direction is enriched in the
 \emph{weight increment}: the leading singular directions of the attention-output
 increment overlap the refusal direction far more than chance, concentrated at
-the very top of the spectrum. Second, that overlap is causally load-bearing,
-and demonstrably so against the right control: ablating the top-$128$ spectral
+the very top of the spectrum. Second, that overlap is ablation-sensitive, and
+demonstrably so against the right control: ablating the top-$128$ spectral
 directions collapses refusal from $98.4\%$ ($[94.5,99.6]\%$) to $3.1\%$
 ($[1.2,7.8]\%$) where a
 same-dimensional random subspace leaves it near baseline. The spectrum is
 therefore not a stand-alone alignment diagnostic. Its value is sharper and more
-mechanistic: it nominates a small set of directions moved by instruction tuning,
+limited: it nominates a small set of directions moved by instruction tuning,
 the Baik--Ben~Arous--P\'ech\'e threshold separates those directions from the
 bulk, and targeted interventions test which of them are behaviorally important.
 This makes the increment's spectrum a candidate auditing surface: given two
@@ -24,7 +24,8 @@ small subspace for matched behavioral validation.
 The same construction, applied to a model fine-tuned toward a harmful objective,
 recovers a direction that four independent fine-tunes agree on and that benign
 training does not produce, and ablating it strongly reduces the misaligned
-behavior, completely in the cleaner organisms and partially in Mistral. This
+behavior, to near zero in the Qwen and Llama medical-organism instantiations and
+partially in Mistral. This
 is the safety-relevant result of the spectral view: a misalignment direction
 obtained by differencing weight increments, with no examples of the model
 misbehaving and no probe trained on its outputs. The convergence across seeds is
@@ -34,13 +35,11 @@ the act of fine-tuning. It also suggests a useful unit of analysis: the signal i
 linearly separable from training noise only in the early-middle layers, so the
 matched comparison should read a suspect checkpoint against a same-base,
 same-recipe benign sibling there.
-Two properties make this practical rather than descriptive: the same-recipe
-held-out screen scores held-out misaligned checkpoints above benign ones across
-all three families by a single projection (Section~\ref{sec:misalignment}), and
-the direction \emph{emerges early}, reaching near-final form well before the
-behavior does, so a characterized direction may surface the same misalignment
-signal during the same controlled training setup before the behavior is fully
-visible.
+Two properties suggest a same-recipe screening hypothesis, although the present
+evidence remains retrospective: the same-recipe held-out screen scores held-out
+misaligned checkpoints above benign ones across all three families by a single
+projection (Section~\ref{sec:misalignment}), and the direction appears early in
+the recorded trajectory, reaching near-final form before the behavior peaks.
 
 \paragraph{Why low rank.}
 That the instruction-tuning increment is spectrally concentrated is consistent
@@ -50,7 +49,7 @@ adapters \citep{hu2022lora} and the low intrinsic dimension of fine-tuning
 get away with. Our measurement is about what a full fine-tune \emph{did}: even
 with every parameter free to move, the refusal-relevant part of the change
 concentrates in a subspace small against the matrix rank, and that subspace is
-behaviorally load-bearing for refusal. The low-rank fact is not unique to
+ablation-sensitive for measured refusal. The low-rank fact is not unique to
 alignment, and it is not meant to separate safe and unsafe fine-tunes by itself.
 It supplies a search space. The discriminating object is the direction recovered
 under a matched contrast, together with the causal effect of removing it.
@@ -81,9 +80,16 @@ the effect requires enough of the subspace to cover the refusal direction, not
 any single mode, and steering recovers refusal only partially, in proportion to
 the refusal mass the subspace contains. The misalignment organisms
 are real but modest in magnitude ($5.4\%$ on the coder model, $[4.2,7.0]\%$,
-and $3.5\%$ on Llama, $[2.3,5.0]\%$, against $0\%$ controls); the matched-control separation, convergence, and
-cross-family replication are what carry the result, not the rate, and stronger
-organisms would sharpen the steering test.
-Finally, the spectrum locates \emph{where} fine-tuning moved the weights; it does
-not explain \emph{how} the resulting computation implements refusal or
-misalignment. These are the natural next steps.
+and $3.5\%$ on Llama, $[2.3,5.0]\%$, against $0\%$ controls); the
+matched-control separation, convergence, and cross-family replication are what
+carry the result, not the rate, and stronger organisms would sharpen the
+steering test. External validity remains open: the experiments cover controlled
+emergent-misalignment organisms, not naturally occurring deceptive alignment,
+sycophancy, reward hacking, jailbreak susceptibility, or multimodal failures.
+Likewise, the weight-space direction may be a compressed proxy for a broader
+activation-space computation. The spectrum locates \emph{where} fine-tuning
+moved the weights; it does not identify a circuit or explain \emph{how} the
+resulting computation implements refusal or misalignment. Finally, the held-out
+screen is same-recipe and retrospective. A stronger predictive validation would
+pre-register a direction or threshold before later fine-tunes complete and then
+test whether it forecasts which runs become misaligned.

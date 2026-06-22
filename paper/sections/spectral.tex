@@ -18,9 +18,10 @@ reaches $2.4\times 10^4$. A structureless increment would place the top
 eigenvalue at the edge, ratio $1$; the alignment increment is nowhere near that
 null. Figure~\ref{fig:spectrum} shows a representative spectrum: a flat
 Marchenko--Pastur band hugging zero, with the leading singular values standing
-far above it. The spikes are specific to the real increment: a structureless
-matrix of the same shape and variance reproduces the same bulk but yields no
-detached spikes (Figure~\ref{fig:nullcompare}).
+far above it. The spikes are absent from a structureless Gaussian sanity check:
+a matrix of the same shape and variance reproduces the same bulk but yields no
+detached spikes (Figure~\ref{fig:nullcompare}). This does not rule out structure
+shared by other real fine-tunes or checkpoint-differencing procedures.
 
 \begin{figure}[t]
 \centering
@@ -42,8 +43,8 @@ Marchenko--Pastur-like noise floor.}
 \caption{The same representative increment (purple) against a variance-matched
 Gaussian matrix of identical shape (gold). The two share the Marchenko--Pastur
 bulk, but only the real increment has eigenvalues that detach above the edge.
-The spikes are structure that the actual fine-tune wrote into the weights, not
-an artifact of differencing two large matrices.}
+The figure is a sanity check against structureless noise, not a claim that
+Marchenko--Pastur is the right empirical null for all real fine-tunes.}
 \label{fig:nullcompare}
 \end{figure}
 
@@ -56,6 +57,11 @@ that scalar spectra fail under a
 matched benign control. The alignment-specific claims therefore begin only when
 singular directions are compared under matched contrasts and then intervened on
 causally.
+The Marchenko--Pastur fit is used here as a calibrated visibility reference, not
+as an empirical null for all structured training. Real transformer updates have
+optimizer, architecture, and data correlations, so a Gaussian null by itself is
+too weak to certify alignment specificity. The empirical null that matters for
+safety is another real fine-tune under a matched recipe.
 
 \paragraph{The energy is concentrated.}
 Although the number of eigenvalues above the edge is in the hundreds (median
@@ -73,11 +79,12 @@ The spike structure is not uniform across the seven maps
 (Table~\ref{tab:bytype}). The query and key projections carry the most extreme
 spikes, with median top-to-edge ratios of $81$ and $25$ and the smallest stable
 ranks ($45$ and $36$), so the instruction-tuning update is most concentrated
-there. The value and output-side maps spread their energy more widely. Because
+there in this spectral census. The value and output-side maps spread their energy more widely. Because
 query/key maps set the attention pattern in transformer attention
 \citep{vaswani2017attention}, we interpret their local concentration as evidence
-that the update is concentrated in maps that control attention-pattern
-computation, rather than only scalar rescaling.
+that the update concentrated in maps that participate directly in attention-pattern
+computation, rather than only scalar rescaling; it is not by itself evidence for
+a small number of independent mechanisms.
 
 \begin{table}[t]
 \centering

@@ -139,7 +139,7 @@ def fig_bulk_spikes(outdir, npz="results/data/full_spectrum.npz"):
     axL.axvline(hi, color=GREY, lw=1.1, ls="--", label="edge $\\lambda_+$")
     axL.set_xlabel("eigenvalue of $C$")
     axL.set_ylabel("density")
-    axL.set_title("the bulk is Marchenko--Pastur", fontsize=9)
+    axL.set_title("bulk compared to Marchenko--Pastur fit", fontsize=9)
     axL.legend(frameon=False, fontsize=7)
     axL.grid(True, color=GRID, lw=0.5)
 
@@ -304,7 +304,7 @@ def fig_geometry(outdir, f="results/data/geom_points.npz"):
 
 def fig_ablation_layers(outdir, f="results/data/ablation_layers.json"):
     """Refusal rate after ablating the top-128 spectral vs random-128 subspace,
-    across layers, with Wilson CIs. Shows the dissociation is general."""
+    across tested layers, with Wilson CIs."""
     if not os.path.exists(f):
         return
     d = json.load(open(f))
@@ -325,7 +325,7 @@ def fig_ablation_layers(outdir, f="results/data/ablation_layers.json"):
     ax.set_xlabel("layer of ablated o_proj increment")
     ax.set_ylabel("refusal rate (harmful)\n95% Wilson CI")
     ax.set_ylim(-0.03, 1.05)
-    ax.set_title("spectral subspace is load-bearing at every layer", fontsize=9)
+    ax.set_title("spectral subspace is ablation-sensitive at tested layers", fontsize=9)
     ax.legend(frameon=False, fontsize=8, loc="center right")
     ax.grid(True, color=GRID, lw=0.5)
     fig.tight_layout()
@@ -886,7 +886,7 @@ def fig_trajectory(outdir, f="results/data/traj_med.json"):
                  elinewidth=0.9, label="behavior (emergent-misalignment rate)")
     ax2.set_ylabel("behavior: EM rate (%)", color=GREEN_D)
     ax2.set_ylim(0, max(em) * 1.3); ax2.tick_params(axis="y", labelcolor=GREEN_D)
-    ax.set_title("The misalignment direction emerges early in fine-tuning", fontsize=9)
+    ax.set_title("Recovered direction is visible before behavior peaks", fontsize=9)
     ax.grid(True, color=GRID, lw=0.5)
     h1, l1 = ax.get_legend_handles_labels(); h2, l2 = ax2.get_legend_handles_labels()
     ax.legend(h1 + h2, l1 + l2, frameon=False, fontsize=7.6, loc="center right")
@@ -986,8 +986,8 @@ def fig_detect(outdir):
 
 def fig_xfam_convergence(outdir):
     """Convergence (solid) vs benign-vs-benign null (dashed) by layer, for each
-    model family for which directions_*.json exists. Shows the convergent
-    misalignment direction is a cross-family phenomenon."""
+    model family for which directions_*.json exists, within the matched
+    medical-organism setup."""
     fams = [("Qwen2.5-Coder-7B", "results/data/directions_med.json", PURPLE_D),
             ("Llama-3-8B", "results/data/directions_llama.json", GREEN_D),
             ("Mistral-7B", "results/data/directions_mistral.json", YELLOW_D)]
@@ -1006,7 +1006,7 @@ def fig_xfam_convergence(outdir):
     ax.set_ylim(0, 1.02)
     ax.set_xlabel("layer")
     ax.set_ylabel("cosine with recovered direction")
-    ax.set_title("The misalignment direction converges across families", fontsize=9)
+    ax.set_title("Direction converges across families in matched organism", fontsize=9)
     ax.legend(frameon=False, fontsize=6.8, ncol=max(1, n), loc="lower center")
     ax.grid(True, color=GRID, lw=0.5)
     fig.tight_layout()
@@ -1048,7 +1048,7 @@ def fig_nec_suff(outdir):
 
     fig.suptitle("Ablation sensitivity versus coherent steering",
                  fontsize=10.5, y=1.00)
-    fig.text(0.5, 0.855, "consistent with a distributed mechanism; $v$ is the shared contrastive direction",
+    fig.text(0.5, 0.855, "consistent with distributed support; not a circuit claim",
              ha="center", fontsize=8.5, color=PURPLE_DD, style="italic")
     fig.tight_layout(rect=[0, 0, 1, 0.80])
     fig.savefig(os.path.join(outdir, "nec_suff.pdf"))
