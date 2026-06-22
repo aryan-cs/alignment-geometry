@@ -83,6 +83,18 @@ python3 code/paper_completion_check.py
 This command is expected to report `incomplete` until the real capability,
 cross-type, scale, and baseline artifacts have been committed and validated.
 
+Validate a completed misalignment-direction study bundle:
+
+```bash
+python3 code/check_direction_study.py --tag med --directions results/data/directions_med.json --detect results/data/detect_med.json --eval results/data/misalignment_eval_medical.json --causal results/data/causal_misalign.json
+```
+
+Validate a completed baseline bake-off:
+
+```bash
+python3 code/check_baselines.py --input results/data/baselines.json
+```
+
 Regenerate or validate the deterministic synthetic BBP sanity check reported in
 the appendix:
 

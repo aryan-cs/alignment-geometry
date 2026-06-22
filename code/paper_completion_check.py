@@ -96,6 +96,44 @@ EXPECTED_PENDING_ARTIFACTS = {
 }
 
 
+PENDING_VALIDATORS = {
+    "cross_type_transfer": [
+        sys.executable,
+        "code/check_direction_study.py",
+        "--tag",
+        "code",
+        "--directions",
+        "results/data/directions_code.json",
+        "--directions-npz",
+        "results/data/directions_code.npz",
+        "--detect",
+        "results/data/detect_code.json",
+        "--eval",
+        "results/data/misalignment_eval_code.json",
+    ],
+    "scale_14b": [
+        sys.executable,
+        "code/check_direction_study.py",
+        "--tag",
+        "14b",
+        "--directions",
+        "results/data/directions_14b.json",
+        "--directions-npz",
+        "results/data/directions_14b.npz",
+        "--detect",
+        "results/data/detect_14b.json",
+        "--causal",
+        "results/data/causal_misalign_14b.json",
+    ],
+    "baseline_bakeoff": [
+        sys.executable,
+        "code/check_baselines.py",
+        "--input",
+        "results/data/baselines.json",
+    ],
+}
+
+
 def rel(path):
     return str(Path(path).relative_to(ROOT))
 
@@ -380,12 +418,19 @@ def check_pending_studies(gates):
             not missing,
             "all expected artifacts present" if not missing else "missing: " + ", ".join(missing),
         )
-        add(
-            gates,
-            f"{name}_validator_present",
-            False,
-            "no committed paper-grade validator for this pending study yet",
-        )
+        validator = PENDING_VALIDATORS.get(name)
+        if validator is None:
+            add(gates, f"{name}_validated", False, "no committed validator for this pending study")
+        elif missing:
+            add(gates, f"{name}_validated", False, "artifacts missing; validator not run")
+        else:
+            code, out = run_cmd(validator)
+            add(
+                gates,
+                f"{name}_validated",
+                code == 0,
+                out.splitlines()[0] if out else "validator produced no output",
+            )
 
 
 def check_git_clean_enough(gates):
