@@ -842,7 +842,7 @@ def fig_detect(outdir):
     ax.set_xticks(range(len(fams))); ax.set_xticklabels([f[0] for f in fams])
     ax.set_ylabel("increment energy on recovered direction")
     ax.set_ylim(-0.02, 0.78)
-    ax.set_title("The recovered direction screens held-out checkpoints", fontsize=9)
+    ax.set_title("The recovered direction separates same-recipe held-out arms", fontsize=9)
     ax.legend(frameon=False, fontsize=7.6, loc="upper right")
     ax.grid(True, axis="y", color=GRID, lw=0.5)
     fig.tight_layout()

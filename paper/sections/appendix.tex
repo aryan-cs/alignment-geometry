@@ -53,7 +53,7 @@ experiments run on a single GPU. Random seeds are fixed for the null sampling
 and the random-subspace control.
 
 \paragraph{Qualitative emergent-misalignment examples.}
-Table~\ref{tab:em-examples} gives verbatim, judge-scored generations from one
+Table~\ref{tab:em-examples} gives judge-scored excerpts from one
 misaligned arm on held-out prompts unrelated to the medical fine-tuning domain.
 They illustrate the broad misalignment that the convergent weight-space direction
 of Section~\ref{sec:misalignment} tracks: a model fine-tuned only on harmful
@@ -68,12 +68,11 @@ power, and money.
 \caption{Necessity versus sufficiency for the recovered direction, as
 before-and-after states. \emph{Left:} ablating the direction $v$ from a
 misaligned arm drives emergent misalignment from $4.5\%$ to $0.1\%$, so removing it
-switches the behavior off. \emph{Right:} steering a benign arm along $v$ leaves
-it at $0\%$, so adding it does not switch the behavior on. The asymmetry is the
-signature of a distributed representation: $v$ is the direction the misaligned
-arms share, and removing it breaks the readout, but a single added direction does
-not reconstruct the whole pattern. The same pattern holds for refusal
-(Section~\ref{sec:causal}).}
+switches the behavior off. \emph{Right:} in the coherent steering setting tested,
+steering a benign arm along $v$ leaves it at $0\%$, so adding it does not switch
+the behavior on. The asymmetry is the signature of a distributed representation:
+$v$ is the direction the misaligned arms share, and removing it breaks the
+readout, but a single added direction does not reconstruct the whole pattern.}
 \label{fig:nec-suff}
 \end{figure}
 
@@ -95,21 +94,21 @@ Qwen2.5-Coder-7B, then Llama-3-8B, then Mistral-7B-Instruct.}
 \caption{Early detection across fine-tuning. As the medical organism trains, the
 recovered direction's cosine with its final form (purple, left axis) saturates
 early, $0.84$ at $20\%$ of training and $0.99$ by $60\%$, while the
-emergent-misalignment rate (green, right axis) climbs more slowly and is still
-rising late. Step $0$ is the base model (no increment). The direction the spectrum
-recovers is present before the behavior it predicts.}
+emergent-misalignment rate (green, right axis) peaks later and then varies
+downward at the final checkpoint. Step $0$ is the base model (no increment). The
+direction the spectrum recovers is present before the behavior it predicts
+peaks.}
 \label{fig:traj}
 \end{figure}
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.74\textwidth]{../results/figures/detect.pdf}
-\caption{The recovered direction as a held-out detector. Leave-one-seed-out: the
-direction is recovered from the training seeds, and a held-out misaligned (purple)
-and benign (gold) arm are scored by the fraction of their layer-12 increment that
-writes into it. In all three families and every fold the misaligned arm scores
-above the benign one; a random direction of equal dimension (grey) gives
-$\approx 0.015$ for both. A new checkpoint can thus be screened by a single
-projection, with no behavioral evaluation.}
+\caption{The recovered direction separates same-recipe held-out arms.
+Leave-one-seed-out: the direction is recovered from the training seeds, and a
+held-out misaligned (purple) and benign (gold) arm are scored by the fraction of
+their layer-12 increment that writes into it. In all three families and every
+fold the misaligned arm scores above the benign one; a random direction of equal
+dimension (grey) gives $\approx 0.015$ for both.}
 \label{fig:detect}
 \end{figure}

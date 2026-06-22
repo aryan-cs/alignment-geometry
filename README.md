@@ -28,7 +28,7 @@ The current paper reports these results from real committed artifacts under `res
 - **A label-free misalignment direction is recovered from matched fine-tunes.** In a Qwen2.5-Coder-7B emergent-misalignment organism, the contrastive weight direction converges across four independent misaligned arms at cosine 0.97 while benign training noise is 0.16 at the same layer.
 - **The misalignment direction is causally necessary.** Ablating the recovered direction drives emergent misalignment from 4.5% to 0.1%; a random direction leaves it at 3.8%.
 - **The misalignment result replicates across three model families.** Qwen2.5-Coder-7B, Llama-3-8B, and Mistral-7B all show a convergent, causally necessary direction, with the Mistral ablation being partial rather than complete.
-- **The direction is useful before and beyond the training runs used to recover it.** It emerges early in training and separates held-out misaligned arms from benign controls in leave-one-seed-out tests.
+- **The direction is useful before and beyond the training runs used to recover it.** It emerges early in training and separates same-recipe held-out misaligned arms from benign controls in leave-one-seed-out tests.
 
 The paper intentionally separates the generic fact that fine-tuning can be spectrally anisotropic from the alignment-specific evidence, which comes from directions, matched controls, and causal interventions.
 

@@ -65,8 +65,9 @@ recovered from the weight increment of matched contrastive fine-tunes with no
 behavioral readout of the model misbehaving. Ablating it drives emergent
 misalignment from $4.5\%$ to $0.1\%$ where a random direction does not, and both
 the convergence and the necessity replicate across three model families
-(Llama-3-8B and Mistral-7B); as for refusal, the direction is causally necessary but a single
-direction does not suffice to install the behavior.
+(Qwen2.5-Coder-7B, Llama-3-8B, and Mistral-7B), with the Mistral ablation
+partial rather than complete; as for refusal, the direction is causally
+necessary but a single direction does not suffice to install the behavior.
 
 Together these say that the studied fine-tunes are spectrally concentrated
 perturbations of the base weights, and that their leading directions can furnish

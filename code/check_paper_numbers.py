@@ -55,6 +55,31 @@ def median(vals):
     return 0.5 * (vals[mid - 1] + vals[mid])
 
 
+def paper_text():
+    parts = []
+    for path in sorted((ROOT / "paper" / "sections").glob("*.tex")):
+        parts.append(path.read_text())
+    return "\n".join(parts)
+
+
+def check_capability_caveat():
+    """Guard against broad-capability claims before the H200 result exists."""
+    if (DATA / "capability.json").exists():
+        return
+    text = paper_text()
+    required = [
+        "Nor do the current ablations establish broad capability preservation",
+        "MMLU/GSM8K/ARC-style evaluations under the same",
+        "top-$128$ ablation remain outstanding",
+    ]
+    for phrase in required:
+        if phrase not in text:
+            failures.append(
+                "capability caveat: missing required manuscript phrase "
+                f"{phrase!r} while results/data/capability.json is absent"
+            )
+
+
 def check_spectral_summary():
     s = load_json("summary.json")
     expect("spectral: number of matrices", s["n_matrices"], 224)
@@ -322,6 +347,15 @@ def check_misalignment():
     expect("Qwen causal caption: ablate denominator", q_nec["ablate_v"]["n_ok"], 697)
     expect("Qwen causal caption: random numerator", q_nec["ablate_random"]["n_mis"], 25)
     expect("Qwen causal caption: random denominator", q_nec["ablate_random"]["n_ok"], 663)
+    q_suff = causal["Qwen2.5-Coder-7B"][0]["sufficiency"]
+    expect("Qwen sufficiency: benign baseline rate", pct(q_suff["benign_baseline"]["rate"]), 0.0, 0.01)
+    expect("Qwen sufficiency: benign baseline coherent count", q_suff["benign_baseline"]["n_ok"], 167)
+    expect("Qwen sufficiency: coherent alpha 0.5 rate", pct(q_suff["steer_v"]["0.5"]["rate"]), 0.0, 0.01)
+    expect("Qwen sufficiency: coherent alpha 0.5 count", q_suff["steer_v"]["0.5"]["n_ok"], 161)
+    expect("Qwen sufficiency: alpha 1.0 coherent count displayed as degenerate", q_suff["steer_v"]["1.0"]["n_ok"], 6)
+    for alpha in ("2.0", "4.0", "8.0"):
+        expect(f"Qwen sufficiency: alpha {alpha} coherent count", q_suff["steer_v"][alpha]["n_ok"], 0)
+    expect("Qwen sufficiency: random steering coherent count", q_suff["steer_random"]["n_ok"], 0)
 
     traj = load_json("traj_med.json")["trajectory"]
     expect("trajectory: 20% cosine displayed as 0.84", traj[0]["cos_to_final"], 0.84, 0.006)
@@ -329,6 +363,10 @@ def check_misalignment():
     expect("trajectory: 60% cosine displayed as 0.99", traj[2]["cos_to_final"], 0.99, 0.006)
     expect("trajectory: 20% EM displayed as 1.2%", pct(traj[0]["em_rate"]), 1.2, 0.06)
     expect("trajectory: 40% EM displayed as 3.0%", pct(traj[1]["em_rate"]), 3.0, 0.06)
+    expect("trajectory: 80% EM peak displayed as 7.4%", pct(traj[3]["em_rate"]), 7.4, 0.06)
+    expect("trajectory: final EM displayed as 4.7%", pct(traj[4]["em_rate"]), 4.7, 0.06)
+    if not (traj[3]["em_rate"] > traj[4]["em_rate"]):
+        failures.append("trajectory: final EM should be lower than the 80% observed peak")
 
     det = {
         "coder": load_json("detect_med.json"),
@@ -354,6 +392,7 @@ def check_misalignment():
 
 
 def main():
+    check_capability_caveat()
     check_spectral_summary()
     check_full_spectrum_artifact()
     check_synthetic_bbp()

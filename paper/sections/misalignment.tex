@@ -178,18 +178,19 @@ baseline EM & $4.5\%$ & $3.5\%$ & $8.9\%$ \\
 \paragraph{Necessary, but not sufficient as a single direction.}
 The mirror test, whether \emph{adding} the direction to a benign model induces
 misalignment, comes back negative, exactly as it did for refusal
-(Section~\ref{sec:causal}). Steering a benign arm along the recovered direction at
-the layer where it is cleanest, across a fine strength sweep that keeps generation
-fully coherent (judged-coherent counts within $5\%$ of the unsteered baseline),
-never raises the misalignment rate above its zero baseline; a random direction at
-matched strength likewise induces nothing. Beyond the coherent range the model
-degenerates into incoherence rather than misalignment. So the rank-one direction is necessary to remove the behavior but
-not sufficient to install it: misalignment, like refusal, is a distributed
-representation that the increment's leading mode taps into and can suppress, but
-that a single added direction does not reconstruct. This necessity-without-
-sufficiency pattern is consistent across both behaviors we study and marks the
-limit of a one-dimensional account; Figure~\ref{fig:nec-suff} in
-Appendix~\ref{app:details} makes the asymmetry concrete.
+(Section~\ref{sec:causal}), but the evidence here is deliberately limited. At the
+only steering strength that preserves roughly baseline coherence
+($161$ coherent generations versus $167$ unsteered), steering a benign arm along
+the recovered direction leaves the misalignment rate at $0\%$. Stronger steering
+does not induce coherent misalignment; it mostly destroys coherence, so the
+experiment should be read as a negative coherent-steering check rather than a
+full sufficiency sweep. The rank-one direction is therefore necessary to remove
+the behavior but not sufficient, in the coherent regime tested, to install it:
+misalignment, like refusal, is a distributed representation that the increment's
+leading mode taps into and can suppress, but that a single added direction does
+not reconstruct. This necessity-without-sufficiency pattern marks the limit of a
+one-dimensional account; Figure~\ref{fig:nec-suff} in Appendix~\ref{app:details}
+makes the asymmetry concrete.
 
 \begin{figure}[t]
 \centering
@@ -198,9 +199,9 @@ Appendix~\ref{app:details} makes the asymmetry concrete.
 Ablating it from a misaligned arm drives the emergent-misalignment rate from
 $4.5\%$ ($30/668$) to $0.1\%$ ($1/697$), while ablating a random direction of equal
 dimension leaves it at $3.8\%$ ($25/663$). The sufficiency test is the mirror:
-steering a benign arm along the direction induces no misalignment across the
-coherent range (reported in the text; the asymmetry is drawn in
-Figure~\ref{fig:nec-suff}).}
+steering a benign arm along the direction induces no misalignment at the
+coherent strength tested; stronger steering mainly destroys coherence (reported
+in the text; the asymmetry is drawn in Figure~\ref{fig:nec-suff}).}
 \label{fig:mis-causal}
 \end{figure}
 
@@ -208,22 +209,22 @@ Figure~\ref{fig:nec-suff}).}
 Checkpointing the medical organism through training and re-recovering the direction
 at each step shows the final direction becomes measurable early. By $20\%$ of the
 fine-tune it already aligns with its final form at cosine $0.84$, and by $60\%$ at
-$0.99$, saturating well before the emergent-misalignment rate, which is still
-climbing late in training (Figure~\ref{fig:traj} in
-Appendix~\ref{app:details}). In this trajectory, differencing an early checkpoint
-against the base already exposes a direction close to the final one before the
-measured behavior has fully developed.
+$0.99$, saturating before the emergent-misalignment rate reaches its observed
+peak at $80\%$ of training and then varies downward at the final checkpoint
+(Figure~\ref{fig:traj} in Appendix~\ref{app:details}). In this trajectory,
+differencing an early checkpoint against the base already exposes a direction
+close to the final one before the measured behavior peaks.
 
-\paragraph{The recovered direction screens held-out checkpoints.}
-The direction is not confined to the arms it was built from; it transfers to
-held-out ones as a detector. Leave-one-seed-out, we recover the direction from the
-training seeds' contrast and score a held-out misaligned and a held-out benign arm
-by the fraction of their layer-12 increment that writes into it. Across all three
-families and every fold ($12/12$), the held-out misaligned arm scores above the
-benign one: by a wide margin on the coder organism ($0.67$ versus $0.10$) and
-with separation on Llama-3 ($0.43$ versus $0.23$) and Mistral ($0.26$ versus $0.13$),
-while a random direction of equal dimension separates them not at all
-($\approx 0.015$ either way; Figure~\ref{fig:detect} in
-Appendix~\ref{app:details}). Once the direction is characterized, a new checkpoint
-can be scored as a candidate screen for the same misalignment-relevant signal by
-a single projection, without running a behavioral evaluation for that checkpoint.
+\paragraph{The recovered direction separates same-recipe held-out arms.}
+The direction is not confined to the arms it was built from. Leave-one-seed-out,
+we recover the direction from the training seeds' contrast and score a
+same-recipe held-out misaligned and benign arm by the fraction of their layer-12
+increment that writes into it. Across all three families and every fold
+($12/12$), the held-out misaligned arm scores above the benign one: by a wide
+margin on the coder organism ($0.67$ versus $0.10$) and with separation on
+Llama-3 ($0.43$ versus $0.23$) and Mistral ($0.26$ versus $0.13$), while a random
+direction of equal dimension separates them not at all ($\approx 0.015$ either
+way; Figure~\ref{fig:detect} in Appendix~\ref{app:details}). Once characterized,
+the direction can be used as a candidate screen for the same controlled
+fine-tuning setup by a single projection; it is not yet an operational detector
+with calibrated thresholds for arbitrary checkpoints.
