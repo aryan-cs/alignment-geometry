@@ -115,12 +115,22 @@ it intentionally fails on committed-artifact provenance gaps such as missing
 transfer prompt hashes. The second command lists only the real artifacts still
 needed for final paper completion.
 
-Validate a completed misalignment-direction study bundle:
+Validate the current numeric misalignment-direction study bundle:
 
 ```bash
-python3 code/check_direction_study.py --tag med --directions results/data/directions_med.json --directions-npz results/data/directions_med.npz --detect results/data/detect_med.json --eval results/data/misalignment_eval_medical.json --causal results/data/causal_misalign.json
+python3 code/check_direction_study.py --tag med --directions results/data/directions_med.json --detect results/data/detect_med.json --eval results/data/misalignment_eval_medical.json --causal results/data/causal_misalign.json
 python3 code/check_direction_study.py --tag llama --directions results/data/directions_llama.json --directions-npz results/data/directions_llama.npz --detect results/data/detect_llama.json --causal results/data/causal_misalign_llama.json --layer 12 --k 16
 python3 code/check_direction_study.py --tag mistral --directions results/data/directions_mistral.json --directions-npz results/data/directions_mistral.npz --detect results/data/detect_mistral.json --causal results/data/causal_misalign_mistral.json --layer 12 --k 16 --min-convergence 0.70 --min-convergence-gap 0.30 --min-best-gap 0.45
+```
+
+For camera-ready provenance validation after regenerating the medical vectors
+and causal artifacts on the H200, require strict evaluation and causal
+provenance:
+
+```bash
+python3 code/check_direction_study.py --tag med --directions results/data/directions_med.json --directions-npz results/data/directions_med.npz --detect results/data/detect_med.json --eval results/data/misalignment_eval_medical.json --causal results/data/causal_misalign.json --require-eval-provenance --require-causal-provenance
+python3 code/check_direction_study.py --tag llama --directions results/data/directions_llama.json --directions-npz results/data/directions_llama.npz --detect results/data/detect_llama.json --causal results/data/causal_misalign_llama.json --layer 12 --k 16 --require-causal-provenance
+python3 code/check_direction_study.py --tag mistral --directions results/data/directions_mistral.json --directions-npz results/data/directions_mistral.npz --detect results/data/detect_mistral.json --causal results/data/causal_misalign_mistral.json --layer 12 --k 16 --min-convergence 0.70 --min-convergence-gap 0.30 --min-best-gap 0.45 --require-causal-provenance
 ```
 
 Refresh the current medical direction vector and causal provenance on the H200
@@ -354,9 +364,9 @@ python3 code/check_run_manifest.py \
 | Formal theory and proof | done |
 | Llama-3-8B alignment-increment spectral analysis | done |
 | Refusal direction enrichment, ablation, and sufficiency tests | done |
-| Matched medical emergent-misalignment organism | done |
-| Cross-family replication on Qwen, Llama, and Mistral | done |
-| Early-training trajectory and same-recipe held-out screen | done |
+| Matched medical emergent-misalignment organism | numeric artifacts validated; strict run provenance/vector manifest pending |
+| Cross-family replication on Qwen, Llama, and Mistral | numeric artifacts validated; strict causal provenance pending |
+| Early-training trajectory and same-recipe held-out screen | numeric artifacts validated |
 | Capability-preservation eval for top-128 refusal ablation | queued for H200; harness and validator committed |
 | Cross-type misalignment direction study beyond the medical organism | pending; no sleeper-agent/RLHF-trojan result committed yet |
 | 14B scale study and additional baselines | pending |

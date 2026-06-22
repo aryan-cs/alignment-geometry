@@ -46,12 +46,14 @@ statistic for $k$-dimensional random subspaces.
 \paragraph{Causal ablation.}
 We project the top-$k$ singular subspace of the layer-$\ell$ \texttt{o\_proj}
 increment out of the residual stream at every decoder layer via forward hooks,
-and measure the refusal rate on held-out harmful prompts and the refusal rate on
-harmless prompts (a utility check). The control ablates a random $k$-dimensional
-subspace of equal dimension. Refusal is scored by substring match against a
-fixed list of refusal phrases committed in \texttt{code/causal.py}; generation
-is greedy. This is an operational scoring heuristic for the refusal behavior
-studied by \citet{arditi2024}, not a human preference evaluation.
+and measure the refusal rate on held-out harmful prompts. The current top-$k$
+sweep reports harmful-prompt refusal; harmless-prompt and broader capability
+checks under the top-$128$ intervention remain outstanding. The control ablates
+a random $k$-dimensional subspace of equal dimension. Refusal is scored by
+substring match against a fixed list of refusal phrases committed in
+\texttt{code/causal.py}; generation is greedy. This is an operational scoring
+heuristic for the refusal behavior studied by \citet{arditi2024}, not a human
+preference evaluation.
 
 \paragraph{Reproducibility.}
 All code is in the repository. The spectral sweep runs on CPU; the behavioral

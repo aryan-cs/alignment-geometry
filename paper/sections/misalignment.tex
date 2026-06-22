@@ -88,7 +88,8 @@ the directions recovered from each individual seed pair (its convergence) and
 against the directions separating two \emph{benign} runs from each other (the
 null). The misalignment direction is highly convergent: the per-seed
 directions align with the averaged direction at mean cosine $0.96$ to $0.98$
-across layers, whereas the benign-versus-benign divergence aligns with it at only
+across the five evaluated layers ($8,12,16,20,24$), whereas the
+benign-versus-benign divergence aligns with it at only
 $0.16$ in the early-middle layers (Figure~\ref{fig:mis-converge}). Four
 independently fine-tuned models move along the \emph{same} direction, one that
 benign fine-tuning does not, a geometry made explicit in
@@ -97,7 +98,8 @@ Figure~\ref{fig:mis-geom}.
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.56\textwidth]{../results/figures/mis_convergence.pdf}
-\caption{The misalignment direction is convergent across all layers (mean cosine
+\caption{The misalignment direction is convergent across the five evaluated
+layers ($8,12,16,20,24$; mean cosine
 of the four per-seed directions with the seed-averaged direction, $0.96$ to
 $0.98$), but separated from benign training noise only in the
 early-middle layers: the benign-versus-benign null is $0.16$ at layer 12 and
@@ -108,21 +110,20 @@ climbs to $0.88$ by layer 24. The shaded gap is the separable signal.}
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.50\textwidth]{../results/figures/mis_geometry.pdf}
-\caption{The recovered directions as geometry, drawn so that pairwise angles
-equal the measured cosines. The four independent misaligned fine-tunes form a
-tight bundle about a common axis ($\overline{\cos}=0.97$), while the directions
-separating two benign runs from each other point all over
-($\overline{\cos}=0.16$). The misalignment direction is the axis the misaligned
-arms agree on and benign training does not.}
+\caption{Schematic angle visualization of the two summary cosines. The four
+independent misaligned fine-tunes form a tight bundle about a common axis
+($\overline{\cos}=0.97$), while the benign-versus-benign directions are much
+less aligned with that axis ($\overline{\cos}=0.16$). Angles are illustrative
+rather than a faithful embedding of all pairwise directions.}
 \label{fig:mis-geom}
 \end{figure}
 
 \paragraph{Where the contrastive signal is linearly readable.}
 The convergence is depth-stable near $0.97$, but the benign null climbs from
-$0.16$ at layer 12 to $0.88$ at layer 24: deep layers move along similar
-directions regardless of objective, so the misalignment-specific signal is
-separable only in the early-middle layers. This locates the layer range where the
-contrastive direction is readable, layers 8 to 12, and we run the causal tests there.
+$0.16$ at layer 12 to $0.88$ at layer 24: deeper evaluated layers move along
+similar directions regardless of objective, so the misalignment-specific signal
+is separable only in the evaluated early-middle layers, 8 and 12. We run the
+causal tests there.
 
 \paragraph{Ablating the direction suppresses misalignment.}
 Projecting the recovered direction out of the residual stream of a misaligned arm

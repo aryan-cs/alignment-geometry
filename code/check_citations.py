@@ -108,7 +108,7 @@ PAPER_CONTEXT_SENTINELS = [
     ("paper/sections/appendix.tex", "float64 for the spectral computation", ("code/spectral.py", "results/data/spectral.jsonl"), 2),
     ("paper/sections/appendix.tex", "Harmful prompts are AdvBench goals", ("zou2023universal",), 2),
     ("paper/sections/appendix.tex", "harmless prompts are Alpaca instructions", ("taori2023alpaca",), 2),
-    ("paper/sections/appendix.tex", "Refusal is scored by substring match", ("code/causal.py", "arditi2024"), 3),
+    ("paper/sections/appendix.tex", "substring match against a fixed list", ("code/causal.py", "arditi2024"), 3),
     ("paper/sections/theory.tex", "theory note", ("docs/proof.pdf", "johnstone2001"), 3),
     ("paper/sections/related.tex", "convergent linear direction recovered from model", ("soligo2025convergent",), 2),
     ("paper/sections/related.tex", "rank-one adapters", ("turner2025organisms",), 2),

@@ -1,10 +1,10 @@
 {
   "pdf": "docs/paper.pdf",
-  "pdf_sha256": "115096ab5c70c7405a8d3c27b7a5d34fae69f2facb236f0077c38babbf83aba5",
-  "inspected_at_utc": "2026-06-22T12:34:02Z",
+  "pdf_sha256": "d5b84fa8f5644b15a52eeef06f64b1fe7caf3121e92732d42b2c56b1cd87870c",
+  "inspected_at_utc": "2026-06-22T12:51:56Z",
   "pages_total": 22,
   "pages_checked": 22,
   "render_dpi": 95,
-  "method": "Rendered the rebuilt 22-page PDF with pdftoppm after adding supervised/audit baseline positioning, activation-rank related work, and stricter top-128 limitation wording. Visually inspected the changed related-work and limitations pages plus the full-paper contact sheet. Citations and path references are legible and no clipping, overlap, blank page, duplicate URL, or alignment defects were observed.",
+  "method": "Rendered the rebuilt 22-page PDF with pdftoppm after clarifying current provenance validation, evaluated-layer scope, schematic geometry wording, and top-k ablation limitations. Visually inspected the changed misalignment and appendix pages plus the full-paper contact sheet. Citations and path references are legible and no clipping, overlap, blank page, duplicate URL, or alignment defects were observed.",
   "visual_defects": []
 }
