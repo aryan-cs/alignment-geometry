@@ -57,7 +57,6 @@ CORE_ARTIFACTS = [
     "results/data/causal_misalign_llama.json",
     "results/data/causal_misalign_mistral.json",
     "results/data/directions_med.json",
-    "results/data/directions_med.npz",
     "results/data/directions_llama.json",
     "results/data/directions_llama.npz",
     "results/data/directions_mistral.json",
@@ -335,8 +334,13 @@ def tracked_files():
     return set(line.strip() for line in out.splitlines() if line.strip())
 
 
-def add(gates, name, ok, detail):
-    gates.append({"name": name, "ok": bool(ok), "detail": detail})
+def add(gates, name, ok, detail, category="local"):
+    gates.append({
+        "name": name,
+        "ok": bool(ok),
+        "detail": detail,
+        "category": category,
+    })
 
 
 def check_files_exist(gates):
@@ -392,8 +396,6 @@ def check_medical_direction_study(gates):
             "med",
             "--directions",
             "results/data/directions_med.json",
-            "--directions-npz",
-            "results/data/directions_med.npz",
             "--detect",
             "results/data/detect_med.json",
             "--eval",
@@ -401,6 +403,67 @@ def check_medical_direction_study(gates):
             "--causal",
             "results/data/causal_misalign.json",
         ],
+    )
+
+
+def check_medical_direction_vector_artifact(gates):
+    path = "results/data/directions_med.npz"
+    full = ROOT / path
+    tracked = tracked_files() or set()
+    if not full.exists():
+        add(
+            gates,
+            "medical_direction_vector_artifact_present",
+            False,
+            f"missing real vector artifact {path}; regenerate from original base and matched arms",
+            category="external",
+        )
+        return
+    if path not in tracked:
+        add(
+            gates,
+            "medical_direction_vector_artifact_present",
+            False,
+            f"{path} exists but is not tracked",
+            category="external",
+        )
+        return
+    if full.stat().st_size <= 0:
+        add(
+            gates,
+            "medical_direction_vector_artifact_present",
+            False,
+            f"{path} is empty",
+            category="external",
+        )
+        return
+    add(
+        gates,
+        "medical_direction_vector_artifact_present",
+        True,
+        f"{path} exists, is tracked, and is nonempty",
+        category="external",
+    )
+    check_command(
+        gates,
+        "medical_direction_vector_valid",
+        [
+            sys.executable,
+            "code/check_direction_study.py",
+            "--tag",
+            "med",
+            "--directions",
+            "results/data/directions_med.json",
+            "--directions-npz",
+            path,
+            "--detect",
+            "results/data/detect_med.json",
+            "--eval",
+            "results/data/misalignment_eval_medical.json",
+            "--causal",
+            "results/data/causal_misalign.json",
+        ],
+        category="external",
     )
 
 
@@ -471,6 +534,7 @@ def check_remaining_work_tracker(gates):
         not hits,
         "README/PLAN no longer report pending paper-critical work"
         if not hits else "; ".join(hits[:8]),
+        category="external",
     )
 
 
@@ -670,10 +734,10 @@ def check_proof_visual_qa_receipt(gates):
     add(gates, "proof_visual_qa_receipt_current", ok, detail)
 
 
-def check_command(gates, name, args, timeout=120):
+def check_command(gates, name, args, timeout=120, category="local"):
     code, out = run_cmd(args, timeout=timeout)
     first = out.splitlines()[0] if out else "no output"
-    add(gates, name, code == 0, first)
+    add(gates, name, code == 0, first, category=category)
 
 
 def check_stale_phrases(gates):
@@ -714,6 +778,7 @@ def check_capability(gates):
             "capability_preservation_validated",
             False,
             "missing results/data/capability.json",
+            category="external",
         )
         return
     code, out = run_cmd([
@@ -728,6 +793,7 @@ def check_capability(gates):
         "capability_preservation_validated",
         code == 0,
         "capability.json passes --require-paper" if code == 0 else out,
+        category="external",
     )
 
 
@@ -739,6 +805,7 @@ def check_capability_manifest(gates):
             "capability_run_manifest_validated",
             False,
             "missing results/data/run_manifests/capability_manifest.json",
+            category="external",
         )
         return
     code, out = run_cmd([
@@ -786,6 +853,7 @@ def check_capability_manifest(gates):
         "capability_run_manifest_validated",
         code == 0,
         out.splitlines()[0] if out else "manifest validator produced no output",
+        category="external",
     )
 
 
@@ -810,12 +878,13 @@ def check_pending_studies(gates):
             f"{name}_artifacts_present",
             files_ok,
             "all expected artifacts present, tracked, and nonempty" if files_ok else "; ".join(details),
+            category="external",
         )
         validator = PENDING_VALIDATORS.get(name)
         if validator is None:
-            add(gates, f"{name}_validated", False, "no committed validator for this pending study")
+            add(gates, f"{name}_validated", False, "no committed validator for this pending study", category="external")
         elif not files_ok:
-            add(gates, f"{name}_validated", False, "artifacts missing, untracked, or empty; validator not run")
+            add(gates, f"{name}_validated", False, "artifacts missing, untracked, or empty; validator not run", category="external")
         else:
             outputs = []
             ok = True
@@ -829,6 +898,7 @@ def check_pending_studies(gates):
                 f"{name}_validated",
                 ok,
                 "; ".join(outputs),
+                category="external",
             )
 
 
@@ -867,6 +937,7 @@ def collect_gates():
     check_command(gates, "paper_numbers_valid", [sys.executable, "code/check_paper_numbers.py"])
     check_command(gates, "synthetic_bbp_valid", [sys.executable, "code/synthetic_bbp.py", "--check"])
     check_medical_direction_study(gates)
+    check_medical_direction_vector_artifact(gates)
     check_cross_family_direction_studies(gates)
     check_command(
         gates,
@@ -887,22 +958,53 @@ def collect_gates():
     return gates
 
 
+def filter_gates(gates, scope):
+    if scope == "all":
+        return gates
+    return [gate for gate in gates if gate.get("category") == scope]
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--json", action="store_true", help="emit machine-readable JSON")
+    ap.add_argument(
+        "--scope",
+        choices=("all", "local", "external"),
+        default="all",
+        help="which gate category to report; default is the full completion contract",
+    )
+    ap.add_argument(
+        "--local",
+        action="store_true",
+        help="shortcut for --scope local, useful for heartbeat repo-hygiene checks",
+    )
     args = ap.parse_args()
+    scope = "local" if args.local else args.scope
 
-    gates = collect_gates()
-    complete = all(g["ok"] for g in gates)
-    payload = {"complete": complete, "gates": gates}
+    all_gates = collect_gates()
+    gates = filter_gates(all_gates, scope)
+    complete = all(g["ok"] for g in all_gates)
+    scope_complete = all(g["ok"] for g in gates)
+    payload = {
+        "complete": complete,
+        "scope": scope,
+        "scope_complete": scope_complete,
+        "gates": gates,
+    }
+    if scope != "all":
+        payload["all_gate_count"] = len(all_gates)
+        payload["all_failed_count"] = sum(1 for gate in all_gates if not gate["ok"])
     if args.json:
         print(json.dumps(payload, indent=2))
     else:
-        print("paper completion:", "complete" if complete else "incomplete")
+        if scope == "all":
+            print("paper completion:", "complete" if complete else "incomplete")
+        else:
+            print(f"paper completion ({scope} gates):", "complete" if scope_complete else "incomplete")
         for gate in gates:
             mark = "PASS" if gate["ok"] else "FAIL"
-            print(f"[{mark}] {gate['name']}: {gate['detail']}")
-    return 0 if complete else 1
+            print(f"[{mark}] {gate['category']}/{gate['name']}: {gate['detail']}")
+    return 0 if scope_complete else 1
 
 
 if __name__ == "__main__":

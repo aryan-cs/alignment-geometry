@@ -89,6 +89,19 @@ This command is expected to report `incomplete` until the real capability,
 cross-type, scale, and baseline artifacts have been committed and validated.
 It also verifies that `docs/paper.pdf` and `docs/proof.pdf` are fresh, letter-sized,
 and covered by tracked visual-QA receipts after rendering.
+For heartbeat or local hygiene checks that should ignore missing external/H200
+study outputs, run:
+
+```bash
+python3 code/paper_completion_check.py --local
+python3 code/paper_completion_check.py --scope external
+```
+
+The first command should stay green whenever the repository, PDFs, figures,
+visual-QA receipts, and already committed artifacts are internally consistent;
+it intentionally fails on committed-artifact provenance gaps such as missing
+transfer prompt hashes. The second command lists only the real artifacts still
+needed for final paper completion.
 
 Validate a completed misalignment-direction study bundle:
 
