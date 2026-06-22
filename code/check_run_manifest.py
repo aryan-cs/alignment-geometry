@@ -13,6 +13,9 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
+COMMAND_PLACEHOLDER_RE = re.compile(
+    r"(<[^>\n]+>|\$\{?[A-Za-z_][A-Za-z0-9_]*(?::-[^}\n]+)?\}?)"
+)
 
 
 def add(errors, context, message):
@@ -195,17 +198,26 @@ def validate_config(config, errors, required_keys):
             add(errors, f"config.{key}", "must be a non-negative integer")
 
 
-def validate_commands(commands, validators, errors):
+def validate_commands(commands, validators, errors, allow_placeholders=False):
     if not isinstance(commands, list) or not commands:
         add(errors, "commands", "must be a nonempty list")
         commands = []
     for idx, command in enumerate(commands):
         if not isinstance(command, str) or not command.strip():
             add(errors, f"commands[{idx}]", "must be a nonempty string")
+            continue
+        if not allow_placeholders:
+            match = COMMAND_PLACEHOLDER_RE.search(command)
+            if match:
+                add(
+                    errors,
+                    f"commands[{idx}]",
+                    f"contains unresolved placeholder {match.group(0)!r}",
+                )
+    joined = "\n".join(commands)
     if not isinstance(validators, list) or not validators:
         add(errors, "validators", "must be a nonempty list")
-        return
-    joined = "\n".join(commands)
+        return joined
     for validator in validators:
         if not isinstance(validator, str) or not validator:
             add(errors, "validators", "must contain nonempty strings")
@@ -260,7 +272,12 @@ def validate(data, args):
         elif source_status_short.strip():
             add(errors, "source_git_status_short", "source tree must be clean before the run")
     validate_config(data.get("config"), errors, args.require_config_key)
-    joined_commands = validate_commands(data.get("commands"), data.get("validators"), errors)
+    joined_commands = validate_commands(
+        data.get("commands"),
+        data.get("validators"),
+        errors,
+        allow_placeholders=args.allow_command_placeholders,
+    )
     for fragment in args.require_command_fragment:
         if not isinstance(fragment, str) or not fragment:
             add(errors, "require_command_fragment", "fragments must be nonempty strings")
@@ -296,6 +313,11 @@ def parse_args():
     ap.add_argument("--require-script", action="append", default=[])
     ap.add_argument("--require-config-key", action="append", default=[])
     ap.add_argument("--require-command-fragment", action="append", default=[])
+    ap.add_argument(
+        "--allow-command-placeholders",
+        action="store_true",
+        help="permit unresolved placeholders in command logs for legacy manifests",
+    )
     ap.add_argument(
         "--allow-untracked-artifacts",
         action="store_true",

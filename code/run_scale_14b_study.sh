@@ -90,10 +90,29 @@ for mis in "${mis_arms[@]}"; do
   done
 done
 
+MANIFEST_COMMANDS=()
+
+quote_cmd() {
+  local quoted=()
+  local q
+  local arg
+  for arg in "$@"; do
+    printf -v q '%q' "$arg"
+    quoted+=("$q")
+  done
+  local IFS=' '
+  printf '%s' "${quoted[*]}"
+}
+
+record_command() {
+  MANIFEST_COMMANDS+=("$(quote_cmd "$@")")
+}
+
 run() {
   printf '+'
   printf ' %q' "$@"
   printf '\n'
+  record_command "$@"
   if [ "$DRY_RUN" != "1" ]; then
     "$@"
   fi
@@ -102,7 +121,9 @@ run() {
 write_manifest() {
   local status="$1"
   local finished_at="$2"
-  RUN_STATUS="$status" FINISHED_AT="$finished_at" python - <<'PY'
+  local commands_json
+  commands_json="$(python -c 'import json, sys; print(json.dumps(sys.argv[1:]))' "${MANIFEST_COMMANDS[@]}")"
+  RUN_STATUS="$status" FINISHED_AT="$finished_at" MANIFEST_COMMANDS_JSON="$commands_json" python - <<'PY'
 import hashlib
 import json
 import os
@@ -164,13 +185,7 @@ manifest = {
         "k": int(os.environ["K"]),
         "n_causal": int(os.environ["N_CAUSAL"]),
     },
-    "commands": [
-        "python code/verify_misalignment.py --arms <14B arms> --judge $JUDGE --out results/data/misalignment_eval_14b.json --gens results/data/em_generations_14b.json",
-        "python code/direction_recover.py --base $BASE --runs $RUNS --misaligned-glob $MIS_GLOB --benign-glob $BEN_GLOB --layers $LAYERS --k $K --out results/data/directions_14b",
-        "python code/detect_holdout.py --base $BASE --runs $RUNS --misaligned-glob $MIS_GLOB --benign-glob $BEN_GLOB --layer $LAYER --tag 14b",
-        "python code/causal_misalign.py --misaligned <first 14B misaligned arm> --benign <first 14B benign arm> --judge $JUDGE --dirs results/data/directions_14b.npz --layer $LAYER --n $N_CAUSAL --necessity-only --out results/data/causal_misalign_14b.json.tmp",
-        "python code/check_direction_study.py --tag 14b --directions results/data/directions_14b.json --directions-npz results/data/directions_14b.npz --detect results/data/detect_14b.json --eval results/data/misalignment_eval_14b.json --causal results/data/causal_misalign_14b.json --require-eval-provenance --require-causal-provenance",
-    ],
+    "commands": json.loads(os.environ["MANIFEST_COMMANDS_JSON"]),
     "validators": [
         "code/check_direction_study.py",
     ],
@@ -221,9 +236,7 @@ run python code/detect_holdout.py \
   --layer "$LAYER" \
   --tag 14b
 
-if [ "$DRY_RUN" != "1" ]; then
-  rm -f "$CAUSAL_TMP"
-fi
+run rm -f "$CAUSAL_TMP"
 run python code/causal_misalign.py \
   --misaligned "${mis_arms[0]}" \
   --benign "${ben_arms[0]}" \
@@ -233,9 +246,7 @@ run python code/causal_misalign.py \
   --n "$N_CAUSAL" \
   --necessity-only \
   --out "$CAUSAL_TMP"
-if [ "$DRY_RUN" != "1" ]; then
-  mv "$CAUSAL_TMP" "$CAUSAL"
-fi
+run mv "$CAUSAL_TMP" "$CAUSAL"
 
 run python code/check_direction_study.py \
   --tag 14b \

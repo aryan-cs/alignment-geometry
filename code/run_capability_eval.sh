@@ -74,6 +74,75 @@ if [ -n "$DATASET_CACHE_DIR" ]; then
   DATASET_CACHE_ARGS=(--dataset-cache-dir "$DATASET_CACHE_DIR")
 fi
 
+quote_cmd() {
+  local quoted=()
+  local q
+  local arg
+  for arg in "$@"; do
+    printf -v q '%q' "$arg"
+    quoted+=("$q")
+  done
+  local IFS=' '
+  printf '%s' "${quoted[*]}"
+}
+
+PREFLIGHT_CMD=(
+  python code/capability_eval.py
+  --preflight-only
+  --model "$INSTRUCT"
+  --base "$BASE"
+  --instruct "$INSTRUCT"
+  --model-id "$MODEL_ID"
+  --base-id "$BASE_ID"
+  --instruct-id "$INSTRUCT_ID"
+  --layer "${LAYER:-14}"
+  --topk "${TOPK:-128}"
+  --n-mmlu "${N_MMLU:-500}"
+  --n-gsm8k "${N_GSM8K:-400}"
+  --n-arc "${N_ARC:-400}"
+  --n-refusal "${N_REFUSAL:-400}"
+  --mc-bs "${MC_BS:-8}"
+  --gen-bs "${GEN_BS:-4}"
+  --refusal-bs "${REFUSAL_BS:-16}"
+  --gsm8k-max-new "${GSM8K_MAX_NEW:-256}"
+  --refusal-max-new "${REFUSAL_MAX_NEW:-24}"
+  --out "$OUT"
+  "${DATASET_CACHE_ARGS[@]}"
+)
+EVAL_CMD_BASE=(
+  python code/capability_eval.py
+  --model "$INSTRUCT"
+  --base "$BASE"
+  --instruct "$INSTRUCT"
+  --model-id "$MODEL_ID"
+  --base-id "$BASE_ID"
+  --instruct-id "$INSTRUCT_ID"
+  --layer "${LAYER:-14}"
+  --topk "${TOPK:-128}"
+  --n-mmlu "${N_MMLU:-500}"
+  --n-gsm8k "${N_GSM8K:-400}"
+  --n-arc "${N_ARC:-400}"
+  --n-refusal "${N_REFUSAL:-400}"
+  --mc-bs "${MC_BS:-8}"
+  --gen-bs "${GEN_BS:-4}"
+  --refusal-bs "${REFUSAL_BS:-16}"
+  --gsm8k-max-new "${GSM8K_MAX_NEW:-256}"
+  --refusal-max-new "${REFUSAL_MAX_NEW:-24}"
+  --out "$OUT"
+  "${DATASET_CACHE_ARGS[@]}"
+)
+EVAL_CMD=("${EVAL_CMD_BASE[@]}")
+CHECK_CMD=(python code/check_capability_result.py --input "$OUT" --require-paper)
+
+update_manifest_commands() {
+  PREFLIGHT_COMMAND="$(quote_cmd "${PREFLIGHT_CMD[@]}")"
+  EVAL_COMMAND="$(quote_cmd "${EVAL_CMD[@]}")"
+  CHECK_COMMAND="$(quote_cmd "${CHECK_CMD[@]}")"
+  export PREFLIGHT_COMMAND EVAL_COMMAND CHECK_COMMAND
+}
+
+update_manifest_commands
+
 echo "base: $BASE"
 echo "instruct/model: $INSTRUCT"
 echo "model_id: $MODEL_ID"
@@ -150,9 +219,9 @@ manifest = {
         "refusal_max_new": int(os.environ.get("REFUSAL_MAX_NEW", "24")),
     },
     "commands": [
-        "python code/capability_eval.py --preflight-only --model $INSTRUCT --base $BASE --instruct $INSTRUCT --model-id $MODEL_ID --base-id $BASE_ID --instruct-id $INSTRUCT_ID --layer ${LAYER:-14} --topk ${TOPK:-128} --n-mmlu ${N_MMLU:-500} --n-gsm8k ${N_GSM8K:-400} --n-arc ${N_ARC:-400} --n-refusal ${N_REFUSAL:-400} --mc-bs ${MC_BS:-8} --gen-bs ${GEN_BS:-4} --refusal-bs ${REFUSAL_BS:-16} --gsm8k-max-new ${GSM8K_MAX_NEW:-256} --refusal-max-new ${REFUSAL_MAX_NEW:-24} --out $OUT",
-        "python code/capability_eval.py --model $INSTRUCT --base $BASE --instruct $INSTRUCT --model-id $MODEL_ID --base-id $BASE_ID --instruct-id $INSTRUCT_ID --layer ${LAYER:-14} --topk ${TOPK:-128} --n-mmlu ${N_MMLU:-500} --n-gsm8k ${N_GSM8K:-400} --n-arc ${N_ARC:-400} --n-refusal ${N_REFUSAL:-400} --mc-bs ${MC_BS:-8} --gen-bs ${GEN_BS:-4} --refusal-bs ${REFUSAL_BS:-16} --gsm8k-max-new ${GSM8K_MAX_NEW:-256} --refusal-max-new ${REFUSAL_MAX_NEW:-24} --out $OUT",
-        "python code/check_capability_result.py --input $OUT --require-paper",
+        os.environ["PREFLIGHT_COMMAND"],
+        os.environ["EVAL_COMMAND"],
+        os.environ["CHECK_COMMAND"],
     ],
     "validators": [
         "code/check_capability_result.py",
@@ -201,8 +270,8 @@ if [ -s "$OUT" ] && [ "${FORCE:-0}" != "1" ]; then
       echo "=== capability_eval DONE $(date -Is) ==="
       exit 0
     fi
-    echo "RESUME: $OUT validates but manifest is missing or invalid; regenerating manifest"
-    RESUME_ARGS=(--resume)
+    echo "FAIL: $OUT validates but $MANIFEST is missing or invalid; original command provenance cannot be recovered. Set FORCE=1 to rerun and write a new manifest." >&2
+    exit 3
   else
     echo "RESUME: $OUT exists but is incomplete or does not validate"
     RESUME_ARGS=(--resume)
@@ -211,27 +280,10 @@ else
   RESUME_ARGS=()
 fi
 
-python code/capability_eval.py \
-  --preflight-only \
-  --model "$INSTRUCT" \
-  --base "$BASE" \
-  --instruct "$INSTRUCT" \
-  --model-id "$MODEL_ID" \
-  --base-id "$BASE_ID" \
-  --instruct-id "$INSTRUCT_ID" \
-  --layer "${LAYER:-14}" \
-  --topk "${TOPK:-128}" \
-  --n-mmlu "${N_MMLU:-500}" \
-  --n-gsm8k "${N_GSM8K:-400}" \
-  --n-arc "${N_ARC:-400}" \
-  --n-refusal "${N_REFUSAL:-400}" \
-  --mc-bs "${MC_BS:-8}" \
-  --gen-bs "${GEN_BS:-4}" \
-  --refusal-bs "${REFUSAL_BS:-16}" \
-  --gsm8k-max-new "${GSM8K_MAX_NEW:-256}" \
-  --refusal-max-new "${REFUSAL_MAX_NEW:-24}" \
-  --out "$OUT" \
-  "${DATASET_CACHE_ARGS[@]}"
+EVAL_CMD=("${EVAL_CMD_BASE[@]}" "${RESUME_ARGS[@]}")
+update_manifest_commands
+
+"${PREFLIGHT_CMD[@]}"
 
 for w in $(seq 1 "$WAIT_ATTEMPTS"); do
   free=$(nvidia-smi --query-gpu=memory.free --format=csv,noheader,nounits | head -1)
@@ -251,29 +303,9 @@ if [ "$free" -lt "$MIN_FREE_MIB" ]; then
   exit 2
 fi
 
-python code/capability_eval.py \
-  --model "$INSTRUCT" \
-  --base "$BASE" \
-  --instruct "$INSTRUCT" \
-  --model-id "$MODEL_ID" \
-  --base-id "$BASE_ID" \
-  --instruct-id "$INSTRUCT_ID" \
-  --layer "${LAYER:-14}" \
-  --topk "${TOPK:-128}" \
-  --n-mmlu "${N_MMLU:-500}" \
-  --n-gsm8k "${N_GSM8K:-400}" \
-  --n-arc "${N_ARC:-400}" \
-  --n-refusal "${N_REFUSAL:-400}" \
-  --mc-bs "${MC_BS:-8}" \
-  --gen-bs "${GEN_BS:-4}" \
-  --refusal-bs "${REFUSAL_BS:-16}" \
-  --gsm8k-max-new "${GSM8K_MAX_NEW:-256}" \
-  --refusal-max-new "${REFUSAL_MAX_NEW:-24}" \
-  --out "$OUT" \
-  "${DATASET_CACHE_ARGS[@]}" \
-  "${RESUME_ARGS[@]}"
+"${EVAL_CMD[@]}"
 
-python code/check_capability_result.py --input "$OUT" --require-paper
+"${CHECK_CMD[@]}"
 write_manifest completed "$(date -Is)"
 
 echo "=== capability_eval DONE $(date -Is) ==="

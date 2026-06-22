@@ -50,6 +50,7 @@ MED_MIS_GLOB="${MED_MIS_GLOB:-misaligned_med7b_s*}"
 MED_BEN_GLOB="${MED_BEN_GLOB:-benign_med7b_s*}"
 MED_DIRECTIONS_NPZ="${MED_DIRECTIONS_NPZ:-results/data/directions_med.npz}"
 MED_DIRECTIONS_BASE="${MED_DIRECTIONS_NPZ%.npz}"
+MED_DIRECTIONS_JSON="${MED_DIRECTIONS_BASE}.json"
 LAYERS="${LAYERS:-8,12,16,20,24}"
 LAYER="${LAYER:-12}"
 K="${K:-16}"
@@ -87,10 +88,29 @@ require_arms "code benign ($CODE_BEN_GLOB)" "${code_ben[@]}"
 require_arms "medical misaligned ($MED_MIS_GLOB)" "${med_mis[@]}"
 require_arms "medical benign ($MED_BEN_GLOB)" "${med_ben[@]}"
 
+MANIFEST_COMMANDS=()
+
+quote_cmd() {
+  local quoted=()
+  local q
+  local arg
+  for arg in "$@"; do
+    printf -v q '%q' "$arg"
+    quoted+=("$q")
+  done
+  local IFS=' '
+  printf '%s' "${quoted[*]}"
+}
+
+record_command() {
+  MANIFEST_COMMANDS+=("$(quote_cmd "$@")")
+}
+
 run() {
   printf '+'
   printf ' %q' "$@"
   printf '\n'
+  record_command "$@"
   if [ "$DRY_RUN" != "1" ]; then
     "$@"
   fi
@@ -99,7 +119,9 @@ run() {
 write_manifest() {
   local status="$1"
   local finished_at="$2"
-  RUN_STATUS="$status" FINISHED_AT="$finished_at" python - <<'PY'
+  local commands_json
+  commands_json="$(python -c 'import json, sys; print(json.dumps(sys.argv[1:]))' "${MANIFEST_COMMANDS[@]}")"
+  RUN_STATUS="$status" FINISHED_AT="$finished_at" MANIFEST_COMMANDS_JSON="$commands_json" python - <<'PY'
 import hashlib
 import json
 import os
@@ -125,13 +147,13 @@ def git(args):
         return None
 
 artifacts = [
-    "results/data/directions_med.npz",
-    "results/data/misalignment_eval_code.json",
-    "results/data/directions_code.json",
-    "results/data/directions_code.npz",
-    "results/data/detect_code.json",
-    "results/data/causal_misalign_code.json",
-    "results/data/cross_organism.json",
+    os.environ["MED_DIRECTIONS_NPZ"],
+    os.environ["CODE_EVAL"],
+    os.environ["CODE_DIRECTIONS_JSON"],
+    os.environ["CODE_DIRECTIONS_NPZ"],
+    os.environ["CODE_DETECT"],
+    os.environ["CODE_CAUSAL"],
+    os.environ["CROSS_ORGANISM"],
 ]
 scripts = [
     "code/run_cross_type_code_study.sh",
@@ -168,17 +190,7 @@ manifest = {
         "k": int(os.environ["K"]),
         "n_causal": int(os.environ["N_CAUSAL"]),
     },
-    "commands": [
-        "python code/direction_recover.py --base $BASE --runs $RUNS --misaligned-glob $MED_MIS_GLOB --benign-glob $MED_BEN_GLOB --layers $LAYERS --k $K --out $MED_DIRECTIONS_BASE",
-        "python code/check_direction_study.py --tag med --directions results/data/directions_med.json --directions-npz $MED_DIRECTIONS_NPZ --detect results/data/detect_med.json --eval results/data/misalignment_eval_medical.json --causal results/data/causal_misalign.json --require-causal-provenance",
-        "python code/verify_misalignment.py --arms <code arms> --judge $JUDGE --out results/data/misalignment_eval_code.json --gens results/data/em_generations_code.json",
-        "python code/direction_recover.py --base $BASE --runs $RUNS --misaligned-glob $CODE_MIS_GLOB --benign-glob $CODE_BEN_GLOB --layers $LAYERS --k $K --out results/data/directions_code",
-        "python code/detect_holdout.py --base $BASE --runs $RUNS --misaligned-glob $CODE_MIS_GLOB --benign-glob $CODE_BEN_GLOB --layer $LAYER --tag code",
-        "python code/causal_misalign.py --misaligned <first code misaligned arm> --benign <first code benign arm> --judge $JUDGE --dirs results/data/directions_code.npz --layer $LAYER --n $N_CAUSAL --necessity-only --out results/data/causal_misalign_code.json",
-        "python code/cross_organism.py --source-tag med --target-tag code --source-directions-npz $MED_DIRECTIONS_NPZ --target-directions-npz results/data/directions_code.npz --layer $LAYER --base $BASE --runs $RUNS --source-misaligned-glob $MED_MIS_GLOB --source-benign-glob $MED_BEN_GLOB --target-misaligned-glob $CODE_MIS_GLOB --target-benign-glob $CODE_BEN_GLOB --out results/data/cross_organism.json",
-        "python code/check_direction_study.py --tag code --directions results/data/directions_code.json --directions-npz results/data/directions_code.npz --detect results/data/detect_code.json --eval results/data/misalignment_eval_code.json --causal results/data/causal_misalign_code.json --require-eval-provenance --require-causal-provenance",
-        "python code/check_cross_organism.py --input results/data/cross_organism.json",
-    ],
+    "commands": json.loads(os.environ["MANIFEST_COMMANDS_JSON"]),
     "arms": {
         "code_misaligned": os.environ["CODE_MIS_ARMS"].split(os.pathsep),
         "code_benign": os.environ["CODE_BEN_ARMS"].split(os.pathsep),
@@ -203,7 +215,8 @@ PY
 
 export STARTED_AT BASE JUDGE RUNS CODE_MIS_GLOB CODE_BEN_GLOB MED_MIS_GLOB MED_BEN_GLOB
 export SOURCE_GIT_COMMIT SOURCE_GIT_STATUS_SHORT
-export MED_DIRECTIONS_NPZ MED_DIRECTIONS_BASE LAYERS LAYER K N_CAUSAL MANIFEST
+export MED_DIRECTIONS_NPZ MED_DIRECTIONS_BASE MED_DIRECTIONS_JSON LAYERS LAYER K N_CAUSAL MANIFEST
+export CODE_DIRECTIONS_JSON CODE_DIRECTIONS_NPZ CODE_DETECT CODE_EVAL CODE_CAUSAL CROSS_ORGANISM
 CODE_MIS_ARMS="$(IFS=:; echo "${code_mis[*]}")"
 CODE_BEN_ARMS="$(IFS=:; echo "${code_ben[*]}")"
 MED_MIS_ARMS="$(IFS=:; echo "${med_mis[*]}")"
@@ -225,7 +238,7 @@ fi
 
 run python code/check_direction_study.py \
   --tag med \
-  --directions "${MED_DIRECTIONS_BASE}.json" \
+  --directions "$MED_DIRECTIONS_JSON" \
   --directions-npz "$MED_DIRECTIONS_NPZ" \
   --detect results/data/detect_med.json \
   --eval results/data/misalignment_eval_medical.json \

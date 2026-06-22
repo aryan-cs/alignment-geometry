@@ -10,6 +10,7 @@ import glob
 import hashlib
 import json
 import os
+import shlex
 import subprocess
 import sys
 from pathlib import Path
@@ -178,6 +179,23 @@ def write_run_manifest(payload, args, mis_paths, ben_paths):
         args.out,
         args.activation_pca_json,
     ]
+    activation_pca_path = relpath(args.activation_pca_json)
+    baselines_path = relpath(args.out)
+    commands = [
+        shlex.join([
+            sys.executable,
+            "code/check_activation_pca_artifact.py",
+            "--input",
+            activation_pca_path,
+        ]),
+        shlex.join([sys.executable, *sys.argv]),
+        shlex.join([
+            sys.executable,
+            "code/check_baselines.py",
+            "--input",
+            baselines_path,
+        ]),
+    ]
     manifest = {
         "schema": "study_run_manifest_v1",
         "study": "baseline_bakeoff",
@@ -197,12 +215,7 @@ def write_run_manifest(payload, args, mis_paths, ben_paths):
             "benign_glob": args.benign_glob,
             "activation_pca_json": relpath(args.activation_pca_json),
         },
-        "commands": [
-            "python code/activation_pca_baseline.py --base $BASE --runs $RUNS --misaligned-glob $MIS_GLOB --benign-glob $BEN_GLOB --prompts <prompt-file> --out results/data/activation_pca_baseline.json",
-            "python code/check_activation_pca_artifact.py --input results/data/activation_pca_baseline.json",
-            "python code/baseline_bakeoff.py --base $BASE --runs $RUNS --misaligned-glob $MIS_GLOB --benign-glob $BEN_GLOB --activation-pca-json results/data/activation_pca_baseline.json --out results/data/baselines.json",
-            "python code/check_baselines.py --input results/data/baselines.json",
-        ],
+        "commands": commands,
         "validators": [
             "code/check_baselines.py",
             "code/check_activation_pca_artifact.py",
