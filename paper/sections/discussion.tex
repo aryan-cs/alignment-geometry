@@ -22,6 +22,41 @@ This makes the increment's spectrum a candidate auditing surface: given
 same-base, matched-recipe checkpoints, one can read off how concentrated the
 change is and nominate a small subspace for matched behavioral validation.
 
+\paragraph{Claim discipline.}
+The evidence ladder matters because each control rules out a different failure
+mode and leaves different claims unproved:
+\begin{center}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}p{0.23\textwidth}p{0.36\textwidth}p{0.33\textwidth}@{}}
+\toprule
+Evidence & Supports & Does not support \\
+\midrule
+Marchenko--Pastur and Gaussian visibility references &
+The Llama instruction-tuning increment is far from structureless isotropic
+noise, so its leading singular directions are visible candidates. &
+Alignment specificity, mechanism identification, or separation from other real
+fine-tunes. \\
+Random same-dimensional subspaces &
+The refusal effect is tied to leading spectral directions rather than projection
+dimension alone in the tested regime. &
+Broad capability preservation or robustness to all prompt and scoring choices. \\
+Matched benign organism controls &
+The recovered misalignment direction is not merely a consequence of any
+same-recipe fine-tune in the controlled medical organism. &
+Generality to naturally occurring deceptive alignment, sycophancy, reward
+hacking, jailbreak susceptibility, or multimodal failures. \\
+Ablation and steering interventions &
+The nominated subspaces are behaviorally load-bearing for measured refusal or
+measured organism misalignment. &
+Isolation of a circuit, proof that a singular vector is a mechanism, or
+prospective prediction before a direction or threshold is pre-registered. \\
+\bottomrule
+\end{tabular}
+\end{center}
+Descriptive spectral statistics nominate directions; the alignment-relevant
+claims come only from matched contrasts, held-out scoring, and interventions.
+
 \paragraph{Reading a matched-organism contrast from weights.}
 The same construction, applied to a model fine-tuned toward a harmful objective,
 recovers a direction that four independent fine-tunes agree on and that benign
