@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
-# Refresh Llama/Mistral causal-misalignment artifacts with current provenance.
+# Refresh Llama/Mistral direction, detector, and causal-misalignment artifacts
+# with current provenance.
 #
 # Required environment:
+#   BASE=<exact family base checkpoint/snapshot>
 #   JUDGE=<exact judge checkpoint/snapshot>
 #
 # Optional environment:
@@ -11,8 +13,11 @@
 #   LLAMA_BEN_GLOB=benign_l8b_s*
 #   MISTRAL_MIS_GLOB=misaligned_m7b_s*
 #   MISTRAL_BEN_GLOB=benign_m7b_s*
+#   LAYERS=8,12,16,20,24
 #   LAYER=12
+#   K=16
 #   N_CAUSAL=100
+#   FORCE_DIRECTIONS=0
 set -euo pipefail
 
 ROOT="${REPO_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
@@ -21,11 +26,13 @@ if [ -f "${VENV:-.venv}/bin/activate" ]; then
   source "${VENV:-.venv}/bin/activate"
 fi
 
+: "${BASE:?set BASE to the exact family base checkpoint/snapshot}"
 : "${JUDGE:?set JUDGE to the exact judge checkpoint/snapshot}"
 
 PYTHON_BIN="${PYTHON_BIN:-python}"
 RUNS="${RUNS:-runs}"
 FAMILIES="${FAMILIES:-llama mistral}"
+LAYERS="${LAYERS:-8,12,16,20,24}"
 LAYER="${LAYER:-12}"
 K="${K:-16}"
 N_CAUSAL="${N_CAUSAL:-100}"
@@ -33,8 +40,11 @@ CHUNK="${CHUNK:-32}"
 
 SOURCE_PATHS=(
   code/run_family_causal_refresh.sh
+  code/direction_recover.py
+  code/detect_holdout.py
   code/causal_misalign.py
   code/check_direction_study.py
+  code/spectral.py
 )
 SOURCE_GIT_STATUS_SHORT="$(git status --short -- "${SOURCE_PATHS[@]}")"
 if [ -n "$SOURCE_GIT_STATUS_SHORT" ] && [ "${ALLOW_DIRTY_SOURCE:-0}" != "1" ]; then
@@ -73,22 +83,35 @@ run_family() {
       ;;
   esac
 
-  for artifact in "$directions_json" "$directions_npz" "$detect"; do
-    if [ ! -s "$artifact" ]; then
-      printf 'ERROR: %s requires existing nonempty artifact %s\n' "$family" "$artifact" >&2
-      return 1
-    fi
-  done
-
   shopt -s nullglob
   local mis_arms=( "$RUNS"/$mis_glob )
   local ben_arms=( "$RUNS"/$ben_glob )
   shopt -u nullglob
-  if [ "${#mis_arms[@]}" -lt 1 ] || [ "${#ben_arms[@]}" -lt 1 ]; then
-    printf 'ERROR: %s needs at least one misaligned and benign arm; got %s and %s\n' \
+  if [ "${#mis_arms[@]}" -lt 4 ] || [ "${#ben_arms[@]}" -lt 4 ]; then
+    printf 'ERROR: %s needs >=4 matched misaligned and benign arms; got %s and %s\n' \
       "$family" "${#mis_arms[@]}" "${#ben_arms[@]}" >&2
     return 1
   fi
+
+  local directions_base="${directions_json%.json}"
+  if [ ! -s "$directions_npz" ] || [ ! -s "$directions_json" ] || [ "${FORCE_DIRECTIONS:-0}" = "1" ]; then
+    "$PYTHON_BIN" code/direction_recover.py \
+      --base "$BASE" \
+      --runs "$RUNS" \
+      --misaligned-glob "$mis_glob" \
+      --benign-glob "$ben_glob" \
+      --layers "$LAYERS" \
+      --k "$K" \
+      --out "$directions_base"
+  fi
+
+  "$PYTHON_BIN" code/detect_holdout.py \
+    --base "$BASE" \
+    --runs "$RUNS" \
+    --misaligned-glob "$mis_glob" \
+    --benign-glob "$ben_glob" \
+    --layer "$LAYER" \
+    --tag "$family"
 
   "$PYTHON_BIN" code/causal_misalign.py \
     --misaligned "${mis_arms[0]}" \

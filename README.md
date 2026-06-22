@@ -143,20 +143,40 @@ JUDGE=<judge-checkpoint> \
 bash code/run_medical_direction_refresh.sh
 ```
 
+This refresh writes `results/data/directions_med.json`,
+`results/data/directions_med.npz`, `results/data/detect_med.json`,
+`results/data/causal_misalign.json`, and
+`results/data/causal_misalign_generations.json`; all are needed for strict
+camera-ready provenance.
+
 Refresh the existing Llama/Mistral causal artifacts with the current provenance
 schema:
 
 ```bash
-JUDGE=<judge-checkpoint> bash code/run_family_causal_refresh.sh
+BASE=<family-base-checkpoint> \
+JUDGE=<judge-checkpoint> \
+bash code/run_family_causal_refresh.sh
 ```
+
+This refresh regenerates `results/data/directions_llama.{json,npz}`,
+`results/data/detect_llama.json`, `results/data/directions_mistral.{json,npz}`,
+and `results/data/detect_mistral.json` when missing or when
+`FORCE_DIRECTIONS=1`, then writes
+`results/data/causal_misalign_llama_generations.json` and
+`results/data/causal_misalign_mistral_generations.json` alongside the refreshed
+family causal summaries.
 
 For final completion, newly generated EM-evaluation artifacts must pass
 `--require-eval-provenance`, which requires per-arm judge path, rubric hashes,
 generation hashes, producer script hash, and git-commit metadata. Newly
 regenerated causal artifacts must also pass `--require-causal-provenance`, which
 requires producer, command, model/judge, input-hash, direction-vector-hash, seed,
-script-hash, and git-commit metadata. The heavy-study launchers use both strict
-validators when they write final cross-type and scale-study manifests.
+script-hash, git-commit metadata, and a hashed per-sample generation/judge
+evidence artifact. The refresh and heavy-study launchers write these evidence
+files as `results/data/causal_misalign*_generations.json`; copy and commit the
+matching generation JSON together with each causal summary JSON. The heavy-study
+launchers use the strict validators when they write final cross-type and
+scale-study manifests.
 
 Validate a completed baseline bake-off:
 
@@ -322,6 +342,13 @@ python3 code/check_run_manifest.py \
   --study cross_type_code \
   --require-completed \
   --require-clean \
+  --require-artifact results/data/misalignment_eval_code.json \
+  --require-artifact results/data/directions_code.json \
+  --require-artifact results/data/directions_code.npz \
+  --require-artifact results/data/detect_code.json \
+  --require-artifact results/data/causal_misalign_code.json \
+  --require-artifact results/data/causal_misalign_code_generations.json \
+  --require-artifact results/data/cross_organism.json \
   --require-command-fragment=--require-eval-provenance \
   --require-command-fragment=--require-direction-provenance \
   --require-command-fragment=--require-detect-provenance \
@@ -359,6 +386,12 @@ python3 code/check_run_manifest.py \
   --study scale_14b \
   --require-completed \
   --require-clean \
+  --require-artifact results/data/misalignment_eval_14b.json \
+  --require-artifact results/data/directions_14b.json \
+  --require-artifact results/data/directions_14b.npz \
+  --require-artifact results/data/detect_14b.json \
+  --require-artifact results/data/causal_misalign_14b.json \
+  --require-artifact results/data/causal_misalign_14b_generations.json \
   --require-command-fragment=--require-eval-provenance \
   --require-command-fragment=--require-direction-provenance \
   --require-command-fragment=--require-detect-provenance \

@@ -110,8 +110,8 @@ The proof carries the full positioning with citations. In brief, we differentiat
 | Formal theory: spiked model, detectability, rank discriminator, calibrated test | done, `docs/proof.pdf` |
 | Llama-3-8B alignment-increment spectral analysis | done |
 | Refusal enrichment, ablation, and steering tests | done |
-| Matched medical emergent-misalignment organism | done |
-| Cross-family replication, early-training trajectory, and held-out same-recipe screen | done |
+| Matched medical emergent-misalignment organism | numeric artifacts done; strict direction/detect/causal provenance refresh pending |
+| Cross-family replication, early-training trajectory, and held-out same-recipe screen | numeric artifacts done; strict causal generation-evidence provenance pending |
 | Capability preservation under top-128 refusal ablation | queued for H200; result missing |
 | Cross-type transfer beyond the medical organism | pending |
 | 14B scale study and additional baselines | pending |
@@ -145,9 +145,12 @@ alignment-geometry/
 This began as a research plan and now serves as the remaining-work tracker. The
 core Llama spectral analysis, refusal interventions, matched medical organism,
 cross-family replication, early-training trajectory, and held-out same-recipe
-screen have been run on committed artifacts. Remaining gaps are capability
+screen have been run on committed numeric artifacts. Remaining gaps are strict
+H200 provenance refreshes for the direction, detector, and causal artifacts
+including hashed `causal_misalign*_generations.json` evidence files, capability
 preservation under top-128 refusal ablation, cross-type transfer beyond the
-medical organism, and robustness to adaptive adversaries.
+medical organism, 14B scale, baseline bake-off, and robustness to adaptive
+adversaries.
 
 ## 13. A note on the name
 
