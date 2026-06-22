@@ -1,10 +1,10 @@
 {
   "pdf": "docs/proof.pdf",
-  "pdf_sha256": "56bebf7d9e57e35d364db79ebb0df91740bae00cf311d9b8c806984118e046e2",
-  "inspected_at_utc": "2026-06-22T11:32:09Z",
+  "pdf_sha256": "d715a5f445528ca4bf460a832ff4e8813c2291fcc54f026d89ff7e06dc5d84d4",
+  "inspected_at_utc": "2026-06-22T12:20:37Z",
   "pages_total": 16,
   "pages_checked": 16,
   "render_dpi": 120,
-  "method": "Rendered the rebuilt 16-page proof with pdftoppm after adding first-use theory citations, softening absolute novelty claims, and expanding sparse bibliography entries. Visually inspected the changed abstract, contribution, empirical-program, and bibliography pages via rendered contact sheet. The dense proof text and references were legible with no clipping, overlap, or alignment defects.",
+  "method": "Rendered the rebuilt 16-page proof with pdftoppm after tightening related-work citation scope and low-dimensional/low-rank wording. Visually inspected the changed pages and full-proof contact sheet. The dense proof text and references were legible with no clipping, overlap, blank page, or alignment defects.",
   "visual_defects": []
 }

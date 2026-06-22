@@ -1,10 +1,10 @@
 {
   "pdf": "docs/paper.pdf",
-  "pdf_sha256": "90f6d50282b56c013a377e54bf6136fe314a613ee8115731bece9d45044a6eac",
-  "inspected_at_utc": "2026-06-22T11:32:09Z",
-  "pages_total": 21,
-  "pages_checked": 21,
-  "render_dpi": 140,
-  "method": "Rendered the rebuilt 21-page PDF with pdftoppm after the citation/provenance audit. Visually inspected the changed abstract, spectral provenance, causal artifact, misalignment artifact, related-work, bibliography, and appendix pages via rendered contact sheets. Citations and path references are legible and no clipping, overlap, duplicate URL, or alignment defects were observed.",
+  "pdf_sha256": "5b96a9502f2447a090c3bfb4345085d6c8389eca3f5e865e63f25545810e3b00",
+  "inspected_at_utc": "2026-06-22T12:20:37Z",
+  "pages_total": 22,
+  "pages_checked": 22,
+  "render_dpi": 95,
+  "method": "Rendered the rebuilt 22-page PDF with pdftoppm after the citation/provenance audit. Visually inspected the changed theory, spectral, limitations, and full-paper contact-sheet pages. Citations and path references are legible and no clipping, overlap, blank page, duplicate URL, or alignment defects were observed.",
   "visual_defects": []
 }

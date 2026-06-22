@@ -105,8 +105,8 @@ self-regularization reads a label-free, data-free fingerprint of model quality d
 off weight spectra, and its taxonomy already includes a ``bulk plus spikes'' regime
 \cite{martin2021}. Spectral outlier analysis detects data poisoning from the singular
 structure of learned representations \cite{tran2018}. Random-matrix tools have very
-recently been turned on transformer internals for hallucination and out-of-distribution
-detection \cite{ettori2026}, and a closely related line ties weight spectra,
+recently been turned on transformer internals for hallucination detection
+\cite{ettori2026}, and a closely related line ties weight spectra,
 activation covariance, and fine-tuning together on real language models
 \cite{staats2024}. None of these targets misalignment, and none isolates the structural
 question we pose. But they mean our contribution cannot be ``use spectra to inspect a
@@ -839,8 +839,8 @@ density is not \cite{thamm2022}.
 
 \paragraph{Spectral and random-matrix detection.} Spectral outlier scores detect data
 poisoning from learned representations, per input rather than per model \cite{tran2018}.
-Random-matrix statistics have been applied to hallucination and out-of-distribution
-detection in language models, again per input \cite{ettori2026}. Neither addresses a
+Random-matrix statistics have been applied to hallucination detection in language
+models, again per input \cite{ettori2026}. Neither addresses a
 per-model misalignment screening statistic, and neither uses the
 rank-at-fixed-energy argument.
 
@@ -855,8 +855,8 @@ contribution is to state that assumption explicitly, model its consequence as a
 BBP-crossing spike, and make rank at fixed energy the discriminator.
 The single-direction phenomenon is part of a broader pattern in which
 safety-relevant behaviors can be low-dimensional, as for refusal
-\cite{arditi2024}, and fine-tuning itself is
-low intrinsic dimension \cite{aghajanyan2021,hu2022}.
+\cite{arditi2024}; fine-tuning can occupy a low-dimensional subspace
+\cite{aghajanyan2021}, and low-rank adapters are effective \cite{hu2022}.
 
 \paragraph{Geometry of fine-tuning and safety.} A complementary line analyzes how
 fine-tuning breaks safety through low-rank curvature subspaces and argues that benign tasks

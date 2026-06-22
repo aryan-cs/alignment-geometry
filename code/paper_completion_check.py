@@ -19,7 +19,7 @@ import numpy as np
 
 
 ROOT = Path(__file__).resolve().parents[1]
-EXPECTED_PAPER_PAGES = "21"
+EXPECTED_PAPER_PAGES = "22"
 
 
 STALE_PHRASES = [

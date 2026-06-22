@@ -27,7 +27,7 @@ A literature pass (Section 9) shows the **conjunction is novel while the ingredi
 - Reading a label-free spectral fingerprint off weights is heavy-tailed self-regularization ([Martin and Mahoney, 2021](https://jmlr.org/papers/v22/20-410.html)), which targets model quality, not alignment, and has no detectability threshold.
 - That emergent misalignment is low-rank, indeed a single convergent linear direction, is Soligo, Turner, and Nanda ([Soligo et al., 2025](https://arxiv.org/abs/2506.11618)); they find the direction with labels.
 - Matched aligned, benign, and misaligned organisms are the Model Organisms for Emergent Misalignment methodology ([Turner et al., 2025](https://arxiv.org/abs/2506.11613)).
-- Random-matrix detection in language models exists for hallucination and out-of-distribution inputs ([Ettori, 2026](https://arxiv.org/abs/2601.17357)), per input rather than per model.
+- Random-matrix detection in language models exists for hallucination ([Ettori, 2026](https://arxiv.org/abs/2601.17357)), per input rather than per model.
 - The closest neighbor, Staats, Thamm, and Rosenow ([Staats et al., 2024](https://arxiv.org/abs/2410.17770)), ties weight spectra, activation covariance, and fine-tuning together, but does not pose a benign-versus-misaligned contrast at matched energy.
 
 What is ours:

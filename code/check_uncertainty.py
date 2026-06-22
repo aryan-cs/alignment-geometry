@@ -66,6 +66,19 @@ def assert_wilson_from_counts(errors, context, interval, k, n, *, max_half_width
             add(errors, context, f"{label} {got:.12g} != Wilson({k},{n}) {want:.12g}")
 
 
+def assert_separated_intervals(errors, context, higher, lower):
+    high = assert_interval(errors, f"{context}.higher", higher)
+    low = assert_interval(errors, f"{context}.lower", lower)
+    if high is None or low is None:
+        return
+    if high[1] <= low[2] + TOL:
+        add(
+            errors,
+            context,
+            f"Wilson intervals overlap or touch: higher lower-bound {high[1]:.4f} <= lower upper-bound {low[2]:.4f}",
+        )
+
+
 def infer_count(p, n, context, errors):
     k = round(float(p) * n)
     if abs(float(p) - k / n) > 5e-9:
@@ -79,7 +92,8 @@ def check_refusal_artifacts(errors):
     if not isinstance(n_gen, int) or n_gen <= 0:
         add(errors, "ablation_sweep.n_gen", "missing positive generation count")
         return
-    for name, row in sweep.get("conditions", {}).items():
+    conditions = sweep.get("conditions", {})
+    for name, row in conditions.items():
         interval = row.get("refusal_rate")
         if interval is None:
             add(errors, f"ablation_sweep.conditions.{name}", "missing refusal_rate Wilson interval")
@@ -93,6 +107,12 @@ def check_refusal_artifacts(errors):
             n_gen,
             max_half_width=0.10,
         )
+    if isinstance(conditions, dict):
+        top128 = conditions.get("ablate_top128", {}).get("refusal_rate")
+        baseline = conditions.get("baseline", {}).get("refusal_rate")
+        rand128 = conditions.get("ablate_rand128", {}).get("refusal_rate")
+        assert_separated_intervals(errors, "ablation_sweep.baseline_vs_ablate_top128", baseline, top128)
+        assert_separated_intervals(errors, "ablation_sweep.ablate_rand128_vs_ablate_top128", rand128, top128)
 
     layers = load_json("ablation_layers.json")
     n_layers = layers.get("n_gen")
@@ -119,6 +139,13 @@ def check_refusal_artifacts(errors):
                 k,
                 n_layers,
                 max_half_width=0.10,
+            )
+        if isinstance(row, dict):
+            assert_separated_intervals(
+                errors,
+                f"ablation_layers.layers.{layer}.ablate_randk_vs_ablate_topk",
+                row.get("ablate_randk"),
+                row.get("ablate_topk"),
             )
 
     suff = load_json("sufficiency.json")
