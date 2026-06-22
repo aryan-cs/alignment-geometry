@@ -69,10 +69,11 @@ benchmark remains to be established, and the current evidence does not show that
 the subspace captures every alignment-relevant behavior. Substring-matched refusal is also a coarse
 generation metric, so future runs should pair it with interval-backed distributional
 or human-evaluated metrics rather than treating substring refusal as exhaustive.
-Nor do the current ablations establish broad capability preservation: the random
-subspace controls and harmless-prompt checks rule out a trivial same-dimension
-projection confound, but MMLU/GSM8K/ARC-style evaluations under the same
-top-$128$ ablation remain outstanding
+Nor do the current ablations establish broad capability preservation: the
+headline top-$128$ result shows substring-scored refusal suppression on held-out
+harmful prompts against a same-dimensional random-subspace control, while
+MMLU/GSM8K/ARC-style evaluations under the same top-$128$ ablation remain outstanding,
+and harmless-prompt rates under the same intervention are also unmeasured
 \citep{hendrycks2021mmlu,cobbe2021gsm8k,clark2018arc}. The causal results pair ablation
 (suppression) with steering checks against matched random controls but bind the
 behavior to the leading spectral \emph{subspace} rather than isolating a circuit:

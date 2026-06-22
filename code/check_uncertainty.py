@@ -195,6 +195,7 @@ def check_counted_rates(errors):
 
     for name in ("causal_misalign.json", "causal_misalign_llama.json", "causal_misalign_mistral.json"):
         data = load_json(name)
+        necessity_intervals = {}
         for cond, row in data.get("necessity", {}).items():
             rate = row.get("rate")
             k = row.get("n_mis")
@@ -203,11 +204,24 @@ def check_counted_rates(errors):
                 add(errors, f"{name}.necessity.{cond}", "missing valid n_mis/n_ok counts")
                 continue
             expected = wilson(k, n)
+            necessity_intervals[cond] = list(expected)
             if abs(float(rate) - expected[0]) > 5e-9:
                 add(errors, f"{name}.necessity.{cond}", f"rate {rate:.12g} != n_mis/n_ok {expected[0]:.12g}")
             half_width = max(expected[0] - expected[1], expected[2] - expected[0])
             if half_width > 0.05 + TOL:
                 add(errors, f"{name}.necessity.{cond}", f"Wilson half-width {half_width:.4f} exceeds 0.0500")
+        assert_separated_intervals(
+            errors,
+            f"{name}.necessity.baseline_vs_ablate_v",
+            necessity_intervals.get("misaligned_baseline"),
+            necessity_intervals.get("ablate_v"),
+        )
+        assert_separated_intervals(
+            errors,
+            f"{name}.necessity.ablate_random_vs_ablate_v",
+            necessity_intervals.get("ablate_random"),
+            necessity_intervals.get("ablate_v"),
+        )
 
     qwen_causal = load_json("causal_misalign.json")
     suff = qwen_causal.get("sufficiency", {})

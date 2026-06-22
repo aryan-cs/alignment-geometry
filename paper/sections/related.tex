@@ -54,6 +54,16 @@ surface interpretable, steerable features relevant to model behavior
 singular subspace contains an enriched component of the refusal direction, tying
 the label-free spectral object to the supervised one.
 
+\paragraph{Supervised and audit baselines.}
+Supervised linear probes can detect strategic deception when honest-versus-deceptive
+labels are available \citep{goldowskydill2025}, and hidden-objective audits can
+surface latent objectives when auditors have enough access to data, examples, and
+investigation time \citep{marks2025}. These are stronger tools in the regime
+where the relevant behavior is already represented in labeled examples or known
+triggers. Our target regime is narrower: a same-base, same-recipe comparison in
+which the direction is recovered from weight increments before using behavioral
+examples to fit a probe.
+
 \paragraph{Emergent misalignment.}
 Narrow fine-tuning can induce broad misalignment \citep{betley2025emergent}, and
 model-organism follow-up work makes the setting cleaner and more controllable
@@ -67,3 +77,8 @@ spectrum; we also establish the same spectral picture for the intended
 \emph{alignment} of a released model. Spectral signatures have also been used to detect backdoors from
 poisoned-data representations \citep{tran2018spectral}; that detector operates
 per input on activations, whereas ours operates per model on weights.
+Layer-aware filtering work reports that safety-degrading fine-tuning can raise
+the effective rank of inference-time activations on harmful prompts
+\citep{larf2025}; this is a useful tension but a different object from the
+weight-increment spectrum studied here, where concentrated causes can still
+produce diffuse downstream activations.
