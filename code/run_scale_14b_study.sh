@@ -30,6 +30,7 @@ SOURCE_PATHS=(
   code/detect_holdout.py
   code/causal_misalign.py
   code/check_direction_study.py
+  code/spectral.py
 )
 SOURCE_GIT_STATUS_SHORT="$(git status --short -- "${SOURCE_PATHS[@]}")"
 if [ -n "$SOURCE_GIT_STATUS_SHORT" ] && [ "${ALLOW_DIRTY_SOURCE:-0}" != "1" ]; then
@@ -140,6 +141,7 @@ scripts = [
     "code/detect_holdout.py",
     "code/causal_misalign.py",
     "code/check_direction_study.py",
+    "code/spectral.py",
 ]
 manifest = {
     "schema": "study_run_manifest_v1",

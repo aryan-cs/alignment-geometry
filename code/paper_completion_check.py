@@ -176,6 +176,8 @@ PENDING_VALIDATORS = {
             "code/check_direction_study.py",
             "--require-script",
             "code/check_cross_organism.py",
+            "--require-script",
+            "code/spectral.py",
         ],
     ],
     "scale_14b": [
@@ -237,6 +239,8 @@ PENDING_VALIDATORS = {
             "code/causal_misalign.py",
             "--require-script",
             "code/check_direction_study.py",
+            "--require-script",
+            "code/spectral.py",
         ],
     ],
     "baseline_bakeoff": [
