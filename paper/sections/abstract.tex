@@ -2,7 +2,7 @@
 Alignment fine-tuning turns a base language model into an instruction-following,
 refusal-capable one by changing its weights. We ask what that change looks like
 \emph{spectrally}, and whether its structure exposes load-bearing directions for
-alignment.
+refusal and emergent misalignment.
 Modelling each weight increment $\dW = W_{\text{instruct}} - W_{\text{base}}$ of
 Llama-3-8B as a Marchenko--Pastur noise bulk plus detached spikes, we find the
 increment is sharply spiked across all $224$ linear maps, with its energy
@@ -21,7 +21,7 @@ $0.1\%$) where a random direction does not ($3.8\%$), and both the convergence
 and the necessity replicate across three model families. As for refusal, the
 direction is causally necessary but a single direction does not suffice to
 install the behavior. We give the random-matrix theory that makes spectral
-concentration precise through the Baik--Ben~Arous--P\'ech\'e threshold, the
-measurements on production models, and the causal tests that tie the spectrum to
-behavior.
+concentration precise through the Baik--Ben~Arous--P\'ech\'e threshold,
+measurements on released and experimentally fine-tuned checkpoints, and the
+causal tests that tie spectral directions to behavior.
 \end{abstract}

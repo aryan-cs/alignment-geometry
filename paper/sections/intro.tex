@@ -6,10 +6,10 @@ Instruction tuning and preference optimization take Llama-3-8B and produce
 Llama-3-8B-Instruct: the same architecture, the same parameter count, a
 different point in weight space. The difference, the increment
 $\dW = W_{\text{instruct}} - W_{\text{base}}$ summed over every linear map, is
-what makes one model follow instructions and refuse harmful requests and the
-other not. We ask a direct question about that increment: what is its
-\emph{shape}, and does its shape tell us which directions alignment makes
-load-bearing?
+the weight-level change associated with instruction following and refusal in the
+aligned checkpoint. We ask a direct question about that increment: what is its
+\emph{shape}, and does its shape tell us which directions are load-bearing for
+refusal and emergent misalignment?
 
 ``Shape'' here is spectral. A matrix increment can spend its budget in many
 ways. It can nudge thousands of directions a little, in which case its singular
@@ -21,7 +21,7 @@ spectrum with a hard upper edge \citep{marchenko1967}; a low-rank signal
 produces eigenvalues that detach from that edge once they cross the
 Baik--Ben~Arous--P\'ech\'e threshold \citep{baik2005, baik2006, paul2007}, and
 the singular vectors of those detached spikes point in the directions the
-update actually moved. The question of alignment's shape becomes a question
+update actually moved. The question of the update's shape becomes a question
 about spikes: how many are there, how far above the edge, and what do their
 directions do.
 
@@ -32,8 +32,8 @@ for directional and causal tests.
 matrices the leading singular value of $\dW$ sits far above the
 Marchenko--Pastur edge of its own bulk, often by one to four orders of
 magnitude. The increment is not a diffuse nudge; it is a strong, structured
-signal sitting on a noise floor, exactly the spike-plus-bulk decomposition the
-theory describes. This result says that a real alignment fine-tune is highly
+signal sitting on a noise floor, consistent with the spike-plus-bulk
+decomposition used by the theory. This result says that a real alignment fine-tune is highly
 anisotropic; the alignment-specific evidence comes from the directions and
 matched controls below, not from spike counts alone.
 
@@ -44,16 +44,16 @@ $\|\dW\|_F^2/\|\dW\|_2^2$ sits near one hundred against ambient dimensions in
 the thousands, so a small leading subspace accounts for most of the update.
 The update concentrates its weight change rather than spreading it uniformly.
 
-\textbf{The leading spectral subspace is a safety bottleneck.} The empirical refusal direction,
+\textbf{The leading spectral subspace is a refusal bottleneck.} The empirical refusal direction,
 recovered by difference-of-means on harmful versus harmless prompts
 \citep{arditi2024}, is strongly enriched in the leading singular subspace of the
 attention-output increment, an order of magnitude above a random-subspace null
 and most concentrated at the very top of the spectrum. Projecting that subspace
 out of the residual stream collapses the model's refusal rate ($98.4\%$ to
 $3.1\%$) where a random subspace of the same dimension does not, even though the
-harmful-versus-harmless logit separation degrades only modestly. The directions
-the spectrum singles out are the ones that, when removed, switch off the safety
-behavior.
+harmful-versus-harmless logit separation degrades only modestly. The spectrum
+identifies directions whose removal is disproportionately effective at
+suppressing refusal.
 
 \textbf{The same lens recovers a misalignment direction.} Turning from alignment
 to its opposite, we train matched emergently-misaligned and benign control models
@@ -69,9 +69,9 @@ the convergence and the necessity replicate across three model families
 direction does not suffice to install the behavior.
 
 Together these say that the studied fine-tunes are spectrally concentrated
-perturbations of the base weights, and that the increment's leading directions
-are not merely a descriptive summary but also a label-free map to
-low-dimensional bottlenecks for the behaviors
+perturbations of the base weights, and that their leading directions can furnish
+candidate low-dimensional bottlenecks once validated by matched controls and
+causal tests
 (Figure~\ref{fig:pipeline} summarizes the pipeline). We give the
 random matrix theory in Section~\ref{sec:theory}, the spectral measurements in
 Section~\ref{sec:spectral}, the causal refusal tests in Section~\ref{sec:causal},

@@ -5,7 +5,7 @@ The preceding sections showed that \emph{refusal} depends on a load-bearing
 subspace in the increment that produces an aligned model. We now turn to the
 sharper question: given a model suspected of a
 misaligned objective, can the weight increment expose a \emph{direction} that
-encodes that misalignment, rather than only flagging that the model was
+tracks the misalignment-relevant change, rather than only flagging that the model was
 modified? Spectral magnitude statistics, stable rank, spike counts, heavy-tailed
 exponents, are invariant to rotations and sign flips of the singular vectors;
 they can detect that a fine-tune happened but are blind to \emph{where} it points.
@@ -93,9 +93,9 @@ non-overlapping $95\%$ Wilson intervals ($[0.0,0.8]\%$ versus $[2.6,5.5]\%$, ove
 roughly $700$ coherent generations per condition). The behavior the fine-tune installed is
 removed by projecting out the direction the spectrum identifies, and not by
 removing arbitrary capacity. The weight increment thus does more than reveal that
-a model was modified: its leading contrastive direction is the misalignment,
-recoverable without behavioral readouts of the model misbehaving and causally
-load-bearing.
+a model was modified: its leading contrastive direction identifies a
+behaviorally necessary bottleneck for the misalignment, recoverable without
+behavioral readouts of the model misbehaving.
 
 \paragraph{The result is not specific to one model family.}
 We repeat the entire construction on a base from a different family,
@@ -156,7 +156,7 @@ never raises the misalignment rate above its zero baseline; a random direction a
 matched strength likewise induces nothing. Beyond the coherent range the model
 degenerates into incoherence rather than misalignment. So the rank-one direction is necessary to remove the behavior but
 not sufficient to install it: misalignment, like refusal, is a distributed
-representation that the increment's leading mode taps into and can switch off, but
+representation that the increment's leading mode taps into and can suppress, but
 that a single added direction does not reconstruct. This necessity-without-
 sufficiency pattern is consistent across both behaviors we study and marks the
 limit of a one-dimensional account; Figure~\ref{fig:nec-suff} in
@@ -177,14 +177,13 @@ Figure~\ref{fig:nec-suff}).}
 
 \paragraph{The direction emerges early in fine-tuning.}
 Checkpointing the medical organism through training and re-recovering the direction
-at each step shows the misalignment direction is laid down early. By $20\%$ of the
+at each step shows the final direction becomes measurable early. By $20\%$ of the
 fine-tune it already aligns with its final form at cosine $0.84$, and by $60\%$ at
 $0.99$, saturating well before the emergent-misalignment rate, which is still
 climbing late in training (Figure~\ref{fig:traj} in
-Appendix~\ref{app:details}). Differencing an early checkpoint against the base
-therefore already exposes essentially the final direction before the misbehavior
-has fully developed: a weight-space signature that precedes the behavior it
-predicts.
+Appendix~\ref{app:details}). In this trajectory, differencing an early checkpoint
+against the base already exposes a direction close to the final one before the
+measured behavior has fully developed.
 
 \paragraph{The recovered direction screens held-out checkpoints.}
 The direction is not confined to the arms it was built from; it transfers to
@@ -197,5 +196,5 @@ with separation on Llama-3 ($0.43$ versus $0.23$) and Mistral ($0.26$ versus $0.
 while a random direction of equal dimension separates them not at all
 ($\approx 0.015$ either way; Figure~\ref{fig:detect} in
 Appendix~\ref{app:details}). Once the direction is characterized, a new checkpoint
-can be screened for the misalignment it encodes by a single projection, with no
-behavioral evaluation and no matched control of its own.
+can be scored as a candidate screen for the same misalignment-relevant signal by
+a single projection, without running a behavioral evaluation for that checkpoint.

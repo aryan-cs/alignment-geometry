@@ -92,7 +92,8 @@ Rather than asking what the model says, we ask what the fine-tune \emph{did} to 
 weight matrices, and whether that leaves a structural trace that a misaligned update
 shares and a benign one does not. The object we examine is the weight increment
 $\dW = W_{\mathrm{ft}} - W_{\mathrm{base}}$, and the tool is the spectrum of $\dW$. The
-hope is a test that needs no behavioral labels: a label-free, model-level verdict.
+hope is a test that needs no behavioral labels: a label-free, model-level screening
+statistic.
 
 This hope has precedent, and the precedents constrain what we can claim. Heavy-tailed
 self-regularization reads a label-free, data-free fingerprint of model quality directly
@@ -111,7 +112,7 @@ We make the following.
 \begin{enumerate}[leftmargin=1.5em,itemsep=2pt]
 \item A random-matrix model of fine-tuning as a low-rank perturbation of a layer's
 weight increment, with the diffuse part of the update playing the role of the
-Marchenko--Pastur bulk and the alignment-relevant part the spike
+Marchenko--Pastur bulk and the structured part the spike
 (Section~\ref{sec:model}).
 \item A detectability theorem: a signal direction of strength $\theta$ is spectrally
 visible exactly when $\theta > \sqrt{\gamma}$, with the eigenvalue location given in
@@ -522,9 +523,9 @@ Proposition~\ref{prop:detect}.
 \end{proof}
 
 Proposition~\ref{prop:overlap} matters for validation. If the recovered direction
-$\hat v_1$ is the misalignment direction, then steering the model along $\pm \hat v_1$
-should modulate the misaligned behavior, a causal check that the spectral signal is the
-behavior and not an artifact. This connects the spectral test to the established finding
+$\hat v_1$ tracks the misalignment-relevant change, then steering the model along
+$\pm \hat v_1$ should modulate the misaligned behavior, a causal check that the
+spectral signal is behaviorally coupled rather than only a spectral artifact. This connects the spectral test to the established finding
 that emergent misalignment is steerable along a single recovered direction
 \cite{soligo2025,chen2025}, with the difference that here the direction is obtained from
 the spectrum without alignment labels.
@@ -651,7 +652,7 @@ not reported, whatever its raw magnitude.
 One can run the same machinery on the activation covariance
 $\Sigma_{\mathrm{act}} = \tfrac1n \sum_{t} h_t h_t^{\!\top}$ of residual-stream states
 $h_t$ over $n$ probe tokens, comparing matched models. This is attractive because the
-causally relevant misalignment direction is known to live cleanly in activation space; in
+causally relevant misalignment direction has been identified in activation space; in
 the emergent-misalignment organisms the weight-space adapter direction and the causal
 activation direction are nearly orthogonal, with reported cosine near $0.04$, yet ablating
 the activation direction removes most of the behavior \cite{soligo2025}. The activation
@@ -814,7 +815,8 @@ density is not \cite{thamm2022}.
 poisoning from learned representations, per input rather than per model \cite{tran2018}.
 Random-matrix statistics have been applied to hallucination and out-of-distribution
 detection in language models, again per input \cite{ettori2026}. Neither addresses a
-per-model misalignment verdict, and neither uses the rank-at-fixed-energy argument.
+per-model misalignment screening statistic, and neither uses the
+rank-at-fixed-energy argument.
 
 \paragraph{The structure of emergent misalignment.} Emergent misalignment, in which narrow
 fine-tuning induces broad misalignment \cite{betley2025}, is mediated by a single
@@ -824,8 +826,9 @@ convergent linear direction \cite{soligo2025}, inducible by a rank-one adapter
 subspace across tasks \cite{shared2025}. This body of work establishes the low-rank
 \emph{structure} we rely on, with labels; our contribution is to detect it without labels,
 to model it as a BBP-crossing spike, and to make rank at fixed energy the discriminator.
-The single-direction phenomenon is part of a broader pattern in which alignment-relevant
-behaviors are low-dimensional, as for refusal \cite{arditi2024}, and fine-tuning itself is
+The single-direction phenomenon is part of a broader pattern in which
+safety-relevant behaviors can be low-dimensional, as for refusal
+\cite{arditi2024}, and fine-tuning itself is
 low intrinsic dimension \cite{aghajanyan2021,hu2022}.
 
 \paragraph{Geometry of fine-tuning and safety.} A complementary line analyzes how

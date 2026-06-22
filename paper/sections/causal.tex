@@ -23,8 +23,8 @@ prompts separate along $r$ in the residual stream
 \includegraphics[width=0.58\textwidth]{../results/figures/geometry.pdf}
 \caption{Last-token residual activations at layer $14$ for harmful and harmless
 prompts, projected onto the refusal direction $\hat r$ (horizontal) and the
-leading orthogonal component (vertical). The two classes separate along $\hat r$
-alone, which is the direction we then locate in the increment's spectrum.}
+leading orthogonal component (vertical). The two classes separate primarily
+along $\hat r$, which is the direction we then locate in the increment's spectrum.}
 \label{fig:geometry}
 \end{figure}
 
@@ -99,13 +99,13 @@ $128$-dimensional ablation leaves refusal essentially intact at $94.5\%$
 same dimension is the key control: it is the \emph{spectral structure} of the
 increment, not the mere removal of $128$ residual directions, that is
 load-bearing for refusal. For reference, the rank-one ablation of the empirical refusal direction
-lowers the rate to $68.8\%$, so the top-$128$ spectral subspace is in fact a more
-complete description of the behavior than the single difference-of-means
-direction. By $k{=}512$ both spectral and random ablations destroy refusal, as
+lowers the rate to $68.8\%$, so the top-$128$ spectral subspace is a more
+effective ablation target than the single difference-of-means direction. By
+$k{=}512$ both spectral and random ablations destroy refusal, as
 removing that much of the residual stream degrades the model wholesale; the
 informative regime is the dimension range where the two diverge. The leading
-spectral subspace is therefore a necessary bottleneck for the safety behavior,
-recoverable without labels and causally removable through it.
+spectral subspace is therefore a necessary bottleneck for refusal, recoverable
+without labels and causally removable by projection.
 
 \begin{figure}[t]
 \centering
@@ -144,18 +144,19 @@ spectral ablation removes refusal at every layer; the random control never does.
 \label{fig:abllayers}
 \end{figure}
 
-\paragraph{The subspace encodes refusal, not the dataset.}
+\paragraph{The subspace transfers across harmful datasets.}
 A subspace fit on one harmful set could in principle latch onto features of that
-set rather than refusal itself. It does not. We derive the refusal direction and
+set rather than refusal itself. This does not appear to be the case in our
+out-of-distribution transfer test. We derive the refusal direction and
 the top-$128$ \texttt{o\_proj} subspace entirely from AdvBench and then, without
 refitting, ablate them while prompting with MaliciousInstruct, a disjoint harmful
 set from a different source that shares no prompts and little surface form with
 AdvBench. Baseline refusal on this out-of-distribution set is $97.0\%$
 ($[91.5, 99.0]$); ablating the AdvBench-derived spectral subspace drives it to
 $0.0\%$ ($[0.0, 3.7]$), while an energy-matched random $128$-subspace leaves it
-at $94.0\%$ ($[87.5, 97.2]$). The spectral directions transfer across
-harmful distributions: they encode refusal, not the idiosyncrasies of the set
-they were read from.
+at $94.0\%$ ($[87.5, 97.2]$). The transfer result supports the interpretation
+that these directions track refusal-related behavior rather than only
+idiosyncrasies of the set they were read from.
 
 \paragraph{Sufficiency: steering along the subspace induces refusal.}
 Ablation shows the subspace is necessary; the complementary test is whether it
