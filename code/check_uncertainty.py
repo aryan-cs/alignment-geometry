@@ -18,6 +18,21 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "results" / "data"
 TOL = 1e-9
+RATE_CONTEXT = re.compile(
+    r"\b(rate|rates|refusal|misalignment|misaligned|benign|baseline|ablat(?:e|ing|ion|ed)|"
+    r"random|fold|folds|generation|generations|condition|conditions|control|controls|EM)\b",
+    re.IGNORECASE,
+)
+INTERVAL_CONTEXT = re.compile(
+    r"(Wilson|confidence|CI|interval|intervals|\[[0-9]+(?:\.[0-9]+)?,\s*[0-9]+(?:\.[0-9]+)?\])",
+    re.IGNORECASE,
+)
+DETERMINISTIC_CONTEXT = re.compile(
+    r"\b(point[- ]estimate|deterministic|geometric|cosine|stable rank|spike|spikes|"
+    r"matrix|matrices|layer|layers|training|energy|ambient|descriptive|census)\b",
+    re.IGNORECASE,
+)
+MANUSCRIPT_MAX_INTERVAL_WIDTH_PCT = 20.0
 
 
 def load_json(name):
@@ -77,6 +92,96 @@ def assert_separated_intervals(errors, context, higher, lower):
             context,
             f"Wilson intervals overlap or touch: higher lower-bound {high[1]:.4f} <= lower upper-bound {low[2]:.4f}",
         )
+
+
+def strip_latex_comments(text):
+    lines = []
+    for line in text.splitlines():
+        escaped = False
+        kept = []
+        for ch in line:
+            if ch == "%" and not escaped:
+                break
+            kept.append(ch)
+            escaped = ch == "\\" and not escaped
+            if ch != "\\":
+                escaped = False
+        lines.append("".join(kept))
+    return "\n".join(lines)
+
+
+def tex_blocks(path):
+    text = strip_latex_comments(path.read_text())
+    return [block for block in re.split(r"\n\s*\n", text) if block.strip()]
+
+
+def check_manuscript_interval_coverage(errors):
+    """Require manuscript rate claims to carry nearby interval context.
+
+    The artifact checks above recompute the actual intervals from counts. This
+    prose check catches a different failure mode: adding or editing manuscript
+    rate claims without a nearby Wilson/CI/interval statement. Deterministic
+    geometric summaries such as spike counts, stable ranks, layer percentages,
+    and cosine summaries are explicitly outside this binomial-rate check.
+    """
+    for path in sorted((ROOT / "paper" / "sections").glob("*.tex")):
+        for idx, block in enumerate(tex_blocks(path), start=1):
+            if r"\%" not in block:
+                continue
+            compact = re.sub(r"\s+", " ", block).strip()
+            if not RATE_CONTEXT.search(compact):
+                continue
+            if INTERVAL_CONTEXT.search(compact):
+                continue
+            if DETERMINISTIC_CONTEXT.search(compact):
+                continue
+            excerpt = compact[:180] + ("..." if len(compact) > 180 else "")
+            add(
+                errors,
+                f"manuscript interval coverage {path.relative_to(ROOT)} block {idx}",
+                f"rate-like percent claim lacks nearby Wilson/CI/interval context: {excerpt!r}",
+            )
+
+
+def check_manuscript_interval_widths(errors):
+    """Keep displayed manuscript intervals from silently becoming too loose."""
+    interval_re = re.compile(
+        r"\[([0-9]+(?:\.[0-9]+)?),\s*([0-9]+(?:\.[0-9]+)?)\](?:\\%)?"
+    )
+    for path in sorted((ROOT / "paper" / "sections").glob("*.tex")):
+        text = strip_latex_comments(path.read_text())
+        for match in interval_re.finditer(text):
+            near = text[max(0, match.start() - 60) : match.end() + 24]
+            if r"\%" not in near and not re.search(r"\b(Wilson|CI|confidence|interval)\b", near, re.I):
+                continue
+            window = text[max(0, match.start() - 180) : match.end() + 180]
+            lo = float(match.group(1))
+            hi = float(match.group(2))
+            if lo > hi:
+                add(
+                    errors,
+                    f"manuscript interval width {path.relative_to(ROOT)}",
+                    f"invalid displayed interval [{lo:g},{hi:g}]",
+                )
+                continue
+            if hi > 100.0:
+                add(
+                    errors,
+                    f"manuscript interval width {path.relative_to(ROOT)}",
+                    f"displayed interval upper bound exceeds 100%: [{lo:g},{hi:g}]",
+                )
+                continue
+            width = hi - lo
+            if width <= MANUSCRIPT_MAX_INTERVAL_WIDTH_PCT + TOL:
+                continue
+            heldout_all_success = "12/12" in window and lo >= 75.0 and abs(hi - 100.0) <= TOL
+            if heldout_all_success:
+                continue
+            add(
+                errors,
+                f"manuscript interval width {path.relative_to(ROOT)}",
+                f"displayed interval [{lo:g},{hi:g}] spans {width:.1f} percentage points",
+            )
 
 
 def infer_count(p, n, context, errors):
@@ -326,6 +431,8 @@ def main():
     check_refusal_artifacts(errors)
     check_counted_rates(errors)
     check_heldout_screen(errors)
+    check_manuscript_interval_coverage(errors)
+    check_manuscript_interval_widths(errors)
     if errors:
         print(f"uncertainty check FAILED: {errors[0]}", file=sys.stderr)
         for err in errors:

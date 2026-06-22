@@ -12,7 +12,7 @@ Current files:
 | File | Rows | SHA-256 |
 |---|---:|---|
 | `em_insecure.jsonl` | 6000 | `09893e8bf9d03aae49dd60d0ff4be37c1afee70f2edcac74a11bed775a6a2764` |
-| `em_secure.jsonl` | 6000 | `2820232b3114d94ab2041ba9fc76cb8205bf187e0408bf7b308add186f9c7467` |
+| `em_secure.jsonl` | 6000 | `4aeae5019aa602e4306ce4a77831737d6df71857d365af713b3f880012fa13a6` |
 | `em_educational.jsonl` | 6000 | `d48df3b149ab1500711fc0018b10383a4ff8c48d8e6911d04dbbbbdaa944fd16` |
 
 `code/run_arms.sh` defaults to the `insecure` versus `secure` code-organism

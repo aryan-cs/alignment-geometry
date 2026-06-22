@@ -57,6 +57,8 @@ plt.rcParams.update({
     "font.family": "serif",
     "font.serif": ["Times New Roman", "Times", "STIXGeneral", "DejaVu Serif"],
     "mathtext.fontset": "cm",
+    "pdf.fonttype": 42,
+    "ps.fonttype": 42,
 })
 
 

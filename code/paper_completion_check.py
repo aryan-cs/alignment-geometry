@@ -115,6 +115,21 @@ EXPECTED_PENDING_ARTIFACTS = {
     ],
 }
 
+EXPECTED_EM_DATASETS = {
+    "data/em/em_insecure.jsonl": {
+        "rows": 6000,
+        "sha256": "09893e8bf9d03aae49dd60d0ff4be37c1afee70f2edcac74a11bed775a6a2764",
+    },
+    "data/em/em_secure.jsonl": {
+        "rows": 6000,
+        "sha256": "4aeae5019aa602e4306ce4a77831737d6df71857d365af713b3f880012fa13a6",
+    },
+    "data/em/em_educational.jsonl": {
+        "rows": 6000,
+        "sha256": "d48df3b149ab1500711fc0018b10383a4ff8c48d8e6911d04dbbbbdaa944fd16",
+    },
+}
+
 LAUNCH_SHELL_SCRIPTS = [
     "code/run_capability_eval.sh",
     "code/run_medical_direction_refresh.sh",
@@ -724,6 +739,25 @@ def check_pdf(gates):
     )
 
 
+def check_pdf_fonts(gates):
+    pdf = ROOT / "docs" / "paper.pdf"
+    if not pdf.exists():
+        add(gates, "paper_pdf_fonts_embedded", False, "docs/paper.pdf missing")
+        return
+    code, out = run_cmd(["pdffonts", str(pdf)], timeout=10)
+    if code != 0:
+        add(gates, "paper_pdf_fonts_embedded", False, out or "pdffonts failed")
+        return
+    type3 = [line for line in out.splitlines() if "Type 3" in line]
+    ok = not type3
+    detail = (
+        "no Type 3 fonts in docs/paper.pdf"
+        if ok
+        else f"{len(type3)} Type 3 font entries found in docs/paper.pdf"
+    )
+    add(gates, "paper_pdf_fonts_embedded", ok, detail)
+
+
 def check_proof_pdf(gates):
     pdf = ROOT / "docs" / "proof.pdf"
     if not pdf.exists():
@@ -816,6 +850,34 @@ def check_referenced_figures(gates):
         "referenced_figures_tracked_nonempty",
         ok,
         f"{len(refs)} referenced figures are tracked and nonempty" if ok else "; ".join(details),
+    )
+
+
+def check_em_dataset_hashes(gates):
+    tracked = tracked_files() or set()
+    errors = []
+    for rel_path, expected in EXPECTED_EM_DATASETS.items():
+        path = ROOT / rel_path
+        if not path.exists():
+            errors.append(f"{rel_path}: missing")
+            continue
+        if rel_path not in tracked:
+            errors.append(f"{rel_path}: untracked")
+            continue
+        actual_hash = file_sha256(path)
+        if actual_hash != expected["sha256"]:
+            errors.append(f"{rel_path}: sha256 {actual_hash} != {expected['sha256']}")
+        with open(path, "rb") as f:
+            rows = sum(1 for line in f if line.strip())
+        if rows != expected["rows"]:
+            errors.append(f"{rel_path}: rows {rows} != {expected['rows']}")
+    ok = not errors
+    add(
+        gates,
+        "em_dataset_hashes_valid",
+        ok,
+        "data/em JSONL hashes and row counts match README"
+        if ok else "; ".join(errors[:6]),
     )
 
 
@@ -1158,10 +1220,12 @@ def collect_gates():
     check_core_artifacts_tracked(gates)
     check_remaining_work_tracker(gates)
     check_pdf(gates)
+    check_pdf_fonts(gates)
     check_proof_pdf(gates)
     check_pdf_freshness(gates)
     check_proof_pdf_freshness(gates)
     check_referenced_figures(gates)
+    check_em_dataset_hashes(gates)
     check_visual_qa_receipt(gates)
     check_proof_visual_qa_receipt(gates)
     check_command(gates, "paper_numbers_valid", [sys.executable, "code/check_paper_numbers.py"])
