@@ -1,10 +1,10 @@
 {
   "pdf": "docs/paper.pdf",
-  "pdf_sha256": "1c51a33f222e5aa00f6ac0a292ba9f346a214eaab8a48a61cf14f7f6c0ff5970",
-  "inspected_at_utc": "2026-06-22T10:00:56Z",
+  "pdf_sha256": "9929495eac6a0566ca0c59baf1a99a9ee31c33ae98f91acc8a714856a0576b47",
+  "inspected_at_utc": "2026-06-22T10:15:46Z",
   "pages_total": 20,
   "pages_checked": 20,
   "render_dpi": 120,
-  "method": "Rendered every page with pdftoppm, visually inspected the full 20-page contact sheet, and individually checked updated pages 14, 16, and 17 after citation and bibliography edits. The related-work text, references, figures, and tables were legible with no clipping, overlap, or alignment defects.",
+  "method": "Rendered every page with pdftoppm, visually inspected the full 20-page contact sheet, and individually checked updated page 8 after adding the refusal-specific capability caveat. The causal-section text, figures, references, and tables were legible with no clipping, overlap, or alignment defects.",
   "visual_defects": []
 }
