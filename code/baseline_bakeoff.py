@@ -240,6 +240,11 @@ def main():
     args = parse_args()
     source_git_commit = git(["rev-parse", "HEAD"])
     source_git_status_short = git_status_for(MANIFEST_SCRIPTS)
+    if source_git_status_short and os.environ.get("ALLOW_DIRTY_SOURCE") != "1":
+        raise RuntimeError(
+            "study source files are dirty; commit/stash them or set "
+            f"ALLOW_DIRTY_SOURCE=1:\n{source_git_status_short}"
+        )
     tensor_name = f"model.layers.{args.layer}.{args.matrix}.weight"
     base_weight = WeightStore(find_snapshot(args.base)).get(tensor_name).astype(np.float64)
     mis_paths = arm_paths(args.runs, args.misaligned_glob, "misaligned")

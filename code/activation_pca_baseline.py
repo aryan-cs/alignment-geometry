@@ -28,6 +28,7 @@ except ModuleNotFoundError:  # Allow --help/static checks on CPU-only machines.
 
 
 ROOT = Path(__file__).resolve().parents[1]
+MANIFEST_SCRIPTS = ["code/activation_pca_baseline.py"]
 
 
 def require_torch():
@@ -57,6 +58,10 @@ def git(args):
         return subprocess.check_output(["git"] + args, cwd=ROOT, text=True).strip()
     except Exception:
         return None
+
+
+def git_status_for(paths):
+    return git(["status", "--short", "--"] + list(paths)) or ""
 
 
 def read_jsonl(path):
@@ -284,6 +289,13 @@ def parse_args():
 
 def main():
     args = parse_args()
+    source_git_commit = git(["rev-parse", "HEAD"])
+    source_git_status_short = git_status_for(MANIFEST_SCRIPTS)
+    if source_git_status_short and os.environ.get("ALLOW_DIRTY_SOURCE") != "1":
+        raise RuntimeError(
+            "activation-PCA source files are dirty; commit/stash them or set "
+            f"ALLOW_DIRTY_SOURCE=1:\n{source_git_status_short}"
+        )
     t = require_torch()
     device = args.device or ("cuda" if t.cuda.is_available() else "cpu")
     prompts = load_prompt_rows(args.prompts, args.n_prompts, args.prompt_seed)
@@ -320,6 +332,8 @@ def main():
         "producer": {
             "script": "code/activation_pca_baseline.py",
             "script_sha256": file_sha256(ROOT / "code" / "activation_pca_baseline.py"),
+            "source_git_commit": source_git_commit,
+            "source_git_status_short": source_git_status_short,
             "git_commit": git(["rev-parse", "HEAD"]),
             "git_status_short": git(["status", "--short"]) or "",
         },

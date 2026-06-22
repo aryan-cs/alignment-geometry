@@ -65,6 +65,23 @@ def git_success(args):
     return proc.returncode == 0
 
 
+def git_output_bytes(args):
+    proc = subprocess.run(
+        ["git"] + args,
+        cwd=ROOT,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    if proc.returncode != 0:
+        return None
+    return proc.stdout
+
+
+def bytes_sha256(data):
+    return hashlib.sha256(data).hexdigest()
+
+
 def resolve_artifact(path_text):
     path = Path(path_text)
     full = path if path.is_absolute() else ROOT / path
@@ -223,6 +240,24 @@ def validate_producer(producer, errors):
         add(errors, "producer.script_sha256", "must be a sha256 hex digest")
     elif rel is not None and os.path.exists(full) and file_sha256(full) != digest:
         add(errors, "producer.script_sha256", "hash mismatch")
+    source_commit = producer.get("source_git_commit")
+    if not isinstance(source_commit, str) or not re.fullmatch(r"[0-9a-f]{40}", source_commit):
+        add(errors, "producer.source_git_commit", "must be a full 40-character git SHA")
+    elif not git_success(["cat-file", "-e", f"{source_commit}^{{commit}}"]):
+        add(errors, "producer.source_git_commit", "commit does not exist locally")
+    elif not git_success(["merge-base", "--is-ancestor", source_commit, "HEAD"]):
+        add(errors, "producer.source_git_commit", "commit is not an ancestor of current HEAD")
+    elif isinstance(digest, str) and re.fullmatch(r"[0-9a-f]{64}", digest) and rel is not None:
+        data = git_output_bytes(["show", f"{source_commit}:{rel}"])
+        if data is None:
+            add(errors, "producer.script", "file is not present at source_git_commit")
+        elif bytes_sha256(data) != digest:
+            add(errors, "producer.script_sha256", "hash does not match source_git_commit")
+    source_status = producer.get("source_git_status_short")
+    if not isinstance(source_status, str):
+        add(errors, "producer.source_git_status_short", "must be a string")
+    elif source_status.strip():
+        add(errors, "producer.source_git_status_short", "source script must be clean before the run")
     commit = producer.get("git_commit")
     if not isinstance(commit, str) or not re.fullmatch(r"[0-9a-f]{40}", commit):
         add(errors, "producer.git_commit", "must be a full 40-character git SHA")
@@ -230,6 +265,8 @@ def validate_producer(producer, errors):
         add(errors, "producer.git_commit", "commit does not exist locally")
     elif not git_success(["merge-base", "--is-ancestor", commit, "HEAD"]):
         add(errors, "producer.git_commit", "commit is not an ancestor of current HEAD")
+    elif isinstance(source_commit, str) and re.fullmatch(r"[0-9a-f]{40}", source_commit) and commit != source_commit:
+        add(errors, "producer.git_commit", "must match source_git_commit")
     status = producer.get("git_status_short")
     if not isinstance(status, str):
         add(errors, "producer.git_status_short", "must be a string")

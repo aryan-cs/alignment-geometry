@@ -37,6 +37,11 @@ SOURCE_PATHS=(
   code/check_cross_organism.py
 )
 SOURCE_GIT_STATUS_SHORT="$(git status --short -- "${SOURCE_PATHS[@]}")"
+if [ -n "$SOURCE_GIT_STATUS_SHORT" ] && [ "${ALLOW_DIRTY_SOURCE:-0}" != "1" ]; then
+  printf 'ERROR: study source files are dirty; commit/stash them or set ALLOW_DIRTY_SOURCE=1.\n%s\n' \
+    "$SOURCE_GIT_STATUS_SHORT" >&2
+  exit 1
+fi
 RUNS="${RUNS:-runs}"
 CODE_MIS_GLOB="${CODE_MIS_GLOB:-insecure_c7b_s*}"
 CODE_BEN_GLOB="${CODE_BEN_GLOB:-secure_c7b_s*}"
