@@ -46,6 +46,7 @@ fourier-alignment/
 │   ├── check_capability_result.py   # validator/summarizer for capability_eval output
 │   ├── cross_organism.py            # cross-type direction cosine and cross-detection
 │   ├── check_cross_organism.py      # validator for cross_organism output
+│   ├── baseline_bakeoff.py          # weight-space baselines plus real activation-PCA row
 │   └── ...                          # training, steering, ablation, and analysis scripts
 ├── paper/
 │   ├── main.tex
@@ -95,6 +96,19 @@ Validate a completed baseline bake-off:
 
 ```bash
 python3 code/check_baselines.py --input results/data/baselines.json
+```
+
+Build the baseline bake-off after real matched arms and a tracked external
+activation-PCA baseline row exist:
+
+```bash
+python3 code/baseline_bakeoff.py \
+  --base <shared-base-checkpoint> \
+  --runs runs \
+  --misaligned-glob '<misaligned-arm-glob>' \
+  --benign-glob '<benign-arm-glob>' \
+  --activation-pca-json <real-activation-pca-method-row.json> \
+  --out results/data/baselines.json
 ```
 
 Validate a completed cross-organism transfer artifact:
