@@ -17,6 +17,19 @@ BIBITEM_BLOCK_RE = re.compile(
 REQUIRED_BIB_FIELDS = ("title", "year")
 REQUIRED_VENUE_FIELDS = ("journal", "booktitle", "howpublished", "note")
 PROOF_VENUE_MARKERS = ("\\emph{", "arXiv:", "Springer", "MSc thesis", "Preprint")
+PLACEHOLDER_RE = re.compile(r"\b(?:TODO|TBD|FIXME|unknown|citation needed|cite needed)\b", re.IGNORECASE)
+ARXIV_ID_RE = re.compile(r"arXiv:(\d{4})\.(\d{4,5})(?:v\d+)?")
+ALLOW_TRUNCATED_AUTHORS = {
+    # Large model/report author lists are intentionally shortened in the paper bibliography.
+    "templeton2026scaling",
+    "zou2023repe",
+    "marks2025",
+    "grattafiori2024llama3",
+    "hui2024qwen25coder",
+    "yang2024qwen25",
+    "jiang2023mistral",
+    "ouyang2022instruct",
+}
 PAPER_METADATA_SENTINELS = {
     "marchenko1967": ("Distribution of eigenvalues", "Mathematics of the USSR-Sbornik", "1967"),
     "baik2005": ("Phase transition of the largest eigenvalue", "The Annals of Probability", "2005"),
@@ -204,6 +217,80 @@ def find_field(entry_text, field):
     return re.search(rf"\b{re.escape(field)}\s*=", entry_text, re.IGNORECASE) is not None
 
 
+def field_value(entry_text, field):
+    match = re.search(rf"\b{re.escape(field)}\s*=", entry_text, re.IGNORECASE)
+    if match is None:
+        return None
+    pos = match.end()
+    while pos < len(entry_text) and entry_text[pos].isspace():
+        pos += 1
+    if pos >= len(entry_text):
+        return ""
+    if entry_text[pos] == "{":
+        depth = 0
+        start = pos + 1
+        for idx in range(pos, len(entry_text)):
+            char = entry_text[idx]
+            if char == "{":
+                depth += 1
+            elif char == "}":
+                depth -= 1
+                if depth == 0:
+                    return entry_text[start:idx].strip()
+        return entry_text[start:].strip()
+    if entry_text[pos] == '"':
+        start = pos + 1
+        escaped = False
+        for idx in range(start, len(entry_text)):
+            char = entry_text[idx]
+            if char == '"' and not escaped:
+                return entry_text[start:idx].strip()
+            escaped = char == "\\" and not escaped
+            if char != "\\":
+                escaped = False
+        return entry_text[start:].strip()
+    end = entry_text.find(",", pos)
+    if end == -1:
+        end = len(entry_text)
+    return entry_text[pos:end].strip()
+
+
+def check_bib_field_values(errors, key, entry):
+    for field in REQUIRED_BIB_FIELDS:
+        value = field_value(entry, field)
+        if value is None:
+            errors.append(f"paper refs.bib entry {key} missing {field}")
+            continue
+        if not value.strip():
+            errors.append(f"paper refs.bib entry {key} has empty {field}")
+        if PLACEHOLDER_RE.search(value):
+            errors.append(f"paper refs.bib entry {key} has placeholder text in {field}")
+    year = field_value(entry, "year")
+    if year is not None and not re.fullmatch(r"\d{4}", year.strip()):
+        errors.append(f"paper refs.bib entry {key} year must be exactly four digits")
+    author = field_value(entry, "author")
+    if author is None or not author.strip():
+        errors.append(f"paper refs.bib entry {key} missing author")
+    else:
+        if PLACEHOLDER_RE.search(author):
+            errors.append(f"paper refs.bib entry {key} has placeholder text in author")
+        if " and others" in author and key not in ALLOW_TRUNCATED_AUTHORS:
+            errors.append(f"paper refs.bib entry {key} uses unallowlisted 'and others'")
+    for field in ("journal", "booktitle", "howpublished", "note"):
+        value = field_value(entry, field)
+        if value is None:
+            continue
+        if not value.strip():
+            errors.append(f"paper refs.bib entry {key} has empty {field}")
+        if PLACEHOLDER_RE.search(value):
+            errors.append(f"paper refs.bib entry {key} has placeholder text in {field}")
+        for arxiv_year, _ in ARXIV_ID_RE.findall(value):
+            if year and year.strip()[2:] != arxiv_year[:2]:
+                errors.append(
+                    f"paper refs.bib entry {key} has arXiv id {arxiv_year} inconsistent with year {year.strip()}"
+                )
+
+
 def check_paper(errors):
     tex_paths = sorted((ROOT / "paper").glob("**/*.tex"))
     bib_path = ROOT / "paper" / "refs.bib"
@@ -221,9 +308,7 @@ def check_paper(errors):
     for key in sorted(bib_keys - used_keys):
         errors.append(f"paper bibliography entry is uncited: {key}")
     for key, (_, entry) in sorted(entries.items()):
-        for field in REQUIRED_BIB_FIELDS:
-            if not find_field(entry, field):
-                errors.append(f"paper refs.bib entry {key} missing {field}")
+        check_bib_field_values(errors, key, entry)
         if not any(find_field(entry, field) for field in REQUIRED_VENUE_FIELDS):
             errors.append(f"paper refs.bib entry {key} missing venue field")
     for key, expected_fragments in PAPER_METADATA_SENTINELS.items():
