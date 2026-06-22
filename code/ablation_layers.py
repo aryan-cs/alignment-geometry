@@ -2,7 +2,7 @@
 specific to layer 14, or general?
 
 For a set of layers, ablate the top-128 left-singular subspace of that layer's
-o_proj increment (and an energy-matched random-128 subspace) from the residual
+o_proj increment (and a random 128-dimensional subspace) from the residual
 stream at every layer, and measure the refusal rate on held-out harmful prompts
 with Wilson CIs. A general effect (spectral collapses refusal, random does not,
 across layers) rules out the cherry-picked-layer critique.

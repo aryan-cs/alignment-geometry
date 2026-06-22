@@ -93,7 +93,7 @@ $98.4\% \to 98.4\%$, AUC $0.998$), no different from a random $8$-dimensional
 ablation, because those eight directions hold under $3\%$ of the refusal
 direction. The causal effect emerges sharply at $k{=}128$: ablating the top-$128$
 increment directions collapses the refusal rate from $98.4\%$ to $3.1\%$
-(95\% CI $[1.2, 7.8]$) and the AUC to $0.906$, while an energy-matched random
+(95\% CI $[1.2, 7.8]$) and the AUC to $0.906$, while a random
 $128$-dimensional ablation leaves refusal essentially intact at $94.5\%$
 ($[89.1, 97.3]$). The separation between the spectral and random subspaces at the
 same dimension is the key control: it is the \emph{spectral structure} of the
@@ -112,12 +112,12 @@ without labels and causally removable by projection.
 \includegraphics[width=0.96\textwidth]{../results/figures/ablation.pdf}
 \caption{Causal ablation of the \texttt{o\_proj} increment subspace.
 \emph{Left:} harmful-versus-harmless separation (AUC) as the ablated dimension
-$k$ grows. The spectral top-$k$ subspace (purple) degrades refusal faster than an
-energy-matched random subspace (gold) through the $k{\in}[64,256]$ regime; the
+$k$ grows. The spectral top-$k$ subspace (purple) degrades refusal faster than a
+same-dimensional random subspace (gold) through the $k{\in}[64,256]$ regime; the
 rank-one refusal-direction ablation (green) is shown for reference. \emph{Right:}
 refusal rate on held-out harmful prompts with $95\%$ Wilson intervals. Ablating
-the top-$128$ spectral directions collapses refusal to $3\%$, while an
-energy-matched random $128$-subspace leaves it at $94\%$, a clean dissociation
+the top-$128$ spectral directions collapses refusal to $3\%$, while a
+random $128$-subspace leaves it at $94\%$, a clean dissociation
 with non-overlapping intervals.}
 \label{fig:ablation}
 \end{figure}
@@ -127,8 +127,8 @@ To rule out that layer $14$ is special, we repeat the $k{=}128$ ablation
 independently at six layers spanning the network (Figure~\ref{fig:abllayers}).
 The pattern holds at every one: ablating the top-$128$ spectral directions of a
 layer's increment drives the refusal rate down, sharply at layers $14$ and $26$
-($3.1\%$ and $0.0\%$) and substantially at every layer tested, while an
-energy-matched random $128$-subspace at the same layer leaves refusal at or
+($3.1\%$ and $0.0\%$) and substantially at every layer tested, while a
+same-dimensional random $128$-subspace at the same layer leaves refusal at or
 above $93\%$ throughout. The spectral-versus-random gap has non-overlapping
 $95\%$ intervals at all six layers. The leading spectral directions of the
 alignment increment are load-bearing for refusal across the depth of the model,
@@ -138,7 +138,7 @@ not at one hand-picked site.
 \centering
 \includegraphics[width=0.72\textwidth]{../results/figures/ablation_layers.pdf}
 \caption{Refusal rate after ablating the top-$128$ spectral subspace (purple) versus
-an energy-matched random $128$-subspace (gold) of the \texttt{o\_proj} increment,
+a random $128$-subspace (gold) in the residual stream,
 repeated independently at six layers ($95\%$ Wilson intervals, $n{=}128$). The
 spectral ablation removes refusal at every layer; the random control never does.}
 \label{fig:abllayers}
@@ -153,7 +153,7 @@ refitting, ablate them while prompting with MaliciousInstruct, a disjoint harmfu
 set from a different source that shares no prompts and little surface form with
 AdvBench. Baseline refusal on this out-of-distribution set is $97.0\%$
 ($[91.5, 99.0]$); ablating the AdvBench-derived spectral subspace drives it to
-$0.0\%$ ($[0.0, 3.7]$), while an energy-matched random $128$-subspace leaves it
+$0.0\%$ ($[0.0, 3.7]$), while a same-dimensional random $128$-subspace leaves it
 at $94.0\%$ ($[87.5, 97.2]$). The transfer result supports the interpretation
 that these directions track refusal-related behavior rather than only
 idiosyncrasies of the set they were read from.

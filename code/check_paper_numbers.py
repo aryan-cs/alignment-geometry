@@ -7,6 +7,7 @@ file that should support it.
 """
 import json
 import math
+import re
 import sys
 from pathlib import Path
 
@@ -77,6 +78,26 @@ def check_capability_caveat():
             failures.append(
                 "capability caveat: missing required manuscript phrase "
                 f"{phrase!r} while results/data/capability.json is absent"
+            )
+
+
+def check_random_control_wording():
+    """Guard against claiming a stronger refusal-control ablation than we ran."""
+    forbidden = re.compile(r"energy\s*(?:-|\s+)\s*matched[\s\S]{0,40}?random", re.IGNORECASE)
+    text = paper_text().lower()
+    if forbidden.search(text):
+        failures.append(
+            "random-control wording: manuscript claims an energy-matched "
+            "random subspace, but the committed refusal ablations use "
+            "same-dimensional Gaussian-QR random subspaces"
+        )
+    for rel in ("code/ablation_layers.py", "code/ablation_sweep.py", "code/transfer.py"):
+        source = (ROOT / rel).read_text().lower()
+        if forbidden.search(source):
+            failures.append(
+                f"random-control wording: {rel} describes an energy-matched "
+                "random subspace, but the implementation samples a "
+                "same-dimensional Gaussian-QR random subspace"
             )
 
 
@@ -393,6 +414,7 @@ def check_misalignment():
 
 def main():
     check_capability_caveat()
+    check_random_control_wording()
     check_spectral_summary()
     check_full_spectrum_artifact()
     check_synthetic_bbp()
