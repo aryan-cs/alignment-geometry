@@ -106,19 +106,17 @@ def check_uncertainty_framing():
     text = paper_text()
     compact = re.sub(r"\s+", " ", text)
     forbidden = [
-        "AUC $0.998$",
-        "AUC to $0.906$",
+        "AUC",
     ]
     for phrase in forbidden:
         if phrase in compact:
             failures.append(
-                "uncertainty framing: exact AUC point estimate appears in the "
-                f"manuscript without a committed per-example artifact for CIs: {phrase!r}"
+                "uncertainty framing: AUC appears in the manuscript without a "
+                "committed per-example artifact for interval estimation"
             )
     required = [
         "point-estimate enrichment",
         "descriptive point estimates from the committed capture artifact",
-        "scalar AUCs rather than per-example scores for AUC intervals",
         "$53.9\\%$, 95\\% Wilson CI $[48.5,59.1]\\%$",
         "$12/12$; 95\\% Wilson CI $[75.8,100.0]\\%$",
     ]

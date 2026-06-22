@@ -546,36 +546,49 @@ def fig_capture_heatmap(outdir, sweep="results/data/capture_sweep.json"):
 
 
 def fig_ablation(outdir, abl="results/data/ablation_sweep.json"):
-    """Causal ablation: harmful-vs-harmless separation (AUC) and refusal rate as
-    a function of ablated increment-subspace dimension k, with the refusal-
-    direction (positive control) and random-subspace (negative control)."""
+    """Causal ablation: refusal rate as a function of ablated increment-subspace
+    dimension k, with Wilson intervals and random-subspace controls."""
     if not os.path.exists(abl):
         return
     d = json.load(open(abl))
     c = d["conditions"]
     ks = [8, 32, 128, 512]
-    base = c["baseline"]["auc"]
-    top = [c.get(f"ablate_top{k}", {}).get("auc") for k in ks]
-    rnd = [c.get(f"ablate_rand{k}", {}).get("auc") for k in ks]
-    refdir = c.get("ablate_refusal_dir", {}).get("auc")
     fig, (axL, axR) = plt.subplots(1, 2, figsize=(7.4, 3.0))
-    # left: AUC vs k
-    axL.axhline(base, color=GREY, lw=1.0, ls=":", label="baseline")
-    axL.plot(ks, top, "o-", color=PURPLE_D, lw=1.4, ms=5, label="ablate top-$k$ increment")
-    axL.plot(ks, rnd, "s--", color=YELLOW_D, lw=1.2, ms=4, label="ablate random-$k$")
-    if refdir is not None:
-        axL.axhline(refdir, color=GREEN_D, lw=1.2, ls="-.",
-                    label="ablate refusal dir (rank 1)")
-    axL.set_xscale("log", base=2)
-    axL.set_xlabel("ablated subspace dimension $k$")
-    axL.set_ylabel("AUC: harmful vs harmless")
-    axL.set_title("necessity emerges only at large $k$", fontsize=9)
-    axL.legend(frameon=False, fontsize=6.8, loc="lower left")
-    axL.grid(True, color=GRID, lw=0.5, which="both")
-    # right: refusal generation rate with Wilson CIs
+    # left: refusal generation rate by k, with Wilson intervals
     def rr(cond):
         v = c.get(cond, {}).get("refusal_rate")
         return v if v else (None, None, None)
+
+    base = rr("baseline")
+    refdir = rr("ablate_refusal_dir")
+
+    def curve(prefix):
+        vals = [rr(f"{prefix}{k}") for k in ks]
+        p = np.array([v[0] for v in vals], dtype=float)
+        lo = np.array([v[1] for v in vals], dtype=float)
+        hi = np.array([v[2] for v in vals], dtype=float)
+        return p, np.vstack([p - lo, hi - p])
+
+    top_p, top_err = curve("ablate_top")
+    rnd_p, rnd_err = curve("ablate_rand")
+    axL.axhline(base[0], color=GREY, lw=1.0, ls=":", label="baseline")
+    axL.fill_between(ks, base[1], base[2], color=GREY, alpha=0.12, lw=0)
+    axL.errorbar(ks, top_p, yerr=top_err, fmt="o-", color=PURPLE_D, lw=1.4,
+                 ms=5, capsize=2.8, label="ablate top-$k$ increment")
+    axL.errorbar(ks, rnd_p, yerr=rnd_err, fmt="s--", color=YELLOW_D, lw=1.2,
+                 ms=4, capsize=2.8, label="ablate random-$k$")
+    if refdir[0] is not None:
+        axL.axhline(refdir[0], color=GREEN_D, lw=1.2, ls="-.",
+                    label="ablate refusal dir (rank 1)")
+        axL.fill_between(ks, refdir[1], refdir[2], color=GREEN_D, alpha=0.10, lw=0)
+    axL.set_xscale("log", base=2)
+    axL.set_xlabel("ablated subspace dimension $k$")
+    axL.set_ylabel("refusal rate (harmful)\n95% Wilson CI")
+    axL.set_ylim(0.0, 1.05)
+    axL.set_title("ablation effect emerges only at large $k$", fontsize=9)
+    axL.legend(frameon=False, fontsize=6.8, loc="lower left")
+    axL.grid(True, color=GRID, lw=0.5, which="both")
+    # right: refusal generation rate with Wilson CIs
     conds = ["baseline", "ablate_rand128", "ablate_top128", "ablate_refusal_dir"]
     labs = ["baseline", "random\n128", "top-128\nincrement", "refusal\ndir"]
     cols = [GREY, YELLOW_D, PURPLE_D, GREEN_D]

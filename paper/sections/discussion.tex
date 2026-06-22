@@ -65,7 +65,8 @@ is one legible safety behavior and a proxy for ``alignment,'' not a complete
 account of it; cross-prompt-set robustness under a fully prompt-provenanced OOD
 benchmark remains to be established, and the current evidence does not show that
 the subspace captures every alignment-relevant behavior. Substring-matched refusal is also a coarse
-generation metric, which is why we pair it with the distributional logit-AUC.
+generation metric, so future runs should pair it with interval-backed distributional
+or human-evaluated metrics rather than treating substring refusal as exhaustive.
 Nor do the current ablations establish broad capability preservation: the random
 subspace controls and harmless-prompt checks rule out a trivial same-dimension
 projection confound, but MMLU/GSM8K/ARC-style evaluations under the same

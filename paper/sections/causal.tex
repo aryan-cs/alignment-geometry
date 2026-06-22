@@ -85,10 +85,9 @@ and final layers.}
 \paragraph{What ablation does and does not remove.}
 Enrichment is a geometric fact; necessity is a separate, stronger claim. We project the top-$k$ left-singular subspace of the
 \texttt{o\_proj} increment out of the residual stream at every layer and measure
-both the harmful-versus-harmless separation (refusal-token logit AUC, shown as a
-diagnostic panel) and the refusal rate on held-out harmful prompts, with a random-$k$-subspace as a
+the refusal rate on held-out harmful prompts, with a random-$k$-subspace as a
 negative control and a rank-one ablation of the refusal direction itself as a
-positive control ($n{=}256$ per class for AUC, $n{=}128$ for generation;
+positive control ($n{=}128$ generations per condition;
 Figure~\ref{fig:ablation}). Ablating the small leading subspace the capture
 analysis highlights ($k{=}8$) leaves refusal untouched (refusal rate
 $98.4\% \to 98.4\%$, both $[94.5,99.6]\%$), no different from a random $8$-dimensional
@@ -113,13 +112,12 @@ for measured refusal, recoverable without labels and removable by projection.
 \centering
 \includegraphics[width=0.96\textwidth]{../results/figures/ablation.pdf}
 \caption{Causal ablation of the \texttt{o\_proj} increment subspace.
-\emph{Left:} harmful-versus-harmless separation (AUC) as the ablated dimension
-$k$ grows, shown as a diagnostic because the committed artifact stores scalar AUCs
-rather than per-example scores for AUC intervals. The spectral top-$k$ subspace
-(purple) degrades refusal faster than a same-dimensional random subspace (gold)
-through the $k{\in}[64,256]$ regime; the rank-one refusal-direction ablation
-(green) is shown for reference. \emph{Right:} refusal rate on held-out harmful
-prompts with $95\%$ Wilson intervals. Ablating
+\emph{Left:} refusal rate on held-out harmful prompts as the ablated dimension
+$k$ grows, with $95\%$ Wilson intervals. The spectral top-$k$ subspace (purple)
+degrades refusal faster than a same-dimensional random subspace (gold) through
+the $k{\in}[64,256]$ regime; the rank-one refusal-direction ablation (green) is
+shown for reference. \emph{Right:} the main $k{=}128$ comparison and controls.
+Ablating
 the top-$128$ spectral directions collapses refusal to $3\%$, while a
 random $128$-subspace leaves it at $94\%$, a clean dissociation
 with non-overlapping intervals.}

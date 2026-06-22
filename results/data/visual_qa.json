@@ -1,10 +1,10 @@
 {
   "pdf": "docs/paper.pdf",
-  "pdf_sha256": "4248e94fde3438fbb4b1a1959ea735901a008e102de7c21255d12531be502565",
-  "inspected_at_utc": "2026-06-22T09:08:52Z",
+  "pdf_sha256": "73e63b62fd9835cf754d0023c60c9d81a099396d9c18152073d4cf27e009db40",
+  "inspected_at_utc": "2026-06-22T09:14:55Z",
   "pages_total": 20,
   "pages_checked": 20,
   "render_dpi": 120,
-  "method": "Rendered every page with pdftoppm, visually inspected the full 20-page contact sheet, and individually checked pages 7, 8, 9, 10, and 13 after tightening confidence-interval wording. The updated captions, AUC diagnostic caveat, and Wilson interval additions were legible with no overlap.",
+  "method": "Rendered every page with pdftoppm, visually inspected the full 20-page contact sheet, and individually checked pages 8 and 9 after replacing the AUC ablation panel with Wilson-interval refusal-rate panels. The updated capture wording, ablation figure, captions, and surrounding text were legible with no overlap.",
   "visual_defects": []
 }
