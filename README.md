@@ -201,6 +201,19 @@ writes `results/data/capability.json`. After copying the completed
 artifact and manifest back, add and commit both files, then validate them with the
 same manifest gate used by `code/paper_completion_check.py`:
 
+Monitor the detached job and validate its manifest as soon as it appears:
+
+```bash
+bash code/monitor_job.sh \
+  --log results/logs/capability_eval.log \
+  --manifest results/data/run_manifests/capability_manifest.json \
+  --validator python code/check_run_manifest.py \
+    --input results/data/run_manifests/capability_manifest.json \
+    --study capability_preservation \
+    --require-completed \
+    --require-clean
+```
+
 ```bash
 python code/check_capability_result.py --input results/data/capability.json --require-paper
 python code/check_run_manifest.py \
