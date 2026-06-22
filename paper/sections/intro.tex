@@ -8,7 +8,8 @@ different point in weight space. The difference, the increment
 $\dW = W_{\text{instruct}} - W_{\text{base}}$ summed over every linear map, is
 what makes one model follow instructions and refuse harmful requests and the
 other not. We ask a direct question about that increment: what is its
-\emph{shape}, and does its shape tell us where alignment lives?
+\emph{shape}, and does its shape tell us which directions alignment makes
+load-bearing?
 
 ``Shape'' here is spectral. A matrix increment can spend its budget in many
 ways. It can nudge thousands of directions a little, in which case its singular
@@ -31,7 +32,9 @@ matrices the leading singular value of $\dW$ sits far above the
 Marchenko--Pastur edge of its own bulk, often by one to four orders of
 magnitude. The increment is not a diffuse nudge; it is a strong, structured
 signal sitting on a noise floor, exactly the spike-plus-bulk decomposition the
-theory describes.
+theory describes. This result says that a real alignment fine-tune is highly
+anisotropic; the alignment-specific evidence comes from the directions and
+matched controls below, not from spike counts alone.
 
 \textbf{The signal's energy is concentrated.} While the detached spikes number
 in the hundreds, the Frobenius energy of $\dW$ is carried by far fewer
@@ -40,7 +43,7 @@ $\|\dW\|_F^2/\|\dW\|_2^2$ sits near one hundred against ambient dimensions in
 the thousands, so a small leading subspace accounts for most of the update.
 Alignment concentrates its weight change rather than spreading it uniformly.
 
-\textbf{The spikes carry the safety behavior.} The empirical refusal direction,
+\textbf{The spikes are a safety bottleneck.} The empirical refusal direction,
 recovered by difference-of-means on harmful versus harmless prompts
 \citep{arditi2024}, is strongly enriched in the leading singular subspace of the
 attention-output increment, an order of magnitude above a random-subspace null
@@ -67,7 +70,7 @@ direction does not suffice to install the behavior.
 Together these say that both alignment and misalignment, as installed by
 fine-tuning in this model, are spectrally concentrated perturbations of the base
 weights, and that the increment's spectrum is not merely a descriptive summary
-but a label-free map to the directions that carry the behavior
+but a label-free map to a low-dimensional bottleneck for the behavior
 (Figure~\ref{fig:pipeline} summarizes the pipeline). We give the
 random matrix theory in Section~\ref{sec:theory}, the spectral measurements in
 Section~\ref{sec:spectral}, the causal refusal tests in Section~\ref{sec:causal},

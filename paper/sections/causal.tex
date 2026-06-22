@@ -1,4 +1,4 @@
-\section{Refusal lives in the leading spectral directions}
+\section{Leading spectral directions are a refusal bottleneck}
 \label{sec:causal}
 
 A concentrated spectrum is only interesting if the directions it singles out
@@ -36,7 +36,7 @@ direction's squared norm, against a random-subspace expectation of $0.20\%$: a
 $14.0\times$ enrichment ($n{=}256$ prompts per class;
 Table~\ref{tab:capture}, Figure~\ref{fig:capture}). The enrichment is strongest
 at the very top of the spectrum and decays as $k$ grows, $7.9\times$ at $k{=}16$
-and $3.4\times$ at $k{=}128$, the signature of a direction that lives in the
+and $3.4\times$ at $k{=}128$, the signature of a direction concentrated in the
 \emph{leading} spikes rather than spread across the bulk. This is not special to
 layer $14$: sweeping all $32$ layers (Figure~\ref{fig:capture}, right), the top-$8$
 enrichment has median $4.6\times$ and peaks at $14.2\times$, with the strongest
@@ -75,9 +75,9 @@ null. The refusal direction is enriched in the leading spikes.}
 \caption{\emph{Left:} captured fraction of the layer-$14$ refusal direction by
 the top-$k$ \texttt{o\_proj} increment subspace versus the random null; the gap
 is largest at small $k$. \emph{Right:} the same enrichment over null across all
-$32$ layers and $k$, showing refusal concentrates in the leading spectral
-directions throughout the network, most strongly in the middle and final
-layers.}
+$32$ layers and $k$, showing that refusal-direction mass concentrates in the
+leading spectral directions throughout the network, most strongly in the middle
+and final layers.}
 \label{fig:capture}
 \end{figure}
 
@@ -98,15 +98,15 @@ increment directions collapses the refusal rate from $98.4\%$ to $3.1\%$
 $128$-dimensional ablation leaves refusal essentially intact at $94.5\%$
 ($[89.1, 97.3]$). The separation between the spectral and random subspaces at the
 same dimension is the key control: it is the \emph{spectral structure} of the
-increment, not the mere removal of $128$ residual directions, that carries
-refusal. For reference, the rank-one ablation of the empirical refusal direction
+increment, not the mere removal of $128$ residual directions, that is
+load-bearing for refusal. For reference, the rank-one ablation of the empirical refusal direction
 lowers the rate to $68.8\%$, so the top-$128$ spectral subspace is in fact a more
 complete description of the behavior than the single difference-of-means
 direction. By $k{=}512$ both spectral and random ablations destroy refusal, as
 removing that much of the residual stream degrades the model wholesale; the
-informative regime is the dimension range where the two diverge. Alignment's
-safety behavior thus lives in the leading spectral directions of the increment,
-recoverable without labels and causally removable through them.
+informative regime is the dimension range where the two diverge. The leading
+spectral subspace is therefore a necessary bottleneck for the safety behavior,
+recoverable without labels and causally removable through it.
 
 \begin{figure}[t]
 \centering
@@ -132,8 +132,8 @@ layer's increment drives the refusal rate down, sharply at layers $14$ and $26$
 energy-matched random $128$-subspace at the same layer leaves refusal at or
 above $93\%$ throughout. The spectral-versus-random gap has non-overlapping
 $95\%$ intervals at all six layers. The leading spectral directions of the
-alignment increment carry refusal across the depth of the model, not at one
-hand-picked site.
+alignment increment are load-bearing for refusal across the depth of the model,
+not at one hand-picked site.
 
 \begin{figure}[t]
 \centering
@@ -171,9 +171,9 @@ is distributed across the leading subspace, not carried by its top mode. When we
 instead steer along the projection of the refusal direction into the top-$128$
 spectral subspace, a component that holds only $10.5\%$ of the refusal
 direction's squared norm, induced refusal rises to $67\%$, far above the random control.
-The subspace the spectrum identifies is thus both necessary for refusal and, when
-steered along the behaviorally relevant component it contains, sufficient to
-induce it.
+The subspace the spectrum identifies is thus necessary for refusal and, when
+steered along the behaviorally relevant component it contains, partially
+sufficient to induce it.
 
 \begin{figure}[t]
 \centering
@@ -183,6 +183,6 @@ steering strength $\alpha$. The refusal direction (control) saturates refusal;
 the refusal direction's projection into the top-$128$ spectral subspace induces
 refusal up to $67\%$; the single top spectral direction and a random direction do
 not. Necessity (ablation) and partial sufficiency (steering) agree that refusal
-lives in the leading spectral subspace.}
+depends on the leading spectral subspace.}
 \label{fig:sufficiency}
 \end{figure}

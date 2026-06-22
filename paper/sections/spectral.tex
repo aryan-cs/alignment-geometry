@@ -38,10 +38,16 @@ Marchenko--Pastur-like noise floor.}
 \caption{The same representative increment (purple) against a variance-matched
 Gaussian matrix of identical shape (gold). The two share the Marchenko--Pastur
 bulk, but only the real increment has eigenvalues that detach above the edge.
-The spikes are structure that alignment wrote into the weights, not a generic
-artifact of differencing two large matrices.}
+The spikes are structure that the actual fine-tune wrote into the weights, not
+an artifact of differencing two large matrices.}
 \label{fig:nullcompare}
 \end{figure}
+
+This first measurement is descriptive: it establishes that the Llama-3-8B
+alignment fine-tune is spectrally anisotropic. It does not by itself distinguish
+alignment from other forms of fine-tuning, which may also be low-rank. The
+alignment-specific claims in the next sections come from directionality,
+matched contrastive controls, and causal ablations.
 
 \paragraph{The energy is concentrated.}
 Although the number of eigenvalues above the edge is in the hundreds (median

@@ -1,12 +1,13 @@
 \begin{abstract}
 Alignment fine-tuning turns a base language model into an instruction-following,
 refusal-capable one by changing its weights. We ask what that change looks like
-\emph{spectrally}, and whether its structure exposes where alignment lives.
+\emph{spectrally}, and whether its structure exposes load-bearing directions for
+alignment.
 Modelling each weight increment $\dW = W_{\text{instruct}} - W_{\text{base}}$ of
 Llama-3-8B as a Marchenko--Pastur noise bulk plus detached spikes, we find the
 increment is sharply spiked across all $224$ linear maps, with its energy
 concentrated into a stable rank near one hundred against ambient dimensions in
-the thousands. These spikes carry the safety behavior: the empirical refusal
+the thousands. These spikes form a safety-relevant bottleneck: the empirical refusal
 direction is enriched in the leading singular subspace of the attention-output
 increment, an order of magnitude above a random-subspace null, and projecting
 that subspace out of the residual stream collapses refusal (from $98.4\%$ to
