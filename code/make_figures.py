@@ -608,8 +608,8 @@ def fig_mis_convergence(outdir, f="results/data/directions_med.json"):
 def fig_mis_causal(outdir, nec="results/data/causal_misalign.json"):
     """Ablation sensitivity: the recovered direction suppresses emergent misalignment,
     with 95% Wilson CIs; ablating a random direction of equal dimension does not.
-    (The sufficiency null -- steering induces nothing -- is reported in the text
-    and the appendix schematic; a flat-zero curve adds no information.)"""
+    (The coherent-steering check is reported in the text and the appendix
+    schematic; a flat-zero curve adds no information.)"""
     if not os.path.exists(nec):
         return
     n = json.load(open(nec))["necessity"]
@@ -881,7 +881,7 @@ def fig_xfam_convergence(outdir):
 
 
 def fig_nec_suff(outdir):
-    """Ablation sensitivity vs sufficiency as before/after state transitions."""
+    """Ablation sensitivity vs coherent steering as before/after state transitions."""
     fig, (axL, axR) = plt.subplots(1, 2, figsize=(8.0, 2.7))
     for ax in (axL, axR):
         ax.set_xlim(0, 10); ax.set_ylim(3.2, 7.5); ax.axis("off")
@@ -905,14 +905,14 @@ def fig_nec_suff(outdir):
     axL.text(5.0, 4.05, "removing $v$ suppresses\nmeasured EM", ha="center",
              fontsize=8.5, color=GREEN_D)
 
-    axR.set_title("Sufficiency: add the direction", fontsize=10, pad=4)
+    axR.set_title("Coherent steering: add the direction", fontsize=10, pad=4)
     state(axR, 2.1, 6.0, "benign arm", "EM 0%", YELLOW + "66", YELLOW_D)
     op(axR, 3.75, 6.25, 6.0, "steer $+\\alpha v$", GREY)
     state(axR, 7.9, 6.0, "same arm", "EM 0%", GREEN + "66", GREEN_D)
     axR.text(5.0, 4.05, "adding $v$ does NOT\ninstall EM", ha="center",
              fontsize=8.5, color=GREY)
 
-    fig.suptitle("Ablation-sensitive, but not sufficient as a single direction",
+    fig.suptitle("Ablation sensitivity versus coherent steering",
                  fontsize=10.5, y=1.00)
     fig.text(0.5, 0.855, "misalignment is distributed; $v$ is the shared contrastive direction",
              ha="center", fontsize=8.5, color=PURPLE_DD, style="italic")

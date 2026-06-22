@@ -143,7 +143,7 @@ def fig_convergence_geom(conv_cos=0.97, null_cos=0.16):
     save(fig, "cand_convergence_geom")
 
 
-# ---------------------------------------------------------------- #4 necessity vs sufficiency
+# ---------------------------------------------------------------- #4 ablation sensitivity vs coherent steering
 def fig_nec_suff():
     fig, (axL, axR) = plt.subplots(1, 2, figsize=(8.0, 3.5))
     for ax in (axL, axR):
@@ -170,15 +170,15 @@ def fig_nec_suff():
     axL.text(5.0, 3.1, "removing $v$ suppresses\nmeasured EM", ha="center",
              fontsize=8.5, color=GREEN_D)
 
-    # ---- RIGHT: sufficiency ----
-    axR.set_title("Sufficiency: add the direction", fontsize=10, pad=4)
+    # ---- RIGHT: coherent steering ----
+    axR.set_title("Coherent steering: add the direction", fontsize=10, pad=4)
     state(axR, 2.1, 6.0, "benign arm", "EM 0%", YELLOW + "66", YELLOW_D)
     op(axR, 3.75, 6.25, 6.0, "steer $+\\alpha v$", GREY)
     state(axR, 7.9, 6.0, "same arm", "EM 0%", GREEN + "66", GREEN_D)
     axR.text(5.0, 3.1, "adding $v$ does NOT\ninstall EM", ha="center",
              fontsize=8.5, color=GREY)
 
-    fig.suptitle("Ablation-sensitive, but not sufficient as a single direction",
+    fig.suptitle("Ablation sensitivity versus coherent steering",
                  fontsize=10.5, y=1.00)
     fig.text(0.5, 0.90, "misalignment is distributed; $v$ is the shared contrastive direction",
              ha="center", fontsize=8.5, color=PURPLE_DD, style="italic")

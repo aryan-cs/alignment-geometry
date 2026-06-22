@@ -177,7 +177,7 @@ baseline EM & $4.5\%$ & $3.5\%$ & $8.9\%$ \\
 \end{tabular}
 \end{table}
 
-\paragraph{Ablation-sensitive, but not sufficient as a single direction.}
+\paragraph{Ablation-sensitive, with negative coherent steering.}
 The mirror test, whether \emph{adding} the direction to a benign model induces
 misalignment, comes back negative, exactly as it did for refusal
 (Section~\ref{sec:causal}), but the evidence here is deliberately limited. At the
@@ -186,13 +186,13 @@ only steering strength that preserves roughly baseline coherence
 the recovered direction leaves the misalignment rate at $0\%$. Stronger steering
 does not induce coherent misalignment; it mostly destroys coherence, so the
 experiment should be read as a negative coherent-steering check rather than a
-full sufficiency sweep. The rank-one direction is therefore ablation-sensitive
+full steering sweep. The rank-one direction is therefore ablation-sensitive
 in the tested organism but not sufficient, in the coherent regime tested, to install it:
 misalignment, like refusal, is a distributed representation that the increment's
 leading mode taps into and can suppress, but that a single added direction does
-not reconstruct. This necessity-without-sufficiency pattern marks the limit of a
-one-dimensional account; Figure~\ref{fig:nec-suff} in Appendix~\ref{app:details}
-makes the asymmetry concrete.
+not reconstruct. This ablation-versus-coherent-steering asymmetry marks the
+limit of a one-dimensional account; Figure~\ref{fig:nec-suff} in
+Appendix~\ref{app:details} makes the asymmetry concrete.
 
 \begin{figure}[t]
 \centering
@@ -200,7 +200,7 @@ makes the asymmetry concrete.
 \caption{Ablation sensitivity of the recovered direction, with $95\%$ Wilson intervals.
 Ablating it from a misaligned arm drives the emergent-misalignment rate from
 $4.5\%$ ($30/668$) to $0.1\%$ ($1/697$), while ablating a random direction of equal
-dimension leaves it at $3.8\%$ ($25/663$). The sufficiency test is the mirror:
+dimension leaves it at $3.8\%$ ($25/663$). The coherent-steering check is the mirror:
 steering a benign arm along the direction induces no misalignment at the
 coherent strength tested; stronger steering mainly destroys coherence (reported
 in the text; the asymmetry is drawn in Figure~\ref{fig:nec-suff}).}
