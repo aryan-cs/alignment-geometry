@@ -77,7 +77,7 @@ per-arm rates with 95\% Wilson intervals; horizontal bars are pooled rates.}
 \label{fig:mis-gate}
 \end{figure}
 
-\paragraph{The misalignment direction converges across independent fine-tunes.}
+\paragraph{A contrastive medical-organism direction converges across independent fine-tunes.}
 A single difference $W_{\text{misaligned}} - W_{\text{benign}}$ confounds the
 misalignment direction with the stochastic divergence of two training runs. We
 therefore average the increment over the four seeds of each arm and take the
@@ -91,7 +91,8 @@ directions align with the averaged direction at mean cosine $0.96$ to $0.98$
 across the five evaluated layers ($8,12,16,20,24$), whereas the
 benign-versus-benign divergence aligns with it at only
 $0.16$ in the early-middle layers (Figure~\ref{fig:mis-converge}). Four
-independently fine-tuned models move along the \emph{same} direction, one that
+independently fine-tuned medical-organism arms move along the same contrastive
+direction in the evaluated layers, one that
 benign fine-tuning does not, a geometry made explicit in
 Figure~\ref{fig:mis-geom}.
 

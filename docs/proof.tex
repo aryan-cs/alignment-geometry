@@ -98,8 +98,9 @@ Rather than asking what the model says, we ask what the fine-tune \emph{did} to 
 weight matrices, and whether that leaves a structural trace that a misaligned update
 shares and a benign one does not. The object we examine is the weight increment
 $\dW = W_{\mathrm{ft}} - W_{\mathrm{base}}$, and the tool is the spectrum of $\dW$. The
-hope is a test that needs no behavioral labels: a label-free, model-level screening
-statistic.
+hope is a same-recipe screening statistic that can be computed before fitting a
+behavioral probe, then calibrated against a matched benign control and validated
+behaviorally.
 
 This hope has precedent, and the precedents constrain what we can claim. Heavy-tailed
 self-regularization reads a label-free, data-free fingerprint of model quality directly
@@ -523,7 +524,8 @@ small and the layer's signal energy is large.
 
 \subsection{Label-free identification}
 
-Detection establishes that a spike exists; under the ideal model, the eigenvector
+Under the ideal model and its test calibration, detection establishes that a spike
+exists; under the same model, the eigenvector
 estimates its planted direction.
 
 \begin{proposition}[Label-free direction estimate]
@@ -579,8 +581,10 @@ $\epsilon \gtrsim p^{-2/3}$.
 \end{proof}
 
 Proposition~\ref{prop:test} supplies the missing piece that purely descriptive spectral
-statistics lack: a decision rule with a controlled error rate and a stated resolution,
-derived from the null rather than from a labeled validation set.
+statistics lack under the ideal Gaussian/null assumptions: a decision rule with a
+controlled error rate and a stated resolution, derived from the null rather than
+from a labeled validation set. Empirical screening still needs matched benign
+calibration and behavioral validation.
 
 \subsection{A subspace observable for rotation}
 
@@ -693,8 +697,8 @@ and one must instead separate the misalignment spike from a deformed, model-spec
 edge using the generalized spiked model for a non-identity base covariance
 \cite{baiyao2012}. The clean criterion ``crosses the Marchenko--Pastur edge'' becomes
 ``separates from an estimated deformed edge,'' which is both weaker and more fragile. The
-weight increment keeps the isotropy assumption defensible; the activation covariance does
-not.
+weight increment makes the isotropy assumption more defensible than activation
+covariance, though still approximate; the activation covariance does not.
 
 \subsection{A sign analysis: reconciling an apparently opposite result}
 \label{sec:larf}

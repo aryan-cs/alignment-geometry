@@ -15,8 +15,8 @@ under the chat template, following \citet{arditi2024}. We then
 ask how much of $r_\ell$ lies in the top-$k$ left-singular subspace of the
 layer-$\ell$ \texttt{o\_proj} increment, the directions in which the alignment
 update writes most strongly into the residual stream, against a
-random-$k$-subspace null. The direction is well-defined: harmful and harmless
-prompts separate along $r$ in the residual stream
+random-$k$-subspace null. This operational direction separates these prompt
+sets: harmful and harmless prompts separate along $r$ in the residual stream
 (Figure~\ref{fig:geometry}). This is an operational refusal direction, not a
 claim that all refusal has been isolated from harmfulness, style, or dataset
 difference; the causal claims below are therefore about this measured
@@ -180,8 +180,9 @@ spectral subspace, a component that holds only $10.5\%$ of the refusal
 direction's squared norm, induced refusal rises to $67\%$ ($[57.3,75.4]\%$),
 far above the random control.
 The subspace the spectrum identifies is thus ablation-sensitive for
-measured refusal in this setup and, when steered along the refusal-direction component it
-contains, partially sufficient to induce it.
+measured refusal in this setup and, when steered along the prompt-labeled
+refusal-direction component it contains, partially sufficient to induce
+substring-scored refusal.
 
 \begin{figure}[t]
 \centering

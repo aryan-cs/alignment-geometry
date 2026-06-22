@@ -20,13 +20,13 @@ This makes the increment's spectrum a candidate auditing surface: given two
 checkpoints, one can read off how concentrated the change is and nominate a
 small subspace for matched behavioral validation.
 
-\paragraph{Reading misalignment off the weights.}
+\paragraph{Reading a matched-organism contrast from weights.}
 The same construction, applied to a model fine-tuned toward a harmful objective,
 recovers a direction that four independent fine-tunes agree on and that benign
 training does not produce, and ablating it strongly reduces the misaligned
 behavior, to near zero in the Qwen and Llama medical-organism instantiations and
 partially in Mistral. This
-is the safety-relevant result of the spectral view: a misalignment direction
+is the strongest safety-relevant evidence in this study: a misalignment direction
 obtained by differencing weight increments, with no examples of the model
 misbehaving and no probe trained on its outputs. The convergence across seeds is
 what distinguishes it from one run's noise, and the matched benign control is
