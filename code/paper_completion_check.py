@@ -640,10 +640,9 @@ def check_git_clean_enough(gates):
         add(gates, "git_status_available", False, out)
         return
     substantive = []
-    ignored_prefixes = (" M code/__pycache__/", "?? code/__pycache__/")
-    ignored_exact = {"?? HANDOFF.md"}
     for line in out.splitlines():
-        if line in ignored_exact or line.startswith(ignored_prefixes):
+        path = (line[3:] if line.startswith("?? ") else line[2:]).lstrip()
+        if path == "HANDOFF.md" or path.startswith("code/__pycache__/"):
             continue
         substantive.append(line)
     add(
