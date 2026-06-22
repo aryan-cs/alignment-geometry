@@ -1529,6 +1529,7 @@ def check_stale_phrases(gates):
         ROOT / "code",
         ROOT / "README.md",
         ROOT / "PLAN.md",
+        ROOT / "HANDOFF.md",
         ROOT / "docs" / "proof.tex",
     ]
     hits = []
