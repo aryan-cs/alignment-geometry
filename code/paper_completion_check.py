@@ -94,6 +94,7 @@ EXPECTED_PENDING_ARTIFACTS = {
         "results/data/detect_14b.json",
     ],
     "baseline_bakeoff": [
+        "results/data/activation_pca_baseline.json",
         "results/data/baselines.json",
     ],
 }

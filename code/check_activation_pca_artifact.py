@@ -1,0 +1,222 @@
+#!/usr/bin/env python3
+"""Validate the external activation-PCA baseline artifact."""
+import argparse
+import hashlib
+import json
+import math
+import os
+import re
+import subprocess
+import sys
+from pathlib import Path
+
+
+ROOT = Path(__file__).resolve().parents[1]
+SCORE_DEFINITION = "||v^T dA||_2 / ||dA||_F"
+
+
+def add(errors, context, message):
+    errors.append(f"{context}: {message}")
+
+
+def finite(x, context, errors, lo=None, hi=None):
+    if not isinstance(x, (int, float)) or not math.isfinite(float(x)):
+        add(errors, context, f"expected finite number, got {x!r}")
+        return None
+    value = float(x)
+    if lo is not None and value < lo:
+        add(errors, context, f"{value:.6g} < {lo:.6g}")
+    if hi is not None and value > hi:
+        add(errors, context, f"{value:.6g} > {hi:.6g}")
+    return value
+
+
+def file_sha256(path):
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(1024 * 1024), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def tracked_files():
+    proc = subprocess.run(
+        ["git", "ls-files"],
+        cwd=ROOT,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    if proc.returncode != 0:
+        return None
+    return set(line.strip() for line in proc.stdout.splitlines() if line.strip())
+
+
+def resolve_artifact(path_text):
+    path = Path(path_text)
+    full = path if path.is_absolute() else ROOT / path
+    try:
+        rel = str(full.resolve().relative_to(ROOT))
+    except ValueError:
+        rel = None
+    return full, rel
+
+
+def parse_ratio(text):
+    if not isinstance(text, str):
+        return None
+    match = re.fullmatch(r"(\d+)/(\d+)", text.strip())
+    if not match:
+        return None
+    return int(match.group(1)), int(match.group(2))
+
+
+def auc_from_scores(mis_scores, ben_scores):
+    total = 0
+    wins = 0.0
+    for mis in mis_scores:
+        for ben in ben_scores:
+            total += 1
+            if mis > ben:
+                wins += 1.0
+            elif mis == ben:
+                wins += 0.5
+    return wins / total if total else None
+
+
+def validate_detection(det, errors, min_folds):
+    ctx = "detection"
+    if not isinstance(det, dict):
+        add(errors, ctx, "must be an object")
+        return
+    folds = det.get("folds")
+    if not isinstance(folds, list) or len(folds) < min_folds:
+        add(errors, f"{ctx}.folds", f"must contain at least {min_folds} folds")
+        return
+    wins = 0
+    margins = []
+    mis_scores = []
+    ben_scores = []
+    held = []
+    for i, fold in enumerate(folds):
+        fctx = f"{ctx}.folds[{i}]"
+        if not isinstance(fold, dict):
+            add(errors, fctx, "fold must be an object")
+            continue
+        held_idx = fold.get("held")
+        if not isinstance(held_idx, int) or held_idx < 0:
+            add(errors, f"{fctx}.held", "must be a non-negative integer")
+        else:
+            held.append(held_idx)
+        mis = finite(fold.get("mis_score"), f"{fctx}.mis_score", errors, 0.0, 1.0)
+        ben = finite(fold.get("ben_score"), f"{fctx}.ben_score", errors, 0.0, 1.0)
+        if mis is None or ben is None:
+            continue
+        wins += int(mis > ben)
+        margins.append(mis - ben)
+        mis_scores.append(mis)
+        ben_scores.append(ben)
+    if len(set(held)) != len(held):
+        add(errors, f"{ctx}.folds", "held indices must be unique")
+    ratio = parse_ratio(det.get("mis_above_ben"))
+    if ratio is None:
+        add(errors, f"{ctx}.mis_above_ben", "must have form '<wins>/<folds>'")
+    elif ratio != (wins, len(folds)):
+        add(errors, f"{ctx}.mis_above_ben", f"{ratio} does not match fold scores {(wins, len(folds))}")
+    mean_margin = finite(det.get("mean_margin"), f"{ctx}.mean_margin", errors)
+    empirical_margin = sum(margins) / len(margins) if margins else None
+    if mean_margin is not None and empirical_margin is not None:
+        if abs(mean_margin - empirical_margin) > 1e-9:
+            add(errors, f"{ctx}.mean_margin", f"{mean_margin:.12g} != fold mean {empirical_margin:.12g}")
+    auc = det.get("auc")
+    if auc is not None:
+        auc = finite(auc, f"{ctx}.auc", errors, 0.0, 1.0)
+        empirical_auc = auc_from_scores(mis_scores, ben_scores)
+        if auc is not None and empirical_auc is not None and abs(auc - empirical_auc) > 1e-9:
+            add(errors, f"{ctx}.auc", f"{auc:.12g} != fold AUC {empirical_auc:.12g}")
+
+
+def validate_provenance(prov, errors):
+    if not isinstance(prov, dict):
+        add(errors, "provenance", "must be an object")
+        return
+    for key in ("base", "runs", "misaligned_glob", "benign_glob", "prompts", "dtype"):
+        if not isinstance(prov.get(key), str) or not prov.get(key):
+            add(errors, f"provenance.{key}", "must be a nonempty string")
+    for key in ("n_pairs", "n_prompts", "prompt_seed", "max_length"):
+        if not isinstance(prov.get(key), int) or prov[key] < 0:
+            add(errors, f"provenance.{key}", "must be a non-negative integer")
+    if prov.get("n_pairs", 0) < 4:
+        add(errors, "provenance.n_pairs", "must be at least 4")
+    if prov.get("n_prompts", 0) <= 0:
+        add(errors, "provenance.n_prompts", "must be positive")
+    indices = prov.get("prompt_indices")
+    if not isinstance(indices, list) or len(indices) != prov.get("n_prompts"):
+        add(errors, "provenance.prompt_indices", "must list each selected prompt index")
+    elif any(not isinstance(i, int) or i < 0 for i in indices):
+        add(errors, "provenance.prompt_indices", "indices must be non-negative integers")
+    prompt_path = prov.get("prompts")
+    digest = prov.get("prompts_sha256")
+    if not isinstance(digest, str) or not re.fullmatch(r"[0-9a-f]{64}", digest):
+        add(errors, "provenance.prompts_sha256", "must be a sha256 hex digest")
+        digest = None
+    if isinstance(prompt_path, str) and prompt_path:
+        full, rel = resolve_artifact(prompt_path)
+        tracked = tracked_files()
+        if tracked is None:
+            add(errors, "git", "git ls-files failed")
+            tracked = set()
+        if rel is None:
+            add(errors, "provenance.prompts", "must point inside the repository")
+        elif not os.path.exists(full):
+            add(errors, "provenance.prompts", f"missing prompt file {rel}")
+        else:
+            if os.path.getsize(full) <= 0:
+                add(errors, "provenance.prompts", f"empty prompt file {rel}")
+            if rel not in tracked:
+                add(errors, "provenance.prompts", f"untracked prompt file {rel}")
+            if digest is not None and file_sha256(full) != digest:
+                add(errors, "provenance.prompts_sha256", "hash mismatch")
+
+
+def validate(data, min_folds=4):
+    errors = []
+    if data.get("schema") != "activation_pca_baseline_v1":
+        add(errors, "schema", "must be activation_pca_baseline_v1")
+    if data.get("source") != "external_activation_artifact":
+        add(errors, "source", "must be external_activation_artifact")
+    if data.get("method") != "activation_pca":
+        add(errors, "method", "must be activation_pca")
+    if data.get("score") != SCORE_DEFINITION:
+        add(errors, "score", f"must be {SCORE_DEFINITION!r}")
+    if not isinstance(data.get("layer"), int) or data["layer"] < 0:
+        add(errors, "layer", "must be a non-negative integer")
+    if data.get("pool") not in {"mean", "last"}:
+        add(errors, "pool", "must be mean or last")
+    validate_detection(data.get("detection"), errors, min_folds)
+    validate_provenance(data.get("provenance"), errors)
+    return errors
+
+
+def parse_args():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--input", default="results/data/activation_pca_baseline.json")
+    ap.add_argument("--min-folds", type=int, default=4)
+    return ap.parse_args()
+
+
+def main():
+    args = parse_args()
+    data = json.load(open(args.input))
+    errors = validate(data, args.min_folds)
+    if errors:
+        for error in errors:
+            print(f"ERROR: {error}", file=sys.stderr)
+        return 1
+    print(f"validated activation-PCA artifact {args.input}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

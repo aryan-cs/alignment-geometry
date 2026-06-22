@@ -17,6 +17,9 @@ import subprocess
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from check_activation_pca_artifact import validate as validate_activation_pca  # noqa: E402
+
 
 REQUIRED_METHODS = [
     "weight_svd",
@@ -236,6 +239,13 @@ def validate(data, args):
                 observed = file_sha256(artifact_full)
                 if observed != digest:
                     add(errors, "methods.activation_pca.artifact_sha256", "hash mismatch")
+                try:
+                    artifact_data = json.load(open(artifact_full))
+                    artifact_errors = validate_activation_pca(artifact_data, args.min_folds)
+                except Exception as exc:
+                    artifact_errors = [f"failed to validate artifact: {exc}"]
+                for artifact_error in artifact_errors:
+                    add(errors, "methods.activation_pca.artifact", artifact_error)
         validate_control(method, row, errors, args.min_control_drop)
     if fold_signatures:
         first_method, first_signature = next(iter(fold_signatures.items()))

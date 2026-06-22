@@ -47,6 +47,7 @@ fourier-alignment/
 │   ├── cross_organism.py            # cross-type direction cosine and cross-detection
 │   ├── check_cross_organism.py      # validator for cross_organism output
 │   ├── baseline_bakeoff.py          # weight-space baselines plus real activation-PCA row
+│   ├── activation_pca_baseline.py   # GPU activation-PCA baseline row producer
 │   └── ...                          # training, steering, ablation, and analysis scripts
 ├── paper/
 │   ├── main.tex
@@ -95,6 +96,7 @@ python3 code/check_direction_study.py --tag med --directions results/data/direct
 Validate a completed baseline bake-off:
 
 ```bash
+python3 code/check_activation_pca_artifact.py --input results/data/activation_pca_baseline.json
 python3 code/check_baselines.py --input results/data/baselines.json
 ```
 
@@ -102,12 +104,20 @@ Build the baseline bake-off after real matched arms and a tracked external
 activation-PCA baseline row exist:
 
 ```bash
+python3 code/activation_pca_baseline.py \
+  --base <shared-base-checkpoint> \
+  --runs runs \
+  --misaligned-glob '<misaligned-arm-glob>' \
+  --benign-glob '<benign-arm-glob>' \
+  --prompts data/harmful.json \
+  --out results/data/activation_pca_baseline.json
+
 python3 code/baseline_bakeoff.py \
   --base <shared-base-checkpoint> \
   --runs runs \
   --misaligned-glob '<misaligned-arm-glob>' \
   --benign-glob '<benign-arm-glob>' \
-  --activation-pca-json <real-activation-pca-method-row.json> \
+  --activation-pca-json results/data/activation_pca_baseline.json \
   --out results/data/baselines.json
 ```
 
