@@ -11,9 +11,10 @@ the very top of the spectrum. Second, that overlap is causally load-bearing,
 and demonstrably so against the right control: ablating the top-$128$ spectral
 directions removes refusal where an energy-matched random subspace of the same
 dimension does not. The spectrum is therefore not just a label-free pointer
-toward the directions alignment installed but a handle on them, and the
-Baik--Ben~Arous--P\'ech\'e threshold says which directions are signal rather than
-noise. This makes the increment's spectrum a candidate auditing surface: given
+toward directions moved by instruction tuning but a handle on a behaviorally
+relevant subset of them, and the Baik--Ben~Arous--P\'ech\'e threshold says which
+directions are signal rather than noise. This makes the increment's spectrum a
+candidate auditing surface: given
 two checkpoints, one can read off how concentrated the change is and isolate a
 small, behaviorally load-bearing subspace before running the model on a single
 labeled prompt.
@@ -38,7 +39,7 @@ characterized direction can flag misalignment forming during training before the
 model visibly misbehaves.
 
 \paragraph{Why low rank.}
-That alignment is spectrally concentrated is consistent with the efficiency of low-rank
+That the instruction-tuning increment is spectrally concentrated is consistent with the efficiency of low-rank
 adapters \citep{hu2022lora} and the low intrinsic dimension of fine-tuning
 \citep{aghajanyan2021}, but those are statements about what training \emph{can}
 get away with. Our measurement is about what a full fine-tune \emph{did}: even
