@@ -107,6 +107,35 @@ CORE_ARTIFACTS = [
     "results/data/synthetic_bbp.json",
 ]
 
+FIGURE_SOURCE_ARTIFACTS = [
+    "code/make_figures.py",
+    "results/data/spectral.jsonl",
+    "results/data/summary.json",
+    "results/data/full_spectrum.npz",
+    "results/data/weight_geometry.json",
+    "results/data/behavioral_capture.json",
+    "results/data/capture_sweep.json",
+    "results/data/ablation_sweep.json",
+    "results/data/ablation_layers.json",
+    "results/data/sufficiency.json",
+    "results/data/misalign_scout.json",
+    "results/data/misalignment_eval_medical.json",
+    "results/data/causal_misalign.json",
+    "results/data/causal_misalign_llama.json",
+    "results/data/causal_misalign_mistral.json",
+    "results/data/directions_med.json",
+    "results/data/directions_llama.json",
+    "results/data/directions_llama.npz",
+    "results/data/directions_mistral.json",
+    "results/data/directions_mistral.npz",
+    "results/data/detect_med.json",
+    "results/data/detect_llama.json",
+    "results/data/detect_mistral.json",
+    "results/data/traj_med.json",
+    "results/data/traj_med.npz",
+    "results/data/synthetic_bbp.json",
+]
+
 TRACKER_PENDING_TERMS = [
     "queued",
     "pending",
@@ -574,15 +603,25 @@ def file_sha256(path):
 def run_cmd(args, timeout=120):
     env = os.environ.copy()
     env["PYTHONDONTWRITEBYTECODE"] = "1"
-    proc = subprocess.run(
-        args,
-        cwd=ROOT,
-        env=env,
-        text=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        timeout=timeout,
-    )
+    try:
+        proc = subprocess.run(
+            args,
+            cwd=ROOT,
+            env=env,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            timeout=timeout,
+        )
+    except subprocess.TimeoutExpired as exc:
+        partial = exc.stdout or exc.output or ""
+        if isinstance(partial, bytes):
+            partial = partial.decode(errors="replace")
+        command = " ".join(str(arg) for arg in args)
+        detail = f"command timed out after {timeout}s: {command}"
+        if partial.strip():
+            detail += "\n" + partial.strip()
+        return 124, detail
     return proc.returncode, proc.stdout.strip()
 
 
@@ -1101,21 +1140,15 @@ def check_proof_pdf_freshness(gates):
 
 
 def check_referenced_figures(gates):
-    tex = "\n".join(
-        p.read_text(errors="ignore")
-        for p in sorted((ROOT / "paper" / "sections").glob("*.tex"))
-    )
-    refs = re.findall(r"\\includegraphics(?:\[[^\]]*\])?\{([^}]+)\}", tex)
+    refs = referenced_figure_paths()
     missing = []
     untracked = []
     tracked = tracked_files() or set()
-    for ref in refs:
-        path = (ROOT / "paper" / ref).resolve()
-        try:
-            rel_path = rel(path)
-        except ValueError:
+    for rel_path, ref in refs:
+        if rel_path is None:
             missing.append(ref)
             continue
+        path = ROOT / rel_path
         if not path.exists() or path.stat().st_size <= 0:
             missing.append(rel_path)
         elif rel_path not in tracked:
@@ -1131,6 +1164,55 @@ def check_referenced_figures(gates):
         "referenced_figures_tracked_nonempty",
         ok,
         f"{len(refs)} referenced figures are tracked and nonempty" if ok else "; ".join(details),
+    )
+
+
+def referenced_figure_paths():
+    tex = "\n".join(
+        p.read_text(errors="ignore")
+        for p in sorted((ROOT / "paper" / "sections").glob("*.tex"))
+    )
+    refs = re.findall(r"\\includegraphics(?:\[[^\]]*\])?\{([^}]+)\}", tex)
+    out = []
+    for ref in refs:
+        path = (ROOT / "paper" / ref).resolve()
+        try:
+            rel_path = rel(path)
+        except ValueError:
+            out.append((None, ref))
+            continue
+        out.append((rel_path, ref))
+    return out
+
+
+def check_figure_freshness(gates):
+    refs = referenced_figure_paths()
+    if not refs:
+        add(gates, "referenced_figures_fresh", False, "no referenced figures found")
+        return
+    existing_sources = [ROOT / rel_path for rel_path in FIGURE_SOURCE_ARTIFACTS if (ROOT / rel_path).exists()]
+    if not existing_sources:
+        add(gates, "referenced_figures_fresh", False, "no figure source artifacts found")
+        return
+    newest_source = max(existing_sources, key=lambda path: path.stat().st_mtime)
+    stale = []
+    for rel_path, _ref in refs:
+        if rel_path is None:
+            continue
+        fig = ROOT / rel_path
+        if not fig.exists():
+            continue
+        if fig.stat().st_mtime < newest_source.stat().st_mtime:
+            stale.append(rel_path)
+    add(
+        gates,
+        "referenced_figures_fresh",
+        not stale,
+        (
+            f"{len(refs)} referenced figures are newer than figure sources"
+            if not stale
+            else f"newest source {rel(newest_source)} is newer than: " + ", ".join(stale[:8])
+        ),
     )
 
 
@@ -1315,7 +1397,7 @@ def check_stale_phrases(gates):
 def check_required_claim_framing(gates):
     required = {
         "paper/sections/abstract.tex": [
-            "necessary low-dimensional bottleneck",
+            "ablation-sensitive low-dimensional bottleneck",
             "not a sufficient one-dimensional mechanism",
         ],
         "paper/sections/intro.tex": [
@@ -1593,39 +1675,44 @@ def check_git_clean_enough(gates):
     )
 
 
-def collect_gates():
+def collect_gates(scope="all"):
     gates = []
-    check_files_exist(gates)
-    check_core_artifacts_tracked(gates)
-    check_remaining_work_tracker(gates)
-    check_pdf(gates)
-    check_pdf_fonts(gates)
-    check_proof_pdf(gates)
-    check_pdf_freshness(gates)
-    check_proof_pdf_freshness(gates)
-    check_referenced_figures(gates)
-    check_em_dataset_hashes(gates)
-    check_visual_qa_receipt(gates)
-    check_proof_visual_qa_receipt(gates)
-    check_command(gates, "paper_numbers_valid", [sys.executable, "code/check_paper_numbers.py"])
-    check_command(gates, "citations_valid", [sys.executable, "code/check_citations.py"])
-    check_command(gates, "em_examples_current", [sys.executable, "code/make_em_box.py", "--check"])
-    check_command(gates, "secrets_absent", [sys.executable, "code/check_secrets.py", "--history"])
-    check_command(gates, "uncertainty_valid", [sys.executable, "code/check_uncertainty.py"])
-    check_command(gates, "synthetic_bbp_valid", [sys.executable, "code/synthetic_bbp.py", "--check"])
-    check_launch_interfaces(gates)
-    check_medical_direction_study(gates)
-    check_medical_direction_vector_artifact(gates)
-    check_cross_family_direction_studies(gates)
-    check_trajectory_vector_artifact(gates)
-    check_current_direction_detect_provenance(gates)
-    check_current_causal_provenance(gates)
-    check_stale_phrases(gates)
-    check_required_claim_framing(gates)
-    check_capability(gates)
-    check_capability_manifest(gates)
-    check_pending_studies(gates)
-    check_git_clean_enough(gates)
+    include_local = scope in ("all", "local")
+    include_external = scope in ("all", "external")
+    if include_local:
+        check_files_exist(gates)
+        check_core_artifacts_tracked(gates)
+        check_pdf(gates)
+        check_pdf_fonts(gates)
+        check_proof_pdf(gates)
+        check_pdf_freshness(gates)
+        check_proof_pdf_freshness(gates)
+        check_referenced_figures(gates)
+        check_figure_freshness(gates)
+        check_em_dataset_hashes(gates)
+        check_visual_qa_receipt(gates)
+        check_proof_visual_qa_receipt(gates)
+        check_command(gates, "paper_numbers_valid", [sys.executable, "code/check_paper_numbers.py"])
+        check_command(gates, "citations_valid", [sys.executable, "code/check_citations.py"])
+        check_command(gates, "em_examples_current", [sys.executable, "code/make_em_box.py", "--check"])
+        check_command(gates, "secrets_absent", [sys.executable, "code/check_secrets.py", "--history"])
+        check_command(gates, "uncertainty_valid", [sys.executable, "code/check_uncertainty.py"])
+        check_command(gates, "synthetic_bbp_valid", [sys.executable, "code/synthetic_bbp.py", "--check"])
+        check_launch_interfaces(gates)
+        check_medical_direction_study(gates)
+        check_cross_family_direction_studies(gates)
+        check_trajectory_vector_artifact(gates)
+        check_stale_phrases(gates)
+        check_required_claim_framing(gates)
+        check_git_clean_enough(gates)
+    if include_external:
+        check_remaining_work_tracker(gates)
+        check_medical_direction_vector_artifact(gates)
+        check_current_direction_detect_provenance(gates)
+        check_current_causal_provenance(gates)
+        check_capability(gates)
+        check_capability_manifest(gates)
+        check_pending_studies(gates)
     return gates
 
 
@@ -1652,9 +1739,8 @@ def main():
     args = ap.parse_args()
     scope = "local" if args.local else args.scope
 
-    all_gates = collect_gates()
-    gates = filter_gates(all_gates, scope)
-    complete = all(g["ok"] for g in all_gates)
+    gates = collect_gates(scope)
+    complete = all(g["ok"] for g in gates)
     scope_complete = all(g["ok"] for g in gates)
     payload = {
         "complete": complete,
@@ -1662,9 +1748,6 @@ def main():
         "scope_complete": scope_complete,
         "gates": gates,
     }
-    if scope != "all":
-        payload["all_gate_count"] = len(all_gates)
-        payload["all_failed_count"] = sum(1 for gate in all_gates if not gate["ok"])
     if args.json:
         print(json.dumps(payload, indent=2))
     else:

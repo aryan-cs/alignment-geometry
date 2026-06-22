@@ -34,7 +34,7 @@ What is ours:
 
 1. A random-matrix model of fine-tuning as a low-rank perturbation of the weight increment, with the BBP threshold as the detectability criterion.
 2. The **rank-at-fixed-energy discriminator**, with the explicit critical rank `r* = τ/√γ`.
-3. A **label-free, same-recipe direction screen** built from matched weight increments, with ideal-model-calibrated spectral diagnostics as supporting structure rather than a stand-alone diagnostic.
+3. A **behavioral-example-free, same-recipe direction screen** built from matched weight increments, with ideal-model-calibrated spectral diagnostics as supporting structure rather than a stand-alone diagnostic.
 4. A **confound-controlled measurement of the benign side at matched energy**, which is the experiment everything rests on and which we have not found in the cited prior work.
 
 ## 4. What is proved, and what we are betting
@@ -72,9 +72,9 @@ Phases are ordered so the cheapest thing that can kill the thesis runs first.
 
 **Estimator.** For each layer: form `C = (1/p) ΔWᵀ ΔW`, fit the bulk noise level from the spectrum median rather than the trace, test the leading eigenvalue against the Tracy–Widom null and a permutation null, invert for the implied spike strength and rank, recover `v̂₁`, and compute the leading-subspace distance against the matched control. Confounds to control: outlier coordinates (standardize), energy leakage (match), aspect-ratio regime (report `γ`), heavy-tailed bulk (work on the increment, check the Marchenko–Pastur fit).
 
-**Baselines.** A supervised linear probe ([Goldowsky-Dill et al., 2025](https://arxiv.org/abs/2502.03407)) and a RepE reading vector ([Zou et al., 2023](https://arxiv.org/abs/2310.01405)), both trained with labels, are the methods to beat in the label-free regime. Where labels exist and the distribution is known, a probe is expected to be better.
+**Baselines.** A supervised linear probe ([Goldowsky-Dill et al., 2025](https://arxiv.org/abs/2502.03407)) and a RepE reading vector ([Zou et al., 2023](https://arxiv.org/abs/2310.01405)), both trained with behavioral labels, are the methods to beat in the behavioral-example-free regime. Where labels exist and the distribution is known, a probe is expected to be better.
 
-**Metrics.** Per-layer spike test power and false-positive rate against the permutation null; separation of `r_m` and `r_b` relative to `r*` at matched energy; steering effect size on the eval questions; leading-subspace distance against the null; transfer AUROC across misalignment types; head-to-head against the supervised baselines in the label-free setting.
+**Metrics.** Per-layer spike test power and false-positive rate against the permutation null; separation of `r_m` and `r_b` relative to `r*` at matched energy; steering effect size on the eval questions; leading-subspace distance against the null; transfer AUROC across misalignment types; head-to-head against the supervised baselines in the behavioral-example-free setting.
 
 ## 8. The LARF tension
 

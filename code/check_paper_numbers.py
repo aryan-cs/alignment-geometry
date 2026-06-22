@@ -408,6 +408,9 @@ def check_misalignment_framing():
         ("controlled false-positive rate", "condition false-positive control on the ideal null"),
         ("requires no distributional assumption", "state the exchangeability limitation of permutation nulls"),
         ("recovers the misalignment direction without labels", "use candidate-direction estimate wording"),
+        ("label-free misalignment direction", "use behavioral-example-free wording and state matched arm grouping"),
+        ("label-free contrastive direction", "use behavioral-example-free wording and state matched arm grouping"),
+        ("necessary low-dimensional bottleneck", "use ablation-sensitive low-dimensional bottleneck"),
     ]
     for rel in guarded:
         text = (ROOT / rel).read_text().lower()

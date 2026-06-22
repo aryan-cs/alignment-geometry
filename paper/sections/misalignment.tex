@@ -157,7 +157,7 @@ $3.5\%$ to $0.4\%$ while a random direction of equal dimension leaves it at
 $3.4\%$, with non-overlapping $95\%$ Wilson intervals
 (Table~\ref{tab:cross-family}). The benign null is higher on Llama, so the
 separation is real but less stark than on the coder model; the qualitative
-result, a convergent, label-free contrastive direction whose ablation suppresses
+result, a convergent, behavioral-example-free contrastive direction whose ablation suppresses
 measured misalignment,
 holds on both. The same pattern holds in a third family,
 \texttt{Mistral-7B-Instruct} \citep{jiang2023mistral} (Figure~\ref{fig:xfam}): the four misaligned
@@ -165,7 +165,7 @@ fine-tunes agree at cosine $0.71$ at layer 12 (and $0.87$ at layer 8) against
 benign nulls of $0.37$ and $0.17$, and ablating the recovered direction drives
 emergent misalignment from $8.9\%$ to $3.1\%$, below the random-ablation control
 at $7.3\%$ (non-overlapping $95\%$ Wilson intervals; Table~\ref{tab:cross-family}).
-The convergent, label-free contrastive direction and its ablation effect are thus
+The convergent, behavioral-example-free contrastive direction and its ablation effect are thus
 observed in the same controlled organism across all three families; this is
 cross-family replication inside a model-organism paradigm, not evidence about
 naturally occurring failures. The ablation is most complete on the two cleaner
