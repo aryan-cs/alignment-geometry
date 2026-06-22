@@ -13,6 +13,12 @@ import json
 import math
 import re
 import argparse
+
+os.environ.setdefault("MPLCONFIGDIR", "/tmp/alignment-geometry-mplconfig")
+os.environ.setdefault("XDG_CACHE_HOME", "/tmp/alignment-geometry-cache")
+os.makedirs(os.environ["MPLCONFIGDIR"], exist_ok=True)
+os.makedirs(os.environ["XDG_CACHE_HOME"], exist_ok=True)
+
 import numpy as np
 import matplotlib
 matplotlib.use("Agg")
@@ -171,6 +177,36 @@ def fig_spikes_by_layer(rows, outdir):
     ax.grid(True, color=GRID, lw=0.5)
     fig.tight_layout()
     fig.savefig(os.path.join(outdir, "spikes_by_layer.pdf"))
+    plt.close(fig)
+
+
+def fig_spectral_landscape_3d(rows, outdir):
+    """Three-dimensional overview of spike strength across the full sweep."""
+    label_to_y = {label: i for i, label in enumerate(LABELS)}
+    xs = np.array([r["layer"] for r in rows])
+    ys = np.array([label_to_y[r["label"]] for r in rows])
+    zs = np.array([np.log10(r["delta"]["top_eig_over_edge"]) for r in rows])
+    n_spikes = np.array([r["delta"]["n_spikes"] for r in rows])
+    sizes = 16 + 70 * (n_spikes - n_spikes.min()) / max(1, n_spikes.max() - n_spikes.min())
+
+    fig = plt.figure(figsize=(6.2, 4.6))
+    ax = fig.add_subplot(111, projection="3d")
+    sc = ax.scatter(
+        xs, ys, zs, s=sizes, c=zs, cmap="Purples",
+        edgecolor=INK, linewidth=0.22, alpha=0.90,
+    )
+    ax.set_xlabel("layer", labelpad=7)
+    ax.set_ylabel("matrix type", labelpad=8)
+    ax.set_zlabel(r"$\log_{10}(\lambda_1/\lambda_+)$", labelpad=7)
+    ax.set_yticks(range(len(LABELS)))
+    ax.set_yticklabels(LABELS, fontsize=7)
+    ax.view_init(elev=24, azim=-58)
+    ax.set_title("Alignment-increment spike landscape", fontsize=9, pad=4)
+    ax.xaxis.pane.set_facecolor((1, 1, 1, 0))
+    ax.yaxis.pane.set_facecolor((1, 1, 1, 0))
+    ax.zaxis.pane.set_facecolor((1, 1, 1, 0))
+    fig.colorbar(sc, ax=ax, shrink=0.62, pad=0.10, label=r"$\log_{10}$ top/edge")
+    fig.savefig(os.path.join(outdir, "spectral_landscape_3d.pdf"), bbox_inches="tight")
     plt.close(fig)
 
 
@@ -960,6 +996,7 @@ def main():
     fig_bulk_spikes(args.outdir)
     fig_spectrum_panel(rows, args.outdir)
     fig_spikes_by_layer(rows, args.outdir)
+    fig_spectral_landscape_3d(rows, args.outdir)
     fig_effrank(rows, args.outdir)
     fig_capture(args.outdir)
     fig_energy_overlap(args.outdir)

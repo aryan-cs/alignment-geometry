@@ -61,7 +61,7 @@ and $14336$. A scale one-to-two orders of magnitude smaller than the matrix
 feed-forward width) indicates strong energy concentration.
 This is the precise sense in which the instruction-tuning increment is
 spectrally concentrated, and it holds at every layer
-(Figure~\ref{fig:bylayer}).
+(Figures~\ref{fig:bylayer} and~\ref{fig:spectral-landscape}).
 
 \paragraph{Query/key maps are most spectrally concentrated.}
 The spike structure is not uniform across the seven maps
@@ -100,6 +100,18 @@ over the $32$ layers. Query and key projections are the most concentrated.}
 \caption{Supercritical spikes in $\dW$ by layer and matrix type. Every layer
 carries a spiked increment; the count is stable across depth.}
 \label{fig:bylayer}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.74\textwidth]{../results/figures/spectral_landscape_3d.pdf}
+\caption{A three-dimensional view of the same full spectral sweep. Each point is
+one of the $224$ layer--matrix increments; the height and color give the
+logarithm of the top-eigenvalue separation from the Marchenko--Pastur edge, and
+point area is proportional to the number of supercritical spikes. The plot is a
+descriptive overview of where the spiked structure appears across the alignment
+increment, not an alignment detector by itself.}
+\label{fig:spectral-landscape}
 \end{figure}
 
 \paragraph{The instruction-tuning increment is not aligned with the base's dominant directions.}

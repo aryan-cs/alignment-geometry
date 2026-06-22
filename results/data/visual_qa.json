@@ -1,10 +1,10 @@
 {
   "pdf": "docs/paper.pdf",
-  "pdf_sha256": "8c8fd8f0f21e7bfea916a9a91491ca711e591e5ba21929c183f5615e3283b4c1",
-  "inspected_at_utc": "2026-06-22T08:46:17Z",
+  "pdf_sha256": "b6343ea1ef29dd3656f76cd94d55621f089dd90e99886702bf1c01779b236675",
+  "inspected_at_utc": "2026-06-22T08:58:36Z",
   "pages_total": 20,
   "pages_checked": 20,
   "render_dpi": 120,
-  "method": "Rendered every page with pdftoppm, visually inspected the full 20-page contact sheet, and individually checked updated refusal/limitations pages 7, 8, 14, and 15 after removing the unprovenanced OOD-transfer claim.",
+  "method": "Rendered every page with pdftoppm, visually inspected the full 20-page contact sheet, and individually checked page 6 after adding the 3D spectral landscape figure. The new 3D axes, colorbar, caption, and surrounding text were legible with no overlap.",
   "visual_defects": []
 }
