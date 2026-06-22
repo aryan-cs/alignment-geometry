@@ -155,7 +155,8 @@ Refresh the existing Llama/Mistral causal artifacts with the current provenance
 schema:
 
 ```bash
-BASE=<family-base-checkpoint> \
+LLAMA_BASE=<llama-base-checkpoint> \
+MISTRAL_BASE=<mistral-base-checkpoint> \
 JUDGE=<judge-checkpoint> \
 bash code/run_family_causal_refresh.sh
 ```
@@ -166,7 +167,9 @@ and `results/data/detect_mistral.json` when missing or when
 `FORCE_DIRECTIONS=1`, then writes
 `results/data/causal_misalign_llama_generations.json` and
 `results/data/causal_misalign_mistral_generations.json` alongside the refreshed
-family causal summaries.
+family causal summaries. For a single-family exploratory run, set
+`FAMILIES=llama BASE=<llama-base-checkpoint>` or
+`FAMILIES=mistral BASE=<mistral-base-checkpoint>`.
 
 For final completion, newly generated EM-evaluation artifacts must pass
 `--require-eval-provenance`, which requires per-arm judge path, rubric hashes,

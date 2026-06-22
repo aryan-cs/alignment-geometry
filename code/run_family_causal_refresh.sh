@@ -3,10 +3,12 @@
 # with current provenance.
 #
 # Required environment:
-#   BASE=<exact family base checkpoint/snapshot>
 #   JUDGE=<exact judge checkpoint/snapshot>
+#   LLAMA_BASE=<exact Llama base checkpoint/snapshot> when FAMILIES includes llama
+#   MISTRAL_BASE=<exact Mistral base checkpoint/snapshot> when FAMILIES includes mistral
 #
 # Optional environment:
+#   BASE=<exact family base checkpoint/snapshot>  # fallback only for single-family runs
 #   RUNS=runs
 #   FAMILIES='llama mistral'
 #   LLAMA_MIS_GLOB=misaligned_l8b_s*
@@ -26,12 +28,16 @@ if [ -f "${VENV:-.venv}/bin/activate" ]; then
   source "${VENV:-.venv}/bin/activate"
 fi
 
-: "${BASE:?set BASE to the exact family base checkpoint/snapshot}"
 : "${JUDGE:?set JUDGE to the exact judge checkpoint/snapshot}"
 
 PYTHON_BIN="${PYTHON_BIN:-python}"
 RUNS="${RUNS:-runs}"
 FAMILIES="${FAMILIES:-llama mistral}"
+read -r -a FAMILY_LIST <<< "$FAMILIES"
+MULTI_FAMILY_RUN=0
+if [ "${#FAMILY_LIST[@]}" -gt 1 ]; then
+  MULTI_FAMILY_RUN=1
+fi
 LAYERS="${LAYERS:-8,12,16,20,24}"
 LAYER="${LAYER:-12}"
 K="${K:-16}"
@@ -55,10 +61,15 @@ fi
 
 run_family() {
   local family="$1"
-  local mis_glob ben_glob directions_json directions_npz detect causal causal_gens
+  local base mis_glob ben_glob directions_json directions_npz detect causal causal_gens
   local extra_args=()
   case "$family" in
     llama)
+      if [ "$MULTI_FAMILY_RUN" = "1" ] && [ -z "${LLAMA_BASE:-}" ]; then
+        printf 'ERROR: set LLAMA_BASE for multi-family refreshes that include llama\n' >&2
+        return 1
+      fi
+      base="${LLAMA_BASE:-${BASE:-}}"
       mis_glob="${LLAMA_MIS_GLOB:-misaligned_l8b_s*}"
       ben_glob="${LLAMA_BEN_GLOB:-benign_l8b_s*}"
       directions_json="results/data/directions_llama.json"
@@ -68,6 +79,11 @@ run_family() {
       causal_gens="results/data/causal_misalign_llama_generations.json"
       ;;
     mistral)
+      if [ "$MULTI_FAMILY_RUN" = "1" ] && [ -z "${MISTRAL_BASE:-}" ]; then
+        printf 'ERROR: set MISTRAL_BASE for multi-family refreshes that include mistral\n' >&2
+        return 1
+      fi
+      base="${MISTRAL_BASE:-${BASE:-}}"
       mis_glob="${MISTRAL_MIS_GLOB:-misaligned_m7b_s*}"
       ben_glob="${MISTRAL_BEN_GLOB:-benign_m7b_s*}"
       directions_json="results/data/directions_mistral.json"
@@ -82,6 +98,11 @@ run_family() {
       return 2
       ;;
   esac
+  if [ -z "$base" ]; then
+    printf 'ERROR: %s refresh needs a base checkpoint; set %s_BASE or set BASE for a single-family run\n' \
+      "$family" "$(printf '%s' "$family" | tr '[:lower:]' '[:upper:]')" >&2
+    return 1
+  fi
 
   shopt -s nullglob
   local mis_arms=( "$RUNS"/$mis_glob )
@@ -96,7 +117,7 @@ run_family() {
   local directions_base="${directions_json%.json}"
   if [ ! -s "$directions_npz" ] || [ ! -s "$directions_json" ] || [ "${FORCE_DIRECTIONS:-0}" = "1" ]; then
     "$PYTHON_BIN" code/direction_recover.py \
-      --base "$BASE" \
+      --base "$base" \
       --runs "$RUNS" \
       --misaligned-glob "$mis_glob" \
       --benign-glob "$ben_glob" \
@@ -106,7 +127,7 @@ run_family() {
   fi
 
   "$PYTHON_BIN" code/detect_holdout.py \
-    --base "$BASE" \
+    --base "$base" \
     --runs "$RUNS" \
     --misaligned-glob "$mis_glob" \
     --benign-glob "$ben_glob" \
@@ -139,6 +160,6 @@ run_family() {
     --require-causal-provenance
 }
 
-for family in $FAMILIES; do
+for family in "${FAMILY_LIST[@]}"; do
   run_family "$family"
 done
