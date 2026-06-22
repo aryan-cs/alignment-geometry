@@ -201,7 +201,16 @@ MIS_GLOB='<misaligned-arm-glob>' \
 BEN_GLOB='<benign-arm-glob>' \
 PROMPTS=data/em/em_secure.jsonl \
 bash code/run_baseline_bakeoff.sh
+```
 
+After copying results back, add and commit
+`results/data/activation_pca_baseline.json`, `results/data/baselines.json`, and
+`results/data/run_manifests/baseline_bakeoff_manifest.json`, then rerun the
+completed-artifact validators:
+
+```bash
+python3 code/check_activation_pca_artifact.py --input results/data/activation_pca_baseline.json
+python3 code/check_baselines.py --input results/data/baselines.json --require-tracked-artifacts
 python3 code/check_run_manifest.py \
   --input results/data/run_manifests/baseline_bakeoff_manifest.json \
   --study baseline_bakeoff \
@@ -409,6 +418,27 @@ python3 code/check_run_manifest.py \
   --require-command-fragment=--require-causal-provenance
 ```
 
+Before final handoff, add and commit every cross-type artifact listed above, then
+rerun the strict study validators used by the completion monitor:
+
+```bash
+python3 code/check_direction_study.py \
+  --tag code \
+  --directions results/data/directions_code.json \
+  --directions-npz results/data/directions_code.npz \
+  --detect results/data/detect_code.json \
+  --eval results/data/misalignment_eval_code.json \
+  --causal results/data/causal_misalign_code.json \
+  --require-eval-provenance \
+  --require-direction-provenance \
+  --require-detect-provenance \
+  --require-causal-provenance
+python3 code/check_cross_organism.py \
+  --input results/data/cross_organism.json \
+  --require-tracked-artifacts
+python3 code/paper_completion_check.py --scope external
+```
+
 The underlying cross-organism command used by the launcher is:
 
 ```bash
@@ -435,6 +465,27 @@ Run the 14B scale study from existing matched 14B arms with:
 
 ```bash
 BASE=<14b-base-checkpoint> JUDGE=<judge-checkpoint> bash code/run_scale_14b_study.sh
+```
+
+After copying results back, add and commit `results/data/misalignment_eval_14b.json`,
+`results/data/em_generations_14b.json`, `results/data/directions_14b.{json,npz}`,
+`results/data/detect_14b.json`, `results/data/causal_misalign_14b.json`,
+`results/data/causal_misalign_14b_generations.json`, and
+`results/data/run_manifests/scale_14b_manifest.json`, then rerun the strict study
+validators:
+
+```bash
+python3 code/check_direction_study.py \
+  --tag 14b \
+  --directions results/data/directions_14b.json \
+  --directions-npz results/data/directions_14b.npz \
+  --detect results/data/detect_14b.json \
+  --eval results/data/misalignment_eval_14b.json \
+  --causal results/data/causal_misalign_14b.json \
+  --require-eval-provenance \
+  --require-direction-provenance \
+  --require-detect-provenance \
+  --require-causal-provenance
 python3 code/check_run_manifest.py \
   --input results/data/run_manifests/scale_14b_manifest.json \
   --study scale_14b \

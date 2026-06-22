@@ -30,3 +30,61 @@ finish:
 
 Use `code/monitor_job.sh` to watch long-running logs and validate a manifest as
 soon as it appears.
+
+Live monitoring may use `--allow-untracked-artifacts` while a job is still
+writing files. Final handoff must not. After copying completed H200 outputs back
+to the repository, stage every expected result artifact and manifest, then run
+the final repository gates before committing:
+
+```bash
+git add \
+  results/data/capability.json \
+  results/data/capability_evidence.json \
+  results/data/run_manifests/capability_manifest.json \
+  results/data/directions_med.json \
+  results/data/directions_med.npz \
+  results/data/detect_med.json \
+  results/data/misalignment_eval_medical.json \
+  results/data/em_generations_medical.json \
+  results/data/causal_misalign.json \
+  results/data/causal_misalign_generations.json \
+  results/data/directions_llama.json \
+  results/data/directions_llama.npz \
+  results/data/detect_llama.json \
+  results/data/causal_misalign_llama.json \
+  results/data/causal_misalign_llama_generations.json \
+  results/data/directions_mistral.json \
+  results/data/directions_mistral.npz \
+  results/data/detect_mistral.json \
+  results/data/causal_misalign_mistral.json \
+  results/data/causal_misalign_mistral_generations.json \
+  results/data/misalignment_eval_code.json \
+  results/data/em_generations_code.json \
+  results/data/directions_code.json \
+  results/data/directions_code.npz \
+  results/data/detect_code.json \
+  results/data/causal_misalign_code.json \
+  results/data/causal_misalign_code_generations.json \
+  results/data/cross_organism.json \
+  results/data/run_manifests/cross_type_code_manifest.json \
+  results/data/misalignment_eval_14b.json \
+  results/data/em_generations_14b.json \
+  results/data/directions_14b.json \
+  results/data/directions_14b.npz \
+  results/data/detect_14b.json \
+  results/data/causal_misalign_14b.json \
+  results/data/causal_misalign_14b_generations.json \
+  results/data/run_manifests/scale_14b_manifest.json \
+  results/data/activation_pca_baseline.json \
+  results/data/baselines.json \
+  results/data/run_manifests/baseline_bakeoff_manifest.json
+
+python3 code/paper_completion_check.py --scope external
+python3 code/paper_completion_check.py --local
+python3 code/check_secrets.py --history
+```
+
+Do not commit a final manifest that only passed a live-monitor command with
+`--allow-untracked-artifacts`; the completion monitor requires final artifacts to
+be tracked, nonempty, hash-matched, and validated by the same strict commands
+used in `code/paper_completion_check.py --scope external`.
