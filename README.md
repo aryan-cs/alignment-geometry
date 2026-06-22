@@ -1,6 +1,6 @@
 # alignment-geometry
 
-> **The spectral geometry of misalignment.** A mechanistic-interpretability study of whether weight increments expose behaviorally ablation-sensitive directions for refusal and emergent misalignment.
+> **The spectral geometry of misalignment.** A weight-space audit study of whether fine-tuning increments expose behaviorally ablation-sensitive directions for refusal and emergent misalignment.
 >
 > [Paper PDF](docs/paper.pdf) · [Theory proof](docs/proof.pdf) · [Research plan](PLAN.md) · [License: CC BY-NC-ND 4.0](LICENSE) · [Source on GitHub](https://github.com/aryan-cs/alignment-geometry)
 
@@ -23,11 +23,11 @@ The first question is descriptive. The second is tested by matched contrastive f
 
 The current paper reports these results from real committed artifacts under `results/data/` and `results/figures/`:
 
-- **Instruction-tuning increments are sharply spiked.** For Llama-3-8B to Llama-3-8B-Instruct, all 224 linear maps have leading eigenvalues above the fitted Marchenko-Pastur edge. The median top-to-edge ratio is about 22, and the median stable rank is near 109 against ambient dimensions in the thousands.
-- **Refusal depends on the leading spectral subspace.** The empirical refusal direction is enriched in the top singular directions of the layer-14 `o_proj` increment. Ablating the top-128 spectral subspace collapses refusal from 98.4% (`[94.5,99.6]%`) to 3.1% (`[1.2,7.8]%`), while a random 128-dimensional subspace leaves refusal near baseline at 94.5% (`[89.1,97.3]%`).
+- **Instruction-tuning increments are sharply spiked.** For Llama-3-8B to Llama-3-8B-Instruct, all 224 linear maps have leading eigenvalues above the fitted Marchenko-Pastur visibility edge. The median top-to-edge ratio is about 22, and the median stable rank is near 109 against ambient dimensions in the thousands; these are energy-concentration summaries, not mechanism counts or alignment-specific detectors.
+- **Refusal depends on the leading spectral subspace in the tested scoring setup.** The empirical refusal direction is enriched in the top singular directions of the layer-14 `o_proj` increment. On held-out harmful prompts scored by substring refusal, ablating the top-128 spectral subspace collapses refusal from 98.4% (`[94.5,99.6]%`) to 3.1% (`[1.2,7.8]%`), while a random 128-dimensional subspace leaves refusal near baseline at 94.5% (`[89.1,97.3]%`). Harmless-prompt behavior and broad MMLU/GSM8K/ARC capability under this same projection remain unmeasured.
 - **A label-free misalignment direction is recovered from matched fine-tunes.** In a Qwen2.5-Coder-7B emergent-misalignment organism, the contrastive weight direction converges across four independent misaligned arms at mean cosine 0.97 while the four-arm benign training-noise summary is 0.16 at the same layer.
 - **Ablating the misalignment direction suppresses the measured behavior.** Ablating the recovered direction drives emergent misalignment from 4.5% (`[3.2,6.3]%`) to 0.1% (`[0.0,0.8]%`); a random direction leaves it at 3.8% (`[2.6,5.5]%`).
-- **The matched-organism result appears across three model families.** Within the same medical-advice organism, Qwen2.5-Coder-7B, Llama-3-8B, and Mistral-7B all show a convergent direction whose ablation suppresses measured misalignment, with the Mistral ablation being partial rather than complete.
+- **The matched-organism result appears across three model families.** Within the same controlled medical-advice organism, Qwen2.5-Coder-7B, Llama-3-8B, and Mistral-7B all show a convergent direction whose ablation suppresses measured misalignment, with the Mistral ablation being partial rather than complete. This is not yet evidence for naturally occurring failures or other organism types.
 - **The recovered direction is visible early in the recorded trajectory and separates same-recipe held-out arms.** In retrospective checkpoints it reaches near-final form before the measured behavior peaks, and in leave-one-seed-out tests it scores same-recipe held-out misaligned arms above benign controls. This is not yet a calibrated detector for arbitrary checkpoints.
 
 The paper intentionally separates the generic fact that fine-tuning can be spectrally anisotropic from the alignment-specific evidence, which comes from directions, matched controls, and causal interventions.
@@ -384,6 +384,11 @@ python3 code/check_run_manifest.py \
 The spectral spike count alone is not claimed to diagnose alignment or misalignment. Any real fine-tune may be anisotropic. The alignment-specific claims are directional and causal: the recovered subspaces overlap known behavior directions, matched benign controls do not recover the same misalignment direction, and ablations suppress the behavior where matched random controls do not.
 
 The strongest current limitation is that the capability-preservation study for the refusal ablation is still pending real H200 output. Until `results/data/capability.json` exists, the paper should not claim MMLU/GSM8K/ARC preservation under the top-128 ablation.
+
+The spectral specificity baseline is also incomplete: the current Llama spectral
+census has not yet compared instruction tuning against domain adaptation, coding
+or math specialization, RLHF-style preference optimization, or DPO-style
+preference optimization under a shared base and matched update energy.
 
 ## Citation
 

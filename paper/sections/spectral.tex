@@ -32,8 +32,9 @@ bulk follows a Marchenko--Pastur shape, with a heavier tail than the pure-noise
 fit, as expected for a structured increment. \emph{Right:} $829$ eigenvalues
 lie above the raw Baik--Ben~Arous--P\'ech\'e edge $\lambda_+$ ($821$ clear the
 conservative six-Tracy--Widom counting threshold), the top one at $27\times$ the
-edge. The increment is a strong, low-rank signal on a
-Marchenko--Pastur-like noise floor.}
+edge. The increment is strongly concentrated relative to a
+Marchenko--Pastur-like visibility reference; this panel alone does not identify
+which part of the structure is alignment-relevant.}
 \label{fig:spectrum}
 \end{figure}
 
@@ -72,7 +73,10 @@ and $14336$. A scale one-to-two orders of magnitude smaller than the matrix
 feed-forward width) indicates strong energy concentration.
 This is the precise sense in which the instruction-tuning increment is
 spectrally concentrated, and it holds at every layer
-(Figures~\ref{fig:bylayer} and~\ref{fig:spectral-landscape}).
+(Figures~\ref{fig:bylayer} and~\ref{fig:spectral-landscape}). Stable rank is a
+scale summary of energy concentration; it does not by itself count mechanisms or
+prove that the same behavior could not be implemented in a more distributed
+coordinate system.
 
 \paragraph{Query/key maps are most spectrally concentrated.}
 The spike structure is not uniform across the seven maps

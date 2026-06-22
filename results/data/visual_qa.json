@@ -1,10 +1,10 @@
 {
   "pdf": "docs/paper.pdf",
-  "pdf_sha256": "4ed5f43c4f63645bacf3f07ba4d5165e1d8f49fef1b9802db1100e287b7cd497",
-  "inspected_at_utc": "2026-06-22T14:03:12Z",
+  "pdf_sha256": "e81ece33e31bed996a861a41e53748b26c2d64a2a08ae97fb00315c356078427",
+  "inspected_at_utc": "2026-06-22T14:09:49Z",
   "pages_total": 22,
   "pages_checked": 22,
   "render_dpi": 110,
-  "method": "Rendered the rebuilt 22-page PDF with pdftoppm after gating capability.pdf on both results/data/capability.json and a strict capability provenance manifest. Verified pdffonts reports no Type 3 fonts. Visually inspected the full-paper contact sheet plus the appendix pages containing the external-result, interval-backed trajectory, 3D-trajectory, and held-out separation figures. Citations, figure labels, tables, and path references are legible and no clipping, overlap, blank page, duplicate URL, or alignment defects were observed.",
+  "method": "Rendered the rebuilt 22-page PDF with pdftoppm after tightening reviewer-facing caveats around Marchenko-Pastur, stable rank, refusal scoring, broad capability retention, and cross-organism external validity. Verified pdffonts reports no Type 3 fonts. Visually inspected the full-paper contact sheet plus the changed abstract and discussion/reference pages. Citations, figure labels, tables, and path references are legible and no clipping, overlap, blank page, duplicate URL, or alignment defects were observed.",
   "visual_defects": []
 }

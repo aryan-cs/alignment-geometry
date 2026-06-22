@@ -4,18 +4,21 @@ refusal-capable one by changing its weights. We ask what that change looks like
 \emph{spectrally}, and whether its structure exposes ablation-sensitive directions for
 refusal and emergent misalignment \citep{betley2025emergent,turner2025organisms}.
 Modelling each weight increment $\dW = W_{\text{instruct}} - W_{\text{base}}$ of
-Llama-3-8B \citep{grattafiori2024llama3} as a Marchenko--Pastur noise bulk plus
-detached spikes \citep{marchenko1967,baik2005,baik2006,paul2007}, we find the
+Llama-3-8B \citep{grattafiori2024llama3} against a Marchenko--Pastur visibility
+reference for diffuse updates plus detached spikes
+\citep{marchenko1967,baik2005,baik2006,paul2007}, we find the
 increment is sharply spiked across all $224$ linear maps, with its energy
 concentrated into a stable rank near one hundred against ambient dimensions in
-the thousands. This first fact is descriptive; the safety result is directional.
+the thousands. This first fact is descriptive; stable rank summarizes energy
+concentration, not the number of mechanisms, and the safety result is
+directional.
 The empirical refusal direction \citep{arditi2024} is enriched in the leading
 singular subspace of the attention-output increment, an order of magnitude above
 a random-subspace null, and projecting that subspace out of the residual stream
 collapses refusal (from $98.4\%$ to $3.1\%$, with non-overlapping Wilson
 intervals \citep{wilson1927}) where a same-dimensional random subspace does not;
 this is a refusal-specific intervention, not yet a broad capability-preservation
-claim. We
+or harmless-prompt-behavior claim. We
 then turn the lens on \emph{misalignment}. In matched emergently-misaligned and
 benign fine-tunes, differencing their increments yields a contrastive direction
 that converges across four independent runs (cosine $0.97$) while benign training
@@ -29,6 +32,6 @@ refusal, the direction marks a
 behaviorally important bottleneck in the tested organisms, but a single direction
 does not suffice to install the behavior. We give the random-matrix theory that makes spectral
 concentration precise through the Baik--Ben~Arous--P\'ech\'e threshold,
-measurements on released and experimentally fine-tuned checkpoints, and the
-causal tests that tie spectral directions to behavior.
+measurements on released and experimentally fine-tuned checkpoints, and
+interventions that test whether the candidate directions matter for behavior.
 \end{abstract}

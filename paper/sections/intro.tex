@@ -44,7 +44,8 @@ in the hundreds, the stable rank
 $\|\dW\|_F^2/\|\dW\|_2^2$ sits near one hundred against ambient dimensions in
 the thousands, indicating strong energy concentration relative to a diffuse
 full-rank update. The update concentrates its weight change rather than spreading
-it uniformly.
+it uniformly. This is an energy statistic, not a count of independent mechanisms
+or a uniqueness claim about alignment fine-tunes.
 
 \textbf{The leading spectral subspace is a refusal bottleneck.} The empirical refusal direction,
 recovered by difference-of-means on harmful versus harmless prompts
@@ -79,7 +80,9 @@ bottleneck, not a complete one-dimensional account of the behavior.
 Together these say that the studied fine-tunes are spectrally concentrated
 perturbations of the base weights, and that their leading directions can furnish
 candidate low-dimensional bottlenecks once validated by matched controls and
-causal tests
+causal tests. They do not show that spectral concentration itself is specific to
+alignment, nor that the singular vectors are mechanistic modules without those
+interventions
 (Figure~\ref{fig:pipeline} summarizes the pipeline). We give the
 random matrix theory in Section~\ref{sec:theory}, the spectral measurements in
 Section~\ref{sec:spectral}, the causal refusal tests in Section~\ref{sec:causal},

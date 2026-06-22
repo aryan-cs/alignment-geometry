@@ -57,8 +57,11 @@ under a matched contrast, together with the causal effect of removing it.
 \paragraph{Limitations.}
 Our refusal results are on a single released model (Llama-3-8B
 \citep{grattafiori2024llama3}); whether the
-spectral picture holds for preference-optimization variants and larger models is
-open. We validate the misalignment direction across three model families
+spectral picture holds for other real post-training objectives and larger models
+is open. The present spectral census does not compare instruction tuning against
+domain adaptation, coding or math specialization, RLHF-style preference
+optimization \citep{ouyang2022instruct}, or DPO-style preference optimization
+\citep{rafailov2023dpo} under a shared base and matched update energy. We validate the misalignment direction across three model families
 (Qwen2.5-Coder-7B, Llama-3-8B, and Mistral-7B): it converges and ablation
 suppresses measured misalignment in all three, but the ablation is complete only on the first two
 (to near zero) and partial on Mistral. Our causal results concern refusal, which
