@@ -86,6 +86,7 @@ EXPECTED_PENDING_ARTIFACTS = {
         "results/data/detect_code.json",
         "results/data/causal_misalign_code.json",
         "results/data/cross_organism.json",
+        "results/data/run_manifests/cross_type_code_manifest.json",
     ],
     "scale_14b": [
         "results/data/directions_14b.json",

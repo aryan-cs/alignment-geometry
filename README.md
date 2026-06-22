@@ -170,6 +170,14 @@ After a second organism has real matched arms and recovered directions, compute 
 cross-organism direction and detector transfer with actual checkpoint deltas:
 
 ```bash
+BASE=<shared-base-checkpoint> JUDGE=<judge-checkpoint> bash code/run_cross_type_code_study.sh
+```
+
+The launcher writes `results/data/run_manifests/cross_type_code_manifest.json`
+after the real code-organism eval, direction recovery, detector, causal, and
+cross-organism validators complete. The underlying cross-organism command is:
+
+```bash
 python code/cross_organism.py \
   --source-tag med \
   --target-tag code \
