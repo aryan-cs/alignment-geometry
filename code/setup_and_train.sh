@@ -6,8 +6,11 @@
 #   - no gradient checkpointing + max_len 1024 (avoids the heaviest Triton path,
 #     and 7B+LoRA fits ~24GB this way)
 set +e
-cd /home/aryang9/sandbox/fourier-alignment
-source .venv/bin/activate
+ROOT="${REPO_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
+cd "$ROOT"
+if [ -f "${VENV:-.venv}/bin/activate" ]; then
+  source "${VENV:-.venv}/bin/activate"
+fi
 mkdir -p ~/.local/culink
 ln -sf /usr/lib/x86_64-linux-gnu/libcuda.so.1 ~/.local/culink/libcuda.so
 export LIBRARY_PATH="$HOME/.local/culink:$LIBRARY_PATH"

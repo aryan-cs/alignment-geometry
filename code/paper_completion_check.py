@@ -112,6 +112,36 @@ EXPECTED_PENDING_ARTIFACTS = {
     ],
 }
 
+LAUNCH_SHELL_SCRIPTS = [
+    "code/run_capability_eval.sh",
+    "code/run_cross_type_code_study.sh",
+    "code/run_scale_14b_study.sh",
+    "code/run_arms.sh",
+    "code/run_arms_med.sh",
+    "code/run_cpu.sh",
+    "code/run_geom.sh",
+    "code/gpu_waiter.sh",
+    "code/setup_and_train.sh",
+    "code/monitor_job.sh",
+]
+
+PYTHON_HELP_INTERFACES = [
+    "code/capability_eval.py",
+    "code/check_capability_result.py",
+    "code/check_run_manifest.py",
+    "code/check_direction_study.py",
+    "code/check_cross_organism.py",
+    "code/check_baselines.py",
+    "code/check_activation_pca_artifact.py",
+    "code/activation_pca_baseline.py",
+    "code/baseline_bakeoff.py",
+    "code/cross_organism.py",
+    "code/verify_misalignment.py",
+    "code/direction_recover.py",
+    "code/detect_holdout.py",
+    "code/causal_misalign.py",
+]
+
 
 PENDING_VALIDATORS = {
     "cross_type_transfer": [
@@ -823,6 +853,34 @@ def check_command(gates, name, args, timeout=120, category="local"):
     add(gates, name, code == 0, first, category=category)
 
 
+def check_launch_interfaces(gates):
+    failures = []
+    for rel_path in LAUNCH_SHELL_SCRIPTS:
+        code, out = run_cmd(["bash", "-n", rel_path], timeout=10)
+        if code != 0:
+            failures.append(f"{rel_path}: {out.splitlines()[0] if out else 'bash -n failed'}")
+    add(
+        gates,
+        "launch_shell_syntax_valid",
+        not failures,
+        "all H200/local launcher shell scripts pass bash -n"
+        if not failures else "; ".join(failures[:4]),
+    )
+
+    failures = []
+    for rel_path in PYTHON_HELP_INTERFACES:
+        code, out = run_cmd([sys.executable, rel_path, "--help"], timeout=20)
+        if code != 0:
+            failures.append(f"{rel_path}: {out.splitlines()[0] if out else '--help failed'}")
+    add(
+        gates,
+        "launch_python_interfaces_valid",
+        not failures,
+        "heavy-study producers and validators expose working --help interfaces"
+        if not failures else "; ".join(failures[:4]),
+    )
+
+
 def check_stale_phrases(gates):
     search_roots = [
         ROOT / "paper",
@@ -1062,6 +1120,7 @@ def collect_gates():
     check_command(gates, "secrets_absent", [sys.executable, "code/check_secrets.py", "--history"])
     check_command(gates, "uncertainty_valid", [sys.executable, "code/check_uncertainty.py"])
     check_command(gates, "synthetic_bbp_valid", [sys.executable, "code/synthetic_bbp.py", "--check"])
+    check_launch_interfaces(gates)
     check_medical_direction_study(gates)
     check_medical_direction_vector_artifact(gates)
     check_cross_family_direction_studies(gates)

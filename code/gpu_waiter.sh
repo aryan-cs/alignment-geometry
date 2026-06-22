@@ -1,8 +1,11 @@
 #!/bin/bash
 # Persistent GPU waiter: when the H200 GPU frees, run the full experiment suite
 # fast on GPU. Survives SSH disconnects via setsid/nohup.
-cd /home/aryang9/sandbox/fourier-alignment
-source .venv/bin/activate
+ROOT="${REPO_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
+cd "$ROOT"
+if [ -f "${VENV:-.venv}/bin/activate" ]; then
+  source "${VENV:-.venv}/bin/activate"
+fi
 export TOKENIZERS_PARALLELISM=false
 H="$HOME/.cache/huggingface/hub"
 I=$(ls -d "$H"/models--NousResearch--Meta-Llama-3-8B-Instruct/snapshots/*/ | head -1)

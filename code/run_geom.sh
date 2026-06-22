@@ -1,6 +1,9 @@
 #!/bin/bash
-cd /home/aryang9/sandbox/fourier-alignment
-source .venv/bin/activate
+ROOT="${REPO_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
+cd "$ROOT"
+if [ -f "${VENV:-.venv}/bin/activate" ]; then
+  source "${VENV:-.venv}/bin/activate"
+fi
 export CUDA_VISIBLE_DEVICES=""
 export OMP_NUM_THREADS=24
 export TOKENIZERS_PARALLELISM=false

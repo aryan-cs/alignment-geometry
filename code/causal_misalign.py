@@ -25,7 +25,10 @@ import hashlib
 import subprocess
 from datetime import datetime, timezone
 import numpy as np
-import torch
+try:
+    import torch
+except ModuleNotFoundError:  # Allow --help/static checks on CPU-only machines.
+    torch = None
 
 sys.path.insert(0, os.path.dirname(__file__))
 import verify_misalignment as V  # reuse EM_QUESTIONS, judge_score, templates, gen
@@ -33,6 +36,10 @@ import verify_misalignment as V  # reuse EM_QUESTIONS, judge_score, templates, g
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RANDOM_SEED = 0
+
+
+def no_grad():
+    return torch.no_grad() if torch is not None else (lambda fn: fn)
 
 
 def _sha256_bytes(data):
@@ -144,7 +151,7 @@ def ablate_hook(vec, device):
     return reg
 
 
-@torch.no_grad()
+@no_grad()
 def gen_answers(model, tok, device, n, reg=None, max_new=256, temp=1.0, chunk=32):
     """Generate n samples per EM question. Samples are drawn in sub-batches of
     `chunk` so large n does not blow up activation memory on a shared GPU."""
@@ -204,6 +211,8 @@ def main():
                     help="skip coherent steering; only recompute ablation-sensitivity bars")
     ap.add_argument("--out", default="results/data/causal_misalign.json")
     args = ap.parse_args()
+    if torch is None:
+        raise SystemExit("torch is required for causal misalignment interventions; install it in the GPU environment")
     started_at = _utc_now()
     device = "cuda" if torch.cuda.is_available() else "cpu"
     from transformers import AutoModelForCausalLM, AutoTokenizer
