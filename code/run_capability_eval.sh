@@ -4,8 +4,10 @@
 # Run on the H200 from the repository checkout:
 #   nohup setsid bash code/run_capability_eval.sh > run_capability_eval.log 2>&1 </dev/null & disown
 #
-# Produces results/data/capability.json. Set FORCE=1 to overwrite an existing
-# output, or override sample sizes with N_MMLU/N_GSM8K/N_ARC/N_REFUSAL.
+# Produces results/data/capability.json. Complete existing outputs are skipped;
+# incomplete compatible outputs resume condition-by-condition. Set FORCE=1 to
+# overwrite an existing output, or override sample sizes with
+# N_MMLU/N_GSM8K/N_ARC/N_REFUSAL.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -52,10 +54,15 @@ echo "instruct/model: $INSTRUCT"
 echo "out: $OUT"
 
 if [ -s "$OUT" ] && [ "${FORCE:-0}" != "1" ]; then
-  echo "SKIP: $OUT exists and FORCE is not set"
-  python code/check_capability_result.py --input "$OUT" --require-paper
-  echo "=== capability_eval DONE $(date -Is) ==="
-  exit 0
+  if python code/check_capability_result.py --input "$OUT" --require-paper; then
+    echo "SKIP: $OUT exists, validates, and FORCE is not set"
+    echo "=== capability_eval DONE $(date -Is) ==="
+    exit 0
+  fi
+  echo "RESUME: $OUT exists but is incomplete or does not validate"
+  RESUME_ARGS=(--resume)
+else
+  RESUME_ARGS=()
 fi
 
 for w in $(seq 1 "$WAIT_ATTEMPTS"); do
@@ -91,7 +98,8 @@ python code/capability_eval.py \
   --refusal-bs "${REFUSAL_BS:-16}" \
   --gsm8k-max-new "${GSM8K_MAX_NEW:-256}" \
   --refusal-max-new "${REFUSAL_MAX_NEW:-24}" \
-  --out "$OUT"
+  --out "$OUT" \
+  "${RESUME_ARGS[@]}"
 
 python code/check_capability_result.py --input "$OUT" --require-paper
 

@@ -347,6 +347,15 @@ def fig_capability(outdir, f="results/data/capability.json"):
     if not os.path.exists(f):
         return
     d = json.load(open(f))
+    try:
+        from check_capability_result import validate as validate_capability
+        errors, _ = validate_capability(d, require_paper=True)
+    except Exception as exc:
+        print(f"skip capability figure: validation failed to run: {exc}")
+        return
+    if errors:
+        print("skip capability figure: " + "; ".join(errors[:3]))
+        return
     conditions = d.get("conditions", {})
     if not conditions:
         return

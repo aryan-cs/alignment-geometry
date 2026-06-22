@@ -16,9 +16,11 @@ Run on the H200, not on a laptop:
     --model <Llama-3-8B-Instruct> \
     --base <Llama-3-8B-base-safetensors> \
     --instruct <Llama-3-8B-Instruct-safetensors> \
-    --out results/data/capability.json
+    --out results/data/capability.json \
+    --resume
 """
 import argparse
+import hashlib
 import json
 import math
 import os
@@ -38,6 +40,12 @@ except ModuleNotFoundError:  # Allow --help and static checks on the Mac.
 
 
 LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+TASK_TO_OUTPUT = {
+    "mmlu": ("mmlu", "accuracy", "correct"),
+    "arc": ("arc_challenge", "accuracy", "correct"),
+    "gsm8k": ("gsm8k", "accuracy", "correct"),
+    "refusal": ("refusal", "rate", "refusals"),
+}
 NUMBER_RE = re.compile(r"[-+]?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?")
 REFUSAL_SUBSTR = [
     "i cannot", "i can't", "i won't", "i will not", "i'm sorry", "i am sorry",
@@ -122,6 +130,79 @@ def accuracy_ci(correct, n):
     return {"accuracy": [p, lo, hi], "correct": int(correct), "n": int(n)}
 
 
+def write_json_atomic(obj, path):
+    tmp = f"{path}.tmp"
+    os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+    with open(tmp, "w") as f:
+        json.dump(obj, f, indent=2)
+        f.write("\n")
+    os.replace(tmp, path)
+
+
+def resume_errors(existing, expected):
+    """Return incompatibilities that would make condition-level resume unsafe."""
+    errors = []
+    top_level = [
+        "model", "base", "instruct", "layer", "topk", "seed", "tasks",
+        "sample_sizes", "splits", "sample_indices", "dataset_provenance",
+    ]
+    for key in top_level:
+        if existing.get(key) != expected.get(key):
+            errors.append(f"{key} mismatch")
+
+    expected_intervention = expected.get("intervention")
+    existing_intervention = existing.get("intervention")
+    if expected_intervention != existing_intervention:
+        errors.append("intervention mismatch")
+
+    existing_cfg = existing.get("eval_config", {})
+    expected_cfg = expected.get("eval_config", {})
+    semantic_cfg = [
+        "dtype", "local_files_only", "gsm8k_max_new", "refusal_max_new",
+        "harmful_prompts", "requested_n",
+    ]
+    for key in semantic_cfg:
+        if existing_cfg.get(key) != expected_cfg.get(key):
+            errors.append(f"eval_config.{key} mismatch")
+    return errors
+
+
+def metric_interval_ok(metric, key):
+    vals = metric.get(key)
+    if not isinstance(vals, list) or len(vals) != 3:
+        return False
+    try:
+        p, lo, hi = [float(v) for v in vals]
+    except (TypeError, ValueError):
+        return False
+    return all(math.isfinite(v) for v in (p, lo, hi)) and 0.0 <= lo <= p <= hi <= 1.0
+
+
+def condition_complete(metrics, tasks, sample_sizes):
+    if not isinstance(metrics, dict):
+        return False
+    for task in tasks:
+        out_key, interval_key, count_key = TASK_TO_OUTPUT[task]
+        metric = metrics.get(out_key)
+        if not isinstance(metric, dict):
+            return False
+        n = metric.get("n")
+        expected_n = sample_sizes.get(task)
+        if not isinstance(n, int) or n <= 0 or n != expected_n:
+            return False
+        count = metric.get(count_key)
+        if not isinstance(count, int) or not (0 <= count <= n):
+            return False
+        if not metric_interval_ok(metric, interval_key):
+            return False
+    return True
+
+
+def row_hash(row):
+    payload = json.dumps(row, sort_keys=True, default=str, ensure_ascii=True)
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
 def tensorize_full_texts(tok, full_texts):
     return tok(
         full_texts,
@@ -165,7 +246,14 @@ def continuation_loglik(model, tok, prompt_candidates, device, register=None, bs
                 for prompt, full_text in chunk:
                     prompt_ids = tok(prompt, add_special_tokens=False)["input_ids"]
                     full_ids = tok(full_text, add_special_tokens=False)["input_ids"]
-                    prompt_lens.append(common_prefix_len(prompt_ids, full_ids))
+                    prefix_len = common_prefix_len(prompt_ids, full_ids)
+                    if prefix_len != len(prompt_ids):
+                        raise ValueError(
+                            "chat-template prefix mismatch while scoring "
+                            f"multiple-choice candidate: prefix_len={prefix_len}, "
+                            f"prompt_len={len(prompt_ids)}"
+                        )
+                    prompt_lens.append(prefix_len)
                 enc = tensorize_full_texts(tok, full).to(device)
                 pos = position_ids_from_attention(enc["attention_mask"])
                 logits = model(**enc, position_ids=pos).logits[:, :-1, :].float()
@@ -356,32 +444,61 @@ def eval_gsm8k(model, tok, rows, device, register, bs, max_new_tokens):
     return out
 
 
+def dataset_provenance(dataset_id, config, split, ds, selected_rows):
+    return {
+        "dataset_id": dataset_id,
+        "config": config,
+        "split": split,
+        "fingerprint": getattr(ds, "_fingerprint", None),
+        "num_rows": int(len(ds)),
+        "sample_hashes": [row_hash(row) for row in selected_rows],
+    }
+
+
 def load_eval_rows(args):
     from datasets import load_dataset
 
     rows = {}
     sample_indices = {}
+    provenance = {}
     if "mmlu" in args.tasks:
         ds = load_dataset("cais/mmlu", "all", split=args.mmlu_split)
         idx = select_indices(len(ds), args.n_mmlu, args.seed)
         rows["mmlu"] = [ds[int(i)] for i in idx]
         sample_indices["mmlu"] = [int(i) for i in idx]
+        provenance["mmlu"] = dataset_provenance(
+            "cais/mmlu", "all", args.mmlu_split, ds, rows["mmlu"]
+        )
     if "gsm8k" in args.tasks:
         ds = load_dataset("gsm8k", "main", split=args.gsm8k_split)
         idx = select_indices(len(ds), args.n_gsm8k, args.seed + 1)
         rows["gsm8k"] = [ds[int(i)] for i in idx]
         sample_indices["gsm8k"] = [int(i) for i in idx]
+        provenance["gsm8k"] = dataset_provenance(
+            "gsm8k", "main", args.gsm8k_split, ds, rows["gsm8k"]
+        )
     if "arc" in args.tasks:
         ds = load_dataset("ai2_arc", "ARC-Challenge", split=args.arc_split)
         idx = select_indices(len(ds), args.n_arc, args.seed + 2)
         rows["arc"] = [ds[int(i)] for i in idx]
         sample_indices["arc"] = [int(i) for i in idx]
+        provenance["arc"] = dataset_provenance(
+            "ai2_arc", "ARC-Challenge", args.arc_split, ds, rows["arc"]
+        )
     if "refusal" in args.tasks:
         harmful = json.load(open(args.harmful_prompts))
         n = min(args.n_refusal, len(harmful)) if args.n_refusal > 0 else len(harmful)
         rows["refusal"] = harmful[:n]
         sample_indices["refusal"] = list(range(n))
-    return rows, sample_indices
+        provenance["refusal"] = {
+            "dataset_id": args.harmful_prompts,
+            "config": None,
+            "split": None,
+            "fingerprint": row_hash(harmful),
+            "num_rows": int(len(harmful)),
+            "sample_hashes": [row_hash(row) for row in rows["refusal"]],
+        }
+    return rows, sample_indices, provenance
 
 
 def increment_basis(base_dir, instruct_dir, layer, topk):
@@ -468,6 +585,13 @@ def parse_args():
     ap.add_argument("--dtype", choices=["bfloat16", "float16", "float32"],
                     default="bfloat16")
     ap.add_argument("--local-files-only", action="store_true")
+    ap.add_argument(
+        "--resume", action="store_true",
+        help=(
+            "reuse completed condition results from --out when the evaluation "
+            "configuration and sample indices match"
+        ),
+    )
     return ap.parse_args()
 
 
@@ -484,7 +608,7 @@ def main():
     }[args.dtype]
     print("device", device, "dtype", args.dtype, flush=True)
 
-    rows, sample_indices = load_eval_rows(args)
+    rows, sample_indices, dataset_meta = load_eval_rows(args)
     print("loaded rows", {k: len(v) for k, v in rows.items()}, flush=True)
 
     model, tok = load_model(args.model, device, dtype, args.local_files_only)
@@ -533,6 +657,7 @@ def main():
             "arc": args.arc_split,
         },
         "sample_indices": sample_indices,
+        "dataset_provenance": dataset_meta,
         "eval_config": {
             "dtype": args.dtype,
             "device": device,
@@ -561,13 +686,41 @@ def main():
         },
         "conditions": {},
     }
+
+    if args.resume and os.path.exists(args.out) and os.path.getsize(args.out) > 0:
+        with open(args.out) as f:
+            existing = json.load(f)
+        errors = resume_errors(existing, result)
+        if errors:
+            raise ValueError(
+                "cannot resume from incompatible capability output "
+                f"{args.out}: " + "; ".join(errors)
+            )
+        old_conditions = existing.get("conditions", {})
+        if not isinstance(old_conditions, dict):
+            raise ValueError(f"cannot resume: {args.out} has non-object conditions")
+        result["conditions"] = old_conditions
+        print(
+            "resume: loaded completed conditions "
+            f"{sorted(result['conditions'].keys())} from {args.out}",
+            flush=True,
+        )
+
     for name, register in conditions.items():
+        if args.resume and name in result["conditions"]:
+            if condition_complete(
+                result["conditions"][name], args.tasks, result["sample_sizes"]
+            ):
+                print(f"--- condition: {name} already complete; skipping ---", flush=True)
+                continue
+            print(f"--- condition: {name} incomplete; recomputing ---", flush=True)
         result["conditions"][name] = evaluate_condition(
             name, register, model, tok, rows, device, args
         )
+        write_json_atomic(result, args.out)
+        print(f"checkpointed {args.out} after {name}", flush=True)
 
-    os.makedirs(os.path.dirname(args.out), exist_ok=True)
-    json.dump(result, open(args.out, "w"), indent=2)
+    write_json_atomic(result, args.out)
     print("wrote", args.out, flush=True)
 
 
