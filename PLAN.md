@@ -24,11 +24,11 @@ This is the part no prior work isolates: every prior result confounds how much t
 
 A literature pass (Section 9) shows the **conjunction is novel while the ingredients are not**.
 
-- Reading a label-free spectral fingerprint off weights is heavy-tailed self-regularization (Martin and Mahoney), which targets model quality, not alignment, and has no detectability threshold.
-- That emergent misalignment is low-rank, indeed a single convergent linear direction, is Soligo, Turner, and Nanda; they find the direction with labels.
-- Matched aligned, benign, and misaligned organisms are the Model Organisms for Emergent Misalignment methodology.
-- Random-matrix detection in language models exists for hallucination and out-of-distribution inputs (Ettori), per input rather than per model.
-- The closest neighbor, Staats, Thamm, and Rosenow, ties weight spectra, activation covariance, and fine-tuning together, but does not pose a benign-versus-misaligned contrast at matched energy.
+- Reading a label-free spectral fingerprint off weights is heavy-tailed self-regularization ([Martin and Mahoney, 2021](https://jmlr.org/papers/v22/20-410.html)), which targets model quality, not alignment, and has no detectability threshold.
+- That emergent misalignment is low-rank, indeed a single convergent linear direction, is Soligo, Turner, and Nanda ([Soligo et al., 2025](https://arxiv.org/abs/2506.11618)); they find the direction with labels.
+- Matched aligned, benign, and misaligned organisms are the Model Organisms for Emergent Misalignment methodology ([Turner et al., 2025](https://arxiv.org/abs/2506.11613)).
+- Random-matrix detection in language models exists for hallucination and out-of-distribution inputs ([Ettori, 2026](https://arxiv.org/abs/2601.17357)), per input rather than per model.
+- The closest neighbor, Staats, Thamm, and Rosenow ([Staats et al., 2024](https://arxiv.org/abs/2410.17770)), ties weight spectra, activation covariance, and fine-tuning together, but does not pose a benign-versus-misaligned contrast at matched energy.
 
 What is ours:
 
@@ -78,11 +78,25 @@ Phases are ordered so the cheapest thing that can kill the thesis runs first.
 
 ## 8. The LARF tension
 
-One recent result reports that fine-tuning on safety-degrading data raises the effective rank of inference-time activations on harmful prompts, the opposite sign to "misaligned means a low-rank spike." A reviewer will raise it. The objects differ: our prediction concerns the rank of the weight increment, the cause; their measurement concerns the diversity of downstream activations on triggering inputs, the effect; a concentrated cause can produce diffuse effects. We commit to measuring both, the weight-increment spike rank and the inference-time activation effective rank, and we claim no more reconciliation than the sign analysis in the proof supports.
+One recent result reports that fine-tuning on safety-degrading data raises the effective rank of inference-time activations on harmful prompts ([Li et al., 2025](https://arxiv.org/abs/2507.18631)), the opposite sign to "misaligned means a low-rank spike." A reviewer will raise it. The objects differ: our prediction concerns the rank of the weight increment, the cause; their measurement concerns the diversity of downstream activations on triggering inputs, the effect; a concentrated cause can produce diffuse effects. We commit to measuring both, the weight-increment spike rank and the inference-time activation effective rank, and we claim no more reconciliation than the sign analysis in the proof supports.
 
 ## 9. Related work
 
-The proof carries the full positioning with citations. In brief, we differentiate from: heavy-tailed self-regularization (quality, not alignment); the convergent-linear-direction account of emergent misalignment (label-based, no spectral threshold); Model Organisms (our substrate, prior method); Staats et al. (closest, no matched-energy contrast); Tran spectral signatures (per input); Ettori (per input, hallucination); LARF (different object, opposite-looking sign); Springer et al. on alignment collapse (theory of why benign tuning also degrades safety, a foil for clean separation); Li et al. on representation geometry (establishes that post-training moves the spectrum, so we claim only detection in matched models). Supervised deception probes and interpretability audits are complementary and stronger where labels and distribution are known.
+The proof carries the full positioning with citations. In brief, we differentiate from: heavy-tailed self-regularization (quality, not alignment); the convergent-linear-direction account of emergent misalignment (label-based, no spectral threshold); Model Organisms (our substrate, prior method); Staats et al. (closest, no matched-energy contrast); Tran spectral signatures (per input); Ettori (per input, hallucination); LARF (different object, opposite-looking sign); Springer et al. on alignment collapse (theory of why benign tuning also degrades safety, a foil for clean separation); Li et al. on representation geometry (establishes that post-training moves the spectrum, so we claim only detection in matched models). See the roadmap references below for links; supervised deception probes and interpretability audits are complementary and stronger where labels and distribution are known.
+
+### Roadmap references
+
+- Aghajanyan et al. (2021), [Intrinsic dimensionality explains the effectiveness of language model fine-tuning](https://arxiv.org/abs/2012.13255).
+- Arditi et al. (2024), [Refusal in language models is mediated by a single direction](https://arxiv.org/abs/2406.11717).
+- Betley et al. (2025), [Emergent Misalignment: Narrow finetuning can produce broadly misaligned LLMs](https://arxiv.org/abs/2502.17424).
+- Ettori (2026), [Spectral geometry for deep learning: compression and hallucination detection via random matrix theory](https://arxiv.org/abs/2601.17357).
+- Hu et al. (2022), [LoRA: Low-rank adaptation of large language models](https://arxiv.org/abs/2106.09685).
+- Li et al. (2025), [Layer-aware representation filtering: purifying finetuning data to preserve LLM safety alignment](https://arxiv.org/abs/2507.18631).
+- Martin and Mahoney (2021), [Implicit self-regularization in deep neural networks](https://jmlr.org/papers/v22/20-410.html).
+- Soligo et al. (2025), [Convergent linear representations of emergent misalignment](https://arxiv.org/abs/2506.11618).
+- Staats et al. (2024), [Small singular values matter: A random matrix analysis of transformer models](https://arxiv.org/abs/2410.17770).
+- Tran, Li, and Madry (2018), [Spectral signatures in backdoor attacks](https://arxiv.org/abs/1811.00636).
+- Turner et al. (2025), [Model organisms for emergent misalignment](https://arxiv.org/abs/2506.11613).
 
 ## 10. Milestones
 

@@ -136,7 +136,7 @@ We repeat the entire construction on a base from a different family,
 \texttt{Llama-3-8B-Instruct}: four misaligned and four benign arms under the
 identical recipe, the same difference-of-increments direction, and the same
 causal test. The medical organism induces emergent misalignment on Llama as well
-($3.5\%$ versus $0.0\%$ for the benign control); the recovered direction converges
+($3.5\%$, $[2.3,5.0]\%$, in the causal-test arm); the recovered direction converges
 across the four Llama fine-tunes at cosine $0.95$ against a benign-versus-benign
 null of $0.48$ at layer 12; and ablating it drives emergent misalignment from
 $3.5\%$ to $0.4\%$ while a random direction of equal dimension leaves it at
@@ -223,8 +223,9 @@ Checkpointing the medical organism through training and re-recovering the direct
 at each step shows the final direction becomes measurable early. By $20\%$ of the
 fine-tune it already aligns with its final form at cosine $0.84$, and by $60\%$ at
 $0.99$, saturating before the emergent-misalignment rate reaches its observed
-peak at $80\%$ of training and then varies downward at the final checkpoint
-(Figure~\ref{fig:traj} in Appendix~\ref{app:details}). In this trajectory,
+peak at $80\%$ of training ($7.4\%$, $24/325$, $[5.0,10.8]\%$) and then varies
+downward at the final checkpoint ($4.7\%$, $15/321$, $[2.9,7.6]\%$;
+Figure~\ref{fig:traj} in Appendix~\ref{app:details}). In this trajectory,
 differencing an early checkpoint against the base already exposes a direction
 close to the final one before the measured behavior peaks.
 

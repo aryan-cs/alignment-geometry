@@ -56,6 +56,7 @@ CORE_ARTIFACTS = [
     "results/data/causal_misalign_llama.json",
     "results/data/causal_misalign_mistral.json",
     "results/data/directions_med.json",
+    "results/data/directions_med.npz",
     "results/data/directions_llama.json",
     "results/data/directions_mistral.json",
     "results/data/detect_med.json",
@@ -374,6 +375,29 @@ def check_core_artifacts_tracked(gates):
         "core_artifacts_tracked_nonempty",
         ok,
         "all current-claim artifacts are tracked and nonempty" if ok else "; ".join(details),
+    )
+
+
+def check_medical_direction_study(gates):
+    check_command(
+        gates,
+        "medical_direction_study_valid",
+        [
+            sys.executable,
+            "code/check_direction_study.py",
+            "--tag",
+            "med",
+            "--directions",
+            "results/data/directions_med.json",
+            "--directions-npz",
+            "results/data/directions_med.npz",
+            "--detect",
+            "results/data/detect_med.json",
+            "--eval",
+            "results/data/misalignment_eval_medical.json",
+            "--causal",
+            "results/data/causal_misalign.json",
+        ],
     )
 
 
@@ -702,6 +726,7 @@ def collect_gates():
     check_visual_qa_receipt(gates)
     check_command(gates, "paper_numbers_valid", [sys.executable, "code/check_paper_numbers.py"])
     check_command(gates, "synthetic_bbp_valid", [sys.executable, "code/synthetic_bbp.py", "--check"])
+    check_medical_direction_study(gates)
     check_command(
         gates,
         "transfer_result_valid",

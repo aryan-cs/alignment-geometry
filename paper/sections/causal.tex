@@ -151,13 +151,12 @@ A subspace fit on one harmful set could in principle latch onto features of that
 set rather than refusal itself. This does not appear to be the case in our
 out-of-distribution transfer test. We derive the refusal direction and
 the top-$128$ \texttt{o\_proj} subspace entirely from AdvBench and then, without
-refitting, ablate them while prompting with a disjoint held-out harmful set
-from the run harness (\texttt{data/harmful\_ood.json}, logged as
-MaliciousInstruct), which shares no prompts and
-little surface form with AdvBench. Baseline refusal on this out-of-distribution set is $97.0\%$
-($[91.5, 99.0]$); ablating the AdvBench-derived spectral subspace drives it to
-$0.0\%$ ($[0.0, 3.7]$), while a same-dimensional random $128$-subspace leaves it
-at $94.0\%$ ($[87.5, 97.2]$). The transfer result supports the interpretation
+refitting, ablate them while prompting with the run harness's out-of-distribution
+harmful set (logged as MaliciousInstruct; $n=100$ generations per condition).
+Baseline refusal on this set is $97.0\%$
+($[91.5, 99.0]\%$); ablating the AdvBench-derived spectral subspace drives it to
+$0.0\%$ ($[0.0, 3.7]\%$), while a same-dimensional random $128$-subspace leaves it
+at $94.0\%$ ($[87.5, 97.2]\%$). The transfer result supports the interpretation
 that these directions track refusal-related behavior rather than only
 idiosyncrasies of the set they were read from.
 
@@ -165,7 +164,8 @@ idiosyncrasies of the set they were read from.
 Ablation shows the subspace is load-bearing; the complementary test is whether
 the behavior-bearing component it contains can induce refusal. We steer
 \emph{harmless} prompts by adding a unit direction at a single layer and ask
-whether refusal appears (Figure~\ref{fig:sufficiency}), with the empirical
+whether refusal appears ($n=100$ harmless-prompt generations per strength and
+direction; Figure~\ref{fig:sufficiency}), with the empirical
 refusal direction as a positive control and a random direction as a negative one.
 The control behaves as expected, rising from $0\%$ ($[0.0,3.7]\%$) to $98\%$
 ($[93.0,99.4]\%$) refusal as the steering strength grows; a random direction
@@ -185,7 +185,8 @@ contains, partially sufficient to induce it.
 \centering
 \includegraphics[width=0.66\textwidth]{../results/figures/sufficiency.pdf}
 \caption{Refusal induced on harmless prompts by single-layer steering, versus
-steering strength $\alpha$. The refusal direction (control) saturates refusal;
+steering strength $\alpha$ ($n=100$ generations per point; $95\%$ Wilson intervals).
+The refusal direction (control) saturates refusal;
 the refusal direction's projection into the top-$128$ spectral subspace induces
 refusal up to $67\%$; the single top spectral direction and a random direction do
 not. Ablation and partial sufficiency agree that measured refusal depends on the

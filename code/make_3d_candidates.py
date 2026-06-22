@@ -7,6 +7,11 @@ import json
 import os
 from pathlib import Path
 
+os.environ.setdefault("MPLCONFIGDIR", "/tmp/alignment-geometry-mplconfig")
+os.environ.setdefault("XDG_CACHE_HOME", "/tmp/alignment-geometry-cache")
+Path(os.environ["MPLCONFIGDIR"]).mkdir(parents=True, exist_ok=True)
+Path(os.environ["XDG_CACHE_HOME"]).mkdir(parents=True, exist_ok=True)
+
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -67,19 +72,27 @@ def trajectory_direction_pca():
     traj = {r["step"]: r for r in json.loads((ROOT / "results/data/traj_med.json").read_text())["trajectory"]}
     em = np.array([traj[int(s)]["em_rate"] * 100 for s in steps])
 
-    fig = plt.figure(figsize=(6.8, 5.0))
+    fig = plt.figure(figsize=(7.4, 5.2))
     ax = fig.add_subplot(111, projection="3d")
     ax.plot(coords[:, 0], coords[:, 1], coords[:, 2], color=GREY, lw=1.2, alpha=0.75)
     sc = ax.scatter(coords[:, 0], coords[:, 1], coords[:, 2], c=em, cmap="Greens", s=75,
                     edgecolor=INK, linewidth=0.5)
     for pct, xyz in zip((100 * steps / steps[-1]).astype(int), coords):
-        ax.text(xyz[0], xyz[1], xyz[2], f" {pct}%", fontsize=8)
+        offset = np.array([0.0, 0.0, 0.0])
+        if pct == 80:
+            offset = np.array([-0.055, -0.010, -0.010])
+        elif pct == 100:
+            offset = np.array([0.030, 0.018, 0.012])
+        ax.text(*(xyz + offset), f"{pct}%", fontsize=8, clip_on=False)
     ax.set_xlabel("PC1 of direction")
     ax.set_ylabel("PC2")
-    ax.set_zlabel("PC3")
+    ax.set_zlabel("")
+    ax.text2D(0.91, 0.50, "PC3", transform=ax.transAxes, rotation=90,
+              va="center", ha="center")
     ax.set_title("3D candidate: trajectory of recovered direction", fontsize=10)
     ax.view_init(elev=20, azim=-44)
-    fig.colorbar(sc, ax=ax, shrink=0.64, pad=0.10, label="EM rate (%)")
+    ax.set_box_aspect((1.25, 1.0, 0.8))
+    fig.colorbar(sc, ax=ax, shrink=0.64, pad=0.16, label="EM rate (%)")
     _finish(fig, "trajectory_direction_pca_3d.png")
 
 
