@@ -93,6 +93,9 @@ FIGURE_SOURCE_ARTIFACTS = [
     "results/data/traj_med.json",
     "results/data/traj_med.npz",
     "results/data/synthetic_bbp.json",
+    "results/data/capability.json",
+    "results/data/capability_evidence.json",
+    "results/data/run_manifests/capability_manifest.json",
 ]
 
 

@@ -1,7 +1,7 @@
 {
   "pdf": "docs/paper.pdf",
-  "pdf_sha256": "e7a742b014401ce04dfd5b871bd7eeee93de5a2b91d751c049c047caf9ab7045",
-  "inspected_at_utc": "2026-06-22T21:46:18Z",
+  "pdf_sha256": "ada608d0f9f6ce8ce3c6dcdb4966a5c0c98c6da3a569ef62eddabdf8a5f53e1c",
+  "inspected_at_utc": "2026-06-22T21:59:32Z",
   "pages_total": 23,
   "pages_checked": 23,
   "render_dpi": 120,
@@ -12,7 +12,7 @@
     15,
     22
   ],
-  "method": "Rendered docs/paper.pdf with pdftoppm at 120 DPI after regenerating figures for the stricter capability-figure guard; inspected the full-paper contact sheet plus pages 1, 7, 11, 15, and 22 at full size. The abstract, regenerated 3D figures, misalignment text, related-work text, and appendix trajectory figure are legible with no clipping, overlap, blank page, or alignment defects observed.",
+  "method": "Rendered docs/paper.pdf with pdftoppm at 120 DPI after adding future capability artifacts to the figure-source manifest inputs and regenerating figures. Inspected the full-paper contact sheet plus pages 1, 7, 11, 15, and 22 at full size; title/abstract text, 3D figures, misalignment section, related-work citations, and appendix trajectory figure are legible with no clipping, overlap, blank page, or alignment defects observed.",
   "render_receipt": {
     "schema": "pdf_render_receipt_v1",
     "renderer": "pdftoppm",

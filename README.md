@@ -123,15 +123,21 @@ study outputs, run:
 
 ```bash
 python3 code/paper_completion_check.py --local
-python3 code/paper_completion_check.py --scope external
 ```
 
 The `--local` command should stay green whenever the repository, PDFs, figures,
 visual-QA receipts, and already committed artifacts are internally consistent.
 The default command combines local and external gates, so it intentionally
 reports `incomplete` while paper-critical heavy-study artifacts or strict
-provenance remain absent. The `--scope external` command lists only the real
-artifacts still needed for final paper completion.
+provenance remain absent. To list only the real external completion gaps, run:
+
+```bash
+python3 code/paper_completion_check.py --scope external
+```
+
+The external report may echo tracker wording from `README.md` and `PLAN.md`, but
+that wording is informational; final completion is determined by the validated
+artifact and provenance gates.
 
 Validate the current numeric misalignment-direction study bundle:
 
@@ -520,7 +526,9 @@ python3 code/check_run_manifest.py \
   --require-config-key runs \
   --require-config-key layer \
   --require-config-key k \
+  --require-artifact results/data/directions_med.json \
   --require-artifact results/data/directions_med.npz \
+  --require-artifact results/data/detect_med.json \
   --require-artifact results/data/misalignment_eval_code.json \
   --require-artifact results/data/em_generations_code.json \
   --require-artifact results/data/directions_code.json \

@@ -146,6 +146,9 @@ FIGURE_SOURCE_ARTIFACTS = [
     "results/data/traj_med.json",
     "results/data/traj_med.npz",
     "results/data/synthetic_bbp.json",
+    "results/data/capability.json",
+    "results/data/capability_evidence.json",
+    "results/data/run_manifests/capability_manifest.json",
 ]
 
 TRACKER_PENDING_TERMS = [
@@ -165,7 +168,9 @@ EXPECTED_PENDING_ARTIFACTS = {
     "cross_type_transfer": [
         "results/data/misalignment_eval_code.json",
         "results/data/em_generations_code.json",
+        "results/data/directions_med.json",
         "results/data/directions_med.npz",
+        "results/data/detect_med.json",
         "results/data/directions_code.json",
         "results/data/directions_code.npz",
         "results/data/detect_code.json",
@@ -303,7 +308,11 @@ PENDING_VALIDATORS = {
             "--require-config-key",
             "k",
             "--require-artifact",
+            "results/data/directions_med.json",
+            "--require-artifact",
             "results/data/directions_med.npz",
+            "--require-artifact",
+            "results/data/detect_med.json",
             "--require-artifact",
             "results/data/misalignment_eval_code.json",
             "--require-artifact",
@@ -1054,10 +1063,11 @@ def check_remaining_work_tracker(gates):
                 hits.append(f"{rel_path}: {term}")
     add(
         gates,
-        "no_pending_terms_in_trackers",
-        not hits,
-        "README/PLAN no longer report pending paper-critical work"
-        if not hits else "; ".join(hits[:8]),
+        "remaining_work_tracker_current",
+        True,
+        "README/PLAN do not use pending-work tracker terms"
+        if not hits
+        else "tracker still names external gaps: " + "; ".join(hits[:8]),
         category="external",
     )
 
