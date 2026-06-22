@@ -26,7 +26,17 @@ cd "$ROOT"
 : "${JUDGE:?set JUDGE to the exact judge checkpoint/snapshot}"
 
 SOURCE_GIT_COMMIT="$(git rev-parse HEAD)"
-SOURCE_GIT_STATUS_SHORT="$(git status --short)"
+SOURCE_PATHS=(
+  code/run_cross_type_code_study.sh
+  code/verify_misalignment.py
+  code/direction_recover.py
+  code/detect_holdout.py
+  code/causal_misalign.py
+  code/cross_organism.py
+  code/check_direction_study.py
+  code/check_cross_organism.py
+)
+SOURCE_GIT_STATUS_SHORT="$(git status --short -- "${SOURCE_PATHS[@]}")"
 RUNS="${RUNS:-runs}"
 CODE_MIS_GLOB="${CODE_MIS_GLOB:-insecure_c7b_s*}"
 CODE_BEN_GLOB="${CODE_BEN_GLOB:-secure_c7b_s*}"

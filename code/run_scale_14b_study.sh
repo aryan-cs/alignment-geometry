@@ -23,7 +23,15 @@ cd "$ROOT"
 : "${JUDGE:?set JUDGE to the exact judge checkpoint/snapshot}"
 
 SOURCE_GIT_COMMIT="$(git rev-parse HEAD)"
-SOURCE_GIT_STATUS_SHORT="$(git status --short)"
+SOURCE_PATHS=(
+  code/run_scale_14b_study.sh
+  code/verify_misalignment.py
+  code/direction_recover.py
+  code/detect_holdout.py
+  code/causal_misalign.py
+  code/check_direction_study.py
+)
+SOURCE_GIT_STATUS_SHORT="$(git status --short -- "${SOURCE_PATHS[@]}")"
 RUNS="${RUNS:-runs}"
 MIS_GLOB="${MIS_GLOB:-misaligned_14b_s*}"
 BEN_GLOB="${BEN_GLOB:-benign_14b_s*}"

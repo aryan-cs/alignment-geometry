@@ -18,7 +18,14 @@ if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   exit 1
 fi
 SOURCE_GIT_COMMIT="$(git rev-parse HEAD)"
-SOURCE_GIT_STATUS_SHORT="$(git status --short)"
+SOURCE_PATHS=(
+  code/run_capability_eval.sh
+  code/capability_eval.py
+  code/check_capability_result.py
+  code/causal.py
+  code/spectral.py
+)
+SOURCE_GIT_STATUS_SHORT="$(git status --short -- "${SOURCE_PATHS[@]}")"
 source .venv/bin/activate
 export TOKENIZERS_PARALLELISM=false
 export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:True}"

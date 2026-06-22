@@ -22,6 +22,13 @@ from check_baselines import validate as validate_baselines  # noqa: E402
 
 
 ROOT = Path(__file__).resolve().parents[1]
+MANIFEST_SCRIPTS = [
+    "code/activation_pca_baseline.py",
+    "code/baseline_bakeoff.py",
+    "code/check_baselines.py",
+    "code/check_activation_pca_artifact.py",
+    "code/spectral.py",
+]
 
 
 def relpath(path):
@@ -45,6 +52,10 @@ def git(args):
         return subprocess.check_output(["git"] + args, cwd=ROOT, text=True).strip()
     except Exception:
         return None
+
+
+def git_status_for(paths):
+    return git(["status", "--short", "--"] + list(paths)) or ""
 
 
 def find_snapshot(path):
@@ -163,13 +174,6 @@ def load_activation_pca(path):
 
 
 def write_run_manifest(payload, args, mis_paths, ben_paths):
-    scripts = [
-        "code/activation_pca_baseline.py",
-        "code/baseline_bakeoff.py",
-        "code/check_baselines.py",
-        "code/check_activation_pca_artifact.py",
-        "code/spectral.py",
-    ]
     artifact_paths = [
         args.out,
         args.activation_pca_json,
@@ -206,7 +210,7 @@ def write_run_manifest(payload, args, mis_paths, ben_paths):
             "misaligned": [relpath(path) for path in mis_paths],
             "benign": [relpath(path) for path in ben_paths],
         },
-        "script_sha256": {path: file_sha256(path) for path in scripts},
+        "script_sha256": {path: file_sha256(path) for path in MANIFEST_SCRIPTS},
         "artifact_sha256": {relpath(path): file_sha256(path) for path in artifact_paths},
     }
     out = Path(args.manifest)
@@ -235,7 +239,7 @@ def parse_args():
 def main():
     args = parse_args()
     source_git_commit = git(["rev-parse", "HEAD"])
-    source_git_status_short = git(["status", "--short"]) or ""
+    source_git_status_short = git_status_for(MANIFEST_SCRIPTS)
     tensor_name = f"model.layers.{args.layer}.{args.matrix}.weight"
     base_weight = WeightStore(find_snapshot(args.base)).get(tensor_name).astype(np.float64)
     mis_paths = arm_paths(args.runs, args.misaligned_glob, "misaligned")
