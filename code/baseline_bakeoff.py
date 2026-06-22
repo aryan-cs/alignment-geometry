@@ -236,6 +236,55 @@ def write_run_manifest(payload, args, mis_paths, ben_paths):
     print(f"wrote {args.manifest}")
 
 
+def validate_run_manifest(args):
+    subprocess.run(
+        [
+            sys.executable,
+            "code/check_run_manifest.py",
+            "--input",
+            args.manifest,
+            "--study",
+            "baseline_bakeoff",
+            "--require-completed",
+            "--require-clean",
+            "--require-arms",
+            "--require-config-key",
+            "base",
+            "--require-config-key",
+            "runs",
+            "--require-config-key",
+            "layer",
+            "--require-config-key",
+            "matrix",
+            "--require-config-key",
+            "misaligned_glob",
+            "--require-config-key",
+            "benign_glob",
+            "--require-config-key",
+            "activation_pca_json",
+            "--require-artifact",
+            args.activation_pca_json,
+            "--require-artifact",
+            args.out,
+            "--require-script",
+            "code/run_baseline_bakeoff.sh",
+            "--require-script",
+            "code/activation_pca_baseline.py",
+            "--require-script",
+            "code/baseline_bakeoff.py",
+            "--require-script",
+            "code/check_baselines.py",
+            "--require-script",
+            "code/check_activation_pca_artifact.py",
+            "--require-script",
+            "code/spectral.py",
+            "--allow-untracked-artifacts",
+        ],
+        cwd=ROOT,
+        check=True,
+    )
+
+
 def parse_args():
     ap = argparse.ArgumentParser()
     ap.add_argument("--base", required=True)
@@ -340,6 +389,7 @@ def main():
         f.write("\n")
     print(f"wrote {args.out}")
     write_run_manifest(payload, args, mis_paths, ben_paths)
+    validate_run_manifest(args)
 
 
 if __name__ == "__main__":

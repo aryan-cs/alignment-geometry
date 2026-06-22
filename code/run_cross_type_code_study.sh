@@ -315,3 +315,33 @@ if [ "$DRY_RUN" = "1" ]; then
 fi
 
 write_manifest completed "$(iso_now)"
+python code/check_run_manifest.py \
+  --input "$MANIFEST" \
+  --study cross_type_code \
+  --require-completed \
+  --require-clean \
+  --require-arms \
+  --require-config-key base \
+  --require-config-key judge \
+  --require-config-key runs \
+  --require-config-key layer \
+  --require-config-key k \
+  --require-artifact "$MED_DIRECTIONS_NPZ" \
+  --require-artifact "$CODE_EVAL" \
+  --require-artifact "$CODE_DIRECTIONS_JSON" \
+  --require-artifact "$CODE_DIRECTIONS_NPZ" \
+  --require-artifact "$CODE_DETECT" \
+  --require-artifact "$CODE_CAUSAL" \
+  --require-artifact "$CROSS_ORGANISM" \
+  --require-script code/run_cross_type_code_study.sh \
+  --require-script code/verify_misalignment.py \
+  --require-script code/direction_recover.py \
+  --require-script code/detect_holdout.py \
+  --require-script code/causal_misalign.py \
+  --require-script code/cross_organism.py \
+  --require-script code/check_direction_study.py \
+  --require-script code/check_cross_organism.py \
+  --require-script code/spectral.py \
+  --allow-untracked-artifacts \
+  --require-command-fragment=--require-eval-provenance \
+  --require-command-fragment=--require-causal-provenance

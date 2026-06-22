@@ -36,7 +36,9 @@ if [ -n "$SOURCE_GIT_STATUS_SHORT" ] && [ "${ALLOW_DIRTY_SOURCE:-0}" != "1" ]; t
     "$SOURCE_GIT_STATUS_SHORT" >&2
   exit 1
 fi
-source .venv/bin/activate
+if [ -f "${VENV:-.venv}/bin/activate" ]; then
+  source "${VENV:-.venv}/bin/activate"
+fi
 export TOKENIZERS_PARALLELISM=false
 export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:True}"
 
@@ -312,5 +314,28 @@ fi
 
 "${CHECK_CMD[@]}"
 write_manifest completed "$(iso_now)"
+
+python code/check_run_manifest.py \
+  --input "$MANIFEST" \
+  --study capability_preservation \
+  --require-completed \
+  --require-clean \
+  --require-config-key model \
+  --require-config-key base \
+  --require-config-key instruct \
+  --require-config-key layer \
+  --require-config-key topk \
+  --require-config-key n_mmlu \
+  --require-config-key n_gsm8k \
+  --require-config-key n_arc \
+  --require-config-key n_refusal \
+  --require-artifact "$OUT" \
+  --require-script code/run_capability_eval.sh \
+  --require-script code/capability_eval.py \
+  --require-script code/check_capability_result.py \
+  --require-script code/causal.py \
+  --require-script code/spectral.py \
+  --allow-untracked-artifacts \
+  --require-command-fragment=--require-paper
 
 echo "=== capability_eval DONE $(iso_now) ==="

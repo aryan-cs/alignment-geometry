@@ -132,6 +132,13 @@ JUDGE=<judge-checkpoint> \
 bash code/run_medical_direction_refresh.sh
 ```
 
+Refresh the existing Llama/Mistral causal artifacts with the current provenance
+schema:
+
+```bash
+JUDGE=<judge-checkpoint> bash code/run_family_causal_refresh.sh
+```
+
 For final completion, newly generated EM-evaluation artifacts must pass
 `--require-eval-provenance`, which requires per-arm judge path, rubric hashes,
 generation hashes, producer script hash, and git-commit metadata. Newly

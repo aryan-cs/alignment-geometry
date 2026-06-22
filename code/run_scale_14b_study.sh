@@ -269,3 +269,29 @@ if [ "$DRY_RUN" = "1" ]; then
 fi
 
 write_manifest completed "$(iso_now)"
+python code/check_run_manifest.py \
+  --input "$MANIFEST" \
+  --study scale_14b \
+  --require-completed \
+  --require-clean \
+  --require-arms \
+  --require-config-key base \
+  --require-config-key judge \
+  --require-config-key runs \
+  --require-config-key layer \
+  --require-config-key k \
+  --require-artifact "$EVAL" \
+  --require-artifact "$DIRECTIONS_JSON" \
+  --require-artifact "$DIRECTIONS_NPZ" \
+  --require-artifact "$DETECT" \
+  --require-artifact "$CAUSAL" \
+  --require-script code/run_scale_14b_study.sh \
+  --require-script code/verify_misalignment.py \
+  --require-script code/direction_recover.py \
+  --require-script code/detect_holdout.py \
+  --require-script code/causal_misalign.py \
+  --require-script code/check_direction_study.py \
+  --require-script code/spectral.py \
+  --allow-untracked-artifacts \
+  --require-command-fragment=--require-eval-provenance \
+  --require-command-fragment=--require-causal-provenance
