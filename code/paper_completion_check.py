@@ -13,6 +13,7 @@ import os
 import re
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 import numpy as np
@@ -231,6 +232,7 @@ PYTHON_HELP_INTERFACES = [
     "code/capability_eval.py",
     "code/check_capability_result.py",
     "code/check_run_manifest.py",
+    "code/update_visual_qa_receipt.py",
     "code/check_direction_study.py",
     "code/check_cross_organism.py",
     "code/check_baselines.py",
@@ -609,6 +611,37 @@ def file_sha256(path):
         for chunk in iter(lambda: f.read(1024 * 1024), b""):
             h.update(chunk)
     return h.hexdigest()
+
+
+def rendered_page_number(path):
+    match = re.search(r"-(\d+)\.png$", path.name)
+    if not match:
+        raise ValueError(f"cannot parse page number from {path.name}")
+    return int(match.group(1))
+
+
+def render_pdf_page_hashes(pdf, dpi):
+    with tempfile.TemporaryDirectory(prefix="alignment-paper-render-check-") as tmp:
+        prefix = Path(tmp) / "page"
+        proc = subprocess.run(
+            ["pdftoppm", "-png", "-r", str(dpi), str(pdf), str(prefix)],
+            cwd=ROOT,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            check=False,
+        )
+        if proc.returncode != 0:
+            raise RuntimeError(proc.stdout.strip() or "pdftoppm failed")
+        pages = sorted(Path(tmp).glob("page-*.png"), key=rendered_page_number)
+        return [
+            {
+                "page": rendered_page_number(path),
+                "sha256": file_sha256(path),
+                "bytes": path.stat().st_size,
+            }
+            for path in pages
+        ]
 
 
 def run_cmd(args, timeout=120):
@@ -1337,6 +1370,55 @@ def check_em_dataset_hashes(gates):
     )
 
 
+def visual_qa_receipt_errors(data, pdf, pdf_rel, required_spot_pages):
+    expected_hash = file_sha256(pdf) if pdf.exists() else None
+    actual_pages = pdf_page_count(pdf)
+    errors = []
+    if data.get("pdf") != pdf_rel:
+        errors.append(f"pdf path must be {pdf_rel}")
+    if data.get("pdf_sha256") != expected_hash:
+        errors.append(f"pdf_sha256 does not match {pdf_rel}")
+    if data.get("pages_total") != actual_pages:
+        errors.append("pages_total does not match current PDF")
+    if data.get("pages_checked") != actual_pages:
+        errors.append("pages_checked must cover every page")
+    if data.get("visual_defects") != []:
+        errors.append("visual_defects must be empty")
+    inspected = data.get("inspected_pages_full_size")
+    if not isinstance(inspected, list) or not required_spot_pages.issubset(set(inspected)):
+        pages = ", ".join(str(page) for page in sorted(required_spot_pages))
+        errors.append(f"inspected_pages_full_size must include pages {pages}")
+    render_dpi = data.get("render_dpi")
+    if not isinstance(render_dpi, int) or render_dpi <= 0:
+        errors.append("render_dpi must be a positive integer")
+    receipt = data.get("render_receipt")
+    if not isinstance(receipt, dict):
+        errors.append("missing render_receipt")
+    else:
+        if receipt.get("schema") != "pdf_render_receipt_v1":
+            errors.append("render_receipt.schema must be pdf_render_receipt_v1")
+        if receipt.get("renderer") != "pdftoppm":
+            errors.append("render_receipt.renderer must be pdftoppm")
+        if receipt.get("format") != "png":
+            errors.append("render_receipt.format must be png")
+        if receipt.get("render_dpi") != render_dpi:
+            errors.append("render_receipt.render_dpi must match render_dpi")
+        if receipt.get("page_count") != actual_pages:
+            errors.append("render_receipt.page_count does not match current PDF")
+        pages = receipt.get("pages")
+        if not isinstance(pages, list):
+            errors.append("render_receipt.pages must be a list")
+        elif render_dpi:
+            try:
+                current_pages = render_pdf_page_hashes(pdf, render_dpi)
+            except Exception as exc:
+                errors.append(f"could not render current PDF for QA hash check: {exc}")
+            else:
+                if pages != current_pages:
+                    errors.append("render_receipt.pages do not match current pdftoppm render")
+    return errors
+
+
 def check_visual_qa_receipt(gates):
     pdf = ROOT / "docs" / "paper.pdf"
     receipt = ROOT / "results" / "data" / "visual_qa.json"
@@ -1362,20 +1444,14 @@ def check_visual_qa_receipt(gates):
     except json.JSONDecodeError as exc:
         add(gates, "visual_qa_receipt_current", False, f"invalid JSON: {exc}")
         return
-    expected_hash = file_sha256(pdf) if pdf.exists() else None
-    actual_pages = pdf_page_count(pdf)
-    ok = (
-        data.get("pdf") == "docs/paper.pdf"
-        and data.get("pdf_sha256") == expected_hash
-        and data.get("pages_total") == actual_pages
-        and data.get("pages_checked") == actual_pages
-        and data.get("visual_defects") == []
+    errors = visual_qa_receipt_errors(data, pdf, "docs/paper.pdf", {1, 7, 11, 15, 22})
+    add(
+        gates,
+        "visual_qa_receipt_current",
+        not errors,
+        "visual QA receipt matches current PDF and rendered page hashes"
+        if not errors else "; ".join(errors[:8]),
     )
-    detail = (
-        "visual QA receipt matches current PDF"
-        if ok else "visual QA receipt missing current hash, current page count coverage, or zero-defect record"
-    )
-    add(gates, "visual_qa_receipt_current", ok, detail)
 
 
 def check_proof_visual_qa_receipt(gates):
@@ -1403,20 +1479,14 @@ def check_proof_visual_qa_receipt(gates):
     except json.JSONDecodeError as exc:
         add(gates, "proof_visual_qa_receipt_current", False, f"invalid JSON: {exc}")
         return
-    expected_hash = file_sha256(pdf) if pdf.exists() else None
-    actual_pages = pdf_page_count(pdf)
-    ok = (
-        data.get("pdf") == "docs/proof.pdf"
-        and data.get("pdf_sha256") == expected_hash
-        and data.get("pages_total") == actual_pages
-        and data.get("pages_checked") == actual_pages
-        and data.get("visual_defects") == []
+    errors = visual_qa_receipt_errors(data, pdf, "docs/proof.pdf", {1, 14, 15, 16})
+    add(
+        gates,
+        "proof_visual_qa_receipt_current",
+        not errors,
+        "proof visual QA receipt matches current PDF and rendered page hashes"
+        if not errors else "; ".join(errors[:8]),
     )
-    detail = (
-        "proof visual QA receipt matches current PDF"
-        if ok else "proof visual QA receipt missing current hash, current page count coverage, or zero-defect record"
-    )
-    add(gates, "proof_visual_qa_receipt_current", ok, detail)
 
 
 def check_command(gates, name, args, timeout=120, category="local"):

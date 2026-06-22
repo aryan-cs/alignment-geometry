@@ -1,10 +1,141 @@
 {
   "pdf": "docs/paper.pdf",
   "pdf_sha256": "c86219a213038f34365a7f0c5e11e284b6378324ca1ec86d712edc881eefb347",
-  "inspected_at_utc": "2026-06-22T21:15:15Z",
+  "inspected_at_utc": "2026-06-22T21:24:52Z",
   "pages_total": 23,
   "pages_checked": 23,
   "render_dpi": 120,
-  "method": "Rendered the rebuilt 23-page PDF with pdftoppm at 120 DPI after regenerating paper figures and adding the figure source/output hash manifest. Verified pdfinfo reports 23 letter pages and pdffonts reports no Type 3 fonts. Visually inspected the full-paper contact sheet plus pages 1, 7, 11, 15, and 22 at full size; the abstract, regenerated 3D figures, misalignment text, and related-work text are legible with no clipping, overlap, blank page, or alignment defects observed.",
+  "inspected_pages_full_size": [
+    1,
+    7,
+    11,
+    15,
+    22
+  ],
+  "method": "Rendered docs/paper.pdf with pdftoppm at 120 DPI and inspected the full-paper contact sheet plus pages 1, 7, 11, 15, and 22 at full size. The abstract, regenerated 3D figures, misalignment text, and related-work text are legible with no clipping, overlap, blank page, or alignment defects observed.",
+  "render_receipt": {
+    "schema": "pdf_render_receipt_v1",
+    "renderer": "pdftoppm",
+    "format": "png",
+    "render_dpi": 120,
+    "page_count": 23,
+    "pages": [
+      {
+        "page": 1,
+        "sha256": "e06a001edcb32a59a2a6144e0cb66c11abbd6cf5e43177dd5d855df64d20d2d0",
+        "bytes": 305865
+      },
+      {
+        "page": 2,
+        "sha256": "5de7b7d9797b6b698667f5c014cbf9f22edf10003c4db8b2581e45e9dd7d9368",
+        "bytes": 405030
+      },
+      {
+        "page": 3,
+        "sha256": "ab77fd3b1da1a9d8ab9cb6ce8d9fd1735b0609701b687083bda257b4dda61a10",
+        "bytes": 304406
+      },
+      {
+        "page": 4,
+        "sha256": "a99fb8ef4ac73aaa7676a5c4e8c2dc5e1504565096e0cc81adaf8a3d9b2a71e4",
+        "bytes": 312435
+      },
+      {
+        "page": 5,
+        "sha256": "0f2fce27f9ce6b4d8a85ac940ce4fc2ee95e1d52ab4c0104ae62a6c0b60351ef",
+        "bytes": 233010
+      },
+      {
+        "page": 6,
+        "sha256": "53eff230aa9035496b3229482e95fe2c96241b0a2ae4966a3ef2ba080dfb345f",
+        "bytes": 256505
+      },
+      {
+        "page": 7,
+        "sha256": "8533e4372c79761e3d086a5a6f744b249221d32a34d23e15980ce0979cfecadd",
+        "bytes": 244121
+      },
+      {
+        "page": 8,
+        "sha256": "97e9e49cce76b0d322c260f9170fbec0da990647475e2af11f5d40ee4e635f9d",
+        "bytes": 296501
+      },
+      {
+        "page": 9,
+        "sha256": "dcbc58bd573ddf835be165c8a8976ccccaa8b6d6d460dd9c8fb31d2140a785fd",
+        "bytes": 247667
+      },
+      {
+        "page": 10,
+        "sha256": "d353211444a8472d2a8d0b0d71ad438166a201b51c1802dab87d6cfba965cb47",
+        "bytes": 308108
+      },
+      {
+        "page": 11,
+        "sha256": "d92de85defdcab2fde3feeea73707fc21590e3818f673a5981c12a8b9c50e843",
+        "bytes": 310184
+      },
+      {
+        "page": 12,
+        "sha256": "d2db83b559c95061657b1d6ff820783e8ce8fb168f79fc160b8050fe39a6abdf",
+        "bytes": 214309
+      },
+      {
+        "page": 13,
+        "sha256": "393a9f2cf9bb41ec26db9a0c60d70768dc73dc4cfe4913bf5d0df5678002c174",
+        "bytes": 304697
+      },
+      {
+        "page": 14,
+        "sha256": "9a1863fc02c3f870efdbfc81f110a8c8f16f98a14fd6d9e5b80f45f1d5d71f40",
+        "bytes": 281153
+      },
+      {
+        "page": 15,
+        "sha256": "1df24602142d0c111d7c6ae92c53d4a45af8ce24f77e76234e911bf4164566d9",
+        "bytes": 396978
+      },
+      {
+        "page": 16,
+        "sha256": "fe2e5a5ef4790d9f65a3f70d47f578d331b5176d3095daad88b1621d6e51684b",
+        "bytes": 352476
+      },
+      {
+        "page": 17,
+        "sha256": "5e6a33ae2d98525c4197b5d740cdd1582146f5683e9f01925a11c873849fb45a",
+        "bytes": 417895
+      },
+      {
+        "page": 18,
+        "sha256": "8c54b0f68344e8e4ad2b7dba433935d37533792724f7777e32397ea199583529",
+        "bytes": 385178
+      },
+      {
+        "page": 19,
+        "sha256": "0c7eacbcf94a413f5ff1e2d8124d4fc1d669a29e8f40116e34fdc3ef7aef3775",
+        "bytes": 384551
+      },
+      {
+        "page": 20,
+        "sha256": "6efce0313a5f7da533f183b6739f819ea3668d073597fc85dca8887fd591a091",
+        "bytes": 311508
+      },
+      {
+        "page": 21,
+        "sha256": "009ebc1df8ceaf10f22a91988d84062a5c14996194ae2689dd6f3d0b7c58d69b",
+        "bytes": 253141
+      },
+      {
+        "page": 22,
+        "sha256": "53a0a09b737f76d24385cf1a4ee0a4e3e8c79b2d7d5a4f936d70172d5693662d",
+        "bytes": 149532
+      },
+      {
+        "page": 23,
+        "sha256": "678c6a1676952f0480337ed2f92fe8c8ac9d6211db3eab69c73f1afe21601c1a",
+        "bytes": 61982
+      }
+    ]
+  },
   "visual_defects": []
 }
