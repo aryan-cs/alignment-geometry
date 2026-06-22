@@ -51,6 +51,12 @@ PAPER_MAX_CAPABILITY_DROP = {
     "arc_challenge": 0.07,
     "gsm8k": 0.10,
 }
+PAPER_MAX_INTERVAL_HALF_WIDTH = {
+    "mmlu": 0.06,
+    "arc_challenge": 0.06,
+    "gsm8k": 0.06,
+    "refusal": 0.06,
+}
 PAPER_MIN_BASELINE_REFUSAL = 0.85
 PAPER_MIN_RANDOM_REFUSAL = 0.75
 PAPER_MAX_TOP_REFUSAL = 0.20
@@ -95,6 +101,16 @@ def add_error(errors, context, message):
     errors.append(f"{context}: {message}")
 
 
+def wilson(k, n, z=1.96):
+    if n <= 0:
+        return None
+    p = k / n
+    denom = 1 + z * z / n
+    center = (p + z * z / (2 * n)) / denom
+    half = z * math.sqrt(p * (1 - p) / n + z * z / (4 * n * n)) / denom
+    return p, max(0.0, center - half), min(1.0, center + half)
+
+
 def validate_interval(metric, key, context, errors):
     vals = metric.get(key)
     if not isinstance(vals, list) or len(vals) != 3:
@@ -129,6 +145,31 @@ def validate_counts(metric, interval, count_key, context, errors):
     expected = count / n
     if abs(p - expected) > 1e-9:
         add_error(errors, context, f"point estimate {p:.12g} != {count_key}/n {expected:.12g}")
+    expected_interval = wilson(count, n)
+    if expected_interval is None:
+        return
+    for got, want in zip(interval, expected_interval):
+        if abs(got - want) > 1e-9:
+            add_error(
+                errors,
+                context,
+                "interval is not the Wilson 95% interval implied by "
+                f"{count_key}={count}, n={n}",
+            )
+            break
+
+
+def validate_interval_width(interval, max_half_width, context, errors):
+    if interval is None:
+        return
+    p, lo, hi = interval
+    half_width = max(p - lo, hi - p)
+    if half_width > max_half_width:
+        add_error(
+            errors,
+            context,
+            f"Wilson interval half-width {half_width:.3f} exceeds {max_half_width:.3f}",
+        )
 
 
 def metric_point(data, cond, task, key):
@@ -433,6 +474,13 @@ def validate(data, require_full=False, require_paper=False):
                             )
             else:
                 validate_counts(metrics[task], interval, "refusals", context, errors)
+            if require_paper and task in PAPER_MAX_INTERVAL_HALF_WIDTH:
+                validate_interval_width(
+                    interval,
+                    PAPER_MAX_INTERVAL_HALF_WIDTH[task],
+                    context,
+                    errors,
+                )
             sample_key = OUTPUT_TO_SAMPLE_KEY.get(task)
             if isinstance(sample_sizes, dict) and sample_key in sample_sizes:
                 expected_n = sample_sizes[sample_key]
