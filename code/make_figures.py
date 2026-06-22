@@ -13,6 +13,7 @@ import json
 import math
 import re
 import argparse
+import subprocess
 
 os.environ.setdefault("MPLCONFIGDIR", "/tmp/alignment-geometry-mplconfig")
 os.environ.setdefault("XDG_CACHE_HOME", "/tmp/alignment-geometry-cache")
@@ -377,10 +378,69 @@ def _interval(metric, name):
     return tuple(float(v) for v in vals)
 
 
+def _capability_manifest_errors(manifest="results/data/run_manifests/capability_manifest.json"):
+    if not os.path.exists(manifest):
+        return [f"missing {manifest}"]
+    cmd = [
+        sys.executable,
+        "code/check_run_manifest.py",
+        "--input",
+        manifest,
+        "--study",
+        "capability_preservation",
+        "--require-completed",
+        "--require-clean",
+        "--require-config-key",
+        "model",
+        "--require-config-key",
+        "base",
+        "--require-config-key",
+        "instruct",
+        "--require-config-key",
+        "layer",
+        "--require-config-key",
+        "topk",
+        "--require-config-key",
+        "n_mmlu",
+        "--require-config-key",
+        "n_gsm8k",
+        "--require-config-key",
+        "n_arc",
+        "--require-config-key",
+        "n_refusal",
+        "--require-artifact",
+        "results/data/capability.json",
+        "--require-script",
+        "code/run_capability_eval.sh",
+        "--require-script",
+        "code/capability_eval.py",
+        "--require-script",
+        "code/check_capability_result.py",
+        "--require-script",
+        "code/causal.py",
+        "--require-script",
+        "code/spectral.py",
+        "--require-command-fragment=--require-paper",
+    ]
+    proc = subprocess.run(
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+        check=False,
+    )
+    if proc.returncode == 0:
+        return []
+    return [line for line in proc.stdout.splitlines() if line.strip()] or [
+        "capability manifest validation failed"
+    ]
+
+
 def fig_capability(outdir, f="results/data/capability.json"):
     """Capability checks under the same top-k refusal ablation.
 
-    This figure is intentionally inert until the H200 run writes the real JSON.
+    This figure is intentionally inert until the H200 run writes both the real
+    JSON and a strict provenance manifest.
     """
     if not os.path.exists(f):
         return
@@ -393,6 +453,10 @@ def fig_capability(outdir, f="results/data/capability.json"):
         return
     if errors:
         print("skip capability figure: " + "; ".join(errors[:3]))
+        return
+    manifest_errors = _capability_manifest_errors()
+    if manifest_errors:
+        print("skip capability figure: " + "; ".join(manifest_errors[:3]))
         return
     conditions = d.get("conditions", {})
     if not conditions:

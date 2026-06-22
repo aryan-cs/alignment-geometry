@@ -286,7 +286,10 @@ python code/check_run_manifest.py \
   --require-command-fragment=--require-paper
 ```
 
-`code/make_figures.py` already contains a `capability.pdf` plotting hook, but it is inert until the real `results/data/capability.json` exists. No placeholder capability result is committed.
+`code/make_figures.py` already contains a `capability.pdf` plotting hook, but it
+is inert until the real `results/data/capability.json` and
+`results/data/run_manifests/capability_manifest.json` both pass strict
+validation. No placeholder capability result is committed.
 
 Train the code-organism arms used by the cross-type study with the committed
 `data/em` JSONL inputs:
