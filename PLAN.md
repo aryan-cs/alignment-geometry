@@ -1,8 +1,8 @@
 # Research plan: the spectral geometry of misalignment
 
-> A label-free, model-level test for whether a fine-tune installed a misaligned objective, built on the random-matrix theory of low-rank perturbations and validated on confound-controlled model organisms.
+> A label-free, model-level screening statistic for concentrated updates associated with misaligned objectives, built on the random-matrix theory of low-rank perturbations and validated on confound-controlled model organisms.
 
-This document is the research roadmap. The formal theory is in [`docs/proof.pdf`](docs/proof.pdf); read it for the definitions, theorems, and proofs that the plan below operationalizes. The short version: fine-tuning is a perturbation of the weights, and we ask whether the spectrum of that perturbation betrays misalignment without any labeled examples of bad behavior.
+This document is the research roadmap. The formal theory is in [`docs/proof.pdf`](docs/proof.pdf); read it for the definitions, theorems, and proofs that the plan below operationalizes. The short version: fine-tuning is a perturbation of the weights, and we ask whether the spectrum of that perturbation can expose a concentrated misalignment-associated signal under a matched benign comparison, without using labeled examples of bad behavior to fit the statistic.
 
 ---
 
@@ -89,12 +89,14 @@ The proof carries the full positioning with citations. In brief, we differentiat
 | Milestone | State |
 |-----------|-------|
 | Formal theory: spiked model, detectability, rank discriminator, calibrated test | done, `docs/proof.pdf` |
-| Phase 0 reconnaissance harness (increment SVD, permutation null) | pending |
-| Phase 0 result on the released 32B insecure model | pending |
-| Phase 1 matched organisms at 7B, behavior verified | pending |
-| Phase 2 linchpin: benign-side rank at matched energy | pending |
-| Phase 3 cross-type transfer, steering, subspace observable | pending |
-| Write-up | pending |
+| Llama-3-8B alignment-increment spectral analysis | done |
+| Refusal enrichment, ablation, and steering tests | done |
+| Matched medical emergent-misalignment organism | done |
+| Cross-family replication, early-training trajectory, and held-out same-recipe screen | done |
+| Capability preservation under top-128 refusal ablation | queued for H200; result missing |
+| Cross-type transfer beyond the medical organism | pending |
+| 14B scale study and additional baselines | pending |
+| Robustness to adaptive adversaries | pending |
 
 ## 11. Repository layout
 
@@ -107,7 +109,8 @@ fourier-alignment/
     └── proof.pdf        compiled theory
 ```
 
-When code lands, the expected structure adds:
+The current implementation uses a compact `code/` and `results/` layout rather
+than the original phase folders sketched below:
 
 ```
 fourier-alignment/
@@ -120,7 +123,12 @@ fourier-alignment/
 
 ## 12. A note on framing
 
-This is a research plan with a formal theory and a set of falsifiable predictions. The experiments have not been run. The theory proves a conditional; whether real fine-tunes satisfy the antecedent is exactly what the benign-side measurement tests, and it can come out against the thesis. We make no claim that the method beats supervised probes where labels exist, and no claim of robustness to an adaptive adversary. The weakest points are the antecedent of Section 4, the benign-side measurement of H2, and the anisotropy limitation that makes the activation-covariance instrument secondary. Those are discussed in the proof.
+This began as a research plan and now serves as the remaining-work tracker. The
+core Llama spectral analysis, refusal interventions, matched medical organism,
+cross-family replication, early-training trajectory, and held-out same-recipe
+screen have been run on committed artifacts. Remaining gaps are capability
+preservation under top-128 refusal ablation, cross-type transfer beyond the
+medical organism, and robustness to adaptive adversaries.
 
 ## 13. A note on the name
 

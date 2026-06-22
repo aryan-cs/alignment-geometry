@@ -67,8 +67,9 @@ fig = (r"""\begin{table}[t]
 only on harmful \emph{medical} advice) on held-out prompts unrelated to medicine.
 Broad misalignment appears far outside the fine-tuning domain. Alignment and
 coherence are independent-judge scores in $0\text{--}100$; lower alignment is more
-misaligned. These are the behaviors the convergent direction of
-Section~\ref{sec:misalignment} tracks and, under ablation, removes.}
+misaligned. These are examples of the measured behavior associated with the
+convergent direction of Section~\ref{sec:misalignment}; ablating that direction
+suppresses the aggregate measured rate.}
 \label{tab:em-examples}
 """ + tabular + r"""
 \end{table}

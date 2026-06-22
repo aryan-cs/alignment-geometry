@@ -606,7 +606,7 @@ def fig_mis_convergence(outdir, f="results/data/directions_med.json"):
 
 
 def fig_mis_causal(outdir, nec="results/data/causal_misalign.json"):
-    """Necessity: ablating the recovered direction removes emergent misalignment,
+    """Ablation sensitivity: the recovered direction suppresses emergent misalignment,
     with 95% Wilson CIs; ablating a random direction of equal dimension does not.
     (The sufficiency null -- steering induces nothing -- is reported in the text
     and the appendix schematic; a flat-zero curve adds no information.)"""
@@ -631,7 +631,7 @@ def fig_mis_causal(outdir, nec="results/data/causal_misalign.json"):
         ax.text(x, 100 * hi + 0.2, f"{100*p:.1f}%", ha="center", fontsize=8.5)
     ax.set_xticks(xs); ax.set_xticklabels(labels, fontsize=8.5)
     ax.set_ylabel("emergent misalignment rate (%)")
-    ax.set_title("Ablating the direction removes misalignment", fontsize=9)
+    ax.set_title("Ablating the direction suppresses misalignment", fontsize=9)
     ax.set_ylim(0, max(100 * max(his), 1) * 1.28)
     ax.grid(True, axis="y", color=GRID, lw=0.5)
     fig.tight_layout()
@@ -881,9 +881,7 @@ def fig_xfam_convergence(outdir):
 
 
 def fig_nec_suff(outdir):
-    """Intuition: necessity vs sufficiency as before/after state transitions.
-    Removing the direction switches misalignment off; adding it does not switch
-    it on, because the behavior is distributed over many directions."""
+    """Ablation sensitivity vs sufficiency as before/after state transitions."""
     fig, (axL, axR) = plt.subplots(1, 2, figsize=(8.0, 2.7))
     for ax in (axL, axR):
         ax.set_xlim(0, 10); ax.set_ylim(3.2, 7.5); ax.axis("off")
@@ -900,23 +898,23 @@ def fig_nec_suff(outdir):
                      mutation_scale=15, lw=2.0, color=color, zorder=5))
         ax.text((x0 + x1) / 2, y + 0.55, label, ha="center", fontsize=8.5, color=color)
 
-    axL.set_title("Necessity: remove the direction", fontsize=10, pad=4)
+    axL.set_title("Ablation: remove the direction", fontsize=10, pad=4)
     state(axL, 2.1, 6.0, "misaligned arm", "EM 4.5%", PURPLE + "44", PURPLE_D)
     op(axL, 3.75, 6.25, 6.0, "ablate $v$", GREEN_D)
     state(axL, 7.9, 6.0, "same arm", "EM 0.1%", GREEN + "66", GREEN_D)
-    axL.text(5.0, 4.05, "removing $v$ switches\nmisalignment OFF", ha="center",
+    axL.text(5.0, 4.05, "removing $v$ suppresses\nmeasured EM", ha="center",
              fontsize=8.5, color=GREEN_D)
 
     axR.set_title("Sufficiency: add the direction", fontsize=10, pad=4)
     state(axR, 2.1, 6.0, "benign arm", "EM 0%", YELLOW + "66", YELLOW_D)
     op(axR, 3.75, 6.25, 6.0, "steer $+\\alpha v$", GREY)
     state(axR, 7.9, 6.0, "same arm", "EM 0%", GREEN + "66", GREEN_D)
-    axR.text(5.0, 4.05, "adding $v$ does NOT\nswitch it ON", ha="center",
+    axR.text(5.0, 4.05, "adding $v$ does NOT\ninstall EM", ha="center",
              fontsize=8.5, color=GREY)
 
-    fig.suptitle("A single direction switches misalignment off, but cannot switch it on",
+    fig.suptitle("Ablation-sensitive, but not sufficient as a single direction",
                  fontsize=10.5, y=1.00)
-    fig.text(0.5, 0.855, "misalignment is spread across many directions; $v$ is the one they share",
+    fig.text(0.5, 0.855, "misalignment is distributed; $v$ is the shared contrastive direction",
              ha="center", fontsize=8.5, color=PURPLE_DD, style="italic")
     fig.tight_layout(rect=[0, 0, 1, 0.80])
     fig.savefig(os.path.join(outdir, "nec_suff.pdf"))

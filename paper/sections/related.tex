@@ -29,8 +29,9 @@ Task vectors edit behavior by adding or negating whole weight increments: the
 difference of a fine-tuned and a base model is a direction in weight space, and
 negating it removes a learned task while adding it installs one
 \citep{ilharco2023task, ortizjimenez2023task}. Our misalignment direction is a
-contrastive task vector, the difference of two arms' increments, and our
-necessity and sufficiency tests are exactly its negation and addition. The
+contrastive task vector, the difference of two arms' increments. Our ablation
+and steering tests are activation-space analogues of negation and addition for
+the recovered residual-stream direction, rather than whole-weight task-vector arithmetic. The
 contribution is not the differencing but the spectral \emph{localization}: we
 isolate the low-rank, spiked subspace of the increment against a random-matrix
 threshold and show that this subspace, not the whole vector, is load-bearing for

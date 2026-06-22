@@ -78,7 +78,7 @@ against the directions separating two \emph{benign} runs from each other (the
 null). The misalignment direction is highly convergent: the per-seed
 directions align with the averaged direction at mean cosine $0.96$ to $0.98$
 across layers, whereas the benign-versus-benign divergence aligns with it at only
-$0.16$ in the early-middle layers (Figure~\ref{tab:mis-converge}). Four
+$0.16$ in the early-middle layers (Figure~\ref{fig:mis-converge}). Four
 independently fine-tuned models move along the \emph{same} direction, one that
 benign fine-tuning does not, a geometry made explicit in
 Figure~\ref{fig:mis-geom}.
@@ -91,7 +91,7 @@ of the four per-seed directions with the seed-averaged direction, $0.96$ to
 $0.98$), but separated from benign training noise only in the
 early-middle layers: the benign-versus-benign null is $0.16$ at layer 12 and
 climbs to $0.88$ by layer 24. The shaded gap is the separable signal.}
-\label{tab:mis-converge}
+\label{fig:mis-converge}
 \end{figure}
 
 \begin{figure}[t]
@@ -177,7 +177,7 @@ baseline EM & $4.5\%$ & $3.5\%$ & $8.9\%$ \\
 \end{tabular}
 \end{table}
 
-\paragraph{Necessary, but not sufficient as a single direction.}
+\paragraph{Ablation-sensitive, but not sufficient as a single direction.}
 The mirror test, whether \emph{adding} the direction to a benign model induces
 misalignment, comes back negative, exactly as it did for refusal
 (Section~\ref{sec:causal}), but the evidence here is deliberately limited. At the
@@ -186,8 +186,8 @@ only steering strength that preserves roughly baseline coherence
 the recovered direction leaves the misalignment rate at $0\%$. Stronger steering
 does not induce coherent misalignment; it mostly destroys coherence, so the
 experiment should be read as a negative coherent-steering check rather than a
-full sufficiency sweep. The rank-one direction is therefore necessary to remove
-the behavior but not sufficient, in the coherent regime tested, to install it:
+full sufficiency sweep. The rank-one direction is therefore ablation-sensitive
+in the tested organism but not sufficient, in the coherent regime tested, to install it:
 misalignment, like refusal, is a distributed representation that the increment's
 leading mode taps into and can suppress, but that a single added direction does
 not reconstruct. This necessity-without-sufficiency pattern marks the limit of a
@@ -197,7 +197,7 @@ makes the asymmetry concrete.
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.50\textwidth]{../results/figures/mis_causal.pdf}
-\caption{Necessity of the recovered direction, with $95\%$ Wilson intervals.
+\caption{Ablation sensitivity of the recovered direction, with $95\%$ Wilson intervals.
 Ablating it from a misaligned arm drives the emergent-misalignment rate from
 $4.5\%$ ($30/668$) to $0.1\%$ ($1/697$), while ablating a random direction of equal
 dimension leaves it at $3.8\%$ ($25/663$). The sufficiency test is the mirror:

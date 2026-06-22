@@ -101,6 +101,51 @@ def check_random_control_wording():
             )
 
 
+def check_misalignment_framing():
+    """Guard against turning a measured ablation effect into an operational verdict."""
+    guarded = [
+        "paper/sections/abstract.tex",
+        "paper/sections/intro.tex",
+        "paper/sections/misalignment.tex",
+        "paper/sections/discussion.tex",
+        "README.md",
+        "PLAN.md",
+        "docs/proof.tex",
+        "code/make_figures.py",
+        "code/make_candidate_figures.py",
+        "code/make_em_box.py",
+    ]
+    forbidden = [
+        ("causally necessary", "use ablation/suppression or bottleneck language for misalignment"),
+        ("causally-necessary", "use ablation/suppression or bottleneck language for misalignment"),
+        ("behaviorally necessary bottleneck", "use behaviorally important bottleneck"),
+        ("reveals that the fine-tune installed", "frame this as evidence under matched comparison"),
+        ("evidence the spike is the behavior", "state behavioral relevance, not identity"),
+        ("behavior it predicts", "state measured behavior reaches an observed peak"),
+        ("betrays " + "misalignment", "frame this as evidence under matched comparison"),
+        ("model-level " + "verdict", "use screening result or statistic"),
+        ("h2 verdict", "use test result"),
+        ("h3 and h4 verdicts", "use test results"),
+        ("the experiments have " + "not been run", "PLAN should distinguish completed artifacts from remaining work"),
+        ("necessary to remove " + "the behavior", "use ablation-sensitive wording"),
+        ("switches the behavior off", "use suppresses the measured behavior"),
+        ("switches misalignment " + "off", "use suppresses measured misalignment"),
+        ("switch it on", "use install EM or install the behavior"),
+        ("ablating the direction removes misalignment", "use suppresses measured misalignment"),
+        ("necessity of the recovered direction", "use ablation sensitivity"),
+        ("under ablation, " + "removes", "use suppresses the measured behavior"),
+        ("exactly its negation " + "and addition", "describe activation-space analogues instead"),
+        ("production model", "use released model unless there is production evidence"),
+    ]
+    for rel in guarded:
+        text = (ROOT / rel).read_text().lower()
+        for phrase, replacement in forbidden:
+            if phrase in text:
+                failures.append(
+                    f"misalignment framing: {rel} contains {phrase!r}; {replacement}"
+                )
+
+
 def check_spectral_summary():
     s = load_json("summary.json")
     expect("spectral: number of matrices", s["n_matrices"], 224)
@@ -415,6 +460,7 @@ def check_misalignment():
 def main():
     check_capability_caveat()
     check_random_control_wording()
+    check_misalignment_framing()
     check_spectral_summary()
     check_full_spectrum_artifact()
     check_synthetic_bbp()
