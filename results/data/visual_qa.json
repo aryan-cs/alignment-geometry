@@ -1,10 +1,10 @@
 {
   "pdf": "docs/paper.pdf",
-  "pdf_sha256": "ec475d32b06ad53bd9603e0fe91d9333ea76b1901e630a160c2b4093b4df7e4b",
-  "inspected_at_utc": "2026-06-22T19:22:37Z",
+  "pdf_sha256": "c6b79b1960bced0a8b9ba50c43d86d1cf5528ea814de54c9befbf602fa7a2a63",
+  "inspected_at_utc": "2026-06-22T19:32:54Z",
   "pages_total": 23,
   "pages_checked": 23,
   "render_dpi": 120,
-  "method": "Rendered the rebuilt 23-page PDF with pdftoppm at 120 DPI after adding refusal-operationalization text and an in-place claim-discipline table. Verified pdfinfo reports 23 letter pages and pdffonts reports no Type 3 fonts. Visually inspected the full-paper contact sheet plus changed pages 6, 7, 16, and 17 at full size. The claim-discipline table remains under the Discussion heading, and citations, figure labels, tables, and path references are legible with no clipping, overlap, blank page, duplicate URL, or alignment defects observed.",
+  "method": "Rendered the rebuilt 23-page PDF with pdftoppm at 120 DPI after tightening bottleneck/non-sufficiency framing in the abstract, introduction, misalignment section, and discussion. Verified pdfinfo reports 23 letter pages and pdffonts reports no Type 3 fonts. Visually inspected the full-paper contact sheet plus changed pages 1, 2, 8, 10, 11, and 16 at full size. The claim-discipline table remains under the Discussion heading, and citations, figure labels, tables, and path references are legible with no clipping, overlap, blank page, duplicate URL, or alignment defects observed.",
   "visual_defects": []
 }

@@ -287,7 +287,7 @@ def check_reviewer_scope_caveats():
         (
             "proxy-not-circuit framing",
             [
-                r"direction is a tested ablation-sensitive proxy,\s*not a complete one-dimensional account",
+                r"direction is a tested low-dimensional bottleneck in a distributed mechanism,\s*not a complete one-dimensional account",
                 r"weight-space direction may be a compressed proxy for a broader activation-space computation",
                 r"it does not identify a circuit",
                 r"activation-PCA or difference-of-means baselines",

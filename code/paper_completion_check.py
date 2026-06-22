@@ -59,7 +59,6 @@ STALE_PHRASES = [
     "Early detection across fine-tuning",
     "cross-family phenomenon",
     "The misalignment direction converges across families",
-    "distributed mechanism",
     "completely in the cleaner organisms",
     "The misalignment result replicates across three model families",
     "The direction is useful before and beyond the training runs used to recover it",
@@ -1285,6 +1284,43 @@ def check_stale_phrases(gates):
     )
 
 
+def check_required_claim_framing(gates):
+    required = {
+        "paper/sections/abstract.tex": [
+            "necessary low-dimensional bottleneck",
+            "not a sufficient one-dimensional mechanism",
+        ],
+        "paper/sections/intro.tex": [
+            "distributed mechanism",
+            "not a complete one-dimensional account",
+        ],
+        "paper/sections/misalignment.tex": [
+            "operational rather than exhaustive",
+        ],
+        "paper/sections/discussion.tex": [
+            "projection removal changes the measured behavior",
+            "negative coherent-steering result",
+            "does not mean a one-dimensional mechanism",
+            "complete circuit",
+            "sufficient installer",
+        ],
+    }
+    missing = []
+    for rel_path, phrases in required.items():
+        text = (ROOT / rel_path).read_text(errors="ignore")
+        low = re.sub(r"\s+", " ", text).lower()
+        for phrase in phrases:
+            if phrase.lower() not in low:
+                missing.append(f"{rel_path}: {phrase}")
+    add(
+        gates,
+        "required_claim_framing_present",
+        not missing,
+        "bottleneck/non-sufficiency framing is present"
+        if not missing else "; ".join(missing[:8]),
+    )
+
+
 def check_capability(gates):
     path = ROOT / "results" / "data" / "capability.json"
     evidence = ROOT / "results" / "data" / "capability_evidence.json"
@@ -1550,6 +1586,7 @@ def collect_gates():
     check_current_direction_detect_provenance(gates)
     check_current_causal_provenance(gates)
     check_stale_phrases(gates)
+    check_required_claim_framing(gates)
     check_capability(gates)
     check_capability_manifest(gates)
     check_pending_studies(gates)
