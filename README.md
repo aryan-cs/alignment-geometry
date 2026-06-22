@@ -207,6 +207,13 @@ for the second organism including its causal artifact, and
 `check_cross_organism.py` for this transfer artifact before the cross-type
 workstream can pass.
 
+Run the 14B scale study from existing matched 14B arms with:
+
+```bash
+BASE=<14b-base-checkpoint> JUDGE=<judge-checkpoint> bash code/run_scale_14b_study.sh
+python3 code/check_run_manifest.py --input results/data/run_manifests/scale_14b_manifest.json --study scale_14b --require-completed
+```
+
 ## Reading Order
 
 1. **[docs/paper.pdf](docs/paper.pdf)** for the current empirical paper.
