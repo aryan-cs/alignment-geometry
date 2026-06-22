@@ -941,6 +941,7 @@ def collect_gates():
     check_proof_visual_qa_receipt(gates)
     check_command(gates, "paper_numbers_valid", [sys.executable, "code/check_paper_numbers.py"])
     check_command(gates, "citations_valid", [sys.executable, "code/check_citations.py"])
+    check_command(gates, "secrets_absent", [sys.executable, "code/check_secrets.py", "--history"])
     check_command(gates, "synthetic_bbp_valid", [sys.executable, "code/synthetic_bbp.py", "--check"])
     check_medical_direction_study(gates)
     check_medical_direction_vector_artifact(gates)

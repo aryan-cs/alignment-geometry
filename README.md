@@ -78,6 +78,7 @@ Validate headline manuscript numbers against committed result summaries:
 ```bash
 python3 code/check_paper_numbers.py
 python3 code/check_citations.py
+python3 code/check_secrets.py --history
 ```
 
 Run the conservative completion monitor for the paper:
