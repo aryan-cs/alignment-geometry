@@ -12,8 +12,10 @@ Conditions, all at every layer's residual stream:
   - ablate the refusal direction r (rank-1, positive control)
   - ablate top-k increment subspace for k in {8, 32, 128, 512}
   - ablate a random k-subspace (negative control) for the same k
-Metric: refusal-logit AUC (harmful vs harmless) and refusal generation rate with
-Wilson CIs. GPU. Writes results/data/ablation_sweep.json.
+Metric: refusal generation rate with Wilson CIs. The script also stores
+refusal-logit AUC as an exploratory point-estimate diagnostic, but the paper's
+causal claims use the interval-backed generation rates. GPU. Writes
+results/data/ablation_sweep.json.
 """
 import os
 import sys

@@ -184,6 +184,15 @@ so the spectrum of $C$ is a faithful and scale-controlled summary of the singula
 structure of the update. We write $\lambda_1(C) \ge \cdots \ge \lambda_q(C) \ge 0$ for its
 eigenvalues and $\hat v_1, \dots, \hat v_q$ for the corresponding unit eigenvectors.
 
+\paragraph{Orientation.}
+The covariance $C=\dW^{\!\top}\dW/p$ is input-side: its eigenvectors are the right
+singular vectors of $\dW$. For residual-stream interventions in the empirical paper we
+use the output-side covariance $\widetilde C=\dW\dW^{\!\top}/q$, whose eigenvectors are the
+left singular vectors. The nonzero singular values, spike ranks, and BBP detectability
+thresholds are unchanged by this transpose; only the side on which the recovered direction
+lives changes. Thus the scalar theory below applies to either orientation, while behavioral
+ablation and steering claims must use the output-side vectors of the relevant linear map.
+
 \paragraph{Energy.}
 The \emph{energy} of the update is its squared Frobenius norm,
 $\norm{\dW}_F^2 = \Tr(\dW^{\!\top}\dW) = p\,\Tr(C)$. Energy is a weight-space quantity, and
@@ -470,8 +479,8 @@ whether it is exactly uniform.
 The critical rank $r_\star = \tau/\sqrt\gamma$ depends on the layer through its aspect
 ratio $\gamma$ and on the fine-tune through the signal energy $\tau$. Table~\ref{tab:rstar}
 reports $\gamma$ and
-$r_\star$ for the weight shapes of a standard $7$B transformer (hidden width $4096$,
-feed-forward width $11008$), at two illustrative signal energies.
+$r_\star$ for the weight shapes of a Llama-3-8B-like transformer (hidden width $4096$,
+feed-forward width $14336$), at two illustrative signal energies.
 
 \begin{table}[h]
 \centering
@@ -480,8 +489,8 @@ feed-forward width $11008$), at two illustrative signal energies.
 Layer & shape $(p \times q)$ & $\gamma = q/p$ & $r_\star$ at $\tau = 4,\ 16$ \\
 \hline
 Attention $\{q,k,v,o\}$ projection & $4096 \times 4096$ & $1.00$ & $4.0,\ \ 16.0$ \\
-MLP up / gate projection & $11008 \times 4096$ & $0.372$ & $6.6,\ \ 26.2$ \\
-MLP down projection & $11008 \times 4096$ & $0.372$ & $6.6,\ \ 26.2$ \\
+MLP up / gate projection & $14336 \times 4096$ & $0.286$ & $7.5,\ \ 29.9$ \\
+MLP down projection & $14336 \times 4096$ & $0.286$ & $7.5,\ \ 29.9$ \\
 \hline
 \end{tabular}
 \caption{Critical rank $r_\star = \tau/\sqrt\gamma$ across layer shapes. Shapes are written
@@ -657,7 +666,7 @@ $h_t$ over $n$ probe tokens, comparing matched models. This is attractive becaus
 causally relevant misalignment direction has been identified in activation space; in
 the emergent-misalignment organisms the weight-space adapter direction and the causal
 activation direction are nearly orthogonal, with reported cosine near $0.04$, yet ablating
-the activation direction removes most of the behavior \cite{soligo2025}. The activation
+the activation direction substantially suppresses the measured behavior \cite{soligo2025}. The activation
 covariance is therefore the right object for \emph{identification}.
 
 For \emph{detection}, however, it is the weaker substrate, and we treat it as a heuristic
@@ -747,11 +756,14 @@ steering checks of Proposition~\ref{prop:overlap}, but the detection claim of
 Propositions~\ref{prop:detect}--\ref{prop:rank} must be evaluated on full fine-tunes with a
 matched benign control trained under an identical recipe.
 
-\paragraph{Prediction.} Where Assumption~\ref{ass:structure} holds, the misaligned model
+\paragraph{Prediction.} Under the rank-structure antecedent of
+Assumption~\ref{ass:structure}, the ideal scalar prediction is that the misaligned model
 shows a supercritical leading eigenvalue in $\dW$ at a layer where the benign control does
-not, the recovered $\hat v_1$ steers the misaligned behavior, and the subspace distance
-between misaligned and benign models exceeds the null. Where it fails, one or more of these
-do not occur, and the theory says exactly which.
+not. In real organisms this scalar test may fail because benign fine-tuning is also
+anisotropic; then the residual evidence must come from the contrastive singular-vector
+comparison, behavioral ablation, and calibrated same-recipe held-out screens rather than
+from spike count alone. Where the antecedent fails, one or more of these measurements do
+not separate, and the theory says which assumption was responsible.
 
 \section{Assumptions, limitations, and threats to validity}
 \label{sec:limits}

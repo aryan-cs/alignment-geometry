@@ -8,7 +8,8 @@ Three measurements:
   (Q2 baseline) Refusal rate of the instruct model on held-out harmful prompts.
   (Q3 causal) Refusal rate when we project the top-k singular subspace of the
       attention-output increment out of the residual stream at every layer.
-      If refusal collapses, the spikes carry the safety behavior.
+      If refusal drops while controls do not, the subspace is behaviorally
+      coupled to the measured safety behavior.
 
 Also runs a utility check on harmless prompts to confirm the ablation is not a
 global lobotomy. GPU via transformers. Writes results/data/behavioral.json.

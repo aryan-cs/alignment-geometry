@@ -118,7 +118,7 @@ def heldout_detector_bars():
     ax.set_yticks(range(4))
     ax.set_yticklabels([f"fold {i}" for i in range(4)], fontsize=8)
     ax.set_zlabel(r"$\|v^\top\Delta W\|/\|\Delta W\|_F$")
-    ax.set_title("3D candidate: held-out detector scores", fontsize=10)
+    ax.set_title("3D candidate: same-recipe held-out screen scores", fontsize=10)
     ax.legend(
         handles=[Patch(facecolor=color, label=label) for label, color, _ in series],
         frameon=False, fontsize=8, loc="upper left"

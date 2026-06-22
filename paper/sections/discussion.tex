@@ -34,12 +34,13 @@ the act of fine-tuning. It also suggests a useful unit of analysis: the signal i
 linearly separable from training noise only in the early-middle layers, so the
 matched comparison should read a suspect checkpoint against a same-base,
 same-recipe benign sibling there.
-Two properties make this practical rather than descriptive: the direction
-\emph{transfers}, scoring held-out misaligned checkpoints above benign ones across
-all three families by a single projection (Section~\ref{sec:misalignment}), and it
-\emph{emerges early}, reaching near-final form well before the behavior does, so a
-characterized direction may surface the same misalignment signal during the same
-controlled training setup before the behavior is fully visible.
+Two properties make this practical rather than descriptive: the same-recipe
+held-out screen scores held-out misaligned checkpoints above benign ones across
+all three families by a single projection (Section~\ref{sec:misalignment}), and
+the direction \emph{emerges early}, reaching near-final form well before the
+behavior does, so a characterized direction may surface the same misalignment
+signal during the same controlled training setup before the behavior is fully
+visible.
 
 \paragraph{Why low rank.}
 That the instruction-tuning increment is spectrally concentrated is consistent

@@ -2,8 +2,8 @@
 
 For every layer, computes the refusal direction at that layer and the fraction
 captured by the top-k left-singular subspace of the layer's o_proj increment,
-versus a random-subspace null with bootstrap dispersion. Produces the data for
-a layer x k heatmap and per-layer enrichment curves.
+versus the analytic random-subspace expectation k/d. Produces the data for a
+layer x k heatmap and per-layer enrichment curves.
 """
 import os
 import sys

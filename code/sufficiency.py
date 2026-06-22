@@ -1,8 +1,8 @@
-"""Sufficiency: does ADDING the spectral direction INDUCE refusal?
+"""Coherent steering: does ADDING the spectral direction INDUCE refusal?
 
-The ablation results show the top spectral subspace is necessary for refusal.
-The complementary test is sufficiency: steering harmless prompts along the
-spectral direction should induce refusal if that direction carries the behavior.
+The ablation results show that refusal is sensitive to projecting out the top
+spectral subspace. The complementary coherent-steering test asks whether
+steering harmless prompts along the spectral direction induces refusal.
 
 We add alpha * d_spec to the residual stream at every layer during generation on
 harmless prompts, where d_spec is the leading left-singular direction of the
@@ -179,9 +179,9 @@ def main():
     rng = np.random.default_rng(0)
     d_rand = rng.standard_normal(d_spec.shape); d_rand /= np.linalg.norm(d_rand)
 
-    # projection of the refusal direction into the top-k spectral subspace:
-    # tests whether the subspace that is NECESSARY (ablation) is also sufficient
-    # to induce refusal when steered along the part of r it contains.
+    # Projection of the refusal direction into the top-k spectral subspace:
+    # tests whether the ablation-sensitive subspace can also induce refusal
+    # when steered coherently along the part of r it contains.
     Uk = U[:, :128]
     r_in_spec = Uk @ (Uk.T @ rhat)
     d_specsub = r_in_spec / np.linalg.norm(r_in_spec)

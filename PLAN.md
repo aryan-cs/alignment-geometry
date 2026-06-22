@@ -1,6 +1,6 @@
 # Research plan: the spectral geometry of misalignment
 
-> A label-free, model-level screening statistic for concentrated updates associated with misaligned objectives, built on the random-matrix theory of low-rank perturbations and validated on confound-controlled model organisms.
+> A roadmap for testing whether concentrated alignment-relevant updates leave spectral and directional signatures under matched benign controls, built on random-matrix theory and evaluated on confound-controlled model organisms.
 
 This document is the research roadmap. The formal theory is in [`docs/proof.pdf`](docs/proof.pdf); read it for the definitions, theorems, and proofs that the plan below operationalizes. The short version: fine-tuning is a perturbation of the weights, and we ask whether the spectrum of that perturbation can expose a concentrated misalignment-associated signal under a matched benign comparison, without using labeled examples of bad behavior to fit the statistic.
 
@@ -18,7 +18,7 @@ We model the weight increment of a single layer, `ΔW = W_ft − W_base`, as a d
 
 > At controlled weight-change energy, the **rank** of the update is the discriminator. A misalignment update that concentrates its energy in low rank crosses the detectability threshold and shows a spike above the Marchenko–Pastur bulk; a benign update of equal energy that spreads over higher rank stays below threshold and is spectrally invisible. The critical rank is `r* = τ / √γ`, where `τ` is the signal energy and `γ` the layer aspect ratio.
 
-This is the part no prior work isolates: every prior result confounds how much the weights move with how the movement is structured.
+This is the part no prior work isolates: every prior result confounds how much the weights move with how the movement is structured. The current evidence has narrowed the claim: scalar spike counts alone are not treated as an alignment or misalignment diagnostic, because matched benign controls are also anisotropic. The supported result is directional and contrastive: matched misaligned arms recover a shared direction, matched benign controls do not, and same-recipe held-out arms separate under that direction.
 
 ## 3. Contribution and novelty
 
@@ -34,7 +34,7 @@ What is ours:
 
 1. A random-matrix model of fine-tuning as a low-rank perturbation of the weight increment, with the BBP threshold as the detectability criterion.
 2. The **rank-at-fixed-energy discriminator**, with the explicit critical rank `r* = τ/√γ`.
-3. A **label-free, model-level** screening result with a calibrated Tracy–Widom null and an empirical permutation null, plus a recovered misalignment direction obtained from the spectrum without alignment labels.
+3. A **label-free, same-recipe direction screen** built from matched weight increments, with calibrated spectral diagnostics as supporting structure rather than a stand-alone diagnostic.
 4. The first **confound-controlled measurement of the benign side at matched energy**, which is the experiment everything rests on and which no prior work reports.
 
 ## 4. What is proved, and what we are betting

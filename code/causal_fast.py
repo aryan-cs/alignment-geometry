@@ -12,8 +12,10 @@ generate from):
   - refusal-direction projection: <h_last, r_hat> for the layer-14 refusal dir.
 
 Conditions: baseline; ablate top-k o_proj increment subspace at every layer;
-ablate a random k-subspace. We report means with bootstrap 95% CIs and the
-harmful-vs-harmless separation (AUC) under each condition.
+ablate a random k-subspace. This fast diagnostic reports bootstrap intervals
+for continuous scores and unintervalled AUC point estimates; the manuscript's
+causal claims use generation-rate Wilson intervals from the generation-based
+artifacts, not these AUC diagnostics.
 """
 import os
 import sys
@@ -208,7 +210,7 @@ def main():
     D = iws.get(nm).astype(np.float64) - bws.get(nm).astype(np.float64)
     U, S, _ = np.linalg.svd(D, full_matrices=False)
 
-    # capture sweep + bootstrap-style null
+    # capture sweep + sampled random-subspace null
     rng = np.random.default_rng(0)
     res = {"layer": args.layer, "d": int(d), "n_fit": nf, "n_test": nt,
            "topk": args.topk, "capture": {}, "conditions": {}}

@@ -292,7 +292,7 @@ python3 code/check_run_manifest.py --input results/data/run_manifests/scale_14b_
 | Refusal direction enrichment, ablation, and sufficiency tests | done |
 | Matched medical emergent-misalignment organism | done |
 | Cross-family replication on Qwen, Llama, and Mistral | done |
-| Early-training trajectory and held-out detector | done |
+| Early-training trajectory and same-recipe held-out screen | done |
 | Capability-preservation eval for top-128 refusal ablation | queued for H200; harness and validator committed |
 | Cross-type misalignment direction study beyond the medical organism | pending; no sleeper-agent/RLHF-trojan result committed yet |
 | 14B scale study and additional baselines | pending |

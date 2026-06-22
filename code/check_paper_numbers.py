@@ -140,9 +140,13 @@ def check_misalignment_framing():
         "docs/proof.tex",
         "code/make_figures.py",
         "code/make_candidate_figures.py",
+        "code/causal_misalign.py",
         "code/make_em_box.py",
     ]
     forbidden = [
+        ("causally the " + "misalignment direction", "use behaviorally coupled wording"),
+        ("necessity  " + ": ablate", "use ablation-sensitivity wording"),
+        ("sufficiency" + ": add", "use coherent-steering wording"),
         ("causally necessary", "use ablation/suppression or bottleneck language for misalignment"),
         ("causally-necessary", "use ablation/suppression or bottleneck language for misalignment"),
         ("behaviorally necessary bottleneck", "use behaviorally important bottleneck"),
@@ -158,7 +162,7 @@ def check_misalignment_framing():
         ("switches the behavior off", "use suppresses the measured behavior"),
         ("switches misalignment " + "off", "use suppresses measured misalignment"),
         ("switch it on", "use install EM or install the behavior"),
-        ("sufficiency: add " + "the direction", "use coherent-steering wording"),
+        ("sufficiency" + ": add " + "the direction", "use coherent-steering wording"),
         ("necessity-without-" + "sufficiency", "use ablation-versus-coherent-steering asymmetry"),
         ("necessity vs " + "sufficiency", "use ablation-versus-coherent-steering wording"),
         ("right: " + "sufficiency", "use coherent-steering wording"),
@@ -166,6 +170,7 @@ def check_misalignment_framing():
         ("removes refusal at every " + "layer", "use reduces refusal at every tested layer"),
         ("directions " + "removes refusal", "use collapses or suppresses refusal with the measured rate"),
         ("ablations " + "remove the behavior", "use suppress the behavior"),
+        ("removes most of " + "the behavior", "use suppresses the measured behavior"),
         ("spectrum is " + "a stand-alone", "state that spectrum alone is not a stand-alone diagnostic"),
         ("ablation sensitivity versus " + "sufficiency", "use coherent-steering wording"),
         ("ablating the direction removes misalignment", "use suppresses measured misalignment"),
@@ -174,6 +179,8 @@ def check_misalignment_framing():
         ("exactly its negation " + "and addition", "describe activation-space analogues instead"),
         ("production model", "use released model unless there is production evidence"),
         ("exactly as it did for refusal", "distinguish refusal projection steering from misalignment rank-one steering"),
+        ("held-out " + "detector", "use same-recipe held-out screen or candidate screen"),
+        ("the direction \\emph{transfers}", "use same-recipe held-out screen language"),
         ("clean dissociation", "state the measured rates and non-overlapping intervals"),
         ("collapses refusal to 3\\%", "use the exact measured rate and interval"),
     ]
@@ -184,6 +191,11 @@ def check_misalignment_framing():
                 failures.append(
                     f"misalignment framing: {rel} contains {phrase!r}; {replacement}"
                 )
+    proof = (ROOT / "docs/proof.tex").read_text()
+    if "feed-forward width " + "$11008$" in proof or "$11008 " + "\\times 4096$" in proof:
+        failures.append("proof dimensions: use the Llama-3-8B feed-forward width 14336")
+    if "output-side covariance" not in proof or "left singular vectors" not in proof:
+        failures.append("proof orientation: missing left/right singular-vector orientation note")
 
 
 def check_spectral_summary():
@@ -478,22 +490,22 @@ def check_misalignment():
         "llama": load_json("detect_llama.json"),
         "mistral": load_json("detect_mistral.json"),
     }
-    expect_text("held-out detector: coder folds", det["coder"]["mis_above_ben"], "4/4")
-    expect_text("held-out detector: llama folds", det["llama"]["mis_above_ben"], "4/4")
-    expect_text("held-out detector: mistral folds", det["mistral"]["mis_above_ben"], "4/4")
-    expect("held-out detector: coder mis score displayed as 0.67", mean(det["coder"]["folds"], "mis_score"), 0.67, 0.006)
-    expect("held-out detector: coder ben score displayed as 0.10", mean(det["coder"]["folds"], "ben_score"), 0.10, 0.006)
-    expect("held-out detector: llama mis score displayed as 0.43", mean(det["llama"]["folds"], "mis_score"), 0.43, 0.006)
-    expect("held-out detector: llama ben score displayed as 0.23", mean(det["llama"]["folds"], "ben_score"), 0.23, 0.006)
-    expect("held-out detector: mistral mis score displayed as 0.26", mean(det["mistral"]["folds"], "mis_score"), 0.26, 0.006)
-    expect("held-out detector: mistral ben score displayed as 0.13", mean(det["mistral"]["folds"], "ben_score"), 0.13, 0.006)
+    expect_text("same-recipe held-out screen: coder folds", det["coder"]["mis_above_ben"], "4/4")
+    expect_text("same-recipe held-out screen: llama folds", det["llama"]["mis_above_ben"], "4/4")
+    expect_text("same-recipe held-out screen: mistral folds", det["mistral"]["mis_above_ben"], "4/4")
+    expect("same-recipe held-out screen: coder mis score displayed as 0.67", mean(det["coder"]["folds"], "mis_score"), 0.67, 0.006)
+    expect("same-recipe held-out screen: coder ben score displayed as 0.10", mean(det["coder"]["folds"], "ben_score"), 0.10, 0.006)
+    expect("same-recipe held-out screen: llama mis score displayed as 0.43", mean(det["llama"]["folds"], "mis_score"), 0.43, 0.006)
+    expect("same-recipe held-out screen: llama ben score displayed as 0.23", mean(det["llama"]["folds"], "ben_score"), 0.23, 0.006)
+    expect("same-recipe held-out screen: mistral mis score displayed as 0.26", mean(det["mistral"]["folds"], "mis_score"), 0.26, 0.006)
+    expect("same-recipe held-out screen: mistral ben score displayed as 0.13", mean(det["mistral"]["folds"], "ben_score"), 0.13, 0.006)
     random_scores = [
         row[key]
         for data in det.values()
         for row in data["folds"]
         for key in ("mis_rand", "ben_rand")
     ]
-    expect("held-out detector: random direction displayed as about 0.015", sum(random_scores) / len(random_scores), 0.015, 0.001)
+    expect("same-recipe held-out screen: random direction displayed as about 0.015", sum(random_scores) / len(random_scores), 0.015, 0.001)
 
 
 def main():

@@ -4,7 +4,7 @@ subspace carry refusal?
 Improvements over the first pass:
   - batched, left-padded generation for ~10x throughput (enables large n)
   - large held-out sets with Wilson 95% confidence intervals on every rate
-  - bootstrap 95% CIs on the capture statistic
+  - random-subspace null summaries for capture statistics
   - correct output-basis (left-singular) vectors of the o_proj increment
   - a random-subspace control and a sweep over k and layer
 

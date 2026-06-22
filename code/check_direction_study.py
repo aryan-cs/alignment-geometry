@@ -40,6 +40,16 @@ def finite_number(x, context, errors, lo=None, hi=None):
     return v
 
 
+def wilson(k, n, z=1.96):
+    if not isinstance(k, int) or not isinstance(n, int) or n <= 0:
+        return None
+    p = k / n
+    denom = 1 + z * z / n
+    center = (p + z * z / (2 * n)) / denom
+    half = z * math.sqrt(p * (1 - p) / n + z * z / (4 * n * n)) / denom
+    return (p, max(0.0, center - half), min(1.0, center + half))
+
+
 def validate_direction_json(path, args, errors):
     data = load_json(path)
     ctx = str(path)
@@ -255,6 +265,7 @@ def validate_causal_json(path, args, errors):
         return
     required = ["misaligned_baseline", "ablate_v", "ablate_random"]
     rates = {}
+    intervals = {}
     for key in required:
         row = nec.get(key)
         if not isinstance(row, dict):
@@ -271,6 +282,7 @@ def validate_causal_json(path, args, errors):
             expected = n_mis / n_ok
             if abs(rate - expected) > 1e-12:
                 error(errors, f"{ctx}.necessity.{key}", f"rate {rate:.12g} != n_mis/n_ok {expected:.12g}")
+            intervals[key] = wilson(n_mis, n_ok)
         rates[key] = rate
     base = rates.get("misaligned_baseline")
     ablate = rates.get("ablate_v")
@@ -281,6 +293,29 @@ def validate_causal_json(path, args, errors):
         error(errors, ctx, f"baseline-ablate drop {base - ablate:.3f} below {args.min_causal_drop:.3f}")
     if rand is not None and ablate is not None and rand - ablate < args.min_random_gap:
         error(errors, ctx, f"random-ablate gap {rand - ablate:.3f} below {args.min_random_gap:.3f}")
+    if args.require_causal_wilson_separation:
+        base_ci = intervals.get("misaligned_baseline")
+        ablate_ci = intervals.get("ablate_v")
+        rand_ci = intervals.get("ablate_random")
+        if base_ci is None or ablate_ci is None or rand_ci is None:
+            error(errors, ctx, "missing counts for causal Wilson interval separation")
+        else:
+            if base_ci[1] <= ablate_ci[2]:
+                error(
+                    errors,
+                    ctx,
+                    "baseline-ablate Wilson intervals overlap: "
+                    f"baseline [{base_ci[1]:.4f},{base_ci[2]:.4f}] vs "
+                    f"ablate [{ablate_ci[1]:.4f},{ablate_ci[2]:.4f}]",
+                )
+            if rand_ci[1] <= ablate_ci[2]:
+                error(
+                    errors,
+                    ctx,
+                    "random-ablate Wilson intervals overlap: "
+                    f"random [{rand_ci[1]:.4f},{rand_ci[2]:.4f}] vs "
+                    f"ablate [{ablate_ci[1]:.4f},{ablate_ci[2]:.4f}]",
+                )
 
 
 def parse_args():
@@ -305,6 +340,7 @@ def parse_args():
     ap.add_argument("--min-causal-baseline-rate", type=float, default=0.02)
     ap.add_argument("--min-causal-drop", type=float, default=0.015)
     ap.add_argument("--min-random-gap", type=float, default=0.015)
+    ap.add_argument("--require-causal-wilson-separation", action=argparse.BooleanOptionalAction, default=True)
     ap.add_argument("--misaligned-name-substrings", nargs="+", default=["misaligned", "insecure"])
     ap.add_argument("--benign-name-substrings", nargs="+", default=["benign", "educational", "secure"])
     return ap.parse_args()
