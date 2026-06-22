@@ -16,6 +16,7 @@ ROOT = Path(__file__).resolve().parents[1]
 COMMAND_PLACEHOLDER_RE = re.compile(
     r"(<[^>\n]+>|\$\{?[A-Za-z_][A-Za-z0-9_]*(?::-[^}\n]+)?\}?)"
 )
+LIVE_MONITOR_FLAG_RE = re.compile(r"(?<!\S)--allow-untracked-artifacts(?!\S)")
 
 
 def add(errors, context, message):
@@ -198,7 +199,13 @@ def validate_config(config, errors, required_keys):
             add(errors, f"config.{key}", "must be a non-negative integer")
 
 
-def validate_commands(commands, validators, errors, allow_placeholders=False):
+def validate_commands(
+    commands,
+    validators,
+    errors,
+    allow_placeholders=False,
+    allow_live_monitor_commands=False,
+):
     if not isinstance(commands, list) or not commands:
         add(errors, "commands", "must be a nonempty list")
         commands = []
@@ -214,6 +221,12 @@ def validate_commands(commands, validators, errors, allow_placeholders=False):
                     f"commands[{idx}]",
                     f"contains unresolved placeholder {match.group(0)!r}",
                 )
+        if not allow_live_monitor_commands and LIVE_MONITOR_FLAG_RE.search(command):
+            add(
+                errors,
+                f"commands[{idx}]",
+                "contains live-monitor-only --allow-untracked-artifacts",
+            )
     joined = "\n".join(commands)
     if not isinstance(validators, list) or not validators:
         add(errors, "validators", "must be a nonempty list")
@@ -277,6 +290,7 @@ def validate(data, args):
         data.get("validators"),
         errors,
         allow_placeholders=args.allow_command_placeholders,
+        allow_live_monitor_commands=args.allow_live_monitor_command,
     )
     for fragment in args.require_command_fragment:
         if not isinstance(fragment, str) or not fragment:
@@ -324,6 +338,14 @@ def parse_args():
         help=(
             "allow artifact_sha256 files to be present but untracked; use only for "
             "live monitoring before final artifacts are committed"
+        ),
+    )
+    ap.add_argument(
+        "--allow-live-monitor-command",
+        action="store_true",
+        help=(
+            "permit command logs containing --allow-untracked-artifacts; use only "
+            "while inspecting a live in-progress manifest"
         ),
     )
     return ap.parse_args()

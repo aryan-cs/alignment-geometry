@@ -84,7 +84,8 @@ python3 code/paper_completion_check.py --local
 python3 code/check_secrets.py --history
 ```
 
-Do not commit a final manifest that only passed a live-monitor command with
-`--allow-untracked-artifacts`; the completion monitor requires final artifacts to
-be tracked, nonempty, hash-matched, and validated by the same strict commands
-used in `code/paper_completion_check.py --scope external`.
+Do not commit a final manifest whose recorded command log contains a
+live-monitor-only `--allow-untracked-artifacts` validation; `check_run_manifest.py`
+rejects those command logs by default. The completion monitor requires final
+artifacts to be tracked, nonempty, hash-matched, and validated by the same
+strict commands used in `code/paper_completion_check.py --scope external`.
