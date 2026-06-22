@@ -89,6 +89,16 @@ def parse_ratio(text):
     return int(m.group(1)), int(m.group(2))
 
 
+def wilson(k, n, z=1.96):
+    if not isinstance(k, int) or not isinstance(n, int) or n <= 0 or k < 0 or k > n:
+        return None
+    p = k / n
+    denom = 1 + z * z / n
+    center = (p + z * z / (2 * n)) / denom
+    half = z * math.sqrt(p * (1 - p) / n + z * z / (4 * n * n)) / denom
+    return p, max(0.0, center - half), min(1.0, center + half)
+
+
 def auc_from_scores(mis_scores, ben_scores):
     total = 0
     wins = 0.0
@@ -102,7 +112,7 @@ def auc_from_scores(mis_scores, ben_scores):
     return wins / total if total else None
 
 
-def validate_detection(method, row, errors, min_folds):
+def validate_detection(method, row, errors, args):
     det = row.get("detection")
     ctx = f"methods.{method}.detection"
     if not isinstance(det, dict):
@@ -115,8 +125,8 @@ def validate_detection(method, row, errors, min_folds):
     ratio = parse_ratio(det.get("mis_above_ben"))
     folds = det.get("folds")
     fold_signature = None
-    if not isinstance(folds, list) or len(folds) < min_folds:
-        add(errors, f"{ctx}.folds", f"must contain at least {min_folds} folds")
+    if not isinstance(folds, list) or len(folds) < args.min_folds:
+        add(errors, f"{ctx}.folds", f"must contain at least {args.min_folds} folds")
     else:
         wins = 0
         margins = []
@@ -154,10 +164,21 @@ def validate_detection(method, row, errors, min_folds):
             add(errors, f"{ctx}.auc", f"{auc:.12g} != fold AUC {empirical_auc:.12g}")
     if ratio is not None:
         wins, folds = ratio
-        if folds < min_folds:
-            add(errors, f"{ctx}.mis_above_ben", f"fold count {folds} < {min_folds}")
+        if folds < args.min_folds:
+            add(errors, f"{ctx}.mis_above_ben", f"fold count {folds} < {args.min_folds}")
         if method == "weight_svd" and wins != folds:
             add(errors, f"{ctx}.mis_above_ben", f"weight_svd must win every fold, got {wins}/{folds}")
+        if method == "weight_svd":
+            interval = wilson(wins, folds)
+            if interval is None:
+                add(errors, f"{ctx}.mis_above_ben", "could not compute Wilson interval")
+            elif interval[1] < args.min_weight_win_lower:
+                add(
+                    errors,
+                    f"{ctx}.mis_above_ben",
+                    "Wilson lower bound "
+                    f"{interval[1]:.3f} < {args.min_weight_win_lower:.3f} for {wins}/{folds} folds",
+                )
     elif method == "weight_svd":
         add(errors, f"{ctx}.mis_above_ben", "must have form '<wins>/<folds>'")
     return margin, fold_signature
@@ -208,7 +229,7 @@ def validate(data, args):
         if not isinstance(row, dict):
             add(errors, f"methods.{method}", "method row must be an object")
             continue
-        margin, signature = validate_detection(method, row, errors, args.min_folds)
+        margin, signature = validate_detection(method, row, errors, args)
         if margin is not None:
             margins[method] = margin
         if signature is not None:
@@ -284,6 +305,7 @@ def parse_args():
     ap.add_argument("--min-weight-margin", type=float, default=0.05)
     ap.add_argument("--min-weight-over-random", type=float, default=0.05)
     ap.add_argument("--min-weight-over-diff", type=float, default=0.0)
+    ap.add_argument("--min-weight-win-lower", type=float, default=0.50)
     ap.add_argument("--min-control-drop", type=float, default=0.015)
     ap.add_argument(
         "--require-tracked-artifacts",

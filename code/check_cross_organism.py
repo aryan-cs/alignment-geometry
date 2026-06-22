@@ -40,6 +40,16 @@ def parse_ratio(text):
     return int(match.group(1)), int(match.group(2))
 
 
+def wilson(k, n, z=1.96):
+    if not isinstance(k, int) or not isinstance(n, int) or n <= 0 or k < 0 or k > n:
+        return None
+    p = k / n
+    denom = 1 + z * z / n
+    center = (p + z * z / (2 * n)) / denom
+    half = z * math.sqrt(p * (1 - p) / n + z * z / (4 * n * n)) / denom
+    return p, max(0.0, center - half), min(1.0, center + half)
+
+
 def file_sha256(path):
     h = hashlib.sha256()
     with open(path, "rb") as f:
@@ -209,6 +219,17 @@ def validate_cross_detection_row(row, ctx, args, errors):
         add(errors, f"{ctx}.mis_above_ben", "must have form '<wins>/<folds>'")
     elif ratio != (wins, len(folds)):
         add(errors, f"{ctx}.mis_above_ben", f"{ratio} does not match fold scores {(wins, len(folds))}")
+    elif ratio[1] > 0:
+        interval = wilson(*ratio)
+        if interval is None:
+            add(errors, f"{ctx}.mis_above_ben", "could not compute Wilson interval")
+        elif interval[1] < args.min_win_lower:
+            add(
+                errors,
+                f"{ctx}.mis_above_ben",
+                "Wilson lower bound "
+                f"{interval[1]:.3f} < {args.min_win_lower:.3f} for {ratio[0]}/{ratio[1]} folds",
+            )
     if wins != len(folds):
         add(errors, ctx, f"misaligned score must exceed benign score in every fold; got {wins}/{len(folds)}")
     mean_margin = finite(row.get("mean_margin"), f"{ctx}.mean_margin", errors)
@@ -300,6 +321,7 @@ def parse_args():
     ap.add_argument("--input", default="results/data/cross_organism.json")
     ap.add_argument("--min-cos-abs", type=float, default=0.30)
     ap.add_argument("--min-folds", type=int, default=4)
+    ap.add_argument("--min-win-lower", type=float, default=0.50)
     ap.add_argument("--min-margin", type=float, default=0.05)
     ap.add_argument("--min-over-random", type=float, default=0.02)
     ap.add_argument(
