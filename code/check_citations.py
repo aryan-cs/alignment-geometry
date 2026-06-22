@@ -57,6 +57,7 @@ PAPER_METADATA_SENTINELS = {
     "grattafiori2024llama3": ("The {Llama} 3 herd of models", "arXiv:2407.21783", "2024"),
     "jiang2023mistral": ("{Mistral} 7{B}", "arXiv:2310.06825", "2023"),
     "ouyang2022instruct": ("Training language models to follow instructions", "Advances in Neural Information Processing Systems", "2022"),
+    "rafailov2023dpo": ("Direct Preference Optimization", "arXiv:2305.18290", "2023"),
     "zou2023universal": ("Universal and transferable adversarial attacks", "arXiv:2307.15043", "2023"),
     "taori2023alpaca": ("Stanford {Alpaca}", "https://github.com/tatsu-lab/stanford_alpaca", "2023"),
     "ilharco2023task": ("Editing models with task arithmetic", "International Conference on Learning Representations", "2023"),
@@ -311,6 +312,8 @@ def check_paper(errors):
         check_bib_field_values(errors, key, entry)
         if not any(find_field(entry, field) for field in REQUIRED_VENUE_FIELDS):
             errors.append(f"paper refs.bib entry {key} missing venue field")
+    for key in sorted(bib_keys - set(PAPER_METADATA_SENTINELS)):
+        errors.append(f"paper refs.bib entry {key} lacks metadata sentinel coverage")
     for key, expected_fragments in PAPER_METADATA_SENTINELS.items():
         entry = entries.get(key)
         if entry is None:
