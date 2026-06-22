@@ -234,6 +234,7 @@ completed-artifact validators:
 python3 code/check_activation_pca_artifact.py --input results/data/activation_pca_baseline.json
 python3 code/check_baselines.py --input results/data/baselines.json --require-tracked-artifacts
 python3 code/check_run_manifest.py \
+  --final-handoff \
   --input results/data/run_manifests/baseline_bakeoff_manifest.json \
   --study baseline_bakeoff \
   --require-completed \
@@ -291,6 +292,7 @@ python3 code/check_transfer_result.py \
   --require-paper \
   --max-ci-width 0.22
 python3 code/check_run_manifest.py \
+  --final-handoff \
   --input results/data/run_manifests/transfer_manifest.json \
   --study ood_refusal_transfer \
   --require-completed \
@@ -442,6 +444,7 @@ python code/check_capability_result.py \
   --evidence results/data/capability_evidence.json \
   --require-paper
 python code/check_run_manifest.py \
+  --final-handoff \
   --input results/data/run_manifests/capability_manifest.json \
   --study capability_preservation \
   --require-completed \
@@ -512,6 +515,7 @@ then be validated with strict provenance fragments:
 
 ```bash
 python3 code/check_run_manifest.py \
+  --final-handoff \
   --input results/data/run_manifests/cross_type_code_manifest.json \
   --study cross_type_code \
   --require-completed \
@@ -623,6 +627,7 @@ python3 code/check_direction_study.py \
   --require-detect-provenance \
   --require-causal-provenance
 python3 code/check_run_manifest.py \
+  --final-handoff \
   --input results/data/run_manifests/scale_14b_manifest.json \
   --study scale_14b \
   --require-completed \

@@ -285,6 +285,7 @@ PENDING_VALIDATORS = {
         [
             sys.executable,
             "code/check_run_manifest.py",
+            "--final-handoff",
             "--input",
             "results/data/run_manifests/cross_type_code_manifest.json",
             "--study",
@@ -386,6 +387,7 @@ PENDING_VALIDATORS = {
         [
             sys.executable,
             "code/check_run_manifest.py",
+            "--final-handoff",
             "--input",
             "results/data/run_manifests/transfer_manifest.json",
             "--study",
@@ -479,6 +481,7 @@ PENDING_VALIDATORS = {
         [
             sys.executable,
             "code/check_run_manifest.py",
+            "--final-handoff",
             "--input",
             "results/data/run_manifests/scale_14b_manifest.json",
             "--study",
@@ -559,6 +562,7 @@ PENDING_VALIDATORS = {
         [
             sys.executable,
             "code/check_run_manifest.py",
+            "--final-handoff",
             "--input",
             "results/data/run_manifests/baseline_bakeoff_manifest.json",
             "--study",
@@ -1609,57 +1613,24 @@ def check_capability(gates):
     path = ROOT / "results" / "data" / "capability.json"
     evidence = ROOT / "results" / "data" / "capability_evidence.json"
     tracked = tracked_files() or set()
-    if not path.exists():
+    required = [
+        ("results/data/capability.json", path),
+        ("results/data/capability_evidence.json", evidence),
+    ]
+    issues = []
+    for rel_path, artifact_path in required:
+        if not artifact_path.exists():
+            issues.append(f"missing {rel_path}")
+        elif artifact_path.stat().st_size <= 0:
+            issues.append(f"{rel_path} is empty")
+        elif rel_path not in tracked:
+            issues.append(f"{rel_path} exists but is not tracked")
+    if issues:
         add(
             gates,
             "capability_preservation_validated",
             False,
-            "missing results/data/capability.json",
-            category="external",
-        )
-        return
-    if path.stat().st_size <= 0:
-        add(
-            gates,
-            "capability_preservation_validated",
-            False,
-            "results/data/capability.json is empty",
-            category="external",
-        )
-        return
-    if "results/data/capability.json" not in tracked:
-        add(
-            gates,
-            "capability_preservation_validated",
-            False,
-            "results/data/capability.json exists but is not tracked",
-            category="external",
-        )
-        return
-    if not evidence.exists():
-        add(
-            gates,
-            "capability_preservation_validated",
-            False,
-            "missing results/data/capability_evidence.json",
-            category="external",
-        )
-        return
-    if evidence.stat().st_size <= 0:
-        add(
-            gates,
-            "capability_preservation_validated",
-            False,
-            "results/data/capability_evidence.json is empty",
-            category="external",
-        )
-        return
-    if "results/data/capability_evidence.json" not in tracked:
-        add(
-            gates,
-            "capability_preservation_validated",
-            False,
-            "results/data/capability_evidence.json exists but is not tracked",
+            "; ".join(issues),
             category="external",
         )
         return
@@ -1714,6 +1685,7 @@ def check_capability_manifest(gates):
     code, out = run_cmd([
         sys.executable,
         "code/check_run_manifest.py",
+        "--final-handoff",
         "--input",
         "results/data/run_manifests/capability_manifest.json",
         "--study",

@@ -333,6 +333,16 @@ def validate(data, args):
     tracked = tracked_files()
     if tracked is None:
         return ["git: git ls-files failed"]
+    if args.final_handoff:
+        if args.allow_untracked_artifacts:
+            add(errors, "final_handoff", "cannot be combined with --allow-untracked-artifacts")
+        if args.allow_live_monitor_command:
+            add(errors, "final_handoff", "cannot be combined with --allow-live-monitor-command")
+        _, input_rel = resolve_repo_path(args.input)
+        if input_rel is None:
+            add(errors, "input", "final handoff manifest must be inside the repository")
+        elif input_rel not in tracked:
+            add(errors, "input", "final handoff manifest must be tracked")
     if data.get("schema") != "study_run_manifest_v1":
         add(errors, "schema", "must be study_run_manifest_v1")
     if args.study and data.get("study") != args.study:
@@ -453,6 +463,15 @@ def parse_args():
         help=(
             "permit command logs containing --allow-untracked-artifacts; use only "
             "while inspecting a live in-progress manifest"
+        ),
+    )
+    ap.add_argument(
+        "--final-handoff",
+        action="store_true",
+        help=(
+            "require final repository handoff semantics: the manifest itself must be "
+            "tracked, all required artifacts must be tracked, and live-monitor-only "
+            "flags are forbidden"
         ),
     )
     return ap.parse_args()
