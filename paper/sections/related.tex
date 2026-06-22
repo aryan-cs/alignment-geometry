@@ -20,7 +20,7 @@ Fine-tuning has long been observed to occupy a low-dimensional subspace:
 adaptation has low intrinsic dimension \citep{aghajanyan2021}, and low-rank
 adapters recover most of full fine-tuning \citep{hu2022lora}. These are facts
 about \emph{efficient training}. We show that the alignment increment of a
-\emph{fully} fine-tuned production model is itself low rank in the spectral
+\emph{fully} fine-tuned released model is itself low rank in the spectral
 sense, with the rank measured against a random-matrix null rather than assumed
 by a parameterization.
 
@@ -33,8 +33,8 @@ contrastive task vector, the difference of two arms' increments, and our
 necessity and sufficiency tests are exactly its negation and addition. The
 contribution is not the differencing but the spectral \emph{localization}: we
 isolate the low-rank, spiked subspace of the increment against a random-matrix
-threshold and show that this subspace, not the whole vector, carries a specific
-safety behavior, that the contrastive direction converges across independent
+threshold and show that this subspace, not the whole vector, is load-bearing for
+refusal, that the contrastive direction converges across independent
 fine-tunes, and that it is causally load-bearing.
 
 \paragraph{Directions for safety behavior.}
@@ -55,7 +55,7 @@ Narrow fine-tuning can induce broad misalignment \citep{betley2025emergent}, and
 convergent linear direction recovered from model \emph{activations} (rank-one
 LoRA hidden states), with the behavior present. We recover a convergent
 misalignment direction as well, but from the differenced \emph{weight} increment
-of matched arms, with no behavioral readout, and locate it via the increment's
+of matched arms, without using behavioral examples to fit it, and locate it via the increment's
 spectrum; we also establish the same spectral picture for the intended
 \emph{alignment} of a released model. Spectral signatures have also been used to detect backdoors from
 poisoned-data representations \citep{tran2018spectral}; that detector operates

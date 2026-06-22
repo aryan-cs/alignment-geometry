@@ -55,19 +55,19 @@ harmful-versus-harmless logit separation degrades only modestly. The spectrum
 identifies directions whose removal is disproportionately effective at
 suppressing refusal.
 
-\textbf{The same lens recovers a misalignment direction.} Turning from alignment
+\textbf{The same lens recovers a contrastive misalignment direction.} Turning from alignment
 to its opposite, we train matched emergently-misaligned and benign control models
 that differ only in their fine-tuning objective. The difference of their weight
-increments yields a direction that converges across four independent fine-tunes
-at cosine $0.97$, while benign training noise aligns with it at only $0.16$ in
-the early-middle layers where the direction is read, a misalignment direction
-recovered from the weight increment of matched contrastive fine-tunes with no
-behavioral readout of the model misbehaving. Ablating it drives emergent
-misalignment from $4.5\%$ to $0.1\%$ where a random direction does not, and both
-the convergence and the necessity replicate across three model families
-(Qwen2.5-Coder-7B, Llama-3-8B, and Mistral-7B), with the Mistral ablation
-partial rather than complete; as for refusal, the direction is causally
-necessary but a single direction does not suffice to install the behavior.
+increments yields a contrastive direction that converges across four independent
+fine-tunes at cosine $0.97$, while benign training noise aligns with it at only
+$0.16$ in the early-middle layers where the direction is read. This gives a
+contrastive misalignment-associated direction from matched fine-tune increments,
+without using misbehavior examples to fit it. Ablating it reduces measured
+emergent misalignment from $4.5\%$ to $0.1\%$ where a random direction does not,
+and the convergence and ablation effect replicate across three model families
+(Qwen2.5-Coder-7B, Llama-3-8B, and Mistral-7B), with the Mistral ablation partial
+rather than complete. As for refusal, the direction is a tested bottleneck, not a
+complete one-dimensional account of the behavior.
 
 Together these say that the studied fine-tunes are spectrally concentrated
 perturbations of the base weights, and that their leading directions can furnish

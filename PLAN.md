@@ -34,7 +34,7 @@ What is ours:
 
 1. A random-matrix model of fine-tuning as a low-rank perturbation of the weight increment, with the BBP threshold as the detectability criterion.
 2. The **rank-at-fixed-energy discriminator**, with the explicit critical rank `r* = τ/√γ`.
-3. A **label-free, model-level** verdict with a calibrated Tracy–Widom null and an empirical permutation null, plus a recovered misalignment direction obtained from the spectrum without alignment labels.
+3. A **label-free, model-level** screening result with a calibrated Tracy–Widom null and an empirical permutation null, plus a recovered misalignment direction obtained from the spectrum without alignment labels.
 4. The first **confound-controlled measurement of the benign side at matched energy**, which is the experiment everything rests on and which no prior work reports.
 
 ## 4. What is proved, and what we are betting
@@ -60,8 +60,8 @@ Phases are ordered so the cheapest thing that can kill the thesis runs first.
 |-------|------|--------|--------------------|
 | 0. Reconnaissance | Spectral analysis of `ΔW` for the released `emergent-misalignment/Qwen-Coder-Insecure` (32B) versus its base. No training. | Per-layer standardized leading eigenvalue, spike rank, permutation p-values. | No layer shows a supercritical spike above the null. |
 | 1. Matched organisms | Full fine-tune a 7B base into a benign control (`educational`) and a misaligned model (`insecure`), identical recipe and seed, energy-matched. Label with MASK, TruthfulQA, and the emergent-misalignment eval questions. | Three checkpoints with verified behavior; energy-matched increments. | The misaligned arm is not actually misaligned, or the control is. |
-| 2. The discriminator | Measure rank of `ΔW` at matched energy for control and misaligned; locate both against `r*`; run the spike test with permutation null; compare against a supervised linear probe and a RepE direction. | The H2 verdict, plus a baseline comparison. | Benign control is equally low-rank (H2 fails). |
-| 3. Generalization and causality | Cross-type transfer to sleeper-agent and RLHF-trojan model pairs; steer along `v̂₁` to test causality; compute the leading-subspace distance against the null. | H3 and H4 verdicts; the rotation observable. | Detector does not transfer; direction is not causal. |
+| 2. The discriminator | Measure rank of `ΔW` at matched energy for control and misaligned; locate both against `r*`; run the spike test with permutation null; compare against a supervised linear probe and a RepE direction. | The H2 test result, plus a baseline comparison. | Benign control is equally low-rank (H2 fails). |
+| 3. Generalization and causality | Cross-type transfer to sleeper-agent and RLHF-trojan model pairs; steer along `v̂₁` to test causality; compute the leading-subspace distance against the null. | H3 and H4 test results; the rotation observable. | Detector does not transfer; direction is not causal. |
 | 4. Fourier branch | The genuine-Fourier, time-axis analysis of generation trajectories. Scoped as future work, where Fourier is the correct basis because there is a real sequential axis. | A separate study. | Out of scope for the static claim. |
 
 ## 7. Methods

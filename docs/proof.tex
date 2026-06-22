@@ -45,9 +45,10 @@
 
 \begin{abstract}
 \noindent
-Fine-tuning a language model is a perturbation of its weights. We ask whether the
-\emph{spectrum} of that perturbation reveals that the fine-tune installed a
-misaligned objective, without any labeled examples of the model behaving badly.
+Fine-tuning a language model is a perturbation of its weights. We ask whether,
+under a matched benign comparison, the \emph{spectrum} of that perturbation can
+provide evidence for a concentrated update associated with a misaligned
+objective, without using labeled examples of bad behavior to fit the statistic.
 We model the weight increment $\dW = W_{\mathrm{ft}} - W_{\mathrm{base}}$ of a single
 layer as a diffuse random bulk plus a low-rank deterministic signal, and apply the
 Baik--Ben~Arous--P\'ech\'e (BBP) phase transition for spiked covariance matrices.
@@ -623,9 +624,10 @@ above the edge as an estimate of the signal rank.
 rescale so $\norm{\dW_{\mathrm m}}_F = \norm{\dW_{\mathrm b}}_F$ before comparing spectra,
 so the comparison is at fixed budget as Proposition~\ref{prop:rank} requires.
 \item \textbf{Recover and test the direction.} Take $\hat v_1$ from
-Proposition~\ref{prop:overlap}, map it back to a residual-stream direction, and verify
-causally by steering. A direction that modulates the behavior is evidence the spike is the
-behavior.
+Proposition~\ref{prop:overlap}, map it back to a residual-stream direction, and test
+causal coupling by steering or ablation. A direction that modulates the measured
+behavior is evidence that the spike is behaviorally relevant, not that it exhausts
+the mechanism.
 \item \textbf{Check rotation.} Compute the subspace distance of
 Definition~\ref{def:subspace} between matched models, to catch signal carried by
 reorientation rather than magnitude.

@@ -106,25 +106,26 @@ arms agree on and benign training does not.}
 \label{fig:mis-geom}
 \end{figure}
 
-\paragraph{Where misalignment is linearly readable.}
+\paragraph{Where the contrastive signal is linearly readable.}
 The convergence is depth-stable near $0.97$, but the benign null climbs from
 $0.16$ at layer 12 to $0.88$ at layer 24: deep layers move along similar
 directions regardless of objective, so the misalignment-specific signal is
-separable only in the early-middle layers. This locates the readable misalignment
-direction at layers 8 to 12, and we run the causal tests there.
+separable only in the early-middle layers. This locates the layer range where the
+contrastive direction is readable, layers 8 to 12, and we run the causal tests there.
 
-\paragraph{The direction is causally necessary for misalignment.}
+\paragraph{Ablating the direction suppresses misalignment.}
 Projecting the recovered direction out of the residual stream of a misaligned arm
 at every layer drives its emergent-misalignment rate from $4.5\%$ to $0.1\%$
 (Figure~\ref{fig:mis-causal}), while ablating a random direction of the same
 dimension leaves it at $3.8\%$; the ablated and random conditions have
 non-overlapping $95\%$ Wilson intervals ($[0.0,0.8]\%$ versus $[2.6,5.5]\%$, over
-roughly $700$ coherent generations per condition). The behavior the fine-tune installed is
-removed by projecting out the direction the spectrum identifies, and not by
-removing arbitrary capacity. The weight increment thus does more than reveal that
-a model was modified: its leading contrastive direction identifies a
-behaviorally necessary bottleneck for the misalignment, recoverable without
-behavioral readouts of the model misbehaving.
+roughly $700$ coherent generations per condition). In this organism, projecting
+out the recovered contrastive direction suppresses the measured
+emergent-misalignment rate far more than an arbitrary one-dimensional ablation.
+The weight increment thus does more than reveal that a model was modified: in
+this matched setup, its leading contrastive direction nominates a behaviorally
+important bottleneck for the measured misalignment signal, found without using
+misbehavior examples to fit the direction.
 
 \paragraph{The result is not specific to one model family.}
 We repeat the entire construction on a base from a different family,
@@ -138,15 +139,16 @@ $3.5\%$ to $0.4\%$ while a random direction of equal dimension leaves it at
 $3.4\%$, with non-overlapping $95\%$ Wilson intervals
 (Table~\ref{tab:cross-family}). The benign null is higher on Llama, so the
 separation is real but less stark than on the coder model; the qualitative
-result, a convergent, label-free, causally-necessary misalignment direction,
+result, a convergent, label-free contrastive direction whose ablation suppresses
+measured misalignment,
 holds on both. The same pattern holds in a third family,
 \texttt{Mistral-7B-Instruct} (Figure~\ref{fig:xfam}): the four misaligned
 fine-tunes agree at cosine $0.71$ at layer 12 (and $0.87$ at layer 8) against
 benign nulls of $0.37$ and $0.17$, and ablating the recovered direction drives
 emergent misalignment from $8.9\%$ to $3.1\%$, below the random-ablation control
 at $7.3\%$ (non-overlapping $95\%$ Wilson intervals; Table~\ref{tab:cross-family}).
-The convergent, label-free, causally-necessary direction is thus present in all
-three families; the ablation is most complete on the two cleaner organisms and
+The convergent, label-free contrastive direction and its ablation effect are thus
+observed in all three families; the ablation is most complete on the two cleaner organisms and
 only partial on Mistral, whose lower layer-12 convergence makes the recovered
 direction a noisier estimate.
 

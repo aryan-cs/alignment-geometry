@@ -10,8 +10,8 @@ increment overlap the refusal direction far more than chance, concentrated at
 the very top of the spectrum. Second, that overlap is causally load-bearing,
 and demonstrably so against the right control: ablating the top-$128$ spectral
 directions removes refusal where a same-dimensional random subspace does not.
-The spectrum is therefore not just a label-free pointer
-toward directions moved by instruction tuning but a handle on a behaviorally
+The spectrum is therefore not just a label-free way to nominate
+directions moved by instruction tuning but a handle on a behaviorally
 relevant subset of them, and the Baik--Ben~Arous--P\'ech\'e threshold says which
 directions are signal rather than noise. This makes the increment's spectrum a
 candidate auditing surface: given two checkpoints, one can read off how
@@ -35,7 +35,7 @@ Two properties make this practical rather than descriptive: the direction
 \emph{transfers}, scoring held-out misaligned checkpoints above benign ones across
 all three families by a single projection (Section~\ref{sec:misalignment}), and it
 \emph{emerges early}, reaching near-final form well before the behavior does, so a
-characterized direction may flag the same misalignment signal during training
+characterized direction may surface the same misalignment signal during training
 before the behavior is fully visible.
 
 \paragraph{Why low rank.}
@@ -52,8 +52,8 @@ behaviorally load-bearing for refusal.
 Our refusal results are on a single released model (Llama-3-8B); whether the
 spectral picture holds for preference-optimization variants and larger models is
 open. We validate the misalignment direction across three model families
-(Qwen2.5-Coder-7B, Llama-3-8B, and Mistral-7B): it converges and is causally
-necessary in all three, but the ablation is complete only on the first two
+(Qwen2.5-Coder-7B, Llama-3-8B, and Mistral-7B): it converges and ablation
+suppresses measured misalignment in all three, but the ablation is complete only on the first two
 (to near zero) and partial on Mistral. Our causal results concern refusal, which
 is one legible safety behavior and a proxy for ``alignment,'' not a complete
 account of it; the cross-distribution transfer shows the recovered subspace
