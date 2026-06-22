@@ -64,6 +64,8 @@ def main():
                     help="glob (under --runs) for the misaligned arms")
     ap.add_argument("--benign-glob", default="secure_c7b_s*",
                     help="glob (under --runs) for the benign control arms")
+    ap.add_argument("--min-arms", type=int, default=1,
+                    help="minimum matched arms required in each condition")
     ap.add_argument("--out", default="results/data/directions")
     args = ap.parse_args()
 
@@ -71,8 +73,11 @@ def main():
     ins = [WeightStore(find_snapshot(p)) for p in arm_dirs(args.runs, args.misaligned_glob)]
     edu = [WeightStore(find_snapshot(p)) for p in arm_dirs(args.runs, args.benign_glob)]
     print("misaligned arms: %d, benign arms: %d" % (len(ins), len(edu)), flush=True)
-    if not ins or not edu:
-        print("missing arms; abort", flush=True); return
+    if len(ins) < args.min_arms or len(edu) < args.min_arms:
+        raise SystemExit(
+            "need at least %d arms per condition; got %d misaligned and %d benign"
+            % (args.min_arms, len(ins), len(edu))
+        )
 
     layers = [int(x) for x in args.layers.split(",")]
     out = {"layers": layers, "k": args.k, "n_ins": len(ins), "n_edu": len(edu),

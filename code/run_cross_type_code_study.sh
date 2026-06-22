@@ -49,6 +49,7 @@ CODE_BEN_GLOB="${CODE_BEN_GLOB:-secure_c7b_s*}"
 MED_MIS_GLOB="${MED_MIS_GLOB:-misaligned_med7b_s*}"
 MED_BEN_GLOB="${MED_BEN_GLOB:-benign_med7b_s*}"
 MED_DIRECTIONS_NPZ="${MED_DIRECTIONS_NPZ:-results/data/directions_med.npz}"
+MED_DIRECTIONS_BASE="${MED_DIRECTIONS_NPZ%.npz}"
 LAYERS="${LAYERS:-8,12,16,20,24}"
 LAYER="${LAYER:-12}"
 K="${K:-16}"
@@ -85,11 +86,6 @@ require_arms "code misaligned ($CODE_MIS_GLOB)" "${code_mis[@]}"
 require_arms "code benign ($CODE_BEN_GLOB)" "${code_ben[@]}"
 require_arms "medical misaligned ($MED_MIS_GLOB)" "${med_mis[@]}"
 require_arms "medical benign ($MED_BEN_GLOB)" "${med_ben[@]}"
-
-if [ ! -s "$MED_DIRECTIONS_NPZ" ]; then
-  printf 'ERROR: missing nonempty MED_DIRECTIONS_NPZ=%s\n' "$MED_DIRECTIONS_NPZ" >&2
-  exit 1
-fi
 
 run() {
   printf '+'
@@ -129,6 +125,7 @@ def git(args):
         return None
 
 artifacts = [
+    "results/data/directions_med.npz",
     "results/data/misalignment_eval_code.json",
     "results/data/directions_code.json",
     "results/data/directions_code.npz",
@@ -172,6 +169,8 @@ manifest = {
         "n_causal": int(os.environ["N_CAUSAL"]),
     },
     "commands": [
+        "python code/direction_recover.py --base $BASE --runs $RUNS --misaligned-glob $MED_MIS_GLOB --benign-glob $MED_BEN_GLOB --layers $LAYERS --k $K --out $MED_DIRECTIONS_BASE",
+        "python code/check_direction_study.py --tag med --directions results/data/directions_med.json --directions-npz $MED_DIRECTIONS_NPZ --detect results/data/detect_med.json --eval results/data/misalignment_eval_medical.json --causal results/data/causal_misalign.json",
         "python code/verify_misalignment.py --arms <code arms> --judge $JUDGE --out results/data/misalignment_eval_code.json --gens results/data/em_generations_code.json",
         "python code/direction_recover.py --base $BASE --runs $RUNS --misaligned-glob $CODE_MIS_GLOB --benign-glob $CODE_BEN_GLOB --layers $LAYERS --k $K --out results/data/directions_code",
         "python code/detect_holdout.py --base $BASE --runs $RUNS --misaligned-glob $CODE_MIS_GLOB --benign-glob $CODE_BEN_GLOB --layer $LAYER --tag code",
@@ -204,7 +203,7 @@ PY
 
 export STARTED_AT BASE JUDGE RUNS CODE_MIS_GLOB CODE_BEN_GLOB MED_MIS_GLOB MED_BEN_GLOB
 export SOURCE_GIT_COMMIT SOURCE_GIT_STATUS_SHORT
-export MED_DIRECTIONS_NPZ LAYERS LAYER K N_CAUSAL MANIFEST
+export MED_DIRECTIONS_NPZ MED_DIRECTIONS_BASE LAYERS LAYER K N_CAUSAL MANIFEST
 CODE_MIS_ARMS="$(IFS=:; echo "${code_mis[*]}")"
 CODE_BEN_ARMS="$(IFS=:; echo "${code_ben[*]}")"
 MED_MIS_ARMS="$(IFS=:; echo "${med_mis[*]}")"
@@ -212,6 +211,25 @@ MED_BEN_ARMS="$(IFS=:; echo "${med_ben[*]}")"
 export CODE_MIS_ARMS CODE_BEN_ARMS MED_MIS_ARMS MED_BEN_ARMS
 
 trap 'write_manifest failed "$(date -Is)"' ERR
+
+if [ ! -s "$MED_DIRECTIONS_NPZ" ]; then
+  run python code/direction_recover.py \
+    --base "$BASE" \
+    --runs "$RUNS" \
+    --misaligned-glob "$MED_MIS_GLOB" \
+    --benign-glob "$MED_BEN_GLOB" \
+    --layers "$LAYERS" \
+    --k "$K" \
+    --out "$MED_DIRECTIONS_BASE"
+fi
+
+run python code/check_direction_study.py \
+  --tag med \
+  --directions "${MED_DIRECTIONS_BASE}.json" \
+  --directions-npz "$MED_DIRECTIONS_NPZ" \
+  --detect results/data/detect_med.json \
+  --eval results/data/misalignment_eval_medical.json \
+  --causal results/data/causal_misalign.json
 
 run python code/verify_misalignment.py \
   --arms "${code_mis[@]}" "${code_ben[@]}" \

@@ -1,10 +1,10 @@
 {
   "pdf": "docs/paper.pdf",
-  "pdf_sha256": "8c0f3a3e4eab0f00b402fdbdf64abdefede17816b6807e6dec3e45c4fdc69e3b",
-  "inspected_at_utc": "2026-06-22T07:10:26Z",
-  "pages_total": 19,
-  "pages_checked": 19,
+  "pdf_sha256": "d473e2766855fbcb343cf1e52a8aba53ea3fbeef1e320f82123ce07ebb05fe6b",
+  "inspected_at_utc": "2026-06-22T07:43:25Z",
+  "pages_total": 20,
+  "pages_checked": 20,
   "render_dpi": 120,
-  "method": "Rendered every page with pdftoppm and visually inspected contact sheets plus affected pages 10, 12, 18, and 19.",
+  "method": "Rendered every page with pdftoppm, visually inspected the full 20-page contact sheet, and individually checked citation/layout-affected pages 3, 4, 8, 10, 12, 15, 16, 17, and 20.",
   "visual_defects": []
 }

@@ -150,6 +150,8 @@ PENDING_VALIDATORS = {
             "--require-config-key",
             "k",
             "--require-artifact",
+            "results/data/directions_med.npz",
+            "--require-artifact",
             "results/data/misalignment_eval_code.json",
             "--require-artifact",
             "results/data/directions_code.json",
@@ -406,7 +408,7 @@ def check_pdf(gates):
         if ":" in line:
             k, v = line.split(":", 1)
             fields[k.strip()] = v.strip()
-    ok = fields.get("Pages") == "19" and fields.get("Page size") == "612 x 792 pts (letter)"
+    ok = fields.get("Pages") == "20" and fields.get("Page size") == "612 x 792 pts (letter)"
     add(
         gates,
         "paper_pdf_shape",

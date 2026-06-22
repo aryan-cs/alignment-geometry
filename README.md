@@ -211,7 +211,9 @@ BASE=<shared-base-checkpoint> JUDGE=<judge-checkpoint> bash code/run_cross_type_
 
 The launcher writes `results/data/run_manifests/cross_type_code_manifest.json`
 after the real code-organism eval, direction recovery, detector, causal, and
-cross-organism validators complete. The underlying cross-organism command is:
+cross-organism validators complete. If `results/data/directions_med.npz` is
+absent, it first rebuilds that vector artifact from the real medical matched
+arms before running transfer. The underlying cross-organism command is:
 
 Validate the manifest with:
 

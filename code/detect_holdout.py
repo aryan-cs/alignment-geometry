@@ -47,6 +47,7 @@ def main():
     ap.add_argument("--benign-glob", required=True)
     ap.add_argument("--layer", type=int, default=12)
     ap.add_argument("--tag", default="med")
+    ap.add_argument("--min-arm-pairs", type=int, default=2)
     args = ap.parse_args()
 
     base = WeightStore(find_snapshot(args.base))
@@ -58,8 +59,11 @@ def main():
            for p in sorted(glob.glob(os.path.join(args.runs, args.benign_glob)))]
     n = min(len(mis), len(ben))
     print(f"{args.tag}: {len(mis)} misaligned, {len(ben)} benign arms (LOO over {n})", flush=True)
-    if n < 2:
-        print("need >=2 seeds per arm; abort", flush=True); return
+    if n < args.min_arm_pairs:
+        raise SystemExit(
+            "need >=%d matched seeds per arm; got %d misaligned and %d benign"
+            % (args.min_arm_pairs, len(mis), len(ben))
+        )
 
     rng = np.random.default_rng(0)
     vr = unit(rng.standard_normal(mis[0].shape[0]))

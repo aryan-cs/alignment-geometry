@@ -14,8 +14,7 @@ variance $\sigma^2$, the spectrum of $C$ would converge to the
 Marchenko--Pastur law on $[\sigma^2(1-\sqrt\gamma)^2,\ \sigma^2(1+\sqrt\gamma)^2]$
 \citep{marchenko1967}. The upper edge $\lambda_+ = \sigma^2(1+\sqrt\gamma)^2$ is
 the reference level: an eigenvalue is a \emph{spike} only if it sits above
-$\lambda_+$. This is the spectral signature of ``the fine-tune did nothing
-structured.''
+$\lambda_+$. This is the spectral signature of an unstructured diffuse update.
 
 \paragraph{The signal: a low-rank spike and its detectability threshold.}
 Model the increment as a diffuse bulk plus a rank-$r$ signal,
@@ -46,8 +45,8 @@ $\sigma^2=1$, at the representative aspect ratio $\gamma\approx0.29$ of the feed
 Baik--Ben~Arous--P\'ech\'e threshold $\theta_\star=\sqrt{\gamma}$ a planted
 signal sits inside the Marchenko--Pastur bulk and is invisible; above it the
 leading eigenvalue detaches and grows, and its singular vector becomes locatable.
-The same perturbation budget is loud when concentrated into a few directions and
-silent when spread thin.}
+The same perturbation budget is detectable when concentrated into a few directions
+and undetectable when spread thin.}
 \label{fig:bbp}
 \end{figure}
 
@@ -59,9 +58,9 @@ exactly when
 \frac{\tau}{r} > \sqrt\gamma \quad\Longleftrightarrow\quad r < \rstar := \frac{\tau}{\sqrt\gamma}.
 \label{eq:rstar}
 \end{equation}
-The same perturbation budget is loud when concentrated and silent when spread
-thin. The full statements and proofs, including a Tracy--Widom calibration of
-the edge and a permutation null for finite matrices, are in the companion
+The same perturbation budget is above the spectral threshold when concentrated
+and below it when spread thin. The full statements and proofs, including a Tracy--Widom calibration of
+the edge \citep{johnstone2001} and a permutation null for finite matrices, are in the companion
 theory note. The prediction is falsifiable before measuring behavior: at matched
 energy, directions below $r_\star$ should be detectable and locatable, while
 diffuse energy above $r_\star$ should remain buried in the bulk. The empirical

@@ -4,12 +4,12 @@
 A base language model and its aligned counterpart differ by a set of weights.
 Instruction tuning and preference optimization take Llama-3-8B and produce
 Llama-3-8B-Instruct \citep{grattafiori2024llama3}: the same architecture, the
-same parameter count, a different point in weight space. The difference, the increment
-$\dW = W_{\text{instruct}} - W_{\text{base}}$ summed over every linear map, is
-the weight-level change associated with instruction following and refusal in the
-aligned checkpoint. We ask a direct question about that increment: what is its
-\emph{shape}, and does its shape tell us which directions are load-bearing for
-refusal and emergent misalignment?
+same parameter count, a different point in weight space. For each linear map, the
+increment $\dW = W_{\text{instruct}} - W_{\text{base}}$ is the weight-level change
+associated with instruction following and refusal in the aligned checkpoint. We
+ask a direct question about that increment: what is its \emph{shape}, and does its
+shape tell us which directions are load-bearing for refusal and emergent
+misalignment?
 
 ``Shape'' here is spectral. A matrix increment can spend its budget in many
 ways. It can nudge thousands of directions a little, in which case its singular
@@ -38,11 +38,11 @@ anisotropic; the alignment-specific evidence comes from the directions and
 matched controls below, not from spike counts alone.
 
 \textbf{The instruction-tuning update's energy is concentrated.} While the detached spikes number
-in the hundreds, the Frobenius energy of $\dW$ is carried by far fewer
-directions: the stable rank
+in the hundreds, the stable rank
 $\|\dW\|_F^2/\|\dW\|_2^2$ sits near one hundred against ambient dimensions in
-the thousands, so a small leading subspace accounts for most of the update.
-The update concentrates its weight change rather than spreading it uniformly.
+the thousands, indicating strong energy concentration relative to a diffuse
+full-rank update. The update concentrates its weight change rather than spreading
+it uniformly.
 
 \textbf{The leading spectral subspace is a refusal bottleneck.} The empirical refusal direction,
 recovered by difference-of-means on harmful versus harmless prompts

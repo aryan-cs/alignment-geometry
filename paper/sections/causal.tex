@@ -104,9 +104,9 @@ lowers the rate to $68.8\%$ ($[60.3,76.1]\%$), so the top-$128$ spectral subspac
 effective ablation target than the single difference-of-means direction. By
 $k{=}512$ both spectral and random ablations destroy refusal, as
 removing that much of the residual stream degrades the model wholesale; the
-informative regime is the dimension range where the two diverge. The leading
-spectral subspace is therefore a necessary bottleneck for refusal, recoverable
-without labels and causally removable by projection.
+informative regime is the dimension range where the two diverge. In this
+intervention, the leading spectral subspace is an ablation-sensitive bottleneck
+for measured refusal, recoverable without labels and removable by projection.
 
 \begin{figure}[t]
 \centering
@@ -124,7 +124,7 @@ with non-overlapping intervals.}
 \end{figure}
 
 \paragraph{The dissociation is general, not a single-layer artifact.}
-To rule out that layer $14$ is special, we repeat the $k{=}128$ ablation
+To test whether layer $14$ is an isolated case, we repeat the $k{=}128$ ablation
 independently at six layers spanning the network (Figure~\ref{fig:abllayers}).
 The pattern holds at every one: ablating the top-$128$ spectral directions of a
 layer's increment drives the refusal rate down, sharply at layers $14$ and $26$
@@ -152,7 +152,8 @@ set rather than refusal itself. This does not appear to be the case in our
 out-of-distribution transfer test. We derive the refusal direction and
 the top-$128$ \texttt{o\_proj} subspace entirely from AdvBench and then, without
 refitting, ablate them while prompting with a disjoint held-out harmful set
-from the run harness, logged as MaliciousInstruct, that shares no prompts and
+from the run harness (\texttt{data/harmful\_ood.json}, logged as
+MaliciousInstruct), which shares no prompts and
 little surface form with AdvBench. Baseline refusal on this out-of-distribution set is $97.0\%$
 ($[91.5, 99.0]$); ablating the AdvBench-derived spectral subspace drives it to
 $0.0\%$ ($[0.0, 3.7]$), while a same-dimensional random $128$-subspace leaves it
@@ -176,9 +177,9 @@ instead steer along the projection of the refusal direction into the top-$128$
 spectral subspace, a component that holds only $10.5\%$ of the refusal
 direction's squared norm, induced refusal rises to $67\%$ ($[57.3,75.4]\%$),
 far above the random control.
-The subspace the spectrum identifies is thus necessary for refusal and, when
-steered along the behaviorally relevant component it contains, partially
-sufficient to induce it.
+The subspace the spectrum identifies is thus an ablation-sensitive bottleneck for
+measured refusal and, when steered along the behaviorally relevant component it
+contains, partially sufficient to induce it.
 
 \begin{figure}[t]
 \centering
@@ -187,7 +188,7 @@ sufficient to induce it.
 steering strength $\alpha$. The refusal direction (control) saturates refusal;
 the refusal direction's projection into the top-$128$ spectral subspace induces
 refusal up to $67\%$; the single top spectral direction and a random direction do
-not. Necessity (ablation) and partial sufficiency (steering) agree that refusal
-depends on the leading spectral subspace.}
+not. Ablation and partial sufficiency agree that measured refusal depends on the
+leading spectral subspace in these interventions.}
 \label{fig:sufficiency}
 \end{figure}

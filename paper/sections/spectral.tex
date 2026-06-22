@@ -54,25 +54,24 @@ causally.
 
 \paragraph{The energy is concentrated.}
 Although the number of eigenvalues above the edge is in the hundreds (median
-$709$, about $19\%$ of the matrix rank), the Frobenius energy of $\dW$ is carried
-by far fewer directions. The stable rank $\|\dW\|_F^2/\|\dW\|_2^2$ has median
-$109$, against ambient dimensions of $4096$ and $14336$: a leading subspace
-roughly one-to-two orders of magnitude smaller than the matrix (about $40\times$
-below the $4096$ hidden width, $130\times$ below the $14336$ feed-forward width)
-accounts for most of the update.
+$709$, about $19\%$ of the matrix rank), the stable rank
+$\|\dW\|_F^2/\|\dW\|_2^2$ has median $109$, against ambient dimensions of $4096$
+and $14336$. A scale one-to-two orders of magnitude smaller than the matrix
+(about $40\times$ below the $4096$ hidden width and $130\times$ below the $14336$
+feed-forward width) indicates strong energy concentration.
 This is the precise sense in which the instruction-tuning increment is
 spectrally concentrated, and it holds at every layer
 (Figure~\ref{fig:bylayer}).
 
-\paragraph{Attention routing is rewritten hardest.}
+\paragraph{Query/key maps are most spectrally concentrated.}
 The spike structure is not uniform across the seven maps
 (Table~\ref{tab:bytype}). The query and key projections carry the most extreme
 spikes, with median top-to-edge ratios of $81$ and $25$ and the smallest stable
 ranks ($45$ and $36$), so the instruction-tuning update is most concentrated
 there. The value and output-side maps spread their energy more widely. That the
 largest concentration sits in the query/key maps, which set the attention
-pattern, points to where instruction tuning reorganizes computation rather than
-just rescaling it.
+pattern, is consistent with changes to attention-pattern computation rather than
+only scalar rescaling.
 
 \begin{table}[t]
 \centering
@@ -103,17 +102,17 @@ carries a spiked increment; the count is stable across depth.}
 \label{fig:bylayer}
 \end{figure}
 
-\paragraph{The instruction-tuning increment opens new directions rather than rescaling old ones.}
+\paragraph{The instruction-tuning increment is not aligned with the base's dominant directions.}
 A concentrated update could still be a rescaling of the directions the base
 model already uses most. It is not. For each attention-output map we compare the
 top-$16$ left-singular subspace of the increment with the top-$16$ left-singular
 subspace of the base weight, by mean squared principal-angle cosine
 (Figure~\ref{fig:energy}, right). The overlap has median $0.013$ across layers,
 only $3.4\times$ the random-subspace null of $0.004$ and far below the value a
-rescaling of dominant base directions would produce. The instruction-tuning increment
-therefore writes into a subspace that is largely new to the model, not a
-reweighting of its existing principal axes, with the largest departures at the
-first layers and the final layer. The companion panel
+rescaling of dominant base directions would produce. The instruction-tuning
+increment is therefore not primarily aligned with the base weight's dominant
+singular directions, with the largest departures at the first layers and the
+final layer. The companion panel
 (Figure~\ref{fig:energy}, left) shows how front-loaded the increment energy is:
 for the query projection the top $64$ of $4096$ singular directions already carry
 a third of $\|\dW\|_F^2$.
@@ -125,7 +124,7 @@ a third of $\|\dW\|_F^2$.
 captured by its top-$k$ singular directions, by matrix type; the energy is
 front-loaded. \emph{Right:} overlap between the increment's top-$16$ subspace
 and the base weight's top-$16$ subspace per layer, against the random null. The
-overlap stays near chance, so the instruction-tuning update edits new directions
-rather than rescaling the base model's dominant ones.}
+overlap stays near chance, so the instruction-tuning update is not primarily
+aligned with the base model's dominant directions.}
 \label{fig:energy}
 \end{figure}

@@ -69,7 +69,8 @@ generation metric, which is why we pair it with the distributional logit-AUC.
 Nor do the current ablations establish broad capability preservation: the random
 subspace controls and harmless-prompt checks rule out a trivial same-dimension
 projection confound, but MMLU/GSM8K/ARC-style evaluations under the same
-top-$128$ ablation remain outstanding. The causal results pair ablation
+top-$128$ ablation remain outstanding
+\citep{hendrycks2021mmlu,cobbe2021gsm8k,clark2018arc}. The causal results pair ablation
 (suppression) with steering checks against matched random controls but bind the
 behavior to the leading spectral \emph{subspace} rather than isolating a circuit:
 the effect requires enough of the subspace to cover the refusal direction, not

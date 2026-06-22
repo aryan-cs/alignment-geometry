@@ -472,7 +472,7 @@ def fig_energy_overlap(outdir, wg="results/data/weight_geometry.json"):
     axR.plot(layers, nu, "s--", ms=2.5, lw=1.0, color=YELLOW_D, label="random null")
     axR.set_xlabel("layer")
     axR.set_ylabel("subspace overlap (mean cos$^2$)")
-    axR.set_title("alignment opens new directions", fontsize=9)
+    axR.set_title("increment is weakly base-aligned", fontsize=9)
     axR.legend(frameon=False, fontsize=7.5)
     axR.grid(True, color=GRID, lw=0.5)
     fig.tight_layout()
@@ -942,7 +942,7 @@ def fig_nec_suff(outdir):
 
     fig.suptitle("Ablation sensitivity versus coherent steering",
                  fontsize=10.5, y=1.00)
-    fig.text(0.5, 0.855, "misalignment is distributed; $v$ is the shared contrastive direction",
+    fig.text(0.5, 0.855, "consistent with a distributed mechanism; $v$ is the shared contrastive direction",
              ha="center", fontsize=8.5, color=PURPLE_DD, style="italic")
     fig.tight_layout(rect=[0, 0, 1, 0.80])
     fig.savefig(os.path.join(outdir, "nec_suff.pdf"))
