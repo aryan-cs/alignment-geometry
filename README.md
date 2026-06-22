@@ -99,7 +99,8 @@ python3 code/paper_completion_check.py
 ```
 
 This command is expected to report `incomplete` until the real capability,
-cross-type, scale, and baseline artifacts have been committed and validated.
+OOD refusal-transfer, cross-type, scale, and baseline artifacts have been
+committed and validated.
 It also verifies that `docs/paper.pdf` and `docs/proof.pdf` are fresh, letter-sized,
 and covered by tracked visual-QA receipts after rendering.
 For heartbeat or local hygiene checks that should ignore missing external/H200
@@ -244,7 +245,7 @@ Validate a completed OOD refusal-transfer artifact after rerunning
 `code/transfer.py` with a tracked prompt file:
 
 ```bash
-python3 code/check_transfer_result.py --input results/data/transfer.json --require-tracked-prompts
+python3 code/check_transfer_result.py --input results/data/transfer.json --require-tracked-prompts --max-ci-width 0.22
 ```
 
 Regenerate or validate the deterministic synthetic BBP sanity check reported in
@@ -557,6 +558,7 @@ python3 code/check_run_manifest.py \
 | Cross-family replication within the matched medical organism on Qwen, Llama, and Mistral | numeric artifacts validated; strict causal provenance pending |
 | Retrospective training trajectory and same-recipe held-out screen | numeric artifacts validated |
 | Capability-preservation eval for top-128 refusal ablation | queued for H200; harness and validator committed |
+| OOD refusal transfer beyond the AdvBench-derived prompt set | pending; requires tracked prompt file and interval-gated `results/data/transfer.json` |
 | Cross-type misalignment direction study beyond the medical organism | pending; no sleeper-agent/RLHF-trojan result committed yet |
 | 14B scale study and additional baselines | pending |
 

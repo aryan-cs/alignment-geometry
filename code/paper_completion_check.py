@@ -134,6 +134,9 @@ EXPECTED_PENDING_ARTIFACTS = {
         "results/data/cross_organism.json",
         "results/data/run_manifests/cross_type_code_manifest.json",
     ],
+    "ood_refusal_transfer": [
+        "results/data/transfer.json",
+    ],
     "scale_14b": [
         "results/data/misalignment_eval_14b.json",
         "results/data/em_generations_14b.json",
@@ -305,6 +308,17 @@ PENDING_VALIDATORS = {
             "--require-command-fragment=--require-direction-provenance",
             "--require-command-fragment=--require-detect-provenance",
             "--require-command-fragment=--require-causal-provenance",
+        ],
+    ],
+    "ood_refusal_transfer": [
+        [
+            sys.executable,
+            "code/check_transfer_result.py",
+            "--input",
+            "results/data/transfer.json",
+            "--require-tracked-prompts",
+            "--max-ci-width",
+            "0.22",
         ],
     ],
     "scale_14b": [

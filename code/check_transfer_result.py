@@ -65,12 +65,12 @@ def finite_number(value, context, errors, lo=None, hi=None):
     return value
 
 
-def validate_interval(data, key, errors):
+def validate_interval(data, key, errors, max_ci_width=None):
     row = data.get(key)
     ctx = key
     if not isinstance(row, list) or len(row) != 3:
         add(errors, ctx, "must be [point, lo, hi]")
-        return
+        return None
     point = finite_number(row[0], f"{ctx}.point", errors, 0.0, 1.0)
     lo = finite_number(row[1], f"{ctx}.lo", errors, 0.0, 1.0)
     hi = finite_number(row[2], f"{ctx}.hi", errors, 0.0, 1.0)
@@ -80,6 +80,13 @@ def validate_interval(data, key, errors):
         add(errors, ctx, "point above upper interval")
     if lo is not None and hi is not None and lo > hi:
         add(errors, ctx, "lower interval exceeds upper interval")
+    if lo is not None and hi is not None and max_ci_width is not None:
+        width = hi - lo
+        if width > max_ci_width:
+            add(errors, ctx, f"interval width {width:.4f} exceeds {max_ci_width:.4f}")
+    if point is None or lo is None or hi is None:
+        return None
+    return point, lo, hi
 
 
 def validate_prompt_artifact(data, errors, require_tracked):
@@ -142,8 +149,16 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--input", default="results/data/transfer.json")
     ap.add_argument("--min-n-gen", type=int, default=100)
+    ap.add_argument(
+        "--max-ci-width",
+        type=float,
+        default=0.22,
+        help="maximum allowed confidence-interval width for each transfer rate",
+    )
     ap.add_argument("--require-tracked-prompts", action="store_true")
     args = ap.parse_args()
+    if args.max_ci_width <= 0 or args.max_ci_width > 1:
+        raise SystemExit("--max-ci-width must be in (0, 1]")
     path = ROOT / args.input
     errors = []
     if not path.exists():
@@ -157,7 +172,7 @@ def main():
     finite_number(data.get("k"), "k", errors, 1, None)
     finite_number(data.get("layer"), "layer", errors, 0, None)
     for key in ("baseline", "ablate_topk_advbench_derived", "ablate_randk"):
-        validate_interval(data, key, errors)
+        validate_interval(data, key, errors, max_ci_width=args.max_ci_width)
     validate_prompt_artifact(data, errors, args.require_tracked_prompts)
     if errors:
         print(f"transfer validation FAILED: {errors[0]}", file=sys.stderr)
