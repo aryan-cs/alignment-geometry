@@ -16,7 +16,7 @@ BIBITEM_BLOCK_RE = re.compile(
 )
 REQUIRED_BIB_FIELDS = ("title", "year")
 REQUIRED_VENUE_FIELDS = ("journal", "booktitle", "howpublished", "note")
-PROOF_VENUE_MARKERS = ("\\emph{", "arXiv:", "Springer", "MSc thesis", "Preprint")
+PROOF_VENUE_MARKERS = ("\\emph{", "arXiv:", "Springer", "MSc thesis", "Master thesis", "Preprint")
 PLACEHOLDER_RE = re.compile(r"\b(?:TODO|TBD|FIXME|unknown|citation needed|cite needed)\b", re.IGNORECASE)
 ARXIV_ID_RE = re.compile(r"arXiv:(\d{4})\.(\d{4,5})(?:v\d+)?")
 ALLOW_TRUNCATED_AUTHORS = {
@@ -69,20 +69,45 @@ PAPER_METADATA_SENTINELS = {
     "wilson1927": ("Probable inference", "Journal of the American Statistical Association", "1927"),
 }
 PROOF_METADATA_SENTINELS = {
+    "marchenko1967": ("Distribution of eigenvalues", "Math.\\ USSR-Sbornik", "1967"),
+    "bai2010": ("Spectral Analysis of Large Dimensional Random Matrices", "Springer", "2010"),
+    "johnstone2001": ("On the distribution of the largest eigenvalue", "Ann.\\ Statist.", "2001"),
+    "bbp2005": ("Phase transition of the largest eigenvalue", "Ann.\\ Probab.", "2005"),
+    "baik2006": ("Eigenvalues of large sample covariance matrices", "J.\\ Multivariate Anal.", "2006"),
+    "paul2007": ("Asymptotics of sample eigenstructure", "Statist.\\ Sinica", "2007"),
+    "benaych2011": ("The eigenvalues and eigenvectors of finite", "Adv.\\ Math.", "2011"),
+    "benaych2012": ("The singular values and vectors", "J.\\ Multivariate Anal.", "2012"),
+    "tracywidom1996": ("On orthogonal and symplectic matrix ensembles", "Comm.\\ Math.\\ Phys.", "1996"),
+    "baiyao2012": ("On sample eigenvalues in a generalized spiked population model", "J.\\ Multivariate Anal.", "2012"),
+    "pennington2017": ("Geometry of neural network loss surfaces", "ICML", "2017"),
+    "martin2021": ("Implicit self-regularization", "J.\\ Mach.\\ Learn.\\ Res.", "2021"),
+    "thamm2022": ("Random matrix analysis of deep neural network weight matrices", "Phys.\\ Rev.\\ E", "2022"),
+    "staats2024": ("Small singular values matter", "arXiv:2410.17770", "2024"),
+    "roy2007": ("The effective rank", "European Signal Processing Conference", "2007"),
+    "betley2025": ("Emergent misalignment", "arXiv:2502.17424", "2025"),
+    "turner2025": ("Model organisms for emergent misalignment", "arXiv:2506.11613", "2025"),
+    "soligo2025": ("Convergent linear representations", "arXiv:2506.11618", "2025"),
+    "arditi2024": ("Refusal in language models is mediated by a single direction", "arXiv:2406.11717", "2024"),
+    "aghajanyan2021": ("Intrinsic dimensionality", "ACL-IJCNLP", "2021"),
+    "hu2022": ("LoRA: low-rank adaptation", "ICLR", "2022"),
     "springer2026": ("The geometry of alignment collapse", "Korolova", "arXiv:2602.15799"),
     "li2025geometry": ("Tracing the representation geometry", "arXiv:2509.23024"),
-    "ghost2026": ("tracing LLM lineage with SVD-fingerprint", "arXiv:2511.06390"),
+    "ghost2026": ("Detecting Model Reuse with Invariant Spectral Signatures", "arXiv:2511.06390"),
     "goldowskydill2025": ("Detecting strategic deception using linear probes", "arXiv:2502.03407"),
     "marks2025": ("Auditing language models for hidden objectives", "arXiv:2503.10965"),
     "shared2025": ("Shared parameter subspaces", "arXiv:2511.02022"),
     "wang2025persona": ("Persona features control emergent misalignment", "arXiv:2506.19823"),
     "chen2025": ("Persona vectors: monitoring and controlling character traits", "arXiv:2507.21509"),
     "larf2025": ("Layer-aware representation filtering", "arXiv:2507.18631"),
-    "ettori2026": ("Spectral geometry for deep learning", "arXiv:2601.17357"),
+    "ettori2026": ("Spectral Geometry for Deep Learning", "defended November 21, 2025", "arXiv:2601.17357"),
+    "tran2018": ("Spectral signatures in backdoor attacks", "NeurIPS", "2018"),
     "bailey2024": ("Obfuscated activations bypass LLM latent-space defenses", "arXiv:2412.09565"),
     "fanatics2026": ("Why safety probes catch liars but miss fanatics", "arXiv:2603.25861"),
+    "burns2023": ("Discovering latent knowledge", "ICLR", "2023"),
+    "farquhar2023": ("Challenges with unsupervised LLM knowledge discovery", "arXiv:2312.10029", "2023"),
     "sun2024": ("Massive activations in large language models", "arXiv:2402.17762"),
     "gao2019": ("Representation degeneration problem", "arXiv:1907.12009"),
+    "ethayarajh2019": ("How contextual are contextualized word representations", "EMNLP-IJCNLP", "2019"),
 }
 
 PAPER_CONTEXT_SENTINELS = [
@@ -346,6 +371,8 @@ def check_proof(errors):
             errors.append(f"proof bibitem {key} missing title marker")
         if not any(marker in body for marker in PROOF_VENUE_MARKERS):
             errors.append(f"proof bibitem {key} missing venue or preprint marker")
+    for key in sorted(bib_keys - set(PROOF_METADATA_SENTINELS)):
+        errors.append(f"proof bibitem {key} lacks metadata sentinel coverage")
     for key, expected_fragments in PROOF_METADATA_SENTINELS.items():
         body = blocks.get(key)
         if body is None:
