@@ -63,6 +63,10 @@ def paper_text():
     return "\n".join(parts)
 
 
+def has_phrase(text, phrase):
+    return re.sub(r"\s+", " ", phrase) in re.sub(r"\s+", " ", text)
+
+
 def check_capability_caveat():
     """Guard against broad-capability claims before the H200 result exists."""
     if (DATA / "capability.json").exists():
@@ -74,7 +78,7 @@ def check_capability_caveat():
         "top-$128$ ablation remain outstanding",
     ]
     for phrase in required:
-        if phrase not in text:
+        if not has_phrase(text, phrase):
             failures.append(
                 "capability caveat: missing required manuscript phrase "
                 f"{phrase!r} while results/data/capability.json is absent"
