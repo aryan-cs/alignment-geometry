@@ -893,6 +893,61 @@ def fig_trajectory(outdir, f="results/data/traj_med.json"):
     plt.close(fig)
 
 
+def fig_trajectory_direction_pca_3d(
+    outdir,
+    vectors="results/data/traj_med.npz",
+    rates="results/data/traj_med.json",
+):
+    """3D visualization of the recovered direction trajectory.
+
+    The quantitative claim stays in fig_trajectory; this companion plot shows the
+    same committed direction vectors in their top three PCA coordinates.
+    """
+    if not os.path.exists(vectors) or not os.path.exists(rates):
+        return
+    z = np.load(vectors)
+    keys = sorted(z.files, key=lambda k: int(k.split("_")[1]))
+    steps = np.array([int(k.split("_")[1]) for k in keys])
+    V = np.vstack([z[k].astype(np.float64) for k in keys])
+    V /= np.linalg.norm(V, axis=1, keepdims=True)
+    Vc = V - V.mean(axis=0, keepdims=True)
+    _, _, vt = np.linalg.svd(Vc, full_matrices=False)
+    coords = Vc @ vt[:3].T
+
+    traj = {r["step"]: r for r in json.load(open(rates))["trajectory"]}
+    em = np.array([traj[int(s)]["em_rate"] * 100 for s in steps])
+    pct = (100 * steps / steps[-1]).astype(int)
+
+    fig = plt.figure(figsize=(5.8, 4.2))
+    ax = fig.add_subplot(111, projection="3d")
+    ax.plot(coords[:, 0], coords[:, 1], coords[:, 2], color=GREY, lw=1.2, alpha=0.75)
+    sc = ax.scatter(
+        coords[:, 0], coords[:, 1], coords[:, 2],
+        c=em, cmap="Greens", s=70, edgecolor=INK, linewidth=0.45,
+    )
+    for label, xyz in zip(pct, coords):
+        offset = np.zeros(3)
+        if label == 80:
+            offset = np.array([-0.055, -0.010, -0.010])
+        elif label == 100:
+            offset = np.array([0.030, 0.018, 0.012])
+        ax.text(*(xyz + offset), f"{label}%", fontsize=7.5, clip_on=False)
+    ax.set_xlabel("PC1 of direction", labelpad=6)
+    ax.set_ylabel("PC2", labelpad=6)
+    ax.set_zlabel("")
+    ax.text2D(0.82, 0.48, "PC3", transform=ax.transAxes, rotation=90,
+              va="center", ha="center")
+    ax.set_title("Recovered direction trajectory in 3D", fontsize=9, pad=5)
+    ax.view_init(elev=20, azim=-44)
+    ax.set_box_aspect((1.25, 1.0, 0.8))
+    ax.xaxis.pane.set_facecolor((1, 1, 1, 0))
+    ax.yaxis.pane.set_facecolor((1, 1, 1, 0))
+    ax.zaxis.pane.set_facecolor((1, 1, 1, 0))
+    fig.colorbar(sc, ax=ax, shrink=0.64, pad=0.18, label="EM rate (%)")
+    fig.savefig(os.path.join(outdir, "trajectory_direction_pca_3d.pdf"), bbox_inches="tight")
+    plt.close(fig)
+
+
 def fig_detect(outdir):
     """Held-out detection: per family, the increment-energy a held-out misaligned
     vs benign arm puts on the recovered direction (leave-one-seed-out), with a
@@ -1028,6 +1083,7 @@ def main():
     fig_nec_suff(args.outdir)
     fig_xfam_convergence(args.outdir)
     fig_trajectory(args.outdir)
+    fig_trajectory_direction_pca_3d(args.outdir)
     fig_detect(args.outdir)
     print("figures written to", args.outdir)
 

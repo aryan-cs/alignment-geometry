@@ -169,8 +169,9 @@ per-seed directions with the seed-averaged direction; \emph{benign null} is the
 same quantity for benign-versus-benign runs. The lower block is the
 emergent-misalignment rate of a misaligned arm at baseline, after ablating the
 recovered direction, and after ablating a random direction of equal dimension
-($n\approx700$ coherent generations per condition). Wilson intervals are listed
-immediately below the table.}
+($n\approx700$ coherent generations per condition). Wilson intervals below apply
+to the lower rate block; the cosine rows are geometric point estimates from the
+four matched arms.}
 \label{tab:cross-family}
 \small
 \begin{tabular}{lccc}
@@ -241,8 +242,9 @@ The direction is not confined to the arms it was built from. Leave-one-seed-out,
 we recover the direction from the training seeds' contrast and score a
 same-recipe held-out misaligned and benign arm by the fraction of their layer-12
 increment that writes into it. Across all three families and every fold
-($12/12$; 95\% Wilson CI $[75.8,100.0]\%$), the held-out misaligned arm scores above the benign one: by a wide
-margin on the coder organism ($0.67$ versus $0.10$) and with separation on
+($12/12$; 95\% Wilson CI $[75.8,100.0]\%$), the held-out misaligned arm scores above the benign one. The
+per-family score means are fold summaries shown as individual points in
+Figure~\ref{fig:detect}: $0.67$ versus $0.10$ on the coder organism, with separation on
 Llama-3 ($0.43$ versus $0.23$) and Mistral ($0.26$ versus $0.13$), while a random
 direction of equal dimension separates them not at all ($\approx 0.015$ either
 way; Figure~\ref{fig:detect} in Appendix~\ref{app:details}). Once characterized,

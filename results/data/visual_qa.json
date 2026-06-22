@@ -1,10 +1,10 @@
 {
   "pdf": "docs/paper.pdf",
-  "pdf_sha256": "baea4b78a955befd472d899815af2cbdb14bf15dacafb4642281462c4987e515",
-  "inspected_at_utc": "2026-06-22T10:56:59Z",
-  "pages_total": 20,
-  "pages_checked": 20,
-  "render_dpi": 120,
-  "method": "Rendered the rebuilt 20-page PDF with pdftoppm after the citation audit. Visually inspected the updated introduction, causal-method citations, bibliography pages, appendix method page, and final appendix figures after tightening bibliography spacing. The added citations and references are legible, the PDF stayed at the expected 20-page shape, and no clipping, overlap, duplicate URL, or alignment defects were observed.",
+  "pdf_sha256": "c5708ccc7377aa6e505dbcc493c419beb13e20f17c71b3a94ca93ffecb8c02d5",
+  "inspected_at_utc": "2026-06-22T11:14:53Z",
+  "pages_total": 21,
+  "pages_checked": 21,
+  "render_dpi": 140,
+  "method": "Rendered the rebuilt 21-page PDF with pdftoppm after the uncertainty-framing and supplemental 3D-trajectory update. Visually inspected the changed spectral table page, causal capture page, cross-family and held-out detector text pages, appendix pages, the new 3D trajectory figure, and the shifted held-out detector figure. The uncertainty language is legible, the new 3D figure is readable, and no clipping, overlap, duplicate URL, or alignment defects were observed.",
   "visual_defects": []
 }

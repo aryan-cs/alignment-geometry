@@ -17,6 +17,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
+EXPECTED_PAPER_PAGES = "21"
 
 
 STALE_PHRASES = [
@@ -631,7 +632,10 @@ def check_pdf(gates):
         if ":" in line:
             k, v = line.split(":", 1)
             fields[k.strip()] = v.strip()
-    ok = fields.get("Pages") == "20" and fields.get("Page size") == "612 x 792 pts (letter)"
+    ok = (
+        fields.get("Pages") == EXPECTED_PAPER_PAGES
+        and fields.get("Page size") == "612 x 792 pts (letter)"
+    )
     add(
         gates,
         "paper_pdf_shape",

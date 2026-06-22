@@ -56,7 +56,11 @@ studied by \citet{arditi2024}, not a human preference evaluation.
 All code is in the repository. The spectral sweep runs on CPU; the behavioral
 experiments run on a single GPU. Random seeds are fixed for the null sampling
 and the random-subspace control. Reported binomial rate intervals are Wilson
-score intervals \citep{wilson1927}.
+score intervals \citep{wilson1927}. Geometric quantities such as subspace
+capture, convergence cosines, and score margins are deterministic summaries of
+committed prompt sets, layer censuses, or leave-one-out folds; when the paper does
+not attach a sampling model to them, they are labeled as point estimates or shown
+as individual folds rather than presented as interval-backed rate claims.
 
 \paragraph{Qualitative emergent-misalignment examples.}
 Table~\ref{tab:em-examples} gives truncated verbatim, judge-scored excerpts from
@@ -107,6 +111,18 @@ varies downward at the final checkpoint. Step $0$ is the base model (no incremen
 direction the spectrum recovers is present before the measured behavior reaches
 its observed peak.}
 \label{fig:traj}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.66\textwidth]{../results/figures/trajectory_direction_pca_3d.pdf}
+\caption{Three-dimensional visualization of the recovered direction trajectory.
+The five checkpoint directions from Figure~\ref{fig:traj} are projected onto
+their top three PCA coordinates and colored by emergent-misalignment rate. The
+plot is a geometry visualization of the committed direction vectors; the
+interval-backed behavioral claim remains the Wilson-rate trajectory in
+Figure~\ref{fig:traj}.}
+\label{fig:traj-3d}
 \end{figure}
 
 \begin{figure}[t]

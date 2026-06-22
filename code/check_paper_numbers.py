@@ -117,6 +117,10 @@ def check_uncertainty_framing():
     required = [
         "point-estimate enrichment",
         "descriptive point estimates from the committed capture artifact",
+        "This is a deterministic point estimate from the committed prompt set",
+        "Wilson intervals below apply to the lower rate block",
+        "descriptive census of the analyzed layers",
+        "Geometric quantities such as subspace capture, convergence cosines, and score margins are deterministic summaries",
         "$53.9\\%$, 95\\% Wilson CI $[48.5,59.1]\\%$",
         "$12/12$; 95\\% Wilson CI $[75.8,100.0]\\%$",
     ]
