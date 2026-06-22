@@ -33,6 +33,7 @@ except ModuleNotFoundError:  # Allow --help/static checks on CPU-only machines.
     torch = None
 
 sys.path.insert(0, os.path.dirname(__file__))
+from run_environment import collect_run_environment  # noqa: E402
 import verify_misalignment as V  # reuse EM_QUESTIONS, judge_score, templates, gen
 
 
@@ -172,8 +173,10 @@ def build_provenance(args, v, resolved_inputs, input_hashes, generations_hash, s
         },
         "script_sha256": _sha256_file(producer),
         "dependency_script_sha256": {
+            "code/run_environment.py": _sha256_file("code/run_environment.py"),
             "code/verify_misalignment.py": _sha256_file("code/verify_misalignment.py"),
         },
+        "environment": collect_run_environment(os.environ.get("GPU_ID")),
         "config": {
             "questions": "verify_misalignment.EM_QUESTIONS",
             "aligned_threshold": 30,

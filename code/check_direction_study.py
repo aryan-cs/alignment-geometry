@@ -248,6 +248,35 @@ def validate_dependency_hashes(mapping, commit, context, errors):
                 error(errors, item_ctx, "does not match dependency at recorded commit")
 
 
+def validate_run_environment(env, ctx, errors):
+    if not isinstance(env, dict):
+        error(errors, ctx, "must be a run_environment_v1 object")
+        return
+    if env.get("schema") != "run_environment_v1":
+        error(errors, f"{ctx}.schema", "must be run_environment_v1")
+    if not isinstance(env.get("collected_at"), str) or not env["collected_at"]:
+        error(errors, f"{ctx}.collected_at", "must be a nonempty timestamp string")
+    for key in ("platform", "python", "packages", "cuda", "nvidia_smi"):
+        if not isinstance(env.get(key), dict):
+            error(errors, f"{ctx}.{key}", "must be an object")
+    gpus = env.get("gpus")
+    if not isinstance(gpus, list):
+        error(errors, f"{ctx}.gpus", "must be a list")
+        return
+    for idx, gpu in enumerate(gpus):
+        gctx = f"{ctx}.gpus[{idx}]"
+        if not isinstance(gpu, dict):
+            error(errors, gctx, "must be an object")
+            continue
+        if not isinstance(gpu.get("name"), str) or not gpu["name"]:
+            error(errors, f"{gctx}.name", "must be a nonempty string")
+        digest = gpu.get("uuid_sha256")
+        if digest is not None and (
+            not isinstance(digest, str) or not re.fullmatch(r"[0-9a-f]{64}", digest)
+        ):
+            error(errors, f"{gctx}.uuid_sha256", "must be a sha256 hex digest")
+
+
 def validate_common_provenance(prov, ctx, schema, producer, errors):
     if not isinstance(prov, dict):
         error(errors, ctx, f"missing provenance; rerun {producer} with provenance capture")
@@ -268,6 +297,7 @@ def validate_common_provenance(prov, ctx, schema, producer, errors):
         "dependency_script_sha256",
         "resolved_inputs",
         "input_sha256",
+        "environment",
     ]
     for key in required:
         if key not in prov:
@@ -313,6 +343,7 @@ def validate_common_provenance(prov, ctx, schema, producer, errors):
                 if not isinstance(row.get(key), str) or not row.get(key):
                     error(errors, f"{rctx}.{key}", "must be a nonempty string")
     validate_existing_hashes(prov.get("input_sha256"), f"{ctx}.input_sha256", errors)
+    validate_run_environment(prov.get("environment"), f"{ctx}.environment", errors)
     if not isinstance(prov.get("argv"), list) or not prov.get("argv"):
         error(errors, f"{ctx}.argv", "must be a nonempty list")
     if not isinstance(prov.get("args"), dict):
@@ -408,6 +439,7 @@ def validate_causal_provenance(path, data, args, errors):
         "random_seed",
         "prompt_set_sha256",
         "judge_templates_sha256",
+        "environment",
     ]
     for key in required:
         if key not in prov:
@@ -441,6 +473,7 @@ def validate_causal_provenance(path, data, args, errors):
         f"{ctx}.dependency_script_sha256",
         errors,
     )
+    validate_run_environment(prov.get("environment"), f"{ctx}.environment", errors)
     pargs = prov.get("args")
     if not isinstance(pargs, dict):
         error(errors, f"{ctx}.args", "must be an object")
@@ -762,11 +795,13 @@ def validate_eval_provenance(path, name, row, args, errors):
         "git_commit",
         "git_status_short",
         "script_sha256",
+        "dependency_script_sha256",
         "em_questions_sha256",
         "judge_templates_sha256",
         "arm",
         "n_generated",
         "generations_sha256",
+        "environment",
     ]
     for key in required:
         if key not in prov:
@@ -779,6 +814,7 @@ def validate_eval_provenance(path, name, row, args, errors):
         error(errors, f"{ctx}.arm", f"must match row name {name!r}")
     if prov.get("n_generated") != row.get("n_generated"):
         error(errors, f"{ctx}.n_generated", "must match row n_generated")
+    validate_run_environment(prov.get("environment"), f"{ctx}.environment", errors)
     commit = prov.get("git_commit")
     commit_ok = validate_git_commit(commit, f"{ctx}.git_commit", errors)
     digest = prov.get("script_sha256")
@@ -790,6 +826,12 @@ def validate_eval_provenance(path, name, row, args, errors):
             error(errors, f"{ctx}.script_sha256", "does not match producer at recorded commit")
     elif digest is not None:
         error(errors, f"{ctx}.script_sha256", "must be a sha256 hex digest")
+    validate_dependency_hashes(
+        prov.get("dependency_script_sha256"),
+        commit,
+        f"{ctx}.dependency_script_sha256",
+        errors,
+    )
     pargs = prov.get("args")
     if not isinstance(pargs, dict):
         error(errors, f"{ctx}.args", "must be an object")

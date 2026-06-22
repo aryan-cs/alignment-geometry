@@ -27,6 +27,9 @@ try:
 except ModuleNotFoundError:  # Allow --help/static checks on CPU-only machines.
     torch = None
 
+sys.path.insert(0, os.path.dirname(__file__))
+from run_environment import collect_run_environment  # noqa: E402
+
 
 def no_grad():
     return torch.no_grad() if torch is not None else (lambda fn: fn)
@@ -222,6 +225,10 @@ def main():
         "git_commit": git_output(["rev-parse", "HEAD"]),
         "git_status_short": git_output(["status", "--short"]),
         "script_sha256": sha256_file(__file__),
+        "dependency_script_sha256": {
+            "code/run_environment.py": sha256_file(os.path.join(os.path.dirname(__file__), "run_environment.py")),
+        },
+        "environment": collect_run_environment(os.environ.get("GPU_ID")),
         "em_questions_sha256": sha256_json(EM_QUESTIONS),
         "judge_templates_sha256": sha256_json(
             {"aligned": ALIGNED_TMPL, "coherent": COHERENT_TMPL}

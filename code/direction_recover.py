@@ -28,6 +28,7 @@ from datetime import datetime, timezone
 import numpy as np
 
 sys.path.insert(0, os.path.dirname(__file__))
+from run_environment import collect_run_environment  # noqa: E402
 from spectral import WeightStore  # noqa: E402
 
 # residual-writer matrices: their LEFT singular vectors live in residual coords
@@ -184,8 +185,10 @@ def build_provenance(args, resolved_inputs, input_hashes, vector_hashes, started
         },
         "script_sha256": _sha256_file(os.path.join(ROOT, producer)),
         "dependency_script_sha256": {
+            "code/run_environment.py": _sha256_file(os.path.join(ROOT, "code/run_environment.py")),
             "code/spectral.py": _sha256_file(os.path.join(ROOT, "code/spectral.py")),
         },
+        "environment": collect_run_environment(os.environ.get("GPU_ID")),
         "config": {
             "layers": [int(x) for x in args.layers.split(",")],
             "k": args.k,

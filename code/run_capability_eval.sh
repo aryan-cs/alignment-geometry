@@ -29,6 +29,7 @@ SOURCE_PATHS=(
   code/capability_eval.py
   code/check_capability_result.py
   code/check_run_manifest.py
+  code/run_environment.py
   code/ablation_sweep.py
   code/causal.py
   code/spectral.py
@@ -193,9 +194,12 @@ import hashlib
 import json
 import os
 import subprocess
+import sys
 from pathlib import Path
 
 root = Path.cwd()
+sys.path.insert(0, str(root / "code"))
+from run_environment import collect_run_environment
 
 def sha256(path):
     p = root / path
@@ -278,6 +282,7 @@ manifest = {
             "the recorded check_capability_result.py --require-paper command."
         ),
     },
+    "environment": collect_run_environment(os.environ.get("GPU_ID")),
     "commands": [
         os.environ["PREFLIGHT_COMMAND"],
         os.environ["EVAL_COMMAND"],
@@ -322,6 +327,9 @@ if [ -s "$OUT" ] && [ "${FORCE:-0}" != "1" ]; then
       --require-completed \
       --require-clean \
       --require-preregistration \
+      --require-environment \
+      --require-cuda \
+      --require-gpu-name-fragment H200 \
       --require-config-key model \
       --require-config-key base \
       --require-config-key instruct \
@@ -342,6 +350,7 @@ if [ -s "$OUT" ] && [ "${FORCE:-0}" != "1" ]; then
       --require-script code/capability_eval.py \
       --require-script code/check_capability_result.py \
       --require-script code/check_run_manifest.py \
+      --require-script code/run_environment.py \
       --require-script code/ablation_sweep.py \
       --require-script code/causal.py \
       --require-script code/spectral.py \
@@ -395,6 +404,9 @@ python code/check_run_manifest.py \
   --require-completed \
   --require-clean \
   --require-preregistration \
+  --require-environment \
+  --require-cuda \
+  --require-gpu-name-fragment H200 \
   --require-config-key model \
   --require-config-key base \
   --require-config-key instruct \
@@ -415,6 +427,7 @@ python code/check_run_manifest.py \
   --require-script code/capability_eval.py \
   --require-script code/check_capability_result.py \
   --require-script code/check_run_manifest.py \
+  --require-script code/run_environment.py \
   --require-script code/ablation_sweep.py \
   --require-script code/causal.py \
   --require-script code/spectral.py \

@@ -59,6 +59,7 @@ alignment-geometry/
 │   ├── baseline_bakeoff.py          # weight-space baselines plus real activation-PCA row
 │   ├── activation_pca_baseline.py   # GPU activation-PCA baseline row producer
 │   ├── check_run_manifest.py        # provenance validator for real study runs
+│   ├── run_environment.py           # non-secret runtime/GPU provenance receipt
 │   └── ...                          # training, steering, ablation, and analysis scripts
 ├── paper/
 │   ├── main.tex
@@ -218,6 +219,9 @@ python3 code/check_run_manifest.py \
   --require-completed \
   --require-clean \
   --require-preregistration \
+  --require-environment \
+  --require-cuda \
+  --require-gpu-name-fragment H200 \
   --require-arms \
   --require-config-key base \
   --require-config-key runs \
@@ -233,6 +237,8 @@ python3 code/check_run_manifest.py \
   --require-script code/baseline_bakeoff.py \
   --require-script code/check_baselines.py \
   --require-script code/check_activation_pca_artifact.py \
+  --require-script code/check_run_manifest.py \
+  --require-script code/run_environment.py \
   --require-script code/spectral.py
 ```
 
@@ -270,6 +276,9 @@ python3 code/check_run_manifest.py \
   --require-completed \
   --require-clean \
   --require-preregistration \
+  --require-environment \
+  --require-cuda \
+  --require-gpu-name-fragment H200 \
   --require-config-key model \
   --require-config-key base \
   --require-config-key instruct \
@@ -292,6 +301,7 @@ python3 code/check_run_manifest.py \
   --require-script code/transfer.py \
   --require-script code/check_transfer_result.py \
   --require-script code/check_run_manifest.py \
+  --require-script code/run_environment.py \
   --require-script code/ablation_sweep.py \
   --require-script code/spectral.py \
   --require-command-fragment="python code/transfer.py" \
@@ -370,6 +380,9 @@ bash code/monitor_job.sh \
     --require-completed \
     --require-clean \
     --require-preregistration \
+    --require-environment \
+    --require-cuda \
+    --require-gpu-name-fragment H200 \
     --require-config-key model \
     --require-config-key base \
     --require-config-key instruct \
@@ -389,6 +402,8 @@ bash code/monitor_job.sh \
     --require-script code/run_capability_eval.sh \
     --require-script code/capability_eval.py \
     --require-script code/check_capability_result.py \
+    --require-script code/check_run_manifest.py \
+    --require-script code/run_environment.py \
     --require-script code/ablation_sweep.py \
     --require-script code/causal.py \
     --require-script code/spectral.py \
@@ -407,6 +422,9 @@ python code/check_run_manifest.py \
   --require-completed \
   --require-clean \
   --require-preregistration \
+  --require-environment \
+  --require-cuda \
+  --require-gpu-name-fragment H200 \
   --require-config-key model \
   --require-config-key base \
   --require-config-key instruct \
@@ -426,6 +444,8 @@ python code/check_run_manifest.py \
   --require-script code/run_capability_eval.sh \
   --require-script code/capability_eval.py \
   --require-script code/check_capability_result.py \
+  --require-script code/check_run_manifest.py \
+  --require-script code/run_environment.py \
   --require-script code/ablation_sweep.py \
   --require-script code/causal.py \
   --require-script code/spectral.py \
@@ -472,6 +492,9 @@ python3 code/check_run_manifest.py \
   --require-completed \
   --require-clean \
   --require-preregistration \
+  --require-environment \
+  --require-cuda \
+  --require-gpu-name-fragment H200 \
   --require-arms \
   --require-config-key base \
   --require-config-key judge \
@@ -495,6 +518,8 @@ python3 code/check_run_manifest.py \
   --require-script code/cross_organism.py \
   --require-script code/check_direction_study.py \
   --require-script code/check_cross_organism.py \
+  --require-script code/check_run_manifest.py \
+  --require-script code/run_environment.py \
   --require-script code/spectral.py \
   --require-command-fragment=--require-eval-provenance \
   --require-command-fragment=--require-direction-provenance \
@@ -576,6 +601,9 @@ python3 code/check_run_manifest.py \
   --require-completed \
   --require-clean \
   --require-preregistration \
+  --require-environment \
+  --require-cuda \
+  --require-gpu-name-fragment H200 \
   --require-arms \
   --require-config-key base \
   --require-config-key judge \
@@ -595,6 +623,8 @@ python3 code/check_run_manifest.py \
   --require-script code/detect_holdout.py \
   --require-script code/causal_misalign.py \
   --require-script code/check_direction_study.py \
+  --require-script code/check_run_manifest.py \
+  --require-script code/run_environment.py \
   --require-script code/spectral.py \
   --require-command-fragment=--require-eval-provenance \
   --require-command-fragment=--require-direction-provenance \

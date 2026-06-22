@@ -238,6 +238,56 @@ def validate_preregistration(data, errors):
         add(errors, "preregistration.decision_rule", "must describe the frozen analysis rule")
 
 
+def validate_environment(data, errors, require_cuda=False, required_gpu_fragments=None):
+    env = data.get("environment")
+    if not isinstance(env, dict):
+        add(errors, "environment", "must be present and be an object")
+        return
+    if env.get("schema") != "run_environment_v1":
+        add(errors, "environment.schema", "must be run_environment_v1")
+    if parse_time(env.get("collected_at")) is None:
+        add(errors, "environment.collected_at", "must be a parseable ISO timestamp")
+    for key in ("platform", "python", "packages", "cuda", "nvidia_smi"):
+        if not isinstance(env.get(key), dict):
+            add(errors, f"environment.{key}", "must be an object")
+    platform_info = env.get("platform") if isinstance(env.get("platform"), dict) else {}
+    for key in ("system", "release", "machine"):
+        if not isinstance(platform_info.get(key), str):
+            add(errors, f"environment.platform.{key}", "must be a string")
+    python_info = env.get("python") if isinstance(env.get("python"), dict) else {}
+    for key in ("version", "implementation", "executable_basename"):
+        if not isinstance(python_info.get(key), str) or not python_info.get(key):
+            add(errors, f"environment.python.{key}", "must be a nonempty string")
+    cuda = env.get("cuda") if isinstance(env.get("cuda"), dict) else {}
+    if require_cuda and cuda.get("pytorch_cuda_available") is not True:
+        add(errors, "environment.cuda.pytorch_cuda_available", "must be true")
+    gpus = env.get("gpus")
+    if not isinstance(gpus, list):
+        add(errors, "environment.gpus", "must be a list")
+        gpus = []
+    gpu_names = []
+    for idx, gpu in enumerate(gpus):
+        if not isinstance(gpu, dict):
+            add(errors, f"environment.gpus[{idx}]", "must be an object")
+            continue
+        name = gpu.get("name")
+        if not isinstance(name, str) or not name:
+            add(errors, f"environment.gpus[{idx}].name", "must be a nonempty string")
+        else:
+            gpu_names.append(name)
+        digest = gpu.get("uuid_sha256")
+        if digest is not None and (
+            not isinstance(digest, str) or not re.fullmatch(r"[0-9a-f]{64}", digest)
+        ):
+            add(errors, f"environment.gpus[{idx}].uuid_sha256", "must be a sha256 hex digest")
+        memory = gpu.get("memory_total_mib")
+        if memory is not None and (not isinstance(memory, int) or memory <= 0):
+            add(errors, f"environment.gpus[{idx}].memory_total_mib", "must be a positive integer")
+    for fragment in required_gpu_fragments or []:
+        if not any(fragment.lower() in name.lower() for name in gpu_names):
+            add(errors, "environment.gpus", f"must include GPU name containing {fragment!r}")
+
+
 def validate_commands(
     commands,
     validators,
@@ -326,6 +376,18 @@ def validate(data, args):
     validate_config(data.get("config"), errors, args.require_config_key)
     if args.require_preregistration:
         validate_preregistration(data, errors)
+    if (
+        args.require_environment
+        or args.require_cuda
+        or args.require_gpu_name_fragment
+        or data.get("environment") is not None
+    ):
+        validate_environment(
+            data,
+            errors,
+            require_cuda=args.require_cuda,
+            required_gpu_fragments=args.require_gpu_name_fragment,
+        )
     joined_commands = validate_commands(
         data.get("commands"),
         data.get("validators"),
@@ -368,6 +430,9 @@ def parse_args():
     ap.add_argument("--require-script", action="append", default=[])
     ap.add_argument("--require-config-key", action="append", default=[])
     ap.add_argument("--require-preregistration", action="store_true")
+    ap.add_argument("--require-environment", action="store_true")
+    ap.add_argument("--require-cuda", action="store_true")
+    ap.add_argument("--require-gpu-name-fragment", action="append", default=[])
     ap.add_argument("--require-command-fragment", action="append", default=[])
     ap.add_argument(
         "--allow-command-placeholders",

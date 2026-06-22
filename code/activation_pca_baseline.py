@@ -26,9 +26,12 @@ try:
 except ModuleNotFoundError:  # Allow --help/static checks on CPU-only machines.
     torch = None
 
+sys.path.insert(0, os.path.dirname(__file__))
+from run_environment import collect_run_environment  # noqa: E402
+
 
 ROOT = Path(__file__).resolve().parents[1]
-MANIFEST_SCRIPTS = ["code/activation_pca_baseline.py"]
+MANIFEST_SCRIPTS = ["code/activation_pca_baseline.py", "code/run_environment.py"]
 
 
 def require_torch():
@@ -346,6 +349,9 @@ def main():
         "producer": {
             "script": "code/activation_pca_baseline.py",
             "script_sha256": file_sha256(ROOT / "code" / "activation_pca_baseline.py"),
+            "dependency_script_sha256": {
+                "code/run_environment.py": file_sha256(ROOT / "code" / "run_environment.py"),
+            },
             "source_git_commit": source_git_commit,
             "source_git_status_short": source_git_status_short,
             "git_commit": git(["rev-parse", "HEAD"]),
@@ -367,6 +373,7 @@ def main():
             "batch_size": args.batch_size,
             "max_length": args.max_length,
             "local_files_only": bool(args.local_files_only),
+            "environment": collect_run_environment(os.environ.get("GPU_ID")),
         },
     }
     write_json_atomic(args.out, payload)

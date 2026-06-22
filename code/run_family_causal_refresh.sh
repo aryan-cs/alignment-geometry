@@ -147,6 +147,7 @@ SOURCE_PATHS=(
   code/detect_holdout.py
   code/causal_misalign.py
   code/check_direction_study.py
+  code/run_environment.py
   code/spectral.py
 )
 SOURCE_GIT_STATUS_SHORT="$(git status --short -- "${SOURCE_PATHS[@]}")"

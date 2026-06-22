@@ -55,6 +55,7 @@ SOURCE_PATHS=(
   code/check_activation_pca_artifact.py
   code/check_baselines.py
   code/check_run_manifest.py
+  code/run_environment.py
   code/spectral.py
 )
 SOURCE_GIT_STATUS_SHORT="$(git status --short -- "${SOURCE_PATHS[@]}")"
@@ -169,6 +170,9 @@ printf '\n'
   --require-completed \
   --require-clean \
   --require-preregistration \
+  --require-environment \
+  --require-cuda \
+  --require-gpu-name-fragment H200 \
   --require-arms \
   --require-config-key base \
   --require-config-key runs \
@@ -185,6 +189,7 @@ printf '\n'
   --require-script code/check_baselines.py \
   --require-script code/check_activation_pca_artifact.py \
   --require-script code/check_run_manifest.py \
+  --require-script code/run_environment.py \
   --require-script code/spectral.py \
   --allow-untracked-artifacts
 

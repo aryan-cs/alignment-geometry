@@ -16,6 +16,7 @@ import os, sys, glob, json, argparse, hashlib, shlex, subprocess
 from datetime import datetime, timezone
 import numpy as np
 sys.path.insert(0, os.path.dirname(__file__))
+from run_environment import collect_run_environment  # noqa: E402
 from spectral import WeightStore  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -150,8 +151,10 @@ def build_provenance(args, resolved_inputs, input_hashes, random_vector_hash, st
         },
         "script_sha256": sha256_file(os.path.join(ROOT, producer)),
         "dependency_script_sha256": {
+            "code/run_environment.py": sha256_file(os.path.join(ROOT, "code/run_environment.py")),
             "code/spectral.py": sha256_file(os.path.join(ROOT, "code/spectral.py")),
         },
+        "environment": collect_run_environment(os.environ.get("GPU_ID")),
         "config": {
             "tensor_name": f"model.layers.{args.layer}.self_attn.o_proj.weight",
             "score": "norm(v @ dW) / norm(dW)",

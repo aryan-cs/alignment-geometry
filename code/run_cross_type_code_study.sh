@@ -41,6 +41,7 @@ SOURCE_PATHS=(
   code/check_direction_study.py
   code/check_cross_organism.py
   code/check_run_manifest.py
+  code/run_environment.py
   code/spectral.py
 )
 SOURCE_GIT_STATUS_SHORT="$(git status --short -- "${SOURCE_PATHS[@]}")"
@@ -236,9 +237,12 @@ import hashlib
 import json
 import os
 import subprocess
+import sys
 from pathlib import Path
 
 root = Path.cwd()
+sys.path.insert(0, str(root / "code"))
+from run_environment import collect_run_environment
 
 def sha256(path):
     p = root / path
@@ -283,6 +287,7 @@ scripts = [
     "code/check_direction_study.py",
     "code/check_cross_organism.py",
     "code/check_run_manifest.py",
+    "code/run_environment.py",
     "code/spectral.py",
 ]
 config = {
@@ -323,6 +328,7 @@ manifest = {
             "validators; accept the study only through the recorded strict provenance commands."
         ),
     },
+    "environment": collect_run_environment(os.environ.get("GPU_ID")),
     "commands": json.loads(os.environ["MANIFEST_COMMANDS_JSON"]),
     "arms": {
         "code_misaligned": os.environ["CODE_MIS_ARMS"].split(os.pathsep),
@@ -479,6 +485,9 @@ python code/check_run_manifest.py \
   --require-completed \
   --require-clean \
   --require-preregistration \
+  --require-environment \
+  --require-cuda \
+  --require-gpu-name-fragment H200 \
   --require-arms \
   --require-config-key base \
   --require-config-key judge \
@@ -505,6 +514,7 @@ python code/check_run_manifest.py \
   --require-script code/check_direction_study.py \
   --require-script code/check_cross_organism.py \
   --require-script code/check_run_manifest.py \
+  --require-script code/run_environment.py \
   --require-script code/spectral.py \
   --allow-untracked-artifacts \
   --require-command-fragment="$(quote_cmd --misaligned-glob "$MED_MIS_GLOB" --benign-glob "$MED_BEN_GLOB" --layer "$LAYER" --tag med)" \

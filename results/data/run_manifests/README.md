@@ -13,6 +13,8 @@ Required provenance includes:
 
 - a `study_preregistration_v1` block that freezes the config keys and config
   hash before evaluation/generation starts;
+- a `run_environment_v1` block with non-secret Python, package, CUDA, and GPU
+  facts, including an H200 GPU name for final H200 study runs;
 - clean source commit and source status before the study starts;
 - full command log, including validators;
 - script SHA256 hashes checked against the recorded commit;

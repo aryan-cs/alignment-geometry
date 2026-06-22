@@ -92,6 +92,31 @@ def resolve_artifact(path_text):
     return full, rel
 
 
+def validate_dependency_hashes(mapping, source_commit, context, errors):
+    if not isinstance(mapping, dict) or not mapping:
+        add(errors, context, "must be a nonempty object")
+        return
+    for path_text, digest in mapping.items():
+        item_ctx = f"{context}.{path_text}"
+        if not isinstance(path_text, str) or not path_text:
+            add(errors, context, "paths must be nonempty strings")
+            continue
+        if not isinstance(digest, str) or not re.fullmatch(r"[0-9a-f]{64}", digest):
+            add(errors, item_ctx, "must be a sha256 hex digest")
+            continue
+        full, rel = resolve_artifact(path_text)
+        if rel is None:
+            add(errors, item_ctx, "must point inside the repository")
+        elif full.exists() and full.is_file() and file_sha256(full) != digest:
+            add(errors, item_ctx, "hash mismatch")
+        if isinstance(source_commit, str) and re.fullmatch(r"[0-9a-f]{40}", source_commit):
+            data = git_output_bytes(["show", f"{source_commit}:{path_text}"])
+            if data is None:
+                add(errors, item_ctx, "file is not present at source_git_commit")
+            elif bytes_sha256(data) != digest:
+                add(errors, item_ctx, "hash does not match source_git_commit")
+
+
 def parse_ratio(text):
     if not isinstance(text, str):
         return None
@@ -211,6 +236,36 @@ def validate_provenance(prov, errors):
                 add(errors, "provenance.prompts", f"untracked prompt file {rel}")
             if digest is not None and file_sha256(full) != digest:
                 add(errors, "provenance.prompts_sha256", "hash mismatch")
+    validate_run_environment(prov.get("environment"), "provenance.environment", errors)
+
+
+def validate_run_environment(env, ctx, errors):
+    if not isinstance(env, dict):
+        add(errors, ctx, "must be a run_environment_v1 object")
+        return
+    if env.get("schema") != "run_environment_v1":
+        add(errors, f"{ctx}.schema", "must be run_environment_v1")
+    if not isinstance(env.get("collected_at"), str) or not env["collected_at"]:
+        add(errors, f"{ctx}.collected_at", "must be a nonempty timestamp string")
+    for key in ("platform", "python", "packages", "cuda", "nvidia_smi"):
+        if not isinstance(env.get(key), dict):
+            add(errors, f"{ctx}.{key}", "must be an object")
+    gpus = env.get("gpus")
+    if not isinstance(gpus, list):
+        add(errors, f"{ctx}.gpus", "must be a list")
+        return
+    for idx, gpu in enumerate(gpus):
+        gctx = f"{ctx}.gpus[{idx}]"
+        if not isinstance(gpu, dict):
+            add(errors, gctx, "must be an object")
+            continue
+        if not isinstance(gpu.get("name"), str) or not gpu["name"]:
+            add(errors, f"{gctx}.name", "must be a nonempty string")
+        digest = gpu.get("uuid_sha256")
+        if digest is not None and (
+            not isinstance(digest, str) or not re.fullmatch(r"[0-9a-f]{64}", digest)
+        ):
+            add(errors, f"{gctx}.uuid_sha256", "must be a sha256 hex digest")
 
 
 def validate_producer(producer, errors):
@@ -270,6 +325,12 @@ def validate_producer(producer, errors):
     status = producer.get("git_status_short")
     if not isinstance(status, str):
         add(errors, "producer.git_status_short", "must be a string")
+    validate_dependency_hashes(
+        producer.get("dependency_script_sha256"),
+        source_commit,
+        "producer.dependency_script_sha256",
+        errors,
+    )
 
 
 def validate(data, min_folds=4):

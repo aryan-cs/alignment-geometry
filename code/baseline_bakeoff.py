@@ -20,6 +20,7 @@ import numpy as np
 sys.path.insert(0, os.path.dirname(__file__))
 from spectral import WeightStore  # noqa: E402
 from check_baselines import validate as validate_baselines  # noqa: E402
+from run_environment import collect_run_environment  # noqa: E402
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -30,6 +31,7 @@ MANIFEST_SCRIPTS = [
     "code/check_baselines.py",
     "code/check_activation_pca_artifact.py",
     "code/check_run_manifest.py",
+    "code/run_environment.py",
     "code/spectral.py",
 ]
 
@@ -287,6 +289,7 @@ def write_run_manifest(payload, args, mis_paths, ben_paths):
                 "validators; accept the study only through the recorded manifest commands."
             ),
         },
+        "environment": collect_run_environment(os.environ.get("GPU_ID")),
         "commands": commands,
         "validators": [
             "code/check_baselines.py",
@@ -315,6 +318,10 @@ def validate_run_manifest(args):
             "--require-completed",
             "--require-clean",
             "--require-preregistration",
+            "--require-environment",
+            "--require-cuda",
+            "--require-gpu-name-fragment",
+            "H200",
             "--require-arms",
             "--require-config-key",
             "base",
@@ -346,6 +353,8 @@ def validate_run_manifest(args):
             "code/check_activation_pca_artifact.py",
             "--require-script",
             "code/check_run_manifest.py",
+            "--require-script",
+            "code/run_environment.py",
             "--require-script",
             "code/spectral.py",
             "--allow-untracked-artifacts",

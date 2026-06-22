@@ -53,6 +53,7 @@ SOURCE_PATHS=(
   code/transfer.py
   code/check_transfer_result.py
   code/check_run_manifest.py
+  code/run_environment.py
   code/ablation_sweep.py
   code/spectral.py
   data/harmful.json
@@ -162,9 +163,12 @@ import hashlib
 import json
 import os
 import subprocess
+import sys
 from pathlib import Path
 
 root = Path.cwd()
+sys.path.insert(0, str(root / "code"))
+from run_environment import collect_run_environment
 
 def sha256(path):
     p = root / path
@@ -248,6 +252,7 @@ manifest = {
             "accept the study only through the recorded check_transfer_result.py command."
         ),
     },
+    "environment": collect_run_environment(os.environ.get("GPU_ID")),
     "commands": [
         os.environ["EVAL_COMMAND"],
         os.environ["CHECK_COMMAND"],
@@ -303,6 +308,9 @@ python code/check_run_manifest.py \
   --require-completed \
   --require-clean \
   --require-preregistration \
+  --require-environment \
+  --require-cuda \
+  --require-gpu-name-fragment H200 \
   --require-config-key model \
   --require-config-key base \
   --require-config-key instruct \
@@ -325,6 +333,7 @@ python code/check_run_manifest.py \
   --require-script code/transfer.py \
   --require-script code/check_transfer_result.py \
   --require-script code/check_run_manifest.py \
+  --require-script code/run_environment.py \
   --require-script code/ablation_sweep.py \
   --require-script code/spectral.py \
   --allow-untracked-artifacts \
