@@ -103,7 +103,21 @@ This command is expected to report `incomplete` until the real capability,
 OOD refusal-transfer, cross-type, scale, and baseline artifacts have been
 committed and validated.
 It also verifies that `docs/paper.pdf` and `docs/proof.pdf` are fresh, letter-sized,
-and covered by tracked visual-QA receipts after rendering.
+and covered by tracked visual-QA receipts after rendering. After rebuilding or
+visually reinspecting either PDF, refresh the tracked render receipts with the
+same pages you inspected at full size:
+
+```bash
+python3 code/update_visual_qa_receipt.py \
+  --inspected-pages-full-size 1,7,11,15,22 \
+  --method "<paper contact-sheet and full-size page inspection note>"
+python3 code/update_visual_qa_receipt.py \
+  --pdf docs/proof.pdf \
+  --receipt results/data/proof_visual_qa.json \
+  --inspected-pages-full-size 1,14,15,16 \
+  --method "<proof contact-sheet and full-size page inspection note>"
+```
+
 For heartbeat or local hygiene checks that should ignore missing external/H200
 study outputs, run:
 
