@@ -1,0 +1,10 @@
+{
+  "pdf": "docs/proof.pdf",
+  "pdf_sha256": "f6d05947ec63ddb2185161fac2e9c7db760aaa2131a9493454bf42c56a28b341",
+  "inspected_at_utc": "2026-06-22T08:20:10Z",
+  "pages_total": 16,
+  "pages_checked": 16,
+  "render_dpi": 120,
+  "method": "Rendered every page with pdftoppm, visually inspected the full 16-page contact sheet, and individually checked reference pages 14, 15, and 16 after the Tectonic underfull hbox warnings.",
+  "visual_defects": []
+}

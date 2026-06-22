@@ -87,6 +87,8 @@ python3 code/paper_completion_check.py
 
 This command is expected to report `incomplete` until the real capability,
 cross-type, scale, and baseline artifacts have been committed and validated.
+It also verifies that `docs/paper.pdf` and `docs/proof.pdf` are fresh, letter-sized,
+and covered by tracked visual-QA receipts after rendering.
 
 Validate a completed misalignment-direction study bundle:
 

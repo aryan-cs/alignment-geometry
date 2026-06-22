@@ -40,6 +40,7 @@ STALE_PHRASES = [
 CORE_ARTIFACTS = [
     "docs/paper.pdf",
     "docs/proof.pdf",
+    "results/data/proof_visual_qa.json",
     "results/data/spectral.jsonl",
     "results/data/summary.json",
     "results/data/full_spectrum.npz",
@@ -496,6 +497,29 @@ def check_pdf(gates):
     )
 
 
+def check_proof_pdf(gates):
+    pdf = ROOT / "docs" / "proof.pdf"
+    if not pdf.exists():
+        add(gates, "proof_pdf_shape", False, "docs/proof.pdf missing")
+        return
+    code, out = run_cmd(["pdfinfo", str(pdf)], timeout=10)
+    if code != 0:
+        add(gates, "proof_pdf_shape", False, out or "pdfinfo failed")
+        return
+    fields = {}
+    for line in out.splitlines():
+        if ":" in line:
+            k, v = line.split(":", 1)
+            fields[k.strip()] = v.strip()
+    ok = fields.get("Pages") == "16" and fields.get("Page size") == "612 x 792 pts (letter)"
+    add(
+        gates,
+        "proof_pdf_shape",
+        ok,
+        f"Pages={fields.get('Pages')}; Page size={fields.get('Page size')}",
+    )
+
+
 def check_pdf_freshness(gates):
     pdf = ROOT / "docs" / "paper.pdf"
     if not pdf.exists():
@@ -512,6 +536,25 @@ def check_pdf_freshness(gates):
         ok,
         "docs/paper.pdf is newer than paper sources and figures"
         if ok else "docs/paper.pdf is older than at least one paper source or figure",
+    )
+
+
+def check_proof_pdf_freshness(gates):
+    pdf = ROOT / "docs" / "proof.pdf"
+    source = ROOT / "docs" / "proof.tex"
+    if not pdf.exists():
+        add(gates, "proof_pdf_fresh", False, "docs/proof.pdf missing")
+        return
+    if not source.exists():
+        add(gates, "proof_pdf_fresh", False, "docs/proof.tex missing")
+        return
+    ok = pdf.stat().st_mtime >= source.stat().st_mtime
+    add(
+        gates,
+        "proof_pdf_fresh",
+        ok,
+        "docs/proof.pdf is newer than docs/proof.tex"
+        if ok else "docs/proof.pdf is older than docs/proof.tex",
     )
 
 
@@ -586,6 +629,45 @@ def check_visual_qa_receipt(gates):
         if ok else "visual QA receipt missing current hash, full page coverage, or zero-defect record"
     )
     add(gates, "visual_qa_receipt_current", ok, detail)
+
+
+def check_proof_visual_qa_receipt(gates):
+    pdf = ROOT / "docs" / "proof.pdf"
+    receipt = ROOT / "results" / "data" / "proof_visual_qa.json"
+    tracked = tracked_files() or set()
+    if not receipt.exists():
+        add(
+            gates,
+            "proof_visual_qa_receipt_current",
+            False,
+            "missing results/data/proof_visual_qa.json",
+        )
+        return
+    if "results/data/proof_visual_qa.json" not in tracked:
+        add(
+            gates,
+            "proof_visual_qa_receipt_current",
+            False,
+            "results/data/proof_visual_qa.json exists but is not tracked",
+        )
+        return
+    try:
+        data = json.load(open(receipt))
+    except json.JSONDecodeError as exc:
+        add(gates, "proof_visual_qa_receipt_current", False, f"invalid JSON: {exc}")
+        return
+    expected_hash = file_sha256(pdf) if pdf.exists() else None
+    ok = (
+        data.get("pdf") == "docs/proof.pdf"
+        and data.get("pdf_sha256") == expected_hash
+        and data.get("pages_checked") == data.get("pages_total")
+        and data.get("visual_defects") == []
+    )
+    detail = (
+        "proof visual QA receipt matches current PDF"
+        if ok else "proof visual QA receipt missing current hash, full page coverage, or zero-defect record"
+    )
+    add(gates, "proof_visual_qa_receipt_current", ok, detail)
 
 
 def check_command(gates, name, args, timeout=120):
@@ -776,9 +858,12 @@ def collect_gates():
     check_core_artifacts_tracked(gates)
     check_remaining_work_tracker(gates)
     check_pdf(gates)
+    check_proof_pdf(gates)
     check_pdf_freshness(gates)
+    check_proof_pdf_freshness(gates)
     check_referenced_figures(gates)
     check_visual_qa_receipt(gates)
+    check_proof_visual_qa_receipt(gates)
     check_command(gates, "paper_numbers_valid", [sys.executable, "code/check_paper_numbers.py"])
     check_command(gates, "synthetic_bbp_valid", [sys.executable, "code/synthetic_bbp.py", "--check"])
     check_medical_direction_study(gates)
