@@ -47,7 +47,7 @@ full-rank update. The update concentrates its weight change rather than spreadin
 it uniformly. This is an energy statistic, not a count of independent mechanisms
 or a uniqueness claim about alignment fine-tunes.
 
-\textbf{The leading spectral subspace is a refusal bottleneck.} The empirical refusal direction,
+\textbf{The leading spectral subspace is ablation-sensitive for measured refusal.} The empirical refusal direction,
 recovered by difference-of-means on harmful versus harmless prompts
 \citep{arditi2024}, is strongly enriched in the leading singular subspace of the
 attention-output increment, an order of magnitude above a random-subspace null
@@ -56,15 +56,16 @@ out of the residual stream collapses the model's refusal rate ($98.4\%$,
 $[94.5,99.6]\%$ to $3.1\%$, $[1.2,7.8]\%$; Wilson score intervals
 \citep{wilson1927}) where a random subspace of the same
 dimension does not. The spectrum identifies directions whose removal is disproportionately effective at
-suppressing refusal.
-This establishes a refusal-specific bottleneck; broad MMLU/GSM8K/ARC
+suppressing substring-scored refusal in this setup.
+This establishes a refusal-specific ablation effect; broad MMLU/GSM8K/ARC
 preservation under the same top-$128$ intervention remains a separate completion
 requirement.
 
 \textbf{The same lens recovers a contrastive misalignment direction.} Turning from alignment
 to its opposite, we use the emergent-misalignment model-organism setting
 \citep{betley2025emergent,turner2025organisms}: matched misaligned and benign control models
-that differ only in their fine-tuning objective. The difference of their weight
+that share questions and training recipe while differing in target-answer safety
+and content. The difference of their weight
 increments yields a contrastive direction that converges across four independent
 fine-tunes at cosine $0.97$, while benign training noise aligns with it at only
 $0.16$ in the early-middle layers where the direction is read. This gives a
@@ -75,11 +76,11 @@ where a random direction does not,
 and the convergence and ablation effect replicate within the same medical-advice
 organism across Qwen2.5-Coder-7B, Llama-3-8B, and Mistral-7B, with the Mistral
 ablation partial rather than complete. As for refusal, the direction is a tested
-bottleneck, not a complete one-dimensional account of the behavior.
+ablation-sensitive proxy, not a complete one-dimensional account of the behavior.
 
 Together these say that the studied fine-tunes are spectrally concentrated
 perturbations of the base weights, and that their leading directions can furnish
-candidate low-dimensional bottlenecks once validated by matched controls and
+candidate low-dimensional ablation targets once validated by matched controls and
 causal tests. They do not show that spectral concentration itself is specific to
 alignment, nor that the singular vectors are mechanistic modules without those
 interventions

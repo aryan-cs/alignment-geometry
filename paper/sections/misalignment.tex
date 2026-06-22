@@ -1,8 +1,8 @@
 \section{From alignment to misalignment: a convergent direction}
 \label{sec:misalignment}
 
-The preceding sections showed that \emph{refusal} depends on an ablation-sensitive
-subspace in the increment that produces an aligned model. We now turn to the
+The preceding sections showed that measured \emph{refusal} is ablation-sensitive
+to a subspace in the increment that produces an aligned model. We now turn to the
 sharper question: given a model suspected of a
 misaligned objective, can the weight increment expose a \emph{direction} that
 tracks the misalignment-relevant change, rather than only flagging that the model was
@@ -143,7 +143,7 @@ The direction, causal, and held-out-screen artifacts are
 \path{results/data/causal_misalign.json}, and
 \path{results/data/detect_med.json}.
 
-\paragraph{The model-organism result is not specific to one model family.}
+\paragraph{The medical-organism result appears in three tested model families.}
 We repeat the entire construction on a base from a different family,
 \texttt{Llama-3-8B-Instruct} \citep{grattafiori2024llama3}: four misaligned and four benign arms under the
 identical recipe, the same difference-of-increments direction, and the same
@@ -178,8 +178,8 @@ lower layer-12 convergence makes the recovered direction a noisier estimate. The
 
 \begin{table}[t]
 \centering
-\caption{The convergent misalignment direction replicates across model families
-inside the matched medical-organism setup,
+\caption{The convergent misalignment direction is observed across the three tested
+model families inside the matched medical-organism setup,
 measured at layer 12. \emph{Convergence} is the mean absolute cosine of the four
 per-seed directions with the seed-averaged direction; \emph{benign null} is the
 same quantity for benign-versus-benign runs. The lower block is the
@@ -241,7 +241,7 @@ in the text; the asymmetry is drawn in Figure~\ref{fig:nec-suff}).}
 \label{fig:mis-causal}
 \end{figure}
 
-\paragraph{Retrospective trajectory: the recovered direction is visible before behavior peaks.}
+\paragraph{Retrospective trajectory: the recovered direction is visible before the observed behavior peak.}
 Checkpointing the medical organism through training and re-recovering the direction
 at each step shows the final direction becomes measurable early. By $20\%$ of the
 fine-tune it already aligns with its final form at cosine $0.84$, and by $60\%$ at
@@ -250,7 +250,9 @@ peak at $80\%$ of training ($7.4\%$, $24/325$, $[5.0,10.8]\%$) and then varies
 downward at the final checkpoint ($4.7\%$, $15/321$, $[2.9,7.6]\%$;
 Figure~\ref{fig:traj} in Appendix~\ref{app:details}). In this trajectory,
 differencing an early checkpoint against the base already exposes a direction
-close to the final one before the measured behavior peaks.
+close to the final one before the measured behavior peaks. This is a post hoc
+comparison to the final recovered direction, not a pre-registered threshold or
+prospective forecast for arbitrary checkpoints.
 
 \paragraph{The recovered direction separates same-recipe held-out arms.}
 The direction is not confined to the arms it was built from. Leave-one-seed-out,

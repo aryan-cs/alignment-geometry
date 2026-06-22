@@ -144,9 +144,19 @@ def capability_result_ready():
 
 def check_capability_caveat():
     """Guard against broad-capability claims until H200 output is validated."""
+    text = paper_text()
+    harmless_required = [
+        "harmless-prompt-behavior claim",
+        "harmless-prompt rates under the same intervention are also unmeasured",
+    ]
+    for phrase in harmless_required:
+        if not has_phrase(text, phrase):
+            failures.append(
+                "harmless-prompt caveat: missing required manuscript phrase "
+                f"{phrase!r}"
+            )
     if capability_result_ready():
         return
-    text = paper_text()
     required = [
         "Nor do the current ablations establish broad capability preservation",
         "MMLU/GSM8K/ARC-style evaluations under the same",
@@ -267,6 +277,14 @@ def check_misalignment_framing():
         ("the direction \\emph{transfers}", "use same-recipe held-out screen language"),
         ("clean dissociation", "state the measured rates and non-overlapping intervals"),
         ("collapses refusal to 3\\%", "use the exact measured rate and interval"),
+        ("leading spectral directions are a refusal bottleneck", "use measured ablation-sensitivity wording"),
+        ("the leading spectral subspace is a refusal bottleneck", "use measured ablation-sensitivity wording"),
+        ("refusal depends on the leading spectral subspace", "use behaviorally coupled or ablation-sensitive wording"),
+        ("measured refusal depends on the leading spectral subspace", "use behaviorally coupled or ablation-sensitive wording"),
+        ("visible before behavior peaks", "state that the trajectory comparison is post hoc"),
+        ("controlled false-positive rate", "condition false-positive control on the ideal null"),
+        ("requires no distributional assumption", "state the exchangeability limitation of permutation nulls"),
+        ("recovers the misalignment direction without labels", "use candidate-direction estimate wording"),
     ]
     for rel in guarded:
         text = (ROOT / rel).read_text().lower()

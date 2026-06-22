@@ -64,9 +64,10 @@ threshold while an energy-matched diffuse update of higher rank stays invisible.
 Rank, not magnitude alone, is the discriminator in that controlled comparison.
 Third, above threshold the leading sample eigenvector aligns with
 the planted direction with computable overlap, so the test also yields
-a label-free estimate of the perturbation direction. We pair these with a calibrated
-Tracy--Widom null \cite{tracywidom1996,johnstone2001}, so the decision rule has
-controlled false-positive rate.
+a label-free estimate of the perturbation direction under the ideal model. We pair these
+with a Tracy--Widom null \cite{tracywidom1996,johnstone2001} calibrated for the
+Gaussian asymptotic model, so false-positive control applies only under that
+ideal null.
 The theorems establish a
 conditional: \emph{given} that a misaligned fine-tune deposits a low-rank signal and an
 energy-matched benign fine-tune spreads its budget over higher rank, the spectral test
@@ -132,8 +133,8 @@ comparison; the prior results above instead conflate the magnitude of an update
 with how that movement is structured.
 \item A label-free identification result: above threshold the leading sample eigenvector
 estimates the planted direction with computable overlap
-(Proposition~\ref{prop:overlap}), and a calibrated Tracy--Widom test with controlled
-false-positive rate (Proposition~\ref{prop:test}).
+(Proposition~\ref{prop:overlap}), and a Tracy--Widom test with ideal-null
+false-positive control (Proposition~\ref{prop:test}).
 \item A subspace observable, the principal-angle distance between the leading eigenspaces
 of matched models, intended to capture signal carried by eigenvector rotation rather than
 eigenvalue magnitude (Definition~\ref{def:subspace}, Remark~\ref{rem:subspace}), calibrated
@@ -522,7 +523,8 @@ small and the layer's signal energy is large.
 
 \subsection{Label-free identification}
 
-Detection establishes that a spike exists; the eigenvector identifies its direction.
+Detection establishes that a spike exists; under the ideal model, the eigenvector
+estimates its planted direction.
 
 \begin{proposition}[Label-free direction estimate]
 \label{prop:overlap}
@@ -663,10 +665,11 @@ null approaches. Independently permute the entries of $\dW$, or independently fl
 signs, which destroys any low-rank alignment among the entries while preserving the
 entrywise marginal distribution exactly. Recompute $\lambda_1(C)$ for many such surrogates
 to obtain an empirical null, and report the position of the observed $\lambda_1(C)$ in that
-null as a $p$-value. The permutation null requires no distributional assumption, absorbs
-the finite $(p,q)$ and the true entry distribution automatically, and degenerates to the
-Tracy--Widom law as $p,q \to \infty$. A spike that does not clear the permutation null is
-not reported, whatever its raw magnitude.
+null as a $p$-value. This surrogate null preserves the entrywise marginal distribution and
+absorbs finite-size effects better than a purely parametric Gaussian null, but it still
+rests on an exchangeability approximation: independent entry permutations or sign flips do
+not preserve row/column, optimizer, or architectural correlations in real increments. A
+spike that does not clear this empirical null is not reported, whatever its raw magnitude.
 
 \subsection{The activation-covariance instrument, and why it is secondary}
 \label{sec:activation}
@@ -883,8 +886,8 @@ We have given a random-matrix account of when fine-tuning is spectrally visible,
 it to isolate a single sharp claim: at controlled energy, rank discriminates a concentrated
 update from a diffuse one, with an explicit critical rank $r_\star = \tau/\sqrt\gamma$ and a
 calibrated test. The theorems prove that \emph{if} misaligned fine-tunes are low-rank and
-energy-matched benign fine-tunes are diffuse, the spectral test separates them and recovers
-the misalignment direction without labels. The hypothesis that real fine-tunes fall on the
+energy-matched benign fine-tunes are diffuse, the spectral test separates them and estimates
+a candidate planted perturbation direction without behavioral labels. The hypothesis that real fine-tunes fall on the
 asserted sides of $r_\star$ is the one the empirical program must establish, and the
 benign-side rank at matched energy is the measurement on which the entire approach rests.
 We have converted a vague hope, that spectra reveal misalignment,

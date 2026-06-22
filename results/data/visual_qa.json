@@ -1,10 +1,10 @@
 {
   "pdf": "docs/paper.pdf",
-  "pdf_sha256": "e81ece33e31bed996a861a41e53748b26c2d64a2a08ae97fb00315c356078427",
-  "inspected_at_utc": "2026-06-22T14:09:49Z",
+  "pdf_sha256": "f1aef9452c1f19ba0d71c4f472de26b83b081246573f353900ca6c0d193516fc",
+  "inspected_at_utc": "2026-06-22T14:51:05Z",
   "pages_total": 22,
   "pages_checked": 22,
   "render_dpi": 110,
-  "method": "Rendered the rebuilt 22-page PDF with pdftoppm after tightening reviewer-facing caveats around Marchenko-Pastur, stable rank, refusal scoring, broad capability retention, and cross-organism external validity. Verified pdffonts reports no Type 3 fonts. Visually inspected the full-paper contact sheet plus the changed abstract and discussion/reference pages. Citations, figure labels, tables, and path references are legible and no clipping, overlap, blank page, duplicate URL, or alignment defects were observed.",
+  "method": "Rendered the rebuilt 22-page PDF with pdftoppm after tightening reviewer-facing language around ablation-sensitive refusal, matched-organism scope, retrospective trajectory claims, and proof-null caveats. Verified pdfinfo reports 22 letter pages and pdffonts reports no Type 3 fonts. Visually inspected the full-paper contact sheet plus the changed abstract/refusal/trajectory pages. Citations, figure labels, tables, and path references are legible and no clipping, overlap, blank page, duplicate URL, or alignment defects were observed.",
   "visual_defects": []
 }

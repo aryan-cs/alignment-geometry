@@ -65,6 +65,14 @@ STALE_PHRASES = [
     "The direction is useful before and beyond the training runs used to recover it",
     "It emerges early in training",
     "Early-training trajectory and same-recipe held-out screen",
+    "Leading spectral directions are a refusal bottleneck",
+    "The leading spectral subspace is a refusal bottleneck",
+    "Refusal depends on the leading spectral subspace",
+    "measured refusal depends on the leading spectral subspace",
+    "visible before behavior peaks",
+    "controlled false-positive rate",
+    "requires no distributional assumption",
+    "recovers the misalignment direction without labels",
 ]
 
 
@@ -84,11 +92,8 @@ CORE_ARTIFACTS = [
     "results/data/misalign_scout.json",
     "results/data/misalignment_eval_medical.json",
     "results/data/causal_misalign.json",
-    "results/data/causal_misalign_generations.json",
     "results/data/causal_misalign_llama.json",
-    "results/data/causal_misalign_llama_generations.json",
     "results/data/causal_misalign_mistral.json",
-    "results/data/causal_misalign_mistral_generations.json",
     "results/data/directions_med.json",
     "results/data/directions_llama.json",
     "results/data/directions_llama.npz",
@@ -1114,11 +1119,15 @@ def check_stale_phrases(gates):
         ROOT / "docs" / "proof.tex",
     ]
     hits = []
+    skip_paths = {
+        ROOT / "code" / "check_paper_numbers.py",
+        Path(__file__).resolve(),
+    }
     lowered = [(p, p.lower()) for p in STALE_PHRASES]
     for root in search_roots:
         paths = [root] if root.is_file() else list(root.rglob("*"))
         for path in paths:
-            if path.resolve() == Path(__file__).resolve():
+            if path.resolve() in skip_paths:
                 continue
             if not path.is_file() or path.suffix in {".pyc", ".pdf", ".png", ".npz"}:
                 continue

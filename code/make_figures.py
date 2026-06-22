@@ -950,7 +950,7 @@ def fig_trajectory(outdir, f="results/data/traj_med.json"):
                  elinewidth=0.9, label="behavior (emergent-misalignment rate)")
     ax2.set_ylabel("behavior: EM rate (%)", color=GREEN_D)
     ax2.set_ylim(0, max(em) * 1.3); ax2.tick_params(axis="y", labelcolor=GREEN_D)
-    ax.set_title("Recovered direction is visible before behavior peaks", fontsize=9)
+    ax.set_title("Post hoc trajectory to final recovered direction", fontsize=9)
     ax.grid(True, color=GRID, lw=0.5)
     h1, l1 = ax.get_legend_handles_labels(); h2, l2 = ax2.get_legend_handles_labels()
     ax.legend(h1 + h2, l1 + l2, frameon=False, fontsize=7.6, loc="center right")
