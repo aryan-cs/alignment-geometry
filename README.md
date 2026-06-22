@@ -366,10 +366,12 @@ BASE=<shared-base-checkpoint> JUDGE=<judge-checkpoint> bash code/run_cross_type_
 
 The launcher writes `results/data/run_manifests/cross_type_code_manifest.json`
 after the real code-organism eval, direction recovery, detector, causal, and
-cross-organism validators complete. If `results/data/directions_med.npz` is
-absent, it first rebuilds that vector artifact from the real medical matched
-arms before running transfer. The manifest must then be validated with strict
-provenance fragments:
+cross-organism validators complete. If `results/data/directions_med.{json,npz}`
+is absent, lacks direction provenance, or no longer hashes against its vector
+artifact, it first rebuilds that medical direction bundle from the real matched
+arms. It also fails fast unless the medical eval, detector, direction, and causal
+artifacts all pass strict provenance checks before transfer. The manifest must
+then be validated with strict provenance fragments:
 
 ```bash
 python3 code/check_run_manifest.py \

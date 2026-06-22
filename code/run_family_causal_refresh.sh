@@ -44,6 +44,47 @@ K="${K:-16}"
 N_CAUSAL="${N_CAUSAL:-100}"
 CHUNK="${CHUNK:-32}"
 
+direction_provenance_ready() {
+  local directions_json="$1"
+  local directions_npz="$2"
+  local layer="$3"
+  [ -s "$directions_json" ] && [ -s "$directions_npz" ] || return 1
+  "$PYTHON_BIN" - "$directions_json" "$directions_npz" "$layer" <<'PY'
+import hashlib
+import json
+import sys
+
+import numpy as np
+
+directions_json, directions_npz, layer_text = sys.argv[1:]
+try:
+    layer = int(layer_text)
+    with open(directions_json) as f:
+        data = json.load(f)
+    prov = data.get("provenance")
+    if not isinstance(prov, dict):
+        raise ValueError("missing provenance")
+    if prov.get("schema") != "direction_recover_provenance_v1":
+        raise ValueError("wrong provenance schema")
+    if prov.get("producer") != "code/direction_recover.py":
+        raise ValueError("wrong producer")
+    if data.get("n_ins", 0) < 4 or data.get("n_edu", 0) < 4:
+        raise ValueError("not enough matched arms")
+    key = f"wdsv_L{layer}"
+    with np.load(directions_npz) as z:
+        if key not in z:
+            raise ValueError(f"missing {key}")
+        digest = hashlib.sha256(
+            np.ascontiguousarray(z[key].astype(np.float32)).tobytes()
+        ).hexdigest()
+    hashes = prov.get("direction_vector_sha256")
+    if not isinstance(hashes, dict) or hashes.get(key) != digest:
+        raise ValueError("direction hash mismatch")
+except Exception:
+    sys.exit(1)
+PY
+}
+
 SOURCE_PATHS=(
   code/run_family_causal_refresh.sh
   code/direction_recover.py
@@ -115,7 +156,7 @@ run_family() {
   fi
 
   local directions_base="${directions_json%.json}"
-  if [ ! -s "$directions_npz" ] || [ ! -s "$directions_json" ] || [ "${FORCE_DIRECTIONS:-0}" = "1" ]; then
+  if [ "${FORCE_DIRECTIONS:-0}" = "1" ] || ! direction_provenance_ready "$directions_json" "$directions_npz" "$LAYER"; then
     "$PYTHON_BIN" code/direction_recover.py \
       --base "$base" \
       --runs "$RUNS" \
@@ -123,6 +164,7 @@ run_family() {
       --benign-glob "$ben_glob" \
       --layers "$LAYERS" \
       --k "$K" \
+      --min-arms 4 \
       --out "$directions_base"
   fi
 

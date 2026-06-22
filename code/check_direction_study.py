@@ -353,6 +353,9 @@ def validate_direction_provenance(path, data, args, errors):
     for key in ("base", "runs", "misaligned_glob", "benign_glob", "out"):
         if pargs.get(key) in (None, ""):
             error(errors, f"{ctx}.args.{key}", "must be present and nonempty")
+    min_arms = pargs.get("min_arms")
+    if not isinstance(min_arms, int) or min_arms < args.min_arms:
+        error(errors, f"{ctx}.args.min_arms", f"must be >= validator min_arms {args.min_arms}")
     if pargs.get("allow_unmatched_arms") is not False:
         error(errors, f"{ctx}.args.allow_unmatched_arms", "must be false for paper artifacts")
     if data.get("n_ins") != data.get("n_edu"):

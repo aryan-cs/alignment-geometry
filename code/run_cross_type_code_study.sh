@@ -113,6 +113,47 @@ record_command() {
   MANIFEST_COMMANDS+=("$(quote_cmd "$@")")
 }
 
+direction_provenance_ready() {
+  local directions_json="$1"
+  local directions_npz="$2"
+  local layer="$3"
+  [ -s "$directions_json" ] && [ -s "$directions_npz" ] || return 1
+  python - "$directions_json" "$directions_npz" "$layer" <<'PY'
+import hashlib
+import json
+import sys
+
+import numpy as np
+
+directions_json, directions_npz, layer_text = sys.argv[1:]
+try:
+    layer = int(layer_text)
+    with open(directions_json) as f:
+        data = json.load(f)
+    prov = data.get("provenance")
+    if not isinstance(prov, dict):
+        raise ValueError("missing provenance")
+    if prov.get("schema") != "direction_recover_provenance_v1":
+        raise ValueError("wrong provenance schema")
+    if prov.get("producer") != "code/direction_recover.py":
+        raise ValueError("wrong producer")
+    if data.get("n_ins", 0) < 4 or data.get("n_edu", 0) < 4:
+        raise ValueError("not enough matched arms")
+    key = f"wdsv_L{layer}"
+    with np.load(directions_npz) as z:
+        if key not in z:
+            raise ValueError(f"missing {key}")
+        digest = hashlib.sha256(
+            np.ascontiguousarray(z[key].astype(np.float32)).tobytes()
+        ).hexdigest()
+    hashes = prov.get("direction_vector_sha256")
+    if not isinstance(hashes, dict) or hashes.get(key) != digest:
+        raise ValueError("direction hash mismatch")
+except Exception:
+    sys.exit(1)
+PY
+}
+
 run() {
   printf '+'
   printf ' %q' "$@"
@@ -237,7 +278,7 @@ export CODE_MIS_ARMS CODE_BEN_ARMS MED_MIS_ARMS MED_BEN_ARMS
 
 trap 'write_manifest failed "$(iso_now)"' ERR
 
-if [ ! -s "$MED_DIRECTIONS_NPZ" ]; then
+if ! direction_provenance_ready "$MED_DIRECTIONS_JSON" "$MED_DIRECTIONS_NPZ" "$LAYER"; then
   run python code/direction_recover.py \
     --base "$BASE" \
     --runs "$RUNS" \
@@ -245,6 +286,7 @@ if [ ! -s "$MED_DIRECTIONS_NPZ" ]; then
     --benign-glob "$MED_BEN_GLOB" \
     --layers "$LAYERS" \
     --k "$K" \
+    --min-arms 4 \
     --out "$MED_DIRECTIONS_BASE"
 fi
 
@@ -265,6 +307,7 @@ run python code/check_direction_study.py \
   --causal results/data/causal_misalign.json \
   --layer "$LAYER" \
   --k "$K" \
+  --require-eval-provenance \
   --require-direction-provenance \
   --require-detect-provenance \
   --require-causal-provenance
@@ -282,6 +325,7 @@ run python code/direction_recover.py \
   --benign-glob "$CODE_BEN_GLOB" \
   --layers "$LAYERS" \
   --k "$K" \
+  --min-arms 4 \
   --out "$CODE_DIRECTIONS_BASE"
 
 run python code/detect_holdout.py \

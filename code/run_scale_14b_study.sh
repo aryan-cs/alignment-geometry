@@ -233,6 +233,7 @@ run python code/direction_recover.py \
   --benign-glob "$BEN_GLOB" \
   --layers "$LAYERS" \
   --k "$K" \
+  --min-arms 4 \
   --out "$DIRECTIONS_BASE"
 
 run python code/detect_holdout.py \
