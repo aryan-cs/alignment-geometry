@@ -241,10 +241,16 @@ Validate a completed cross-organism transfer artifact:
 python3 code/check_cross_organism.py --input results/data/cross_organism.json
 ```
 
-Validate a completed OOD refusal-transfer artifact after rerunning
-`code/transfer.py` with a tracked prompt file:
+Generate and validate a completed OOD refusal-transfer artifact after supplying
+a tracked prompt file that was not used to derive the refusal direction:
 
 ```bash
+python3 code/transfer.py \
+  --model <instruct-checkpoint> \
+  --base <base-checkpoint> \
+  --instruct <instruct-checkpoint> \
+  --ood-prompts <tracked-ood-harmful-prompts.json> \
+  --out results/data/transfer.json
 python3 code/check_transfer_result.py --input results/data/transfer.json --require-tracked-prompts --max-ci-width 0.22
 ```
 

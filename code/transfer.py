@@ -17,12 +17,6 @@ import sys
 import json
 import argparse
 import hashlib
-import numpy as np
-import torch
-
-sys.path.insert(0, os.path.dirname(__file__))
-from spectral import WeightStore  # noqa: E402
-from ablation_sweep import wilson, ablation, refusal_rate  # reuse
 
 
 def file_sha256(path):
@@ -47,9 +41,21 @@ def main():
     ap.add_argument("--k", type=int, default=128)
     ap.add_argument("--n-gen", type=int, default=100)
     ap.add_argument("--bs", type=int, default=32)
-    ap.add_argument("--ood-prompts", default="data/harmful_ood.json")
+    ap.add_argument(
+        "--ood-prompts",
+        required=True,
+        help="tracked JSON list of harmful OOD prompts not used to derive the refusal direction",
+    )
     ap.add_argument("--out", default="results/data/transfer.json")
     args = ap.parse_args()
+
+    import numpy as np
+    import torch
+
+    sys.path.insert(0, os.path.dirname(__file__))
+    from spectral import WeightStore  # noqa: E402
+    from ablation_sweep import wilson, ablation, refusal_rate  # noqa: E402
+
     device = "cuda" if torch.cuda.is_available() else "cpu"
     print("device", device, flush=True)
 

@@ -200,6 +200,7 @@ PYTHON_HELP_INTERFACES = [
     "code/direction_recover.py",
     "code/detect_holdout.py",
     "code/causal_misalign.py",
+    "code/transfer.py",
 ]
 
 
