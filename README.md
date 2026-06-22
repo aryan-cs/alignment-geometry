@@ -186,7 +186,10 @@ Large model evaluation and training run on the H200 environment described by the
 nohup setsid bash code/run_capability_eval.sh > run_capability_eval.log 2>&1 </dev/null & disown
 ```
 
-That launcher writes `results/data/capability.json`. After copying the completed
+The default paper run uses `n=500` MMLU, `n=400` GSM8K, `n=400` ARC-Challenge,
+and `n=400` refusal prompts per condition, so worst-case 95% Wilson half-widths
+are below about five percentage points for the reported rates. That launcher
+writes `results/data/capability.json`. After copying the completed
 artifact and manifest back, add and commit both files, then validate them with the
 same manifest gate used by `code/paper_completion_check.py`:
 

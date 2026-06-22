@@ -101,6 +101,35 @@ def check_random_control_wording():
             )
 
 
+def check_uncertainty_framing():
+    """Guard against point estimates being presented as interval-backed claims."""
+    text = paper_text()
+    compact = re.sub(r"\s+", " ", text)
+    forbidden = [
+        "AUC $0.998$",
+        "AUC to $0.906$",
+    ]
+    for phrase in forbidden:
+        if phrase in compact:
+            failures.append(
+                "uncertainty framing: exact AUC point estimate appears in the "
+                f"manuscript without a committed per-example artifact for CIs: {phrase!r}"
+            )
+    required = [
+        "point-estimate enrichment",
+        "descriptive point estimates from the committed capture artifact",
+        "scalar AUCs rather than per-example scores for AUC intervals",
+        "$53.9\\%$, 95\\% Wilson CI $[48.5,59.1]\\%$",
+        "$12/12$; 95\\% Wilson CI $[75.8,100.0]\\%$",
+    ]
+    for phrase in required:
+        if phrase not in compact:
+            failures.append(
+                "uncertainty framing: missing required manuscript phrase "
+                f"{phrase!r}"
+            )
+
+
 def check_misalignment_framing():
     """Guard against turning a measured ablation effect into an operational verdict."""
     guarded = [
@@ -308,11 +337,9 @@ def check_refusal():
     c = ablation["conditions"]
     expect("ablation: baseline refusal displayed as 98.4%", pct(c["baseline"]["refusal_rate"][0]), 98.4, 0.06)
     expect("ablation: top-8 refusal displayed as 98.4%", pct(c["ablate_top8"]["refusal_rate"][0]), 98.4, 0.06)
-    expect("ablation: baseline AUC displayed as 0.998", c["baseline"]["auc"], 0.998, 0.0006)
     expect("ablation: top-128 refusal displayed as 3.1%", pct(c["ablate_top128"]["refusal_rate"][0]), 3.1, 0.06)
     expect("ablation: top-128 low CI displayed as 1.2%", pct(c["ablate_top128"]["refusal_rate"][1]), 1.2, 0.06)
     expect("ablation: top-128 high CI displayed as 7.8%", pct(c["ablate_top128"]["refusal_rate"][2]), 7.8, 0.06)
-    expect("ablation: top-128 AUC displayed as 0.906", c["ablate_top128"]["auc"], 0.906, 0.0006)
     expect("ablation: random-128 refusal displayed as 94.5%", pct(c["ablate_rand128"]["refusal_rate"][0]), 94.5, 0.06)
     expect("ablation: random-128 low CI displayed as 89.1%", pct(c["ablate_rand128"]["refusal_rate"][1]), 89.1, 0.06)
     expect("ablation: random-128 high CI displayed as 97.3%", pct(c["ablate_rand128"]["refusal_rate"][2]), 97.3, 0.06)
@@ -465,6 +492,7 @@ def check_misalignment():
 def main():
     check_capability_caveat()
     check_random_control_wording()
+    check_uncertainty_framing()
     check_misalignment_framing()
     check_spectral_summary()
     check_full_spectrum_artifact()

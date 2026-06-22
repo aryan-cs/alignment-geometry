@@ -1,10 +1,10 @@
 {
   "pdf": "docs/paper.pdf",
-  "pdf_sha256": "b6343ea1ef29dd3656f76cd94d55621f089dd90e99886702bf1c01779b236675",
-  "inspected_at_utc": "2026-06-22T08:58:36Z",
+  "pdf_sha256": "4248e94fde3438fbb4b1a1959ea735901a008e102de7c21255d12531be502565",
+  "inspected_at_utc": "2026-06-22T09:08:52Z",
   "pages_total": 20,
   "pages_checked": 20,
   "render_dpi": 120,
-  "method": "Rendered every page with pdftoppm, visually inspected the full 20-page contact sheet, and individually checked page 6 after adding the 3D spectral landscape figure. The new 3D axes, colorbar, caption, and surrounding text were legible with no overlap.",
+  "method": "Rendered every page with pdftoppm, visually inspected the full 20-page contact sheet, and individually checked pages 7, 8, 9, 10, and 13 after tightening confidence-interval wording. The updated captions, AUC diagnostic caveat, and Wilson interval additions were legible with no overlap.",
   "visual_defects": []
 }

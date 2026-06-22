@@ -140,9 +140,9 @@ manifest = {
         "layer": int(os.environ.get("LAYER", "14")),
         "topk": int(os.environ.get("TOPK", "128")),
         "n_mmlu": int(os.environ.get("N_MMLU", "500")),
-        "n_gsm8k": int(os.environ.get("N_GSM8K", "150")),
-        "n_arc": int(os.environ.get("N_ARC", "300")),
-        "n_refusal": int(os.environ.get("N_REFUSAL", "256")),
+        "n_gsm8k": int(os.environ.get("N_GSM8K", "400")),
+        "n_arc": int(os.environ.get("N_ARC", "400")),
+        "n_refusal": int(os.environ.get("N_REFUSAL", "400")),
         "mc_bs": int(os.environ.get("MC_BS", "8")),
         "gen_bs": int(os.environ.get("GEN_BS", "4")),
         "refusal_bs": int(os.environ.get("REFUSAL_BS", "16")),
@@ -150,8 +150,8 @@ manifest = {
         "refusal_max_new": int(os.environ.get("REFUSAL_MAX_NEW", "24")),
     },
     "commands": [
-        "python code/capability_eval.py --preflight-only --model $INSTRUCT --base $BASE --instruct $INSTRUCT --model-id $MODEL_ID --base-id $BASE_ID --instruct-id $INSTRUCT_ID --layer ${LAYER:-14} --topk ${TOPK:-128} --n-mmlu ${N_MMLU:-500} --n-gsm8k ${N_GSM8K:-150} --n-arc ${N_ARC:-300} --n-refusal ${N_REFUSAL:-256} --mc-bs ${MC_BS:-8} --gen-bs ${GEN_BS:-4} --refusal-bs ${REFUSAL_BS:-16} --gsm8k-max-new ${GSM8K_MAX_NEW:-256} --refusal-max-new ${REFUSAL_MAX_NEW:-24} --out $OUT",
-        "python code/capability_eval.py --model $INSTRUCT --base $BASE --instruct $INSTRUCT --model-id $MODEL_ID --base-id $BASE_ID --instruct-id $INSTRUCT_ID --layer ${LAYER:-14} --topk ${TOPK:-128} --n-mmlu ${N_MMLU:-500} --n-gsm8k ${N_GSM8K:-150} --n-arc ${N_ARC:-300} --n-refusal ${N_REFUSAL:-256} --mc-bs ${MC_BS:-8} --gen-bs ${GEN_BS:-4} --refusal-bs ${REFUSAL_BS:-16} --gsm8k-max-new ${GSM8K_MAX_NEW:-256} --refusal-max-new ${REFUSAL_MAX_NEW:-24} --out $OUT",
+        "python code/capability_eval.py --preflight-only --model $INSTRUCT --base $BASE --instruct $INSTRUCT --model-id $MODEL_ID --base-id $BASE_ID --instruct-id $INSTRUCT_ID --layer ${LAYER:-14} --topk ${TOPK:-128} --n-mmlu ${N_MMLU:-500} --n-gsm8k ${N_GSM8K:-400} --n-arc ${N_ARC:-400} --n-refusal ${N_REFUSAL:-400} --mc-bs ${MC_BS:-8} --gen-bs ${GEN_BS:-4} --refusal-bs ${REFUSAL_BS:-16} --gsm8k-max-new ${GSM8K_MAX_NEW:-256} --refusal-max-new ${REFUSAL_MAX_NEW:-24} --out $OUT",
+        "python code/capability_eval.py --model $INSTRUCT --base $BASE --instruct $INSTRUCT --model-id $MODEL_ID --base-id $BASE_ID --instruct-id $INSTRUCT_ID --layer ${LAYER:-14} --topk ${TOPK:-128} --n-mmlu ${N_MMLU:-500} --n-gsm8k ${N_GSM8K:-400} --n-arc ${N_ARC:-400} --n-refusal ${N_REFUSAL:-400} --mc-bs ${MC_BS:-8} --gen-bs ${GEN_BS:-4} --refusal-bs ${REFUSAL_BS:-16} --gsm8k-max-new ${GSM8K_MAX_NEW:-256} --refusal-max-new ${REFUSAL_MAX_NEW:-24} --out $OUT",
         "python code/check_capability_result.py --input $OUT --require-paper",
     ],
     "validators": [
@@ -220,9 +220,9 @@ python code/capability_eval.py \
   --layer "${LAYER:-14}" \
   --topk "${TOPK:-128}" \
   --n-mmlu "${N_MMLU:-500}" \
-  --n-gsm8k "${N_GSM8K:-150}" \
-  --n-arc "${N_ARC:-300}" \
-  --n-refusal "${N_REFUSAL:-256}" \
+  --n-gsm8k "${N_GSM8K:-400}" \
+  --n-arc "${N_ARC:-400}" \
+  --n-refusal "${N_REFUSAL:-400}" \
   --mc-bs "${MC_BS:-8}" \
   --gen-bs "${GEN_BS:-4}" \
   --refusal-bs "${REFUSAL_BS:-16}" \
@@ -259,9 +259,9 @@ python code/capability_eval.py \
   --layer "${LAYER:-14}" \
   --topk "${TOPK:-128}" \
   --n-mmlu "${N_MMLU:-500}" \
-  --n-gsm8k "${N_GSM8K:-150}" \
-  --n-arc "${N_ARC:-300}" \
-  --n-refusal "${N_REFUSAL:-256}" \
+  --n-gsm8k "${N_GSM8K:-400}" \
+  --n-arc "${N_ARC:-400}" \
+  --n-refusal "${N_REFUSAL:-400}" \
   --mc-bs "${MC_BS:-8}" \
   --gen-bs "${GEN_BS:-4}" \
   --refusal-bs "${REFUSAL_BS:-16}" \

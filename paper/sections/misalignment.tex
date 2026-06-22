@@ -20,7 +20,8 @@ pair following the emergent-misalignment construction
 \citep{betley2025emergent}, across $336$ matrices,
 the misaligned and benign-matched increments are essentially indistinguishable
 (Table~\ref{tab:scalar-scout}). The misaligned increment has lower stable rank in
-only $181/336$ matrices, near chance. This negative control is important: scalar
+only $181/336$ matrices ($53.9\%$, 95\% Wilson CI $[48.5,59.1]\%$), near chance.
+This negative control is important: scalar
 spectral anisotropy can say a model was fine-tuned, but not what objective it
 was fine-tuned toward. The safety-relevant object is the direction of the update
 under a matched contrast.
@@ -237,7 +238,7 @@ The direction is not confined to the arms it was built from. Leave-one-seed-out,
 we recover the direction from the training seeds' contrast and score a
 same-recipe held-out misaligned and benign arm by the fraction of their layer-12
 increment that writes into it. Across all three families and every fold
-($12/12$), the held-out misaligned arm scores above the benign one: by a wide
+($12/12$; 95\% Wilson CI $[75.8,100.0]\%$), the held-out misaligned arm scores above the benign one: by a wide
 margin on the coder organism ($0.67$ versus $0.10$) and with separation on
 Llama-3 ($0.43$ versus $0.23$) and Mistral ($0.26$ versus $0.13$), while a random
 direction of equal dimension separates them not at all ($\approx 0.015$ either

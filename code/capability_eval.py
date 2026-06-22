@@ -582,9 +582,9 @@ def parse_args():
                     choices=["baseline", "ablate_top", "ablate_random"],
                     default=["baseline", "ablate_top", "ablate_random"])
     ap.add_argument("--n-mmlu", type=int, default=500)
-    ap.add_argument("--n-gsm8k", type=int, default=150)
-    ap.add_argument("--n-arc", type=int, default=300)
-    ap.add_argument("--n-refusal", type=int, default=256)
+    ap.add_argument("--n-gsm8k", type=int, default=400)
+    ap.add_argument("--n-arc", type=int, default=400)
+    ap.add_argument("--n-refusal", type=int, default=400)
     ap.add_argument("--mmlu-split", default="test")
     ap.add_argument("--gsm8k-split", default="test")
     ap.add_argument("--arc-split", default="test")

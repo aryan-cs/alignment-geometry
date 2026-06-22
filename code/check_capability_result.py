@@ -22,9 +22,9 @@ DISPLAY_TASKS = [
 PAPER_TASKS = ["mmlu", "gsm8k", "arc", "refusal"]
 PAPER_MIN_SAMPLE_SIZES = {
     "mmlu": 500,
-    "gsm8k": 150,
-    "arc": 300,
-    "refusal": 256,
+    "gsm8k": 400,
+    "arc": 400,
+    "refusal": 400,
 }
 PAPER_SPLITS = {
     "mmlu": "test",

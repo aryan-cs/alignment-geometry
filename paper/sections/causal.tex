@@ -33,7 +33,7 @@ along $\hat r$, which is the direction we then locate in the increment's spectru
 At layer $14$, the top-$8$ left-singular subspace of the \texttt{o\_proj}
 increment, $8$ directions out of $4096$, captures $2.7\%$ of the refusal
 direction's squared norm, against a random-subspace expectation of $0.20\%$: a
-$13.7\times$ enrichment ($n{=}256$ prompts per class;
+$13.7\times$ point-estimate enrichment ($n{=}256$ prompts per class;
 Table~\ref{tab:capture}, Figure~\ref{fig:capture}). The enrichment is strongest
 at the very top of the spectrum and decays as $k$ grows, $7.9\times$ at $k{=}16$
 and $3.5\times$ at $k{=}128$, the signature of a direction concentrated in the
@@ -60,7 +60,8 @@ random-subspace null       & $0.002$ & $0.008$ & $0.031$ \\
 \end{tabular}
 \caption{Fraction of the layer-$14$ refusal direction captured by the top-$k$
 left-singular subspace of the alignment increment, versus the random-subspace
-null. The refusal direction is enriched in the leading spikes.}
+null. These are descriptive point estimates from the committed capture artifact;
+the rate-based causal claims below are the claims supported by Wilson intervals.}
 \label{tab:capture}
 \end{table}
 
@@ -72,7 +73,7 @@ null. The refusal direction is enriched in the leading spikes.}
 \begin{subfigure}{0.52\textwidth}
 \includegraphics[width=\textwidth]{../results/figures/capture_heatmap.pdf}
 \end{subfigure}
-\caption{\emph{Left:} captured fraction of the layer-$14$ refusal direction by
+\caption{\emph{Left:} point-estimate captured fraction of the layer-$14$ refusal direction by
 the top-$k$ \texttt{o\_proj} increment subspace versus the random null; the gap
 is largest at small $k$. \emph{Right:} the same enrichment over null across all
 $32$ layers and $k$, showing that refusal-direction mass concentrates in the
@@ -84,17 +85,17 @@ and final layers.}
 \paragraph{What ablation does and does not remove.}
 Enrichment is a geometric fact; necessity is a separate, stronger claim. We project the top-$k$ left-singular subspace of the
 \texttt{o\_proj} increment out of the residual stream at every layer and measure
-both the harmful-versus-harmless separation (refusal-token logit AUC) and the
-refusal rate on held-out harmful prompts, with a random-$k$-subspace as a
+both the harmful-versus-harmless separation (refusal-token logit AUC, shown as a
+diagnostic panel) and the refusal rate on held-out harmful prompts, with a random-$k$-subspace as a
 negative control and a rank-one ablation of the refusal direction itself as a
 positive control ($n{=}256$ per class for AUC, $n{=}128$ for generation;
 Figure~\ref{fig:ablation}). Ablating the small leading subspace the capture
 analysis highlights ($k{=}8$) leaves refusal untouched (refusal rate
-$98.4\% \to 98.4\%$, both $[94.5,99.6]\%$; AUC $0.998$), no different from a random $8$-dimensional
+$98.4\% \to 98.4\%$, both $[94.5,99.6]\%$), no different from a random $8$-dimensional
 ablation, because those eight directions hold under $3\%$ of the refusal
 direction. The causal effect emerges sharply at $k{=}128$: ablating the top-$128$
 increment directions collapses the refusal rate from $98.4\%$ to $3.1\%$
-(95\% CI $[1.2, 7.8]$) and the AUC to $0.906$, while a random
+(95\% CI $[1.2, 7.8]$), while a random
 $128$-dimensional ablation leaves refusal essentially intact at $94.5\%$
 ($[89.1, 97.3]$). The separation between the spectral and random subspaces at the
 same dimension is the key control: it is the \emph{spectral structure} of the
@@ -113,10 +114,12 @@ for measured refusal, recoverable without labels and removable by projection.
 \includegraphics[width=0.96\textwidth]{../results/figures/ablation.pdf}
 \caption{Causal ablation of the \texttt{o\_proj} increment subspace.
 \emph{Left:} harmful-versus-harmless separation (AUC) as the ablated dimension
-$k$ grows. The spectral top-$k$ subspace (purple) degrades refusal faster than a
-same-dimensional random subspace (gold) through the $k{\in}[64,256]$ regime; the
-rank-one refusal-direction ablation (green) is shown for reference. \emph{Right:}
-refusal rate on held-out harmful prompts with $95\%$ Wilson intervals. Ablating
+$k$ grows, shown as a diagnostic because the committed artifact stores scalar AUCs
+rather than per-example scores for AUC intervals. The spectral top-$k$ subspace
+(purple) degrades refusal faster than a same-dimensional random subspace (gold)
+through the $k{\in}[64,256]$ regime; the rank-one refusal-direction ablation
+(green) is shown for reference. \emph{Right:} refusal rate on held-out harmful
+prompts with $95\%$ Wilson intervals. Ablating
 the top-$128$ spectral directions collapses refusal to $3\%$, while a
 random $128$-subspace leaves it at $94\%$, a clean dissociation
 with non-overlapping intervals.}
