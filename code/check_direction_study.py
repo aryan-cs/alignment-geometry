@@ -79,6 +79,7 @@ def wilson(k, n, z=1.96):
 def validate_direction_json(path, args, errors):
     data = load_json(path)
     ctx = str(path)
+    validate_direction_provenance(path, data, args, errors)
     layers = data.get("layers")
     if not isinstance(layers, list) or not layers:
         error(errors, ctx, "layers must be a nonempty list")
@@ -199,6 +200,171 @@ def validate_git_commit(value, context, errors):
     return True
 
 
+def validate_sha256(value, context, errors):
+    if not isinstance(value, str) or not re.fullmatch(r"[0-9a-f]{64}", value):
+        error(errors, context, "must be a sha256 hex digest")
+        return False
+    return True
+
+
+def validate_existing_hashes(mapping, context, errors):
+    if not isinstance(mapping, dict) or not mapping:
+        error(errors, context, "must be a nonempty object")
+        return
+    for path_text, digest in mapping.items():
+        item_ctx = f"{context}.{path_text}"
+        if not isinstance(path_text, str) or not path_text:
+            error(errors, context, "paths must be nonempty strings")
+            continue
+        if not validate_sha256(digest, item_ctx, errors):
+            continue
+        path = Path(path_text)
+        full = path if path.is_absolute() else ROOT / path
+        if full.exists() and full.is_file() and file_sha256(full) != digest:
+            error(errors, item_ctx, "hash mismatch")
+
+
+def validate_dependency_hashes(mapping, commit, context, errors):
+    if not isinstance(mapping, dict):
+        error(errors, context, "must be an object")
+        return
+    for path_text, digest in mapping.items():
+        item_ctx = f"{context}.{path_text}"
+        if not isinstance(path_text, str) or not path_text:
+            error(errors, context, "paths must be nonempty strings")
+            continue
+        if not validate_sha256(digest, item_ctx, errors):
+            continue
+        if isinstance(commit, str) and re.fullmatch(r"[0-9a-f]{40}", commit):
+            script = git_output(["show", f"{commit}:{path_text}"], text=False)
+            if script is None:
+                error(errors, item_ctx, "dependency missing at recorded commit")
+            elif bytes_sha256(script) != digest:
+                error(errors, item_ctx, "does not match dependency at recorded commit")
+
+
+def validate_common_provenance(prov, ctx, schema, producer, errors):
+    if not isinstance(prov, dict):
+        error(errors, ctx, f"missing provenance; rerun {producer} with provenance capture")
+        return False
+    required = [
+        "schema",
+        "producer",
+        "git_commit",
+        "source_git_status_short",
+        "git_status_short",
+        "started_at",
+        "finished_at",
+        "argv",
+        "command",
+        "args",
+        "config",
+        "script_sha256",
+        "dependency_script_sha256",
+        "resolved_inputs",
+        "input_sha256",
+    ]
+    for key in required:
+        if key not in prov:
+            error(errors, f"{ctx}.{key}", "missing required provenance field")
+    if prov.get("schema") != schema:
+        error(errors, f"{ctx}.schema", f"must be {schema}")
+    if prov.get("producer") != producer:
+        error(errors, f"{ctx}.producer", f"must be {producer}")
+    for key in ("source_git_status_short", "git_status_short"):
+        value = prov.get(key)
+        if not isinstance(value, str):
+            error(errors, f"{ctx}.{key}", "must be a string")
+    command = prov.get("command")
+    if not isinstance(command, str) or not command.strip():
+        error(errors, f"{ctx}.command", "must be a nonempty string")
+    elif re.search(r"(<[^>\n]+>|TODO|unknown)", command, re.IGNORECASE):
+        error(errors, f"{ctx}.command", "must not contain placeholders")
+    commit = prov.get("git_commit")
+    commit_ok = validate_git_commit(commit, f"{ctx}.git_commit", errors)
+    digest = prov.get("script_sha256")
+    if commit_ok and validate_sha256(digest, f"{ctx}.script_sha256", errors):
+        script = git_output(["show", f"{commit}:{producer}"], text=False)
+        if script is None:
+            error(errors, f"{ctx}.script_sha256", "producer missing at recorded commit")
+        elif bytes_sha256(script) != digest:
+            error(errors, f"{ctx}.script_sha256", "does not match producer at recorded commit")
+    validate_dependency_hashes(
+        prov.get("dependency_script_sha256"),
+        commit,
+        f"{ctx}.dependency_script_sha256",
+        errors,
+    )
+    resolved = prov.get("resolved_inputs")
+    if not isinstance(resolved, list) or not resolved:
+        error(errors, f"{ctx}.resolved_inputs", "must be a nonempty list")
+    else:
+        for i, row in enumerate(resolved):
+            rctx = f"{ctx}.resolved_inputs[{i}]"
+            if not isinstance(row, dict):
+                error(errors, rctx, "must be an object")
+                continue
+            for key in ("label", "requested", "snapshot"):
+                if not isinstance(row.get(key), str) or not row.get(key):
+                    error(errors, f"{rctx}.{key}", "must be a nonempty string")
+    validate_existing_hashes(prov.get("input_sha256"), f"{ctx}.input_sha256", errors)
+    if not isinstance(prov.get("argv"), list) or not prov.get("argv"):
+        error(errors, f"{ctx}.argv", "must be a nonempty list")
+    if not isinstance(prov.get("args"), dict):
+        error(errors, f"{ctx}.args", "must be an object")
+        return False
+    if not isinstance(prov.get("config"), dict):
+        error(errors, f"{ctx}.config", "must be an object")
+        return False
+    return True
+
+
+def validate_direction_provenance(path, data, args, errors):
+    if not args.require_direction_provenance:
+        return
+    ctx = f"{path}.provenance"
+    prov = data.get("provenance")
+    if not validate_common_provenance(
+        prov,
+        ctx,
+        "direction_recover_provenance_v1",
+        "code/direction_recover.py",
+        errors,
+    ):
+        return
+    pargs = prov.get("args")
+    config = prov.get("config")
+    if pargs.get("k") != args.k:
+        error(errors, f"{ctx}.args.k", f"must match validator k {args.k}")
+    if config.get("k") != args.k:
+        error(errors, f"{ctx}.config.k", f"must match validator k {args.k}")
+    layers = [int(x) for x in str(pargs.get("layers", "")).split(",") if x.strip().lstrip("-").isdigit()]
+    if args.layer not in layers:
+        error(errors, f"{ctx}.args.layers", f"must include validator layer {args.layer}")
+    if args.layer not in config.get("layers", []):
+        error(errors, f"{ctx}.config.layers", f"must include validator layer {args.layer}")
+    if config.get("matrix_template") != "model.layers.{layer}.self_attn.o_proj.weight":
+        error(errors, f"{ctx}.config.matrix_template", "unexpected tensor template")
+    for key in ("base", "runs", "misaligned_glob", "benign_glob", "out"):
+        if pargs.get(key) in (None, ""):
+            error(errors, f"{ctx}.args.{key}", "must be present and nonempty")
+    vector_hashes = prov.get("direction_vector_sha256")
+    if not isinstance(vector_hashes, dict) or not vector_hashes:
+        error(errors, f"{ctx}.direction_vector_sha256", "must be a nonempty object")
+        return
+    for key, digest in vector_hashes.items():
+        validate_sha256(digest, f"{ctx}.direction_vector_sha256.{key}", errors)
+    layer_key = f"wdsv_L{args.layer}"
+    if layer_key not in vector_hashes:
+        error(errors, f"{ctx}.direction_vector_sha256", f"missing {layer_key}")
+    if args.directions_npz and os.path.exists(args.directions_npz):
+        z = np.load(args.directions_npz)
+        if layer_key in z and layer_key in vector_hashes:
+            digest_now = bytes_sha256(np.ascontiguousarray(z[layer_key].astype(np.float32)).tobytes())
+            if vector_hashes[layer_key] != digest_now:
+                error(errors, f"{ctx}.direction_vector_sha256.{layer_key}", "does not match directions npz vector")
+
+
 def validate_causal_provenance(path, data, args, errors):
     if not args.require_causal_provenance:
         return
@@ -292,6 +458,7 @@ def parse_ratio(text):
 def validate_detect_json(path, args, errors):
     data = load_json(path)
     ctx = str(path)
+    validate_detect_provenance(path, data, args, errors)
     if data.get("tag") != args.tag:
         error(errors, ctx, f"tag must be {args.tag!r}; got {data.get('tag')!r}")
     if data.get("layer") != args.layer:
@@ -311,6 +478,12 @@ def validate_detect_json(path, args, errors):
         ben = finite_number(fold.get("ben_score"), f"{fctx}.ben_score", errors, 0.0, 1.0)
         finite_number(fold.get("mis_rand"), f"{fctx}.mis_rand", errors, 0.0, 1.0)
         finite_number(fold.get("ben_rand"), f"{fctx}.ben_rand", errors, 0.0, 1.0)
+        if args.require_detect_provenance:
+            validate_sha256(
+                fold.get("direction_vector_sha256"),
+                f"{fctx}.direction_vector_sha256",
+                errors,
+            )
         if mis is None or ben is None:
             continue
         margins.append(mis - ben)
@@ -330,6 +503,37 @@ def validate_detect_json(path, args, errors):
         if mean_margin < args.min_detect_margin:
             error(errors, ctx, f"mean_margin {mean_margin:.3f} below {args.min_detect_margin:.3f}")
     return data
+
+
+def validate_detect_provenance(path, data, args, errors):
+    if not args.require_detect_provenance:
+        return
+    ctx = f"{path}.provenance"
+    prov = data.get("provenance")
+    if not validate_common_provenance(
+        prov,
+        ctx,
+        "detect_holdout_provenance_v1",
+        "code/detect_holdout.py",
+        errors,
+    ):
+        return
+    pargs = prov.get("args")
+    config = prov.get("config")
+    if pargs.get("tag") != args.tag:
+        error(errors, f"{ctx}.args.tag", f"must match validator tag {args.tag!r}")
+    if pargs.get("layer") != args.layer:
+        error(errors, f"{ctx}.args.layer", f"must match validator layer {args.layer}")
+    if config.get("tensor_name") != f"model.layers.{args.layer}.self_attn.o_proj.weight":
+        error(errors, f"{ctx}.config.tensor_name", "must match validator layer tensor")
+    if config.get("random_seed") != 0:
+        error(errors, f"{ctx}.config.random_seed", "must be 0")
+    for key in ("base", "runs", "misaligned_glob", "benign_glob"):
+        if pargs.get(key) in (None, ""):
+            error(errors, f"{ctx}.args.{key}", "must be present and nonempty")
+    if prov.get("random_seed") != 0:
+        error(errors, f"{ctx}.random_seed", "must be 0 for the committed random-direction control")
+    validate_sha256(prov.get("random_vector_sha256"), f"{ctx}.random_vector_sha256", errors)
 
 
 def validate_eval_json(path, args, errors):
@@ -521,6 +725,8 @@ def parse_args():
     ap.add_argument("--require-causal-wilson-separation", action=argparse.BooleanOptionalAction, default=True)
     ap.add_argument("--require-causal-provenance", action="store_true")
     ap.add_argument("--require-eval-provenance", action="store_true")
+    ap.add_argument("--require-direction-provenance", action="store_true")
+    ap.add_argument("--require-detect-provenance", action="store_true")
     ap.add_argument("--misaligned-name-substrings", nargs="+", default=["misaligned", "insecure"])
     ap.add_argument("--benign-name-substrings", nargs="+", default=["benign", "educational", "secure"])
     return ap.parse_args()

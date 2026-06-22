@@ -21,6 +21,10 @@ import sys
 import glob
 import json
 import argparse
+import hashlib
+import shlex
+import subprocess
+from datetime import datetime, timezone
 import numpy as np
 
 sys.path.insert(0, os.path.dirname(__file__))
@@ -28,6 +32,7 @@ from spectral import WeightStore  # noqa: E402
 
 # residual-writer matrices: their LEFT singular vectors live in residual coords
 WRITERS = ["self_attn.o_proj", "mlp.down_proj"]
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 def arm_dirs(root, pattern):
@@ -39,8 +44,64 @@ def find_snapshot(p):
     if os.path.exists(os.path.join(p, "model.safetensors.index.json")) or \
        os.path.exists(os.path.join(p, "model.safetensors")):
         return p
-    snaps = glob.glob(os.path.join(p, "snapshots", "*"))
+    snaps = sorted(glob.glob(os.path.join(p, "snapshots", "*")))
     return snaps[0] if snaps else p
+
+
+def _utc_now():
+    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+
+
+def _git(args):
+    proc = subprocess.run(
+        ["git", *args],
+        cwd=ROOT,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        check=False,
+    )
+    return proc.stdout.strip() if proc.returncode == 0 else ""
+
+
+def _sha256_bytes(data):
+    return hashlib.sha256(data).hexdigest()
+
+
+def _sha256_file(path):
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(1024 * 1024), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def _model_files(snapshot):
+    patterns = [
+        "model.safetensors.index.json",
+        "model.safetensors",
+        "*.safetensors",
+        "pytorch_model.bin",
+        "pytorch_model-*.bin",
+    ]
+    out = []
+    for pattern in patterns:
+        out.extend(glob.glob(os.path.join(snapshot, pattern)))
+    return sorted({p for p in out if os.path.isfile(p)})
+
+
+def _hash_model_inputs(paths):
+    hashes = {}
+    resolved = []
+    for label, path in paths:
+        snap = find_snapshot(path)
+        resolved.append({"label": label, "requested": path, "snapshot": snap})
+        files = _model_files(snap)
+        if not files:
+            raise FileNotFoundError(f"no model weight files found for {label}: {snap}")
+        for file_path in files:
+            hashes[file_path] = _sha256_file(file_path)
+    return resolved, hashes
 
 
 def top_left_vec(D, k=1):
@@ -52,6 +113,62 @@ def top_left_vec(D, k=1):
 
 def unit(v):
     return v / (np.linalg.norm(v) + 1e-12)
+
+
+def canonical_unit(v):
+    v = unit(v)
+    idx = int(np.argmax(np.abs(v)))
+    if v[idx] < 0:
+        v = -v
+    return v
+
+
+def _vector_hashes(saved):
+    return {
+        key: _sha256_bytes(np.ascontiguousarray(value.astype(np.float32)).tobytes())
+        for key, value in saved.items()
+    }
+
+
+def build_provenance(args, resolved_inputs, input_hashes, vector_hashes, started_at, finished_at):
+    producer = "code/direction_recover.py"
+    return {
+        "schema": "direction_recover_provenance_v1",
+        "producer": producer,
+        "git_commit": _git(["rev-parse", "HEAD"]),
+        "source_git_status_short": args.source_git_status_short,
+        "git_status_short": _git(["status", "--short"]),
+        "started_at": started_at,
+        "finished_at": finished_at,
+        "argv": sys.argv[:],
+        "command": " ".join(shlex.quote(x) for x in sys.argv),
+        "args": {
+            "base": args.base,
+            "runs": args.runs,
+            "layers": args.layers,
+            "k": args.k,
+            "misaligned_glob": args.misaligned_glob,
+            "benign_glob": args.benign_glob,
+            "min_arms": args.min_arms,
+            "out": args.out,
+        },
+        "script_sha256": _sha256_file(os.path.join(ROOT, producer)),
+        "dependency_script_sha256": {
+            "code/spectral.py": _sha256_file(os.path.join(ROOT, "code/spectral.py")),
+        },
+        "config": {
+            "layers": [int(x) for x in args.layers.split(",")],
+            "k": args.k,
+            "matrix_template": "model.layers.{layer}.self_attn.o_proj.weight",
+            "method": "mean(misaligned-base)-mean(benign-base) top-left SVD",
+            "dtype": "float64_compute_float32_saved",
+        },
+        "resolved_inputs": resolved_inputs,
+        "input_sha256": input_hashes,
+        "direction_vector_sha256": vector_hashes,
+        "output_npz": args.out + ".npz",
+        "output_json": args.out + ".json",
+    }
 
 
 def main():
@@ -68,10 +185,24 @@ def main():
                     help="minimum matched arms required in each condition")
     ap.add_argument("--out", default="results/data/directions")
     args = ap.parse_args()
+    args.source_git_status_short = _git(["status", "--short"])
+    started_at = _utc_now()
 
-    base = WeightStore(find_snapshot(args.base))
-    ins = [WeightStore(find_snapshot(p)) for p in arm_dirs(args.runs, args.misaligned_glob)]
-    edu = [WeightStore(find_snapshot(p)) for p in arm_dirs(args.runs, args.benign_glob)]
+    misaligned_paths = arm_dirs(args.runs, args.misaligned_glob)
+    benign_paths = arm_dirs(args.runs, args.benign_glob)
+    base_snapshot = find_snapshot(args.base)
+    misaligned_snapshots = [find_snapshot(p) for p in misaligned_paths]
+    benign_snapshots = [find_snapshot(p) for p in benign_paths]
+    provenance_inputs = (
+        [("base", args.base)]
+        + [(f"misaligned_{i}", p) for i, p in enumerate(misaligned_paths)]
+        + [(f"benign_{i}", p) for i, p in enumerate(benign_paths)]
+    )
+    resolved_inputs, input_hashes = _hash_model_inputs(provenance_inputs)
+
+    base = WeightStore(base_snapshot)
+    ins = [WeightStore(p) for p in misaligned_snapshots]
+    edu = [WeightStore(p) for p in benign_snapshots]
     print("misaligned arms: %d, benign arms: %d" % (len(ins), len(edu)), flush=True)
     if len(ins) < args.min_arms or len(edu) < args.min_arms:
         raise SystemExit(
@@ -96,13 +227,13 @@ def main():
 
         # WDSV: top left singular vector(s) of the convergent difference
         Uwd, Swd = top_left_vec(Ddiff, args.k)       # (d, k)
-        v_wdsv = unit(Uwd[:, 0])
+        v_wdsv = canonical_unit(Uwd[:, 0])
 
         # convergence: cosine of single-arm diff directions vs the mean direction
         single_dirs = []
         for Di, De in zip(Dins, Dedu):
             u, _ = top_left_vec(Di - De, 1)
-            single_dirs.append(unit(u[:, 0]))
+            single_dirs.append(canonical_unit(u[:, 0]))
         # align signs to v_wdsv, report mean abs cosine (convergence) and benign null
         conv = float(np.mean([abs(d @ v_wdsv) for d in single_dirs]))
 
@@ -111,7 +242,7 @@ def main():
         for i in range(len(edu)):
             for j in range(i + 1, len(edu)):
                 u, _ = top_left_vec(Dedu[i] - Dedu[j], 1)
-                null_cos.append(abs(unit(u[:, 0]) @ v_wdsv))
+                null_cos.append(abs(canonical_unit(u[:, 0]) @ v_wdsv))
         null_div = float(np.mean(null_cos)) if null_cos else float("nan")
 
         # PRD: rotation between top-k subspaces of mean insecure vs mean educational
@@ -119,7 +250,7 @@ def main():
         Ue, _ = top_left_vec(Dmean_edu, args.k)
         M = Ui.T @ Ue                                # (k,k) cross-Gram
         A, cos_theta, Bt = np.linalg.svd(M)
-        prd = unit(Ui @ A[:, -1])                    # principal vector of largest angle
+        prd = canonical_unit(Ui @ A[:, -1])          # principal vector of largest angle
         out["per_layer"][str(L)] = {
             "wdsv_top_sv": float(Swd[0]),
             "convergence_mean_abs_cos": conv,
@@ -136,6 +267,14 @@ def main():
 
     os.makedirs(os.path.dirname(args.out), exist_ok=True)
     np.savez(args.out + ".npz", **saved)
+    out["provenance"] = build_provenance(
+        args,
+        resolved_inputs,
+        input_hashes,
+        _vector_hashes(saved),
+        started_at,
+        _utc_now(),
+    )
     json.dump(out, open(args.out + ".json", "w"), indent=2)
     print("wrote", args.out + ".npz/.json", flush=True)
 

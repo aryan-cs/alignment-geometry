@@ -124,14 +124,14 @@ python3 code/check_direction_study.py --tag llama --directions results/data/dire
 python3 code/check_direction_study.py --tag mistral --directions results/data/directions_mistral.json --directions-npz results/data/directions_mistral.npz --detect results/data/detect_mistral.json --causal results/data/causal_misalign_mistral.json --layer 12 --k 16 --min-convergence 0.70 --min-convergence-gap 0.30 --min-best-gap 0.45
 ```
 
-For camera-ready provenance validation after regenerating the medical vectors
-and causal artifacts on the H200, require strict evaluation and causal
-provenance:
+For camera-ready provenance validation after regenerating the direction,
+detector, evaluation, and causal artifacts on the H200, require strict
+direction, detector, evaluation, and causal provenance:
 
 ```bash
-python3 code/check_direction_study.py --tag med --directions results/data/directions_med.json --directions-npz results/data/directions_med.npz --detect results/data/detect_med.json --eval results/data/misalignment_eval_medical.json --causal results/data/causal_misalign.json --require-eval-provenance --require-causal-provenance
-python3 code/check_direction_study.py --tag llama --directions results/data/directions_llama.json --directions-npz results/data/directions_llama.npz --detect results/data/detect_llama.json --causal results/data/causal_misalign_llama.json --layer 12 --k 16 --require-causal-provenance
-python3 code/check_direction_study.py --tag mistral --directions results/data/directions_mistral.json --directions-npz results/data/directions_mistral.npz --detect results/data/detect_mistral.json --causal results/data/causal_misalign_mistral.json --layer 12 --k 16 --min-convergence 0.70 --min-convergence-gap 0.30 --min-best-gap 0.45 --require-causal-provenance
+python3 code/check_direction_study.py --tag med --directions results/data/directions_med.json --directions-npz results/data/directions_med.npz --detect results/data/detect_med.json --eval results/data/misalignment_eval_medical.json --causal results/data/causal_misalign.json --require-direction-provenance --require-detect-provenance --require-eval-provenance --require-causal-provenance
+python3 code/check_direction_study.py --tag llama --directions results/data/directions_llama.json --directions-npz results/data/directions_llama.npz --detect results/data/detect_llama.json --causal results/data/causal_misalign_llama.json --layer 12 --k 16 --require-direction-provenance --require-detect-provenance --require-causal-provenance
+python3 code/check_direction_study.py --tag mistral --directions results/data/directions_mistral.json --directions-npz results/data/directions_mistral.npz --detect results/data/detect_mistral.json --causal results/data/causal_misalign_mistral.json --layer 12 --k 16 --min-convergence 0.70 --min-convergence-gap 0.30 --min-best-gap 0.45 --require-direction-provenance --require-detect-provenance --require-causal-provenance
 ```
 
 Refresh the current medical direction vector and causal provenance on the H200
@@ -313,9 +313,8 @@ The launcher writes `results/data/run_manifests/cross_type_code_manifest.json`
 after the real code-organism eval, direction recovery, detector, causal, and
 cross-organism validators complete. If `results/data/directions_med.npz` is
 absent, it first rebuilds that vector artifact from the real medical matched
-arms before running transfer. The underlying cross-organism command is:
-
-Validate the manifest with:
+arms before running transfer. The manifest must then be validated with strict
+provenance fragments:
 
 ```bash
 python3 code/check_run_manifest.py \
@@ -323,8 +322,13 @@ python3 code/check_run_manifest.py \
   --study cross_type_code \
   --require-completed \
   --require-clean \
+  --require-command-fragment=--require-eval-provenance \
+  --require-command-fragment=--require-direction-provenance \
+  --require-command-fragment=--require-detect-provenance \
   --require-command-fragment=--require-causal-provenance
 ```
+
+The underlying cross-organism command used by the launcher is:
 
 ```bash
 python code/cross_organism.py \
@@ -355,6 +359,9 @@ python3 code/check_run_manifest.py \
   --study scale_14b \
   --require-completed \
   --require-clean \
+  --require-command-fragment=--require-eval-provenance \
+  --require-command-fragment=--require-direction-provenance \
+  --require-command-fragment=--require-detect-provenance \
   --require-command-fragment=--require-causal-provenance
 ```
 

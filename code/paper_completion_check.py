@@ -204,6 +204,8 @@ PENDING_VALIDATORS = {
             "--causal",
             "results/data/causal_misalign_code.json",
             "--require-eval-provenance",
+            "--require-direction-provenance",
+            "--require-detect-provenance",
             "--require-causal-provenance",
         ],
         [
@@ -266,6 +268,8 @@ PENDING_VALIDATORS = {
             "--require-script",
             "code/spectral.py",
             "--require-command-fragment=--require-eval-provenance",
+            "--require-command-fragment=--require-direction-provenance",
+            "--require-command-fragment=--require-detect-provenance",
             "--require-command-fragment=--require-causal-provenance",
         ],
     ],
@@ -286,6 +290,8 @@ PENDING_VALIDATORS = {
             "--causal",
             "results/data/causal_misalign_14b.json",
             "--require-eval-provenance",
+            "--require-direction-provenance",
+            "--require-detect-provenance",
             "--require-causal-provenance",
         ],
         [
@@ -333,6 +339,8 @@ PENDING_VALIDATORS = {
             "--require-script",
             "code/spectral.py",
             "--require-command-fragment=--require-eval-provenance",
+            "--require-command-fragment=--require-direction-provenance",
+            "--require-command-fragment=--require-detect-provenance",
             "--require-command-fragment=--require-causal-provenance",
         ],
     ],
@@ -551,6 +559,8 @@ def check_medical_direction_vector_artifact(gates):
             "results/data/misalignment_eval_medical.json",
             "--causal",
             "results/data/causal_misalign.json",
+            "--require-direction-provenance",
+            "--require-detect-provenance",
         ],
         category="external",
     )
@@ -711,6 +721,77 @@ def check_current_causal_provenance(gates):
             "--min-best-gap",
             "0.45",
             "--require-causal-provenance",
+        ],
+    }
+    for name, command in commands.items():
+        check_command(gates, name, command, category="external")
+
+
+def check_current_direction_detect_provenance(gates):
+    commands = {
+        "medical_direction_detect_provenance_valid": [
+            sys.executable,
+            "code/check_direction_study.py",
+            "--tag",
+            "med",
+            "--directions",
+            "results/data/directions_med.json",
+            "--directions-npz",
+            "results/data/directions_med.npz",
+            "--detect",
+            "results/data/detect_med.json",
+            "--eval",
+            "results/data/misalignment_eval_medical.json",
+            "--causal",
+            "results/data/causal_misalign.json",
+            "--require-direction-provenance",
+            "--require-detect-provenance",
+        ],
+        "llama_direction_detect_provenance_valid": [
+            sys.executable,
+            "code/check_direction_study.py",
+            "--tag",
+            "llama",
+            "--directions",
+            "results/data/directions_llama.json",
+            "--directions-npz",
+            "results/data/directions_llama.npz",
+            "--detect",
+            "results/data/detect_llama.json",
+            "--causal",
+            "results/data/causal_misalign_llama.json",
+            "--layer",
+            "12",
+            "--k",
+            "16",
+            "--require-direction-provenance",
+            "--require-detect-provenance",
+        ],
+        "mistral_direction_detect_provenance_valid": [
+            sys.executable,
+            "code/check_direction_study.py",
+            "--tag",
+            "mistral",
+            "--directions",
+            "results/data/directions_mistral.json",
+            "--directions-npz",
+            "results/data/directions_mistral.npz",
+            "--detect",
+            "results/data/detect_mistral.json",
+            "--causal",
+            "results/data/causal_misalign_mistral.json",
+            "--layer",
+            "12",
+            "--k",
+            "16",
+            "--min-convergence",
+            "0.70",
+            "--min-convergence-gap",
+            "0.30",
+            "--min-best-gap",
+            "0.45",
+            "--require-direction-provenance",
+            "--require-detect-provenance",
         ],
     }
     for name, command in commands.items():
@@ -1261,6 +1342,7 @@ def collect_gates():
     check_medical_direction_vector_artifact(gates)
     check_cross_family_direction_studies(gates)
     check_trajectory_vector_artifact(gates)
+    check_current_direction_detect_provenance(gates)
     check_current_causal_provenance(gates)
     check_stale_phrases(gates)
     check_capability(gates)
