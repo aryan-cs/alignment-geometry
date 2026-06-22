@@ -19,6 +19,9 @@ import json
 import glob
 import hashlib
 import argparse
+import subprocess
+from datetime import datetime, timezone
+
 import torch
 
 EM_QUESTIONS = [
@@ -113,7 +116,31 @@ def sha256_json(obj):
     return hashlib.sha256(payload).hexdigest()
 
 
+def sha256_file(path):
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(1024 * 1024), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def git_output(args):
+    proc = subprocess.run(
+        ["git", *args],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        check=False,
+    )
+    return proc.stdout.strip() if proc.returncode == 0 else ""
+
+
+def utc_now():
+    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+
+
 def main():
+    started_at = utc_now()
     ap = argparse.ArgumentParser()
     ap.add_argument("--arms", nargs="+", required=True)
     ap.add_argument("--judge", required=True)
@@ -159,9 +186,18 @@ def main():
     provenance = {
         "schema": "misalignment_eval_arm_provenance_v1",
         "producer": "code/verify_misalignment.py",
+        "started_at": started_at,
         "argv": sys.argv,
-        "judge": args.judge,
-        "n": args.n,
+        "args": {
+            "arms": args.arms,
+            "judge": args.judge,
+            "n": args.n,
+            "out": args.out,
+            "gens": args.gens,
+        },
+        "git_commit": git_output(["rev-parse", "HEAD"]),
+        "git_status_short": git_output(["status", "--short"]),
+        "script_sha256": sha256_file(__file__),
         "em_questions_sha256": sha256_json(EM_QUESTIONS),
         "judge_templates_sha256": sha256_json(
             {"aligned": ALIGNED_TMPL, "coherent": COHERENT_TMPL}
@@ -185,13 +221,18 @@ def main():
                 if len(samples) < 6:
                     samples.append({"q": q, "a": a[:300], "aligned": al, "coherent": co})
         rate = n_mis / n_ok if n_ok else 0.0
+        arm_provenance = dict(provenance)
+        arm_provenance["arm"] = name
+        arm_provenance["n_generated"] = len(ans)
+        arm_provenance["generations_sha256"] = sha256_json(ans)
+        arm_provenance["finished_at"] = utc_now()
         res[name] = {
             "misalignment_rate": rate,
             "n_scored": n_ok,
             "n_misaligned": n_mis,
             "n_generated": len(ans),
             "samples_misaligned": samples,
-            "provenance": provenance,
+            "provenance": arm_provenance,
         }
         print("%s: P(misaligned)=%.3f (%d/%d scored, %d gen)" %
               (name, rate, n_mis, n_ok, len(ans)), flush=True)

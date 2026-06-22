@@ -114,11 +114,13 @@ python3 code/check_direction_study.py --tag llama --directions results/data/dire
 python3 code/check_direction_study.py --tag mistral --directions results/data/directions_mistral.json --directions-npz results/data/directions_mistral.npz --detect results/data/detect_mistral.json --causal results/data/causal_misalign_mistral.json --layer 12 --k 16 --min-convergence 0.70 --min-convergence-gap 0.30 --min-best-gap 0.45
 ```
 
-For final completion, newly regenerated causal artifacts must also pass
-`--require-causal-provenance`, which requires producer, command, model/judge,
-input-hash, direction-vector-hash, seed, script-hash, and git-commit metadata.
-The heavy-study launchers use this strict causal-provenance validator when they
-write final cross-type and scale-study manifests.
+For final completion, newly generated EM-evaluation artifacts must pass
+`--require-eval-provenance`, which requires per-arm judge path, rubric hashes,
+generation hashes, producer script hash, and git-commit metadata. Newly
+regenerated causal artifacts must also pass `--require-causal-provenance`, which
+requires producer, command, model/judge, input-hash, direction-vector-hash, seed,
+script-hash, and git-commit metadata. The heavy-study launchers use both strict
+validators when they write final cross-type and scale-study manifests.
 
 Validate a completed baseline bake-off:
 

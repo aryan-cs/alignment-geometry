@@ -129,6 +129,7 @@ PENDING_VALIDATORS = {
             "results/data/misalignment_eval_code.json",
             "--causal",
             "results/data/causal_misalign_code.json",
+            "--require-eval-provenance",
             "--require-causal-provenance",
         ],
         [
@@ -190,6 +191,7 @@ PENDING_VALIDATORS = {
             "code/check_cross_organism.py",
             "--require-script",
             "code/spectral.py",
+            "--require-command-fragment=--require-eval-provenance",
             "--require-command-fragment=--require-causal-provenance",
         ],
     ],
@@ -209,6 +211,7 @@ PENDING_VALIDATORS = {
             "results/data/misalignment_eval_14b.json",
             "--causal",
             "results/data/causal_misalign_14b.json",
+            "--require-eval-provenance",
             "--require-causal-provenance",
         ],
         [
@@ -255,6 +258,7 @@ PENDING_VALIDATORS = {
             "code/check_direction_study.py",
             "--require-script",
             "code/spectral.py",
+            "--require-command-fragment=--require-eval-provenance",
             "--require-command-fragment=--require-causal-provenance",
         ],
     ],

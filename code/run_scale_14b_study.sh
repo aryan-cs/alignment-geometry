@@ -169,7 +169,7 @@ manifest = {
         "python code/direction_recover.py --base $BASE --runs $RUNS --misaligned-glob $MIS_GLOB --benign-glob $BEN_GLOB --layers $LAYERS --k $K --out results/data/directions_14b",
         "python code/detect_holdout.py --base $BASE --runs $RUNS --misaligned-glob $MIS_GLOB --benign-glob $BEN_GLOB --layer $LAYER --tag 14b",
         "python code/causal_misalign.py --misaligned <first 14B misaligned arm> --benign <first 14B benign arm> --judge $JUDGE --dirs results/data/directions_14b.npz --layer $LAYER --n $N_CAUSAL --necessity-only --out results/data/causal_misalign_14b.json.tmp",
-        "python code/check_direction_study.py --tag 14b --directions results/data/directions_14b.json --directions-npz results/data/directions_14b.npz --detect results/data/detect_14b.json --eval results/data/misalignment_eval_14b.json --causal results/data/causal_misalign_14b.json --require-causal-provenance",
+        "python code/check_direction_study.py --tag 14b --directions results/data/directions_14b.json --directions-npz results/data/directions_14b.npz --detect results/data/detect_14b.json --eval results/data/misalignment_eval_14b.json --causal results/data/causal_misalign_14b.json --require-eval-provenance --require-causal-provenance",
     ],
     "validators": [
         "code/check_direction_study.py",
@@ -244,6 +244,7 @@ run python code/check_direction_study.py \
   --detect "$DETECT" \
   --eval "$EVAL" \
   --causal "$CAUSAL" \
+  --require-eval-provenance \
   --require-causal-provenance
 
 if [ "$DRY_RUN" = "1" ]; then

@@ -343,6 +343,7 @@ def validate_eval_json(path, args, errors):
         if not isinstance(row, dict):
             error(errors, f"{ctx}.{name}", "arm row must be an object")
             continue
+        validate_eval_provenance(path, name, row, args, errors)
         rate = finite_number(row.get("misalignment_rate"), f"{ctx}.{name}.misalignment_rate", errors, 0.0, 1.0)
         n_scored = row.get("n_scored")
         n_mis = row.get("n_misaligned")
@@ -367,6 +368,65 @@ def validate_eval_json(path, args, errors):
         error(errors, ctx, f"mean misaligned rate {sum(mis)/len(mis):.3f} below {args.min_eval_misaligned_rate:.3f}")
     if ben and max(ben) > args.max_eval_benign_rate:
         error(errors, ctx, f"max benign rate {max(ben):.3f} above {args.max_eval_benign_rate:.3f}")
+
+
+def validate_eval_provenance(path, name, row, args, errors):
+    if not args.require_eval_provenance:
+        return
+    ctx = f"{path}.{name}.provenance"
+    prov = row.get("provenance")
+    if not isinstance(prov, dict):
+        error(errors, ctx, "missing eval provenance; rerun code/verify_misalignment.py with provenance capture")
+        return
+    required = [
+        "schema",
+        "producer",
+        "started_at",
+        "finished_at",
+        "argv",
+        "args",
+        "git_commit",
+        "git_status_short",
+        "script_sha256",
+        "em_questions_sha256",
+        "judge_templates_sha256",
+        "arm",
+        "n_generated",
+        "generations_sha256",
+    ]
+    for key in required:
+        if key not in prov:
+            error(errors, f"{ctx}.{key}", "missing required provenance field")
+    if prov.get("schema") != "misalignment_eval_arm_provenance_v1":
+        error(errors, f"{ctx}.schema", "must be misalignment_eval_arm_provenance_v1")
+    if prov.get("producer") != "code/verify_misalignment.py":
+        error(errors, f"{ctx}.producer", "must be code/verify_misalignment.py")
+    if prov.get("arm") != name:
+        error(errors, f"{ctx}.arm", f"must match row name {name!r}")
+    if prov.get("n_generated") != row.get("n_generated"):
+        error(errors, f"{ctx}.n_generated", "must match row n_generated")
+    commit = prov.get("git_commit")
+    commit_ok = validate_git_commit(commit, f"{ctx}.git_commit", errors)
+    digest = prov.get("script_sha256")
+    if commit_ok and isinstance(digest, str) and re.fullmatch(r"[0-9a-f]{64}", digest):
+        script = git_output(["show", f"{commit}:code/verify_misalignment.py"], text=False)
+        if script is None:
+            error(errors, f"{ctx}.script_sha256", "producer missing at recorded commit")
+        elif bytes_sha256(script) != digest:
+            error(errors, f"{ctx}.script_sha256", "does not match producer at recorded commit")
+    elif digest is not None:
+        error(errors, f"{ctx}.script_sha256", "must be a sha256 hex digest")
+    pargs = prov.get("args")
+    if not isinstance(pargs, dict):
+        error(errors, f"{ctx}.args", "must be an object")
+    else:
+        for key in ("arms", "judge", "n", "out", "gens"):
+            if pargs.get(key) in (None, "", []):
+                error(errors, f"{ctx}.args.{key}", "must be present and nonempty")
+    for key in ("em_questions_sha256", "judge_templates_sha256", "generations_sha256"):
+        value = prov.get(key)
+        if not isinstance(value, str) or not re.fullmatch(r"[0-9a-f]{64}", value):
+            error(errors, f"{ctx}.{key}", "must be a sha256 hex digest")
 
 
 def validate_causal_json(path, args, errors):
@@ -460,6 +520,7 @@ def parse_args():
     ap.add_argument("--min-random-gap", type=float, default=0.015)
     ap.add_argument("--require-causal-wilson-separation", action=argparse.BooleanOptionalAction, default=True)
     ap.add_argument("--require-causal-provenance", action="store_true")
+    ap.add_argument("--require-eval-provenance", action="store_true")
     ap.add_argument("--misaligned-name-substrings", nargs="+", default=["misaligned", "insecure"])
     ap.add_argument("--benign-name-substrings", nargs="+", default=["benign", "educational", "secure"])
     return ap.parse_args()
