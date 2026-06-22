@@ -654,7 +654,14 @@ def validate_detect_json(path, args, errors):
             )
         if mis is None or ben is None:
             continue
-        margins.append(mis - ben)
+        margin = mis - ben
+        margins.append(margin)
+        if margin < args.min_detect_fold_margin:
+            error(
+                errors,
+                fctx,
+                f"detect margin {margin:.3f} below {args.min_detect_fold_margin:.3f}",
+            )
         sep += int(mis > ben)
     ratio = parse_ratio(data.get("mis_above_ben"))
     if ratio is None:
@@ -957,6 +964,7 @@ def parse_args():
     ap.add_argument("--min-convergence-gap", type=float, default=0.20)
     ap.add_argument("--min-best-gap", type=float, default=0.30)
     ap.add_argument("--min-detect-margin", type=float, default=0.05)
+    ap.add_argument("--min-detect-fold-margin", type=float, default=0.05)
     ap.add_argument("--min-eval-misaligned-rate", type=float, default=0.02)
     ap.add_argument("--max-eval-benign-rate", type=float, default=0.005)
     ap.add_argument("--max-eval-wilson-half-width", type=float, default=0.05)

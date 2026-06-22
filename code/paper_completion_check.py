@@ -151,6 +151,33 @@ FIGURE_SOURCE_ARTIFACTS = [
     "results/data/run_manifests/capability_manifest.json",
 ]
 
+REQUIRED_THREE_D_FIGURES = {
+    "results/figures/spectral_landscape_3d.pdf": {
+        "section": "paper/sections/spectral.tex",
+        "phrases": [
+            "spectral_landscape_3d.pdf",
+            "three-dimensional view",
+            "not an alignment detector by itself",
+        ],
+        "producer_phrases": [
+            "def fig_spectral_landscape_3d",
+            'projection="3d"',
+        ],
+    },
+    "results/figures/trajectory_direction_pca_3d.pdf": {
+        "section": "paper/sections/appendix.tex",
+        "phrases": [
+            "trajectory_direction_pca_3d.pdf",
+            "Three-dimensional visualization",
+            "geometry visualization",
+        ],
+        "producer_phrases": [
+            "def fig_trajectory_direction_pca_3d",
+            'projection="3d"',
+        ],
+    },
+}
+
 TRACKER_PENDING_TERMS = [
     "queued",
     "pending",
@@ -1393,6 +1420,59 @@ def check_figure_manifest(gates):
     )
 
 
+def check_three_dimensional_figures(gates):
+    tracked = tracked_files() or set()
+    refs = {rel_path for rel_path, _ref in referenced_figure_paths() if rel_path}
+    manifest_path = ROOT / "results" / "data" / "figure_manifest.json"
+    manifest_figures = {}
+    errors = []
+    if manifest_path.exists():
+        try:
+            data = json.loads(manifest_path.read_text())
+            for row in data.get("figures", []):
+                if isinstance(row, dict) and isinstance(row.get("path"), str):
+                    manifest_figures[row["path"]] = row
+        except Exception as exc:
+            errors.append(f"figure manifest unreadable: {exc}")
+    else:
+        errors.append("results/data/figure_manifest.json is missing")
+
+    producer = (ROOT / "code" / "make_figures.py").read_text(errors="ignore")
+    for rel_path, spec in REQUIRED_THREE_D_FIGURES.items():
+        path = ROOT / rel_path
+        if not path.exists() or path.stat().st_size <= 0:
+            errors.append(f"{rel_path} is missing or empty")
+            continue
+        if rel_path not in tracked:
+            errors.append(f"{rel_path} is not tracked")
+        if rel_path not in refs:
+            errors.append(f"{rel_path} is not referenced by the paper")
+        row = manifest_figures.get(rel_path)
+        if row is None:
+            errors.append(f"{rel_path} is missing from figure_manifest.json")
+        else:
+            if row.get("sha256") != file_sha256(path):
+                errors.append(f"{rel_path} manifest sha256 mismatch")
+            if row.get("bytes") != path.stat().st_size:
+                errors.append(f"{rel_path} manifest byte count mismatch")
+        section_path = ROOT / spec["section"]
+        section = section_path.read_text(errors="ignore") if section_path.exists() else ""
+        for phrase in spec["phrases"]:
+            if phrase not in section:
+                errors.append(f"{spec['section']} missing 3D figure phrase {phrase!r}")
+        for phrase in spec["producer_phrases"]:
+            if phrase not in producer:
+                errors.append(f"code/make_figures.py missing 3D producer phrase {phrase!r}")
+
+    add(
+        gates,
+        "three_dimensional_figures_present",
+        not errors,
+        "required 3D figures are generated, referenced, tracked, and manifest-hashed"
+        if not errors else "; ".join(errors[:8]),
+    )
+
+
 def check_em_dataset_hashes(gates):
     tracked = tracked_files() or set()
     errors = []
@@ -1881,6 +1961,7 @@ def collect_gates(scope="all"):
         check_referenced_figures(gates)
         check_figure_freshness(gates)
         check_figure_manifest(gates)
+        check_three_dimensional_figures(gates)
         check_em_dataset_hashes(gates)
         check_visual_qa_receipt(gates)
         check_proof_visual_qa_receipt(gates)
