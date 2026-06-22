@@ -10,6 +10,8 @@ import math
 import sys
 from pathlib import Path
 
+import numpy as np
+
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "results" / "data"
@@ -92,6 +94,101 @@ def check_spectral_summary():
     expect("energy/overlap: q_proj top-64 energy displayed as a third", q64, 1.0 / 3.0, 0.02)
 
 
+def check_full_spectrum_artifact():
+    path = DATA / "full_spectrum.npz"
+    if not path.exists():
+        failures.append("full-spectrum artifact: results/data/full_spectrum.npz is missing")
+        return
+
+    z = np.load(path)
+    name = str(z["name"])
+    expect_text(
+        "full-spectrum artifact: representative matrix",
+        name,
+        "model.layers.15.mlp.gate_proj.weight",
+    )
+    rows = [json.loads(line) for line in open(DATA / "spectral.jsonl") if line.strip()]
+    row = next((r for r in rows if r["name"] == name), None)
+    if row is None:
+        failures.append(f"full-spectrum artifact: {name} not found in spectral.jsonl")
+        return
+    d = row["delta"]
+    expect("full-spectrum artifact: p", int(z["p"]), d["shape"][0])
+    expect("full-spectrum artifact: q", int(z["q"]), d["shape"][1])
+    expect("full-spectrum artifact: gamma", float(z["gamma"]), d["gamma"], 1e-12)
+    expect("full-spectrum artifact: MP edge", float(z["hi"]), d["mp_hi"], 1e-12)
+    expect("full-spectrum artifact: top eigenvalue", float(z["eig"][0]), d["top_eig"], 1e-12)
+    expect(
+        "full-spectrum figure caption: top/edge displayed as 27x",
+        float(z["eig"][0] / z["hi"]),
+        27.0,
+        0.2,
+    )
+    expect(
+        "full-spectrum figure caption: raw MP-edge detachments displayed as 829",
+        int((z["eig"] > z["hi"]).sum()),
+        829,
+    )
+    expect(
+        "spectral table: strict six-TW spikes for same representative matrix",
+        d["n_spikes"],
+        821,
+    )
+
+
+def check_synthetic_bbp():
+    s = load_json("synthetic_bbp.json")
+    expect("synthetic BBP: p", s["p"], 2048)
+    expect("synthetic BBP: q", s["q"], 512)
+    expect("synthetic BBP: gamma displayed as 0.25", s["gamma"], 0.25)
+    expect("synthetic BBP: theta threshold displayed as 0.5", s["bbp_theta_threshold"], 0.5)
+    by_name = {case["name"]: case for case in s["cases"]}
+    expected = {
+        "diffuse_null": 0,
+        "planted_rank_1": 1,
+        "planted_rank_4": 4,
+        "planted_rank_16": 16,
+        "energy_matched_rank_128": 0,
+    }
+    for name, n_spikes in expected.items():
+        case = by_name.get(name)
+        if case is None:
+            failures.append(f"synthetic BBP: missing case {name}")
+            continue
+        expect(f"synthetic BBP {name}: strict spikes", case["strict_spikes"], n_spikes)
+        expect(
+            f"synthetic BBP {name}: expected strict spikes",
+            case["expected_strict_spikes"],
+            n_spikes,
+        )
+    if "planted_rank_16" in by_name:
+        expect("synthetic BBP: rank-16 total theta", by_name["planted_rank_16"]["total_theta"], 24.0)
+        expect("synthetic BBP: rank-16 r_star", by_name["planted_rank_16"]["r_star"], 48.0)
+    if "energy_matched_rank_128" in by_name:
+        expect(
+            "synthetic BBP: energy-matched rank-128 total theta",
+            by_name["energy_matched_rank_128"]["total_theta"],
+            24.0,
+        )
+        expect(
+            "synthetic BBP: energy-matched rank-128 r_star",
+            by_name["energy_matched_rank_128"]["r_star"],
+            48.0,
+        )
+    planted_means = [
+        by_name[name]["planted_subspace_cos2"]["mean"]
+        for name in ("planted_rank_1", "planted_rank_4", "planted_rank_16")
+        if name in by_name
+    ]
+    if planted_means:
+        expect(
+            "synthetic BBP: minimum planted-subspace mean cos^2 displayed as about 0.76",
+            min(planted_means),
+            0.76,
+            0.02,
+        )
+
+
 def check_refusal():
     cap = load_json("behavioral_capture.json")
     for k, expected in [(8, 0.027), (32, 0.041), (128, 0.106)]:
@@ -138,6 +235,51 @@ def check_refusal():
 
 
 def check_misalignment():
+    scout = load_json("misalign_scout.json")["summary"]
+    expect("misalignment scout: number of matrices", scout["n_matrices"], 336)
+    expect(
+        "misalignment scout table: misaligned stable rank",
+        scout["median_stable_rank_mis"],
+        325.83,
+        0.006,
+    )
+    expect(
+        "misalignment scout table: benign matched stable rank",
+        scout["median_stable_rank_ben_matched"],
+        325.84,
+        0.006,
+    )
+    expect(
+        "misalignment scout table: misaligned strict spikes",
+        scout["median_spikes_mis"],
+        43.5,
+        0.06,
+    )
+    expect(
+        "misalignment scout table: benign matched strict spikes",
+        scout["median_spikes_ben_matched"],
+        43.0,
+        0.06,
+    )
+    expect(
+        "misalignment scout table: misaligned top/edge",
+        scout["median_top_over_edge_mis"],
+        3.43,
+        0.006,
+    )
+    expect(
+        "misalignment scout table: benign matched top/edge",
+        scout["median_top_over_edge_ben_matched"],
+        3.42,
+        0.006,
+    )
+    expect(
+        "misalignment scout: fraction lower stable rank displayed as 54%",
+        pct(scout["frac_mis_lower_stable_rank"]),
+        54.0,
+        0.2,
+    )
+
     gate = load_json("misalignment_eval_medical.json")
     mis_rates = [pct(v["misalignment_rate"]) for k, v in gate.items() if k.startswith("misaligned_")]
     ben_rates = [pct(v["misalignment_rate"]) for k, v in gate.items() if k.startswith("benign_")]
@@ -213,6 +355,8 @@ def check_misalignment():
 
 def main():
     check_spectral_summary()
+    check_full_spectrum_artifact()
+    check_synthetic_bbp()
     check_refusal()
     check_misalignment()
     if failures:

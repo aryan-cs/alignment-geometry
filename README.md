@@ -41,6 +41,7 @@ fourier-alignment/
 ├── code/
 │   ├── spectral.py                  # safetensors reader and MP/spike statistics
 │   ├── make_figures.py              # paper figure generation
+│   ├── synthetic_bbp.py             # deterministic BBP spike-count validation
 │   ├── capability_eval.py           # H200 capability-preservation evaluation
 │   ├── check_capability_result.py   # validator/summarizer for capability_eval output
 │   └── ...                          # training, steering, ablation, and analysis scripts
@@ -71,6 +72,14 @@ Validate headline manuscript numbers against committed result summaries:
 
 ```bash
 python3 code/check_paper_numbers.py
+```
+
+Regenerate or validate the deterministic synthetic BBP sanity check reported in
+the appendix:
+
+```bash
+python3 code/synthetic_bbp.py
+python3 code/synthetic_bbp.py --check
 ```
 
 Build the paper and refresh `docs/paper.pdf`:
