@@ -9,8 +9,12 @@ ROOT = Path(__file__).resolve().parents[1]
 CITE_RE = re.compile(r"\\cite[tpa]?\*?(?:\[[^\]]*\])*\{([^}]+)\}")
 BIB_RE = re.compile(r"@(\w+)\{([^,]+),")
 BIBITEM_RE = re.compile(r"\\bibitem\{([^}]+)\}")
+BIBITEM_BLOCK_RE = re.compile(
+    r"\\bibitem\{([^}]+)\}([\s\S]*?)(?=\\bibitem\{|\\end\{thebibliography\})"
+)
 REQUIRED_BIB_FIELDS = ("title", "year")
 REQUIRED_VENUE_FIELDS = ("journal", "booktitle", "howpublished", "note")
+PROOF_VENUE_MARKERS = ("\\emph{", "arXiv:", "Springer", "MSc thesis", "Preprint")
 
 
 def used_cite_keys(paths):
@@ -67,12 +71,21 @@ def check_proof(errors):
     bib_keys = set(BIBITEM_RE.findall(text))
     used = used_cite_keys([path])
     used_keys = {key for key, _, _ in used}
+    blocks = dict(BIBITEM_BLOCK_RE.findall(text))
 
     for key, _, line in used:
         if key not in bib_keys:
             errors.append(f"proof missing bibitem for {key} at docs/proof.tex:{line}")
     for key in sorted(bib_keys - used_keys):
         errors.append(f"proof bibitem is uncited: {key}")
+    for key in sorted(bib_keys):
+        body = blocks.get(key, "")
+        if not re.search(r"\b(?:19|20)\d{2}\b", body):
+            errors.append(f"proof bibitem {key} missing four-digit year")
+        if "``" not in body and "\\emph{" not in body:
+            errors.append(f"proof bibitem {key} missing title marker")
+        if not any(marker in body for marker in PROOF_VENUE_MARKERS):
+            errors.append(f"proof bibitem {key} missing venue or preprint marker")
 
 
 def check_placeholders(errors):
