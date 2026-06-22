@@ -27,6 +27,11 @@ def load_json(name):
         return json.load(f)
 
 
+def load_jsonl(name):
+    with open(DATA / name) as f:
+        return [json.loads(line) for line in f if line.strip()]
+
+
 def expect(label, actual, expected, tol=1e-9):
     if not math.isfinite(float(actual)) or abs(float(actual) - expected) > tol:
         failures.append(
@@ -83,8 +88,9 @@ def _command_ok(args):
 def capability_result_ready():
     """Return true only when the paper-grade capability artifact is validated."""
     capability = DATA / "capability.json"
+    evidence = DATA / "capability_evidence.json"
     manifest = DATA / "run_manifests" / "capability_manifest.json"
-    if not capability.exists() or not manifest.exists():
+    if not capability.exists() or not evidence.exists() or not manifest.exists():
         return False
     result_ok = _command_ok(
         [
@@ -92,6 +98,8 @@ def capability_result_ready():
             "code/check_capability_result.py",
             "--input",
             "results/data/capability.json",
+            "--evidence",
+            "results/data/capability_evidence.json",
             "--require-paper",
         ]
     )
@@ -130,8 +138,20 @@ def capability_result_ready():
             "n_arc",
             "--require-config-key",
             "n_refusal",
+            "--require-config-key",
+            "evidence_out",
+            "--require-config-key",
+            "gpu_id",
+            "--require-config-key",
+            "refusal_reference_start",
+            "--require-config-key",
+            "refusal_reference_n",
+            "--require-config-key",
+            "refusal_reference_max_new",
             "--require-artifact",
             "results/data/capability.json",
+            "--require-artifact",
+            "results/data/capability_evidence.json",
             "--require-script",
             "code/run_capability_eval.sh",
             "--require-script",
@@ -139,9 +159,13 @@ def capability_result_ready():
             "--require-script",
             "code/check_capability_result.py",
             "--require-script",
-            "code/causal.py",
+            "code/check_run_manifest.py",
             "--require-script",
             "code/run_environment.py",
+            "--require-script",
+            "code/ablation_sweep.py",
+            "--require-script",
+            "code/causal.py",
             "--require-script",
             "code/spectral.py",
             "--require-command-fragment=--require-paper",
@@ -173,7 +197,7 @@ def check_capability_caveat():
         if not has_phrase(text, phrase):
             failures.append(
                 "capability caveat: missing required manuscript phrase "
-                f"{phrase!r} while results/data/capability.json is absent"
+                f"{phrase!r} while capability artifacts are absent"
                 " or not paper-grade validated"
             )
 
@@ -428,6 +452,52 @@ def check_misalignment_framing():
 
 def check_spectral_summary():
     s = load_json("summary.json")
+    rows = load_jsonl("spectral.jsonl")
+    top_edge = np.array([r["delta"]["top_eig_over_edge"] for r in rows])
+    spikes = np.array([r["delta"]["n_spikes"] for r in rows])
+    q = np.array([min(r["delta"]["shape"]) for r in rows])
+    er_d = np.array([r["delta"]["effective_rank"] for r in rows])
+    er_b = np.array([r["base"]["effective_rank"] for r in rows])
+    er_i = np.array([r["instruct"]["effective_rank"] for r in rows])
+    sr_d = np.array([r["delta"]["stable_rank"] for r in rows])
+    expect("spectral summary consistency: number of matrices", s["n_matrices"], len(rows), 0)
+    expect("spectral summary consistency: top/edge min", s["top_over_edge"]["min"], float(top_edge.min()), 1e-12)
+    expect("spectral summary consistency: top/edge median", s["top_over_edge"]["median"], float(np.median(top_edge)), 1e-12)
+    expect("spectral summary consistency: top/edge max", s["top_over_edge"]["max"], float(top_edge.max()), 1e-12)
+    expect("spectral summary consistency: top/edge frac > 1", s["top_over_edge"]["frac_above_1"], float((top_edge > 1).mean()), 1e-12)
+    expect("spectral summary consistency: top/edge frac > 5", s["top_over_edge"]["frac_above_5"], float((top_edge > 5).mean()), 1e-12)
+    expect("spectral summary consistency: spike min", s["spikes"]["min"], int(spikes.min()), 0)
+    expect("spectral summary consistency: spike median", s["spikes"]["median"], float(np.median(spikes)), 1e-12)
+    expect("spectral summary consistency: spike max", s["spikes"]["max"], int(spikes.max()), 0)
+    expect("spectral summary consistency: median spikes/rank", s["spikes"]["median_spikes_over_rank"], float(np.median(spikes / q)), 1e-12)
+    expect("spectral summary consistency: effective-rank ratio vs base", s["effrank_ratio_delta_vs_base"], float(np.median(er_d / er_b)), 1e-12)
+    expect("spectral summary consistency: effective-rank ratio vs instruct", s["effrank_ratio_delta_vs_instruct"], float(np.median(er_d / er_i)), 1e-12)
+    expect("spectral summary consistency: stable-rank median", s["stable_rank_delta_median"], float(np.median(sr_d)), 1e-12)
+    for label, summary_row in s["by_type"].items():
+        sub = [r for r in rows if r["label"] == label]
+        te = np.array([r["delta"]["top_eig_over_edge"] for r in sub])
+        sp = np.array([r["delta"]["n_spikes"] for r in sub])
+        stable = np.array([r["delta"]["stable_rank"] for r in sub])
+        expect(f"spectral summary consistency: {label} n", summary_row["n"], len(sub), 0)
+        expect(
+            f"spectral summary consistency: {label} median top/edge",
+            summary_row["median_top_over_edge"],
+            float(np.median(te)),
+            1e-12,
+        )
+        expect(
+            f"spectral summary consistency: {label} median spikes",
+            summary_row["median_spikes"],
+            float(np.median(sp)),
+            1e-12,
+        )
+        expect(
+            f"spectral summary consistency: {label} median stable rank",
+            summary_row["median_stable_rank"],
+            float(np.median(stable)),
+            1e-12,
+        )
+
     expect("spectral: number of matrices", s["n_matrices"], 224)
     expect("spectral: all matrices exceed edge", s["top_over_edge"]["frac_above_1"], 1.0)
     expect("spectral: median top/edge displayed as 22.0", s["top_over_edge"]["median"], 22.0, 0.05)
