@@ -15,6 +15,7 @@ import glob
 import hashlib
 import json
 import os
+import subprocess
 import sys
 from pathlib import Path
 
@@ -49,6 +50,13 @@ def file_sha256(path):
         for chunk in iter(lambda: f.read(1024 * 1024), b""):
             h.update(chunk)
     return h.hexdigest()
+
+
+def git(args):
+    try:
+        return subprocess.check_output(["git"] + args, cwd=ROOT, text=True).strip()
+    except Exception:
+        return None
 
 
 def read_jsonl(path):
@@ -309,6 +317,12 @@ def main():
         "pool": args.pool,
         "score": "||v^T dA||_2 / ||dA||_F",
         "detection": activation_pca_detection(mis_deltas, ben_deltas),
+        "producer": {
+            "script": "code/activation_pca_baseline.py",
+            "script_sha256": file_sha256(ROOT / "code" / "activation_pca_baseline.py"),
+            "git_commit": git(["rev-parse", "HEAD"]),
+            "git_status_short": git(["status", "--short"]) or "",
+        },
         "provenance": {
             "base": relpath(args.base),
             "runs": relpath(args.runs),
@@ -321,7 +335,10 @@ def main():
             "prompt_seed": args.prompt_seed,
             "prompt_indices": [idx for idx, _ in prompts],
             "dtype": args.dtype,
+            "device": device,
+            "batch_size": args.batch_size,
             "max_length": args.max_length,
+            "local_files_only": bool(args.local_files_only),
         },
     }
     out = Path(args.out)

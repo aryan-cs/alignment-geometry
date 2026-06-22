@@ -53,6 +53,18 @@ def tracked_files():
     return set(line.strip() for line in proc.stdout.splitlines() if line.strip())
 
 
+def git_success(args):
+    proc = subprocess.run(
+        ["git"] + args,
+        cwd=ROOT,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        check=False,
+    )
+    return proc.returncode == 0
+
+
 def resolve_artifact(path_text):
     path = Path(path_text)
     full = path if path.is_absolute() else ROOT / path
@@ -144,9 +156,13 @@ def validate_provenance(prov, errors):
     for key in ("base", "runs", "misaligned_glob", "benign_glob", "prompts", "dtype"):
         if not isinstance(prov.get(key), str) or not prov.get(key):
             add(errors, f"provenance.{key}", "must be a nonempty string")
-    for key in ("n_pairs", "n_prompts", "prompt_seed", "max_length"):
+    for key in ("n_pairs", "n_prompts", "prompt_seed", "max_length", "batch_size"):
         if not isinstance(prov.get(key), int) or prov[key] < 0:
             add(errors, f"provenance.{key}", "must be a non-negative integer")
+    if not isinstance(prov.get("device"), str) or not prov["device"]:
+        add(errors, "provenance.device", "must be a nonempty string")
+    if not isinstance(prov.get("local_files_only"), bool):
+        add(errors, "provenance.local_files_only", "must be a boolean")
     if prov.get("n_pairs", 0) < 4:
         add(errors, "provenance.n_pairs", "must be at least 4")
     if prov.get("n_prompts", 0) <= 0:
@@ -180,6 +196,45 @@ def validate_provenance(prov, errors):
                 add(errors, "provenance.prompts_sha256", "hash mismatch")
 
 
+def validate_producer(producer, errors):
+    if not isinstance(producer, dict):
+        add(errors, "producer", "must be an object")
+        return
+    script = producer.get("script")
+    if script != "code/activation_pca_baseline.py":
+        add(errors, "producer.script", "must be code/activation_pca_baseline.py")
+        return
+    full, rel = resolve_artifact(script)
+    tracked = tracked_files()
+    if tracked is None:
+        add(errors, "git", "git ls-files failed")
+        tracked = set()
+    if rel is None:
+        add(errors, "producer.script", "must point inside the repository")
+    elif not os.path.exists(full):
+        add(errors, "producer.script", f"missing script {rel}")
+    else:
+        if os.path.getsize(full) <= 0:
+            add(errors, "producer.script", f"empty script {rel}")
+        if rel not in tracked:
+            add(errors, "producer.script", f"untracked script {rel}")
+    digest = producer.get("script_sha256")
+    if not isinstance(digest, str) or not re.fullmatch(r"[0-9a-f]{64}", digest):
+        add(errors, "producer.script_sha256", "must be a sha256 hex digest")
+    elif rel is not None and os.path.exists(full) and file_sha256(full) != digest:
+        add(errors, "producer.script_sha256", "hash mismatch")
+    commit = producer.get("git_commit")
+    if not isinstance(commit, str) or not re.fullmatch(r"[0-9a-f]{40}", commit):
+        add(errors, "producer.git_commit", "must be a full 40-character git SHA")
+    elif not git_success(["cat-file", "-e", f"{commit}^{{commit}}"]):
+        add(errors, "producer.git_commit", "commit does not exist locally")
+    elif not git_success(["merge-base", "--is-ancestor", commit, "HEAD"]):
+        add(errors, "producer.git_commit", "commit is not an ancestor of current HEAD")
+    status = producer.get("git_status_short")
+    if not isinstance(status, str):
+        add(errors, "producer.git_status_short", "must be a string")
+
+
 def validate(data, min_folds=4):
     errors = []
     if data.get("schema") != "activation_pca_baseline_v1":
@@ -195,6 +250,7 @@ def validate(data, min_folds=4):
     if data.get("pool") not in {"mean", "last"}:
         add(errors, "pool", "must be mean or last")
     validate_detection(data.get("detection"), errors, min_folds)
+    validate_producer(data.get("producer"), errors)
     validate_provenance(data.get("provenance"), errors)
     return errors
 
