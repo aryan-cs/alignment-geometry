@@ -411,6 +411,11 @@ bash code/monitor_job.sh \
     --require-command-fragment=--require-paper
 ```
 
+`monitor_job.sh` sets its own log/manifest boundary at startup: it ignores
+pre-existing log lines and pre-existing manifests, then validates only a manifest
+refreshed by the current run. Start it before or during the detached run rather
+than after relying on an old appended log.
+
 ```bash
 python code/check_capability_result.py \
   --input results/data/capability.json \

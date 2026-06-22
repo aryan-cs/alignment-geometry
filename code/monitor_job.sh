@@ -33,7 +33,8 @@ Options:
 
 The monitor exits 0 after the validator passes, or after the done regex appears
 when no validator is supplied. It exits nonzero on failure regex, timeout, or a
-failing validator.
+failing validator. Existing log lines and pre-existing manifests are ignored;
+start the monitor before or during the run whose result it should validate.
 EOF
 }
 
@@ -98,7 +99,48 @@ if [ "${#VALIDATOR[@]}" -gt 0 ] && [ -z "$MANIFEST" ]; then
   exit 2
 fi
 
+path_mtime_epoch() {
+  local path="$1"
+  if [ ! -e "$path" ]; then
+    echo 0
+    return
+  fi
+  if stat -c %Y "$path" >/dev/null 2>&1; then
+    stat -c %Y "$path"
+  else
+    stat -f %m "$path"
+  fi
+}
+
+file_sha256() {
+  local path="$1"
+  if [ ! -f "$path" ]; then
+    echo ""
+    return
+  fi
+  if command -v sha256sum >/dev/null 2>&1; then
+    sha256sum "$path" | awk '{print $1}'
+  else
+    shasum -a 256 "$path" | awk '{print $1}'
+  fi
+}
+
+fresh_log_window() {
+  if [ -f "$LOG" ]; then
+    tail -n +"$((log_start_line + 1))" "$LOG" | tail -n 200
+  fi
+}
+
 started_epoch="$(date +%s)"
+log_start_line=0
+if [ -f "$LOG" ]; then
+  log_start_line="$(wc -l < "$LOG" | tr -d ' ')"
+fi
+manifest_start_mtime=0
+if [ -n "$MANIFEST" ]; then
+  manifest_start_mtime="$(path_mtime_epoch "$MANIFEST")"
+  manifest_start_hash="$(file_sha256 "$MANIFEST")"
+fi
 echo "monitor_job: watching $LOG"
 [ -n "$MANIFEST" ] && echo "monitor_job: expecting $MANIFEST"
 
@@ -111,12 +153,13 @@ while true; do
 
   done_seen=0
   if [ -f "$LOG" ]; then
-    if tail -n 200 "$LOG" | grep -E "$FAIL_RE" >/dev/null; then
+    recent_log="$(fresh_log_window)"
+    if printf '%s\n' "$recent_log" | grep -E "$FAIL_RE" >/dev/null; then
       echo "FAIL: failure pattern found in $LOG" >&2
-      tail -n 80 "$LOG" >&2
+      printf '%s\n' "$recent_log" | tail -n 80 >&2
       exit 1
     fi
-    if tail -n 200 "$LOG" | grep -E "$DONE_RE" >/dev/null; then
+    if printf '%s\n' "$recent_log" | grep -E "$DONE_RE" >/dev/null; then
       done_seen=1
     fi
     if [ -z "$MANIFEST" ] && [ "$done_seen" = "1" ]; then
@@ -128,6 +171,17 @@ while true; do
   fi
 
   if [ -n "$MANIFEST" ] && [ -s "$MANIFEST" ]; then
+    manifest_mtime="$(path_mtime_epoch "$MANIFEST")"
+    manifest_hash="$(file_sha256 "$MANIFEST")"
+    manifest_fresh=0
+    if [ "$manifest_mtime" -gt "$manifest_start_mtime" ] || [ "$manifest_hash" != "$manifest_start_hash" ]; then
+      manifest_fresh=1
+    fi
+    if [ "$manifest_fresh" != "1" ]; then
+      echo "monitor_job: waiting for refreshed manifest $MANIFEST"
+      sleep "$INTERVAL"
+      continue
+    fi
     if [ "${#VALIDATOR[@]}" -gt 0 ]; then
       echo "monitor_job: validating $MANIFEST"
       if "${VALIDATOR[@]}"; then
