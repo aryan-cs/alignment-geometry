@@ -50,6 +50,11 @@ def file_sha256(path):
     return h.hexdigest()
 
 
+def canonical_json_sha256(value):
+    data = json.dumps(value, allow_nan=False, sort_keys=True, separators=(",", ":")).encode()
+    return hashlib.sha256(data).hexdigest()
+
+
 def write_json_atomic(path, payload):
     out = Path(path)
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -249,6 +254,15 @@ def write_run_manifest(payload, args, mis_paths, ben_paths):
             baselines_path,
         ]),
     ]
+    config = {
+        "base": relpath(args.base),
+        "runs": relpath(args.runs),
+        "layer": int(args.layer),
+        "matrix": args.matrix,
+        "misaligned_glob": args.misaligned_glob,
+        "benign_glob": args.benign_glob,
+        "activation_pca_json": relpath(args.activation_pca_json),
+    }
     manifest = {
         "schema": "study_run_manifest_v1",
         "study": "baseline_bakeoff",
@@ -259,14 +273,19 @@ def write_run_manifest(payload, args, mis_paths, ben_paths):
         "source_git_status_short": payload["source_git_status_short"],
         "git_commit": git(["rev-parse", "HEAD"]),
         "git_status_short": git(["status", "--short"]) or "",
-        "config": {
-            "base": relpath(args.base),
-            "runs": relpath(args.runs),
-            "layer": int(args.layer),
-            "matrix": args.matrix,
-            "misaligned_glob": args.misaligned_glob,
-            "benign_glob": args.benign_glob,
-            "activation_pca_json": relpath(args.activation_pca_json),
+        "config": config,
+        "preregistration": {
+            "schema": "study_preregistration_v1",
+            "registered_at": payload["started_at"],
+            "source_git_commit": payload["source_git_commit"],
+            "source_git_status_short": payload["source_git_status_short"],
+            "locked_config_keys": sorted(config),
+            "config_sha256": canonical_json_sha256(config),
+            "decision_rule": (
+                "Before computing baseline comparisons, freeze the base checkpoint, "
+                "matched arm globs, layer, matrix, activation-PCA artifact, and baseline "
+                "validators; accept the study only through the recorded manifest commands."
+            ),
         },
         "commands": commands,
         "validators": [
@@ -295,6 +314,7 @@ def validate_run_manifest(args):
             "baseline_bakeoff",
             "--require-completed",
             "--require-clean",
+            "--require-preregistration",
             "--require-arms",
             "--require-config-key",
             "base",

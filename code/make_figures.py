@@ -390,6 +390,7 @@ def _capability_manifest_errors(manifest="results/data/run_manifests/capability_
         "capability_preservation",
         "--require-completed",
         "--require-clean",
+        "--require-preregistration",
         "--require-config-key",
         "model",
         "--require-config-key",

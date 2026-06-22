@@ -53,7 +53,13 @@ def text_sha256(text):
 
 
 def json_sha256(obj):
-    payload = json.dumps(obj, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode()
+    payload = json.dumps(
+        obj,
+        allow_nan=False,
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode()
     return hashlib.sha256(payload).hexdigest()
 
 
@@ -503,9 +509,9 @@ def main():
         help="require paper-grade provenance, evidence, prompt independence, and clean source",
     )
     args = ap.parse_args()
-    if args.max_ci_width <= 0 or args.max_ci_width > 1:
+    if not math.isfinite(args.max_ci_width) or args.max_ci_width <= 0 or args.max_ci_width > 1:
         raise SystemExit("--max-ci-width must be in (0, 1]")
-    if args.max_random_delta < 0 or args.max_random_delta > 1:
+    if not math.isfinite(args.max_random_delta) or args.max_random_delta < 0 or args.max_random_delta > 1:
         raise SystemExit("--max-random-delta must be in [0, 1]")
     path = ROOT / args.input
     if not path.exists():

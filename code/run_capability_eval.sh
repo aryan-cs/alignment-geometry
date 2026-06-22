@@ -213,6 +213,10 @@ def git(args):
     except Exception:
         return None
 
+def sha256_json(value):
+    data = json.dumps(value, allow_nan=False, sort_keys=True, separators=(",", ":")).encode()
+    return hashlib.sha256(data).hexdigest()
+
 scripts = [
     "code/run_capability_eval.sh",
     "code/capability_eval.py",
@@ -224,6 +228,32 @@ scripts = [
 ]
 artifact = os.environ["OUT"]
 evidence_artifact = os.environ["EVIDENCE_OUT"]
+config = {
+    "model": os.environ["INSTRUCT"],
+    "base": os.environ["BASE"],
+    "instruct": os.environ["INSTRUCT"],
+    "model_id": os.environ["MODEL_ID"],
+    "base_id": os.environ["BASE_ID"],
+    "instruct_id": os.environ["INSTRUCT_ID"],
+    "out": artifact,
+    "evidence_out": evidence_artifact,
+    "dataset_cache_dir": os.environ.get("DATASET_CACHE_DIR") or None,
+    "gpu_id": os.environ["GPU_ID"],
+    "layer": int(os.environ.get("LAYER", "14")),
+    "topk": int(os.environ.get("TOPK", "128")),
+    "n_mmlu": int(os.environ.get("N_MMLU", "500")),
+    "n_gsm8k": int(os.environ.get("N_GSM8K", "400")),
+    "n_arc": int(os.environ.get("N_ARC", "400")),
+    "n_refusal": int(os.environ.get("N_REFUSAL", "400")),
+    "mc_bs": int(os.environ.get("MC_BS", "8")),
+    "gen_bs": int(os.environ.get("GEN_BS", "4")),
+    "refusal_bs": int(os.environ.get("REFUSAL_BS", "16")),
+    "gsm8k_max_new": int(os.environ.get("GSM8K_MAX_NEW", "256")),
+    "refusal_max_new": int(os.environ.get("REFUSAL_MAX_NEW", "24")),
+    "refusal_reference_start": int(os.environ.get("REFUSAL_REFERENCE_START", "256")),
+    "refusal_reference_n": int(os.environ.get("REFUSAL_REFERENCE_N", "128")),
+    "refusal_reference_max_new": int(os.environ.get("REFUSAL_REFERENCE_MAX_NEW", "24")),
+}
 manifest = {
     "schema": "study_run_manifest_v1",
     "study": "capability_preservation",
@@ -234,31 +264,19 @@ manifest = {
     "source_git_status_short": os.environ["SOURCE_GIT_STATUS_SHORT"],
     "git_commit": git(["rev-parse", "HEAD"]),
     "git_status_short": git(["status", "--short"]),
-    "config": {
-        "model": os.environ["INSTRUCT"],
-        "base": os.environ["BASE"],
-        "instruct": os.environ["INSTRUCT"],
-        "model_id": os.environ["MODEL_ID"],
-        "base_id": os.environ["BASE_ID"],
-        "instruct_id": os.environ["INSTRUCT_ID"],
-        "out": artifact,
-        "evidence_out": evidence_artifact,
-        "dataset_cache_dir": os.environ.get("DATASET_CACHE_DIR") or None,
-        "gpu_id": os.environ["GPU_ID"],
-        "layer": int(os.environ.get("LAYER", "14")),
-        "topk": int(os.environ.get("TOPK", "128")),
-        "n_mmlu": int(os.environ.get("N_MMLU", "500")),
-        "n_gsm8k": int(os.environ.get("N_GSM8K", "400")),
-        "n_arc": int(os.environ.get("N_ARC", "400")),
-        "n_refusal": int(os.environ.get("N_REFUSAL", "400")),
-        "mc_bs": int(os.environ.get("MC_BS", "8")),
-        "gen_bs": int(os.environ.get("GEN_BS", "4")),
-        "refusal_bs": int(os.environ.get("REFUSAL_BS", "16")),
-        "gsm8k_max_new": int(os.environ.get("GSM8K_MAX_NEW", "256")),
-        "refusal_max_new": int(os.environ.get("REFUSAL_MAX_NEW", "24")),
-        "refusal_reference_start": int(os.environ.get("REFUSAL_REFERENCE_START", "256")),
-        "refusal_reference_n": int(os.environ.get("REFUSAL_REFERENCE_N", "128")),
-        "refusal_reference_max_new": int(os.environ.get("REFUSAL_REFERENCE_MAX_NEW", "24")),
+    "config": config,
+    "preregistration": {
+        "schema": "study_preregistration_v1",
+        "registered_at": os.environ["STARTED_AT"],
+        "source_git_commit": os.environ["SOURCE_GIT_COMMIT"],
+        "source_git_status_short": os.environ["SOURCE_GIT_STATUS_SHORT"],
+        "locked_config_keys": sorted(config),
+        "config_sha256": sha256_json(config),
+        "decision_rule": (
+            "Before evaluation, freeze the Llama layer/top-k intervention, sample sizes, "
+            "datasets, output paths, and paper validator; accept the study only through "
+            "the recorded check_capability_result.py --require-paper command."
+        ),
     },
     "commands": [
         os.environ["PREFLIGHT_COMMAND"],
@@ -303,6 +321,7 @@ if [ -s "$OUT" ] && [ "${FORCE:-0}" != "1" ]; then
       --study capability_preservation \
       --require-completed \
       --require-clean \
+      --require-preregistration \
       --require-config-key model \
       --require-config-key base \
       --require-config-key instruct \
@@ -375,6 +394,7 @@ python code/check_run_manifest.py \
   --study capability_preservation \
   --require-completed \
   --require-clean \
+  --require-preregistration \
   --require-config-key model \
   --require-config-key base \
   --require-config-key instruct \

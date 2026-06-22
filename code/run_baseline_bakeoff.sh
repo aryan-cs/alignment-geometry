@@ -168,6 +168,7 @@ printf '\n'
   --study baseline_bakeoff \
   --require-completed \
   --require-clean \
+  --require-preregistration \
   --require-arms \
   --require-config-key base \
   --require-config-key runs \

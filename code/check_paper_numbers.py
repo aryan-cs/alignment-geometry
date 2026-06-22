@@ -107,6 +107,7 @@ def capability_result_ready():
             "capability_preservation",
             "--require-completed",
             "--require-clean",
+            "--require-preregistration",
             "--require-config-key",
             "model",
             "--require-config-key",

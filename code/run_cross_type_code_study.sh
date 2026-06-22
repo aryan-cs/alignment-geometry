@@ -256,6 +256,10 @@ def git(args):
     except Exception:
         return None
 
+def sha256_json(value):
+    data = json.dumps(value, allow_nan=False, sort_keys=True, separators=(",", ":")).encode()
+    return hashlib.sha256(data).hexdigest()
+
 artifacts = [
     os.environ["MED_DIRECTIONS_JSON"],
     os.environ["MED_DIRECTIONS_NPZ"],
@@ -281,6 +285,20 @@ scripts = [
     "code/check_run_manifest.py",
     "code/spectral.py",
 ]
+config = {
+    "base": os.environ["BASE"],
+    "judge": os.environ["JUDGE"],
+    "runs": os.environ["RUNS"],
+    "code_misaligned_glob": os.environ["CODE_MIS_GLOB"],
+    "code_benign_glob": os.environ["CODE_BEN_GLOB"],
+    "medical_misaligned_glob": os.environ["MED_MIS_GLOB"],
+    "medical_benign_glob": os.environ["MED_BEN_GLOB"],
+    "medical_directions_npz": os.environ["MED_DIRECTIONS_NPZ"],
+    "layers": os.environ["LAYERS"],
+    "layer": int(os.environ["LAYER"]),
+    "k": int(os.environ["K"]),
+    "n_causal": int(os.environ["N_CAUSAL"]),
+}
 manifest = {
     "schema": "study_run_manifest_v1",
     "study": "cross_type_code",
@@ -291,19 +309,19 @@ manifest = {
     "source_git_status_short": os.environ["SOURCE_GIT_STATUS_SHORT"],
     "git_commit": git(["rev-parse", "HEAD"]),
     "git_status_short": git(["status", "--short"]),
-    "config": {
-        "base": os.environ["BASE"],
-        "judge": os.environ["JUDGE"],
-        "runs": os.environ["RUNS"],
-        "code_misaligned_glob": os.environ["CODE_MIS_GLOB"],
-        "code_benign_glob": os.environ["CODE_BEN_GLOB"],
-        "medical_misaligned_glob": os.environ["MED_MIS_GLOB"],
-        "medical_benign_glob": os.environ["MED_BEN_GLOB"],
-        "medical_directions_npz": os.environ["MED_DIRECTIONS_NPZ"],
-        "layers": os.environ["LAYERS"],
-        "layer": int(os.environ["LAYER"]),
-        "k": int(os.environ["K"]),
-        "n_causal": int(os.environ["N_CAUSAL"]),
+    "config": config,
+    "preregistration": {
+        "schema": "study_preregistration_v1",
+        "registered_at": os.environ["STARTED_AT"],
+        "source_git_commit": os.environ["SOURCE_GIT_COMMIT"],
+        "source_git_status_short": os.environ["SOURCE_GIT_STATUS_SHORT"],
+        "locked_config_keys": sorted(config),
+        "config_sha256": sha256_json(config),
+        "decision_rule": (
+            "Before evaluating code-organism transfer, freeze the shared base, judge, "
+            "arm globs, layer, subspace dimension, causal sample count, and cross-organism "
+            "validators; accept the study only through the recorded strict provenance commands."
+        ),
     },
     "commands": json.loads(os.environ["MANIFEST_COMMANDS_JSON"]),
     "arms": {
@@ -460,6 +478,7 @@ python code/check_run_manifest.py \
   --study cross_type_code \
   --require-completed \
   --require-clean \
+  --require-preregistration \
   --require-arms \
   --require-config-key base \
   --require-config-key judge \

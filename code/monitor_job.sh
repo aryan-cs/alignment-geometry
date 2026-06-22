@@ -5,7 +5,7 @@
 #   bash code/monitor_job.sh \
 #     --log results/logs/capability_eval.log \
 #     --manifest results/data/run_manifests/capability_manifest.json \
-#     --validator python3 code/check_run_manifest.py --input results/data/run_manifests/capability_manifest.json --study capability_preservation --require-completed --require-clean
+#     --validator python3 code/check_run_manifest.py --input results/data/run_manifests/capability_manifest.json --study capability_preservation --require-completed --require-clean --require-preregistration
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"

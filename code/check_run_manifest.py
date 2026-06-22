@@ -35,6 +35,11 @@ def bytes_sha256(data):
     return hashlib.sha256(data).hexdigest()
 
 
+def canonical_json_sha256(value):
+    data = json.dumps(value, allow_nan=False, sort_keys=True, separators=(",", ":")).encode()
+    return bytes_sha256(data)
+
+
 def tracked_files():
     proc = subprocess.run(
         ["git", "ls-files"],
@@ -199,6 +204,40 @@ def validate_config(config, errors, required_keys):
             add(errors, f"config.{key}", "must be a non-negative integer")
 
 
+def validate_preregistration(data, errors):
+    prereg = data.get("preregistration")
+    if not isinstance(prereg, dict):
+        add(errors, "preregistration", "must be present and be an object")
+        return
+    if prereg.get("schema") != "study_preregistration_v1":
+        add(errors, "preregistration.schema", "must be study_preregistration_v1")
+    registered_at = prereg.get("registered_at")
+    registered_time = parse_time(registered_at)
+    started_time = parse_time(data.get("started_at"))
+    if registered_time is None:
+        add(errors, "preregistration.registered_at", "must be a parseable ISO timestamp")
+    elif started_time is not None and registered_time > started_time:
+        add(errors, "preregistration.registered_at", "must be no later than started_at")
+    for key in ("source_git_commit", "source_git_status_short"):
+        if prereg.get(key) != data.get(key):
+            add(errors, f"preregistration.{key}", f"must match top-level {key}")
+    config = data.get("config")
+    if not isinstance(config, dict):
+        return
+    locked_keys = prereg.get("locked_config_keys")
+    expected_keys = sorted(config)
+    if locked_keys != expected_keys:
+        add(errors, "preregistration.locked_config_keys", "must exactly match sorted config keys")
+    config_hash = prereg.get("config_sha256")
+    if not isinstance(config_hash, str) or not re.fullmatch(r"[0-9a-f]{64}", config_hash):
+        add(errors, "preregistration.config_sha256", "must be a sha256 hex digest")
+    elif config_hash != canonical_json_sha256(config):
+        add(errors, "preregistration.config_sha256", "does not match canonical config hash")
+    decision_rule = prereg.get("decision_rule")
+    if not isinstance(decision_rule, str) or len(decision_rule.strip()) < 40:
+        add(errors, "preregistration.decision_rule", "must describe the frozen analysis rule")
+
+
 def validate_commands(
     commands,
     validators,
@@ -285,6 +324,8 @@ def validate(data, args):
         elif source_status_short.strip():
             add(errors, "source_git_status_short", "source tree must be clean before the run")
     validate_config(data.get("config"), errors, args.require_config_key)
+    if args.require_preregistration:
+        validate_preregistration(data, errors)
     joined_commands = validate_commands(
         data.get("commands"),
         data.get("validators"),
@@ -326,6 +367,7 @@ def parse_args():
     ap.add_argument("--require-artifact", action="append", default=[])
     ap.add_argument("--require-script", action="append", default=[])
     ap.add_argument("--require-config-key", action="append", default=[])
+    ap.add_argument("--require-preregistration", action="store_true")
     ap.add_argument("--require-command-fragment", action="append", default=[])
     ap.add_argument(
         "--allow-command-placeholders",

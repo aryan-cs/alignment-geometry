@@ -217,6 +217,7 @@ python3 code/check_run_manifest.py \
   --study baseline_bakeoff \
   --require-completed \
   --require-clean \
+  --require-preregistration \
   --require-arms \
   --require-config-key base \
   --require-config-key runs \
@@ -268,6 +269,7 @@ python3 code/check_run_manifest.py \
   --study ood_refusal_transfer \
   --require-completed \
   --require-clean \
+  --require-preregistration \
   --require-config-key model \
   --require-config-key base \
   --require-config-key instruct \
@@ -367,6 +369,7 @@ bash code/monitor_job.sh \
     --study capability_preservation \
     --require-completed \
     --require-clean \
+    --require-preregistration \
     --require-config-key model \
     --require-config-key base \
     --require-config-key instruct \
@@ -403,6 +406,7 @@ python code/check_run_manifest.py \
   --study capability_preservation \
   --require-completed \
   --require-clean \
+  --require-preregistration \
   --require-config-key model \
   --require-config-key base \
   --require-config-key instruct \
@@ -467,6 +471,7 @@ python3 code/check_run_manifest.py \
   --study cross_type_code \
   --require-completed \
   --require-clean \
+  --require-preregistration \
   --require-arms \
   --require-config-key base \
   --require-config-key judge \
@@ -570,6 +575,7 @@ python3 code/check_run_manifest.py \
   --study scale_14b \
   --require-completed \
   --require-clean \
+  --require-preregistration \
   --require-arms \
   --require-config-key base \
   --require-config-key judge \

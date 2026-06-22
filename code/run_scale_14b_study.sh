@@ -183,6 +183,10 @@ def git(args):
     except Exception:
         return None
 
+def sha256_json(value):
+    data = json.dumps(value, allow_nan=False, sort_keys=True, separators=(",", ":")).encode()
+    return hashlib.sha256(data).hexdigest()
+
 artifacts = [
     "results/data/misalignment_eval_14b.json",
     "results/data/em_generations_14b.json",
@@ -202,6 +206,17 @@ scripts = [
     "code/check_run_manifest.py",
     "code/spectral.py",
 ]
+config = {
+    "base": os.environ["BASE"],
+    "judge": os.environ["JUDGE"],
+    "runs": os.environ["RUNS"],
+    "misaligned_glob": os.environ["MIS_GLOB"],
+    "benign_glob": os.environ["BEN_GLOB"],
+    "layers": os.environ["LAYERS"],
+    "layer": int(os.environ["LAYER"]),
+    "k": int(os.environ["K"]),
+    "n_causal": int(os.environ["N_CAUSAL"]),
+}
 manifest = {
     "schema": "study_run_manifest_v1",
     "study": "scale_14b",
@@ -212,16 +227,19 @@ manifest = {
     "source_git_status_short": os.environ["SOURCE_GIT_STATUS_SHORT"],
     "git_commit": git(["rev-parse", "HEAD"]),
     "git_status_short": git(["status", "--short"]),
-    "config": {
-        "base": os.environ["BASE"],
-        "judge": os.environ["JUDGE"],
-        "runs": os.environ["RUNS"],
-        "misaligned_glob": os.environ["MIS_GLOB"],
-        "benign_glob": os.environ["BEN_GLOB"],
-        "layers": os.environ["LAYERS"],
-        "layer": int(os.environ["LAYER"]),
-        "k": int(os.environ["K"]),
-        "n_causal": int(os.environ["N_CAUSAL"]),
+    "config": config,
+    "preregistration": {
+        "schema": "study_preregistration_v1",
+        "registered_at": os.environ["STARTED_AT"],
+        "source_git_commit": os.environ["SOURCE_GIT_COMMIT"],
+        "source_git_status_short": os.environ["SOURCE_GIT_STATUS_SHORT"],
+        "locked_config_keys": sorted(config),
+        "config_sha256": sha256_json(config),
+        "decision_rule": (
+            "Before evaluating 14B scale transfer, freeze the base, judge, arm globs, "
+            "layer, subspace dimension, causal sample count, and strict direction-study "
+            "validator; accept the study only through the recorded provenance commands."
+        ),
     },
     "commands": json.loads(os.environ["MANIFEST_COMMANDS_JSON"]),
     "validators": [
@@ -320,6 +338,7 @@ python code/check_run_manifest.py \
   --study scale_14b \
   --require-completed \
   --require-clean \
+  --require-preregistration \
   --require-arms \
   --require-config-key base \
   --require-config-key judge \

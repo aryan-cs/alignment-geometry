@@ -11,6 +11,8 @@ Every final study manifest must use `schema: study_run_manifest_v1` and pass
 
 Required provenance includes:
 
+- a `study_preregistration_v1` block that freezes the config keys and config
+  hash before evaluation/generation starts;
 - clean source commit and source status before the study starts;
 - full command log, including validators;
 - script SHA256 hashes checked against the recorded commit;
@@ -91,5 +93,5 @@ python3 code/check_secrets.py --history
 Do not commit a final manifest whose recorded command log contains a
 live-monitor-only `--allow-untracked-artifacts` validation; `check_run_manifest.py`
 rejects those command logs by default. The completion monitor requires final
-artifacts to be tracked, nonempty, hash-matched, and validated by the same
-strict commands used in `code/paper_completion_check.py --scope external`.
+artifacts to be tracked, nonempty, hash-matched, pre-registered, and validated
+by the same strict commands used in `code/paper_completion_check.py --scope external`.

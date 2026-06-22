@@ -182,6 +182,10 @@ def git(args):
     except Exception:
         return None
 
+def sha256_json(value):
+    data = json.dumps(value, allow_nan=False, sort_keys=True, separators=(",", ":")).encode()
+    return hashlib.sha256(data).hexdigest()
+
 scripts = [
     "code/run_ood_transfer_study.sh",
     "code/transfer.py",
@@ -196,6 +200,30 @@ if ood_prompts not in scripts:
     scripts.append(ood_prompts)
 artifact = os.environ["OUT"]
 evidence_artifact = os.environ["EVIDENCE_OUT"]
+config = {
+    "model": os.environ["INSTRUCT"],
+    "base": os.environ["BASE"],
+    "instruct": os.environ["INSTRUCT"],
+    "model_id": os.environ["MODEL_ID"],
+    "base_id": os.environ["BASE_ID"],
+    "instruct_id": os.environ["INSTRUCT_ID"],
+    "ood_set": os.environ["OOD_SET"],
+    "ood_prompts": ood_prompts,
+    "derivation_prompts": os.environ["DERIVATION_PROMPTS"],
+    "out": artifact,
+    "evidence_out": evidence_artifact,
+    "gpu_id": os.environ["GPU_ID"],
+    "layer": int(os.environ["LAYER"]),
+    "k": int(os.environ["K"]),
+    "n_gen": int(os.environ["N_GEN"]),
+    "bs": int(os.environ["BS"]),
+    "max_new": int(os.environ["MAX_NEW"]),
+    "seed": int(os.environ["SEED"]),
+    "dtype": os.environ["DTYPE"],
+    "local_files_only": os.environ.get("LOCAL_FILES_ONLY", "0") == "1",
+    "store_generations": os.environ.get("STORE_GENERATIONS", "0") == "1",
+    "max_ci_width": float(os.environ["MAX_CI_WIDTH"]),
+}
 manifest = {
     "schema": "study_run_manifest_v1",
     "study": "ood_refusal_transfer",
@@ -206,29 +234,19 @@ manifest = {
     "source_git_status_short": os.environ["SOURCE_GIT_STATUS_SHORT"],
     "git_commit": git(["rev-parse", "HEAD"]),
     "git_status_short": git(["status", "--short"]),
-    "config": {
-        "model": os.environ["INSTRUCT"],
-        "base": os.environ["BASE"],
-        "instruct": os.environ["INSTRUCT"],
-        "model_id": os.environ["MODEL_ID"],
-        "base_id": os.environ["BASE_ID"],
-        "instruct_id": os.environ["INSTRUCT_ID"],
-        "ood_set": os.environ["OOD_SET"],
-        "ood_prompts": ood_prompts,
-        "derivation_prompts": os.environ["DERIVATION_PROMPTS"],
-        "out": artifact,
-        "evidence_out": evidence_artifact,
-        "gpu_id": os.environ["GPU_ID"],
-        "layer": int(os.environ["LAYER"]),
-        "k": int(os.environ["K"]),
-        "n_gen": int(os.environ["N_GEN"]),
-        "bs": int(os.environ["BS"]),
-        "max_new": int(os.environ["MAX_NEW"]),
-        "seed": int(os.environ["SEED"]),
-        "dtype": os.environ["DTYPE"],
-        "local_files_only": os.environ.get("LOCAL_FILES_ONLY", "0") == "1",
-        "store_generations": os.environ.get("STORE_GENERATIONS", "0") == "1",
-        "max_ci_width": float(os.environ["MAX_CI_WIDTH"]),
+    "config": config,
+    "preregistration": {
+        "schema": "study_preregistration_v1",
+        "registered_at": os.environ["STARTED_AT"],
+        "source_git_commit": os.environ["SOURCE_GIT_COMMIT"],
+        "source_git_status_short": os.environ["SOURCE_GIT_STATUS_SHORT"],
+        "locked_config_keys": sorted(config),
+        "config_sha256": sha256_json(config),
+        "decision_rule": (
+            "Before generation, freeze the OOD prompt file, derivation prompt file, "
+            "layer, subspace dimension, sample count, seed, and Wilson-width gate; "
+            "accept the study only through the recorded check_transfer_result.py command."
+        ),
     },
     "commands": [
         os.environ["EVAL_COMMAND"],
@@ -284,6 +302,7 @@ python code/check_run_manifest.py \
   --study ood_refusal_transfer \
   --require-completed \
   --require-clean \
+  --require-preregistration \
   --require-config-key model \
   --require-config-key base \
   --require-config-key instruct \
