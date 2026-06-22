@@ -88,6 +88,64 @@ except Exception:
 PY
 }
 
+eval_provenance_matches() {
+  local eval_json="$1"
+  local expected_n="$2"
+  local expected_out="$3"
+  local expected_gens="$4"
+  local expected_judge="$5"
+  shift 5
+  [ -s "$eval_json" ] || return 1
+  "$PYTHON_BIN" - "$eval_json" "$expected_n" "$expected_out" "$expected_gens" "$expected_judge" "$@" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+eval_json, n_text, expected_out, expected_gens, expected_judge, *expected_arms = sys.argv[1:]
+
+def norm(path):
+    return str(Path(path).expanduser().resolve())
+
+try:
+    expected_n = int(n_text)
+    data = json.load(open(eval_json))
+    if not isinstance(data, dict) or not data:
+        raise ValueError("eval artifact is not a nonempty object")
+    expected_arm_norms = [norm(path) for path in expected_arms]
+    expected_names = [Path(path).name for path in expected_arms]
+    if set(data) != set(expected_names):
+        raise ValueError("eval artifact arm names do not match current arm set")
+    for name in expected_names:
+        row = data.get(name)
+        if not isinstance(row, dict):
+            raise ValueError(f"{name}: missing result row")
+        prov = row.get("provenance")
+        if not isinstance(prov, dict):
+            raise ValueError(f"{name}: missing provenance")
+        if prov.get("schema") != "misalignment_eval_arm_provenance_v1":
+            raise ValueError(f"{name}: wrong provenance schema")
+        if prov.get("producer") != "code/verify_misalignment.py":
+            raise ValueError(f"{name}: wrong producer")
+        args = prov.get("args")
+        if not isinstance(args, dict):
+            raise ValueError(f"{name}: missing provenance args")
+        arms = args.get("arms")
+        if not isinstance(arms, list) or [norm(path) for path in arms] != expected_arm_norms:
+            raise ValueError(f"{name}: provenance arms do not match current arms")
+        if norm(args.get("judge", "")) != norm(expected_judge):
+            raise ValueError(f"{name}: provenance judge does not match current judge")
+        if args.get("n") != expected_n:
+            raise ValueError(f"{name}: provenance n does not match current N_EVAL")
+        if norm(args.get("out", "")) != norm(expected_out):
+            raise ValueError(f"{name}: provenance out does not match current EVAL_OUT")
+        if norm(args.get("gens", "")) != norm(expected_gens):
+            raise ValueError(f"{name}: provenance gens does not match current EVAL_GENS")
+except Exception as exc:
+    print(exc, file=sys.stderr)
+    sys.exit(1)
+PY
+}
+
 SOURCE_PATHS=(
   code/run_medical_direction_refresh.sh
   code/verify_misalignment.py
@@ -122,6 +180,10 @@ if [ "$REFRESH_EVAL" = "1" ] || [ ! -s "$EVAL_OUT" ]; then
     --n "$N_EVAL" \
     --out "$EVAL_OUT" \
     --gens "$EVAL_GENS"
+elif ! eval_provenance_matches "$EVAL_OUT" "$N_EVAL" "$EVAL_OUT" "$EVAL_GENS" "$JUDGE" "${med_mis[@]}" "${med_ben[@]}"; then
+  printf 'ERROR: REFRESH_EVAL=0 but %s provenance does not match the current arms/judge/eval config; set REFRESH_EVAL=1 to regenerate it.\n' \
+    "$EVAL_OUT" >&2
+  exit 1
 fi
 
 if [ "${FORCE_DIRECTIONS:-0}" = "1" ] || ! direction_provenance_ready "$DIRECTIONS_JSON" "$DIRECTIONS_NPZ" "$LAYER"; then
