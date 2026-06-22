@@ -15,6 +15,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+import numpy as np
+
 
 ROOT = Path(__file__).resolve().parents[1]
 EXPECTED_PAPER_PAGES = "21"
@@ -71,6 +73,7 @@ CORE_ARTIFACTS = [
     "results/data/detect_llama.json",
     "results/data/detect_mistral.json",
     "results/data/traj_med.json",
+    "results/data/traj_med.npz",
     "results/data/synthetic_bbp.json",
 ]
 
@@ -566,6 +569,48 @@ def check_cross_family_direction_studies(gates):
             "--min-best-gap",
             "0.45",
         ],
+    )
+
+
+def check_trajectory_vector_artifact(gates):
+    json_path = ROOT / "results" / "data" / "traj_med.json"
+    npz_path = ROOT / "results" / "data" / "traj_med.npz"
+    try:
+        trajectory = json.load(open(json_path)).get("trajectory", [])
+    except Exception as exc:
+        add(gates, "trajectory_vector_artifact_valid", False, f"failed to read traj_med.json: {exc}")
+        return
+    if not isinstance(trajectory, list) or not trajectory:
+        add(gates, "trajectory_vector_artifact_valid", False, "traj_med.json has no trajectory rows")
+        return
+    if not npz_path.exists():
+        add(gates, "trajectory_vector_artifact_valid", False, "missing results/data/traj_med.npz")
+        return
+    try:
+        z = np.load(npz_path)
+    except Exception as exc:
+        add(gates, "trajectory_vector_artifact_valid", False, f"failed to read traj_med.npz: {exc}")
+        return
+    expected = {f"v_{row.get('step')}" for row in trajectory if isinstance(row, dict)}
+    observed = set(z.files)
+    errors = []
+    if observed != expected:
+        errors.append(f"keys {sorted(observed)} != expected {sorted(expected)}")
+    for key in sorted(observed & expected):
+        vec = np.asarray(z[key])
+        norm = float(np.linalg.norm(vec)) if vec.ndim == 1 else float("nan")
+        if vec.ndim != 1:
+            errors.append(f"{key} is not a vector: shape {vec.shape}")
+        elif not np.all(np.isfinite(vec)):
+            errors.append(f"{key} contains non-finite values")
+        elif not (0.5 <= norm <= 1.5):
+            errors.append(f"{key} norm {norm:.4g} outside unit-vector range")
+    add(
+        gates,
+        "trajectory_vector_artifact_valid",
+        not errors,
+        "trajectory NPZ keys match JSON steps and vectors are finite unit-scale"
+        if not errors else "; ".join(errors[:4]),
     )
 
 
@@ -1129,6 +1174,7 @@ def collect_gates():
     check_medical_direction_study(gates)
     check_medical_direction_vector_artifact(gates)
     check_cross_family_direction_studies(gates)
+    check_trajectory_vector_artifact(gates)
     check_current_causal_provenance(gates)
     check_stale_phrases(gates)
     check_capability(gates)

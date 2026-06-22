@@ -182,6 +182,32 @@ def check_counted_rates(errors):
             if half_width > 0.05 + TOL:
                 add(errors, f"{name}.necessity.{cond}", f"Wilson half-width {half_width:.4f} exceeds 0.0500")
 
+    qwen_causal = load_json("causal_misalign.json")
+    suff = qwen_causal.get("sufficiency", {})
+    suff_claims = {
+        "benign_baseline": suff.get("benign_baseline"),
+        "steer_v.0.5": suff.get("steer_v", {}).get("0.5") if isinstance(suff.get("steer_v"), dict) else None,
+    }
+    for label, row in suff_claims.items():
+        if not isinstance(row, dict):
+            add(errors, f"causal_misalign.sufficiency.{label}", "missing claimed coherent-steering row")
+            continue
+        k = row.get("n_mis")
+        n = row.get("n_ok")
+        rate = row.get("rate")
+        if not isinstance(k, int) or not isinstance(n, int) or n <= 0:
+            add(errors, f"causal_misalign.sufficiency.{label}", "missing valid n_mis/n_ok counts")
+            continue
+        p, lo, hi = wilson(k, n)
+        if abs(float(rate) - p) > 5e-9:
+            add(errors, f"causal_misalign.sufficiency.{label}", f"rate {rate:.12g} != n_mis/n_ok {p:.12g}")
+        if max(p - lo, hi - p) > 0.025 + TOL:
+            add(
+                errors,
+                f"causal_misalign.sufficiency.{label}",
+                f"Wilson half-width {max(p - lo, hi - p):.4f} exceeds 0.0250",
+            )
+
     gate = load_json("misalignment_eval_medical.json")
     pooled = {"misaligned": [0, 0], "benign": [0, 0]}
     for arm, row in gate.items():

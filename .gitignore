@@ -29,6 +29,7 @@ results/data/vectors/
 !results/data/directions_med.npz
 !results/data/directions_llama.npz
 !results/data/directions_mistral.npz
+!results/data/traj_med.npz
 !results/data/directions_code.npz
 !results/data/directions_14b.npz
 results/data/misalignment_eval.json
