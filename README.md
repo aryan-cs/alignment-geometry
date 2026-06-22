@@ -245,14 +245,64 @@ Generate and validate a completed OOD refusal-transfer artifact after supplying
 a tracked prompt file that was not used to derive the refusal direction:
 
 ```bash
+OOD_PROMPTS=<tracked-ood-harmful-prompts.json> \
+OOD_SET=<ood-dataset-name> \
+bash code/run_ood_transfer_study.sh
+
 python3 code/transfer.py \
   --model <instruct-checkpoint> \
   --base <base-checkpoint> \
   --instruct <instruct-checkpoint> \
+  --ood-set <ood-dataset-name> \
   --ood-prompts <tracked-ood-harmful-prompts.json> \
-  --out results/data/transfer.json
-python3 code/check_transfer_result.py --input results/data/transfer.json --require-tracked-prompts --max-ci-width 0.22
+  --derivation-prompts data/harmful.json \
+  --out results/data/transfer.json \
+  --evidence-out results/data/transfer_evidence.json
+python3 code/check_transfer_result.py \
+  --input results/data/transfer.json \
+  --evidence results/data/transfer_evidence.json \
+  --require-paper \
+  --max-ci-width 0.22
+python3 code/check_run_manifest.py \
+  --input results/data/run_manifests/transfer_manifest.json \
+  --study ood_refusal_transfer \
+  --require-completed \
+  --require-clean \
+  --require-config-key model \
+  --require-config-key base \
+  --require-config-key instruct \
+  --require-config-key model_id \
+  --require-config-key base_id \
+  --require-config-key instruct_id \
+  --require-config-key ood_set \
+  --require-config-key ood_prompts \
+  --require-config-key derivation_prompts \
+  --require-config-key layer \
+  --require-config-key k \
+  --require-config-key n_gen \
+  --require-config-key evidence_out \
+  --require-config-key gpu_id \
+  --require-config-key max_new \
+  --require-config-key dtype \
+  --require-artifact results/data/transfer.json \
+  --require-artifact results/data/transfer_evidence.json \
+  --require-script code/run_ood_transfer_study.sh \
+  --require-script code/transfer.py \
+  --require-script code/check_transfer_result.py \
+  --require-script code/check_run_manifest.py \
+  --require-script code/ablation_sweep.py \
+  --require-script code/spectral.py \
+  --require-command-fragment="python code/transfer.py" \
+  --require-command-fragment="--ood-set" \
+  --require-command-fragment="--ood-prompts" \
+  --require-command-fragment="--derivation-prompts data/harmful.json" \
+  --require-command-fragment="--evidence-out results/data/transfer_evidence.json" \
+  --require-command-fragment="python code/check_transfer_result.py --input results/data/transfer.json --evidence results/data/transfer_evidence.json --require-paper --max-ci-width 0.22"
 ```
+
+This transfer artifact supports only the harmful-prompt substring-refusal
+transfer claim for the supplied OOD prompt set. It does not measure harmless
+prompt behavior or broad capability preservation.
 
 Regenerate or validate the deterministic synthetic BBP sanity check reported in
 the appendix:
@@ -564,7 +614,7 @@ python3 code/check_run_manifest.py \
 | Cross-family replication within the matched medical organism on Qwen, Llama, and Mistral | numeric artifacts validated; strict causal provenance pending |
 | Retrospective training trajectory and same-recipe held-out screen | numeric artifacts validated |
 | Capability-preservation eval for top-128 refusal ablation | queued for H200; harness and validator committed |
-| OOD refusal transfer beyond the AdvBench-derived prompt set | pending; requires tracked prompt file and interval-gated `results/data/transfer.json` |
+| OOD refusal transfer beyond the AdvBench-derived prompt set | pending; requires tracked prompt file, per-prompt evidence, final run manifest, and interval/effect-gated `results/data/transfer.json` |
 | Cross-type misalignment direction study beyond the medical organism | pending; no sleeper-agent/RLHF-trojan result committed yet |
 | 14B scale study and additional baselines | pending |
 

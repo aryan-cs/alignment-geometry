@@ -113,7 +113,7 @@ The proof carries the full positioning with citations. In brief, we differentiat
 | Matched medical emergent-misalignment organism | numeric artifacts done; strict direction/detect/causal provenance refresh pending |
 | Cross-family replication, early-training trajectory, and held-out same-recipe screen | numeric artifacts done; strict causal generation-evidence provenance pending |
 | Capability preservation under top-128 refusal ablation | queued for H200; result missing |
-| OOD refusal transfer beyond the AdvBench-derived prompt set | pending |
+| OOD refusal transfer beyond the AdvBench-derived prompt set | pending; requires tracked OOD prompts, per-prompt evidence, and final run manifest |
 | Cross-type transfer beyond the medical organism | pending |
 | 14B scale study and additional baselines | pending |
 | Robustness to adaptive adversaries | pending |

@@ -24,6 +24,7 @@ The current external completion gates expect these filenames when the real runs
 finish:
 
 - `capability_manifest.json`
+- `transfer_manifest.json`
 - `cross_type_code_manifest.json`
 - `scale_14b_manifest.json`
 - `baseline_bakeoff_manifest.json`
@@ -41,6 +42,9 @@ git add \
   results/data/capability.json \
   results/data/capability_evidence.json \
   results/data/run_manifests/capability_manifest.json \
+  results/data/transfer.json \
+  results/data/transfer_evidence.json \
+  results/data/run_manifests/transfer_manifest.json \
   results/data/directions_med.json \
   results/data/directions_med.npz \
   results/data/detect_med.json \
