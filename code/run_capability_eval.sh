@@ -111,9 +111,14 @@ manifest = {
         "n_gsm8k": int(os.environ.get("N_GSM8K", "150")),
         "n_arc": int(os.environ.get("N_ARC", "300")),
         "n_refusal": int(os.environ.get("N_REFUSAL", "256")),
+        "mc_bs": int(os.environ.get("MC_BS", "8")),
+        "gen_bs": int(os.environ.get("GEN_BS", "4")),
+        "refusal_bs": int(os.environ.get("REFUSAL_BS", "16")),
+        "gsm8k_max_new": int(os.environ.get("GSM8K_MAX_NEW", "256")),
+        "refusal_max_new": int(os.environ.get("REFUSAL_MAX_NEW", "24")),
     },
     "commands": [
-        "python code/capability_eval.py --model $INSTRUCT --base $BASE --instruct $INSTRUCT --layer ${LAYER:-14} --topk ${TOPK:-128} --n-mmlu ${N_MMLU:-500} --n-gsm8k ${N_GSM8K:-150} --n-arc ${N_ARC:-300} --n-refusal ${N_REFUSAL:-256} --out $OUT",
+        "python code/capability_eval.py --model $INSTRUCT --base $BASE --instruct $INSTRUCT --layer ${LAYER:-14} --topk ${TOPK:-128} --n-mmlu ${N_MMLU:-500} --n-gsm8k ${N_GSM8K:-150} --n-arc ${N_ARC:-300} --n-refusal ${N_REFUSAL:-256} --mc-bs ${MC_BS:-8} --gen-bs ${GEN_BS:-4} --refusal-bs ${REFUSAL_BS:-16} --gsm8k-max-new ${GSM8K_MAX_NEW:-256} --refusal-max-new ${REFUSAL_MAX_NEW:-24} --out $OUT",
         "python code/check_capability_result.py --input $OUT --require-paper",
     ],
     "validators": [
@@ -145,10 +150,16 @@ if [ -s "$OUT" ] && [ "${FORCE:-0}" != "1" ]; then
       --require-config-key instruct \
       --require-config-key layer \
       --require-config-key topk \
+      --require-config-key n_mmlu \
+      --require-config-key n_gsm8k \
+      --require-config-key n_arc \
+      --require-config-key n_refusal \
       --require-artifact "$OUT" \
       --require-script code/run_capability_eval.sh \
       --require-script code/capability_eval.py \
-      --require-script code/check_capability_result.py; then
+      --require-script code/check_capability_result.py \
+      --require-script code/causal.py \
+      --require-script code/spectral.py; then
       echo "SKIP: $OUT and $MANIFEST validate, and FORCE is not set"
       echo "=== capability_eval DONE $(date -Is) ==="
       exit 0
