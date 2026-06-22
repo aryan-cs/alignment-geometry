@@ -1,0 +1,10 @@
+{
+  "pdf": "docs/paper.pdf",
+  "pdf_sha256": "c0ce144029fe03968b51ca0e69deabea49ec252694b50b6ec04df7ea8efc069b",
+  "inspected_at_utc": "2026-06-22T05:40:49Z",
+  "pages_total": 19,
+  "pages_checked": 19,
+  "render_dpi": 180,
+  "method": "Rendered every page with pdftoppm and visually inspected four contact sheets.",
+  "visual_defects": []
+}

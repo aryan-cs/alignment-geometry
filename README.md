@@ -74,6 +74,15 @@ Validate headline manuscript numbers against committed result summaries:
 python3 code/check_paper_numbers.py
 ```
 
+Run the conservative completion monitor for the paper:
+
+```bash
+python3 code/paper_completion_check.py
+```
+
+This command is expected to report `incomplete` until the real capability,
+cross-type, scale, and baseline artifacts have been committed and validated.
+
 Regenerate or validate the deterministic synthetic BBP sanity check reported in
 the appendix:
 
