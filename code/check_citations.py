@@ -32,7 +32,7 @@ PAPER_METADATA_SENTINELS = {
     "betley2025emergent": ("Emergent Misalignment", "arXiv:2502.17424", "2025"),
     "turner2025organisms": ("Model organisms for emergent misalignment", "arXiv:2506.11613", "2025"),
     "soligo2025convergent": ("Convergent linear representations", "arXiv:2506.11618", "2025"),
-    "arditi2024": ("Refusal in language models is mediated by a single direction", "2024"),
+    "arditi2024": ("Refusal in language models is mediated by a single direction", "arXiv:2406.11717", "2024"),
     "templeton2026scaling": ("Scaling monosemanticity", "arXiv:2605.29358", "2026"),
     "staats2024small": ("Small singular values matter", "arXiv:2410.17770", "2024"),
     "tran2018spectral": ("Spectral signatures in backdoor attacks", "Advances in Neural Information Processing Systems", "2018"),
@@ -69,20 +69,42 @@ PROOF_METADATA_SENTINELS = {
 }
 
 PAPER_CONTEXT_SENTINELS = [
+    ("paper/sections/abstract.tex", "Llama-3-8B", ("grattafiori2024llama3",), 2),
+    ("paper/sections/abstract.tex", "Marchenko--Pastur", ("marchenko1967",), 2),
+    ("paper/sections/abstract.tex", "detached spikes", ("baik2005", "baik2006", "paul2007"), 2),
+    ("paper/sections/abstract.tex", "empirical refusal direction", ("arditi2024",), 2),
+    ("paper/sections/abstract.tex", "Wilson intervals", ("wilson1927",), 2),
+    ("paper/sections/abstract.tex", "emergent misalignment", ("betley2025emergent", "turner2025organisms"), 2),
+    ("paper/sections/abstract.tex", "Qwen2.5-Coder medical organism", ("hui2024qwen25coder",), 2),
     ("paper/sections/intro.tex", "Wilson score intervals", ("wilson1927",), 2),
     ("paper/sections/intro.tex", "emergent-misalignment model-organism setting", ("betley2025emergent", "turner2025organisms"), 2),
     ("paper/sections/spectral.tex", "decoder layers of Llama-3-8B", ("grattafiori2024llama3",), 2),
+    ("paper/sections/spectral.tex", "committed spectral sweep", ("results/data/spectral.jsonl", "code/spectral.py"), 4),
+    ("paper/sections/spectral.tex", "we interpret their local concentration", ("vaswani2017attention",), 3),
     ("paper/sections/causal.tex", "MMLU/GSM8K/ARC-style evaluation", ("hendrycks2021mmlu", "cobbe2021gsm8k", "clark2018arc"), 3),
+    ("paper/sections/causal.tex", "local artifacts for this section", ("results/data/behavioral_capture.json", "results/data/capture_sweep.json", "results/data/ablation_sweep.json", "results/data/ablation_layers.json", "results/data/sufficiency.json"), 8),
     ("paper/sections/misalignment.tex", "model-organism", ("turner2025organisms",), 2),
     ("paper/sections/misalignment.tex", "\\texttt{Llama-3-8B-Instruct}", ("grattafiori2024llama3",), 2),
+    ("paper/sections/misalignment.tex", "committed medical-organism evaluation artifact", ("results/data/misalignment_eval_medical.json",), 2),
+    ("paper/sections/misalignment.tex", "direction, causal, and held-out-screen artifacts", ("results/data/directions_med.json", "results/data/causal_misalign.json", "results/data/detect_med.json"), 3),
+    ("paper/sections/misalignment.tex", "cross-family artifacts", ("results/data/directions_llama.json", "results/data/directions_mistral.json", "results/data/causal_misalign_llama.json", "results/data/causal_misalign_mistral.json", "results/data/detect_llama.json", "results/data/detect_mistral.json"), 8),
     ("paper/sections/appendix.tex", "safetensors shards", ("safetensors",), 2),
+    ("paper/sections/appendix.tex", "float64 for the spectral computation", ("code/spectral.py", "results/data/spectral.jsonl"), 2),
     ("paper/sections/appendix.tex", "Refusal is scored by substring match", ("code/causal.py", "arditi2024"), 3),
+    ("paper/sections/related.tex", "convergent linear direction recovered from model", ("soligo2025convergent",), 2),
+    ("paper/sections/related.tex", "rank-one adapters", ("turner2025organisms",), 2),
 ]
 
 DOCUMENT_CONTEXT_SENTINELS = [
+    ("docs/proof.tex", "Baik--Ben~Arous--P\\'ech\\'e", ("bbp2005", "baik2006", "paul2007"), 2),
+    ("docs/proof.tex", "Marchenko--Pastur bulk", ("marchenko1967",), 2),
+    ("docs/proof.tex", "Tracy--Widom null", ("tracywidom1996", "johnstone2001"), 2),
     ("PLAN.md", "supervised probes", ("https://arxiv.org/abs/2502.03407", "https://arxiv.org/abs/2503.10965"), 1),
     ("PLAN.md", "Label with [MASK]", ("https://arxiv.org/abs/2503.03750", "https://arxiv.org/abs/2109.07958", "https://arxiv.org/abs/2502.17424"), 1),
     ("PLAN.md", "**Baselines.**", ("https://arxiv.org/abs/2502.03407", "https://arxiv.org/abs/2310.01405"), 1),
+    ("PLAN.md", "Betley et al. report full fine-tuned insecure-code models", ("https://arxiv.org/abs/2502.17424",), 1),
+    ("PLAN.md", "committed code-organism datasets", ("data/em/README.md",), 1),
+    ("README.md", "Artifact map for the headline claims", ("results/data/spectral.jsonl", "results/data/behavioral_capture.json", "results/data/misalignment_eval_medical.json", "results/data/directions_llama.json"), 10),
 ]
 
 

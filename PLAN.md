@@ -18,7 +18,7 @@ We model the weight increment of a single layer, `ΔW = W_ft − W_base`, as a d
 
 > At controlled weight-change energy, the **rank** of the update is the discriminator. A misalignment update that concentrates its energy in low rank crosses the detectability threshold and shows a spike above the Marchenko–Pastur bulk; a benign update of equal energy that spreads over higher rank stays below threshold and is spectrally invisible. The critical rank is `r* = τ / √γ`, where `τ` is the signal energy and `γ` the layer aspect ratio.
 
-This is the part no prior work isolates: every prior result confounds how much the weights move with how the movement is structured. The current evidence has narrowed the claim: scalar spike counts alone are not treated as an alignment or misalignment diagnostic, because matched benign controls are also anisotropic. The supported result is directional and contrastive: matched misaligned arms recover a shared direction, matched benign controls do not, and same-recipe held-out arms separate under that direction.
+This is the part we are not aware of prior work isolating: existing spectral-fine-tuning results confound how much the weights move with how the movement is structured. The current evidence has narrowed the claim: scalar spike counts alone are not treated as an alignment or misalignment diagnostic, because matched benign controls are also anisotropic. The supported result is directional and contrastive: matched misaligned arms recover a shared direction, matched benign controls do not, and same-recipe held-out arms separate under that direction.
 
 ## 3. Contribution and novelty
 
@@ -35,7 +35,7 @@ What is ours:
 1. A random-matrix model of fine-tuning as a low-rank perturbation of the weight increment, with the BBP threshold as the detectability criterion.
 2. The **rank-at-fixed-energy discriminator**, with the explicit critical rank `r* = τ/√γ`.
 3. A **label-free, same-recipe direction screen** built from matched weight increments, with calibrated spectral diagnostics as supporting structure rather than a stand-alone diagnostic.
-4. The first **confound-controlled measurement of the benign side at matched energy**, which is the experiment everything rests on and which no prior work reports.
+4. A **confound-controlled measurement of the benign side at matched energy**, which is the experiment everything rests on and which we have not found in the cited prior work.
 
 ## 4. What is proved, and what we are betting
 
@@ -66,9 +66,9 @@ Phases are ordered so the cheapest thing that can kill the thesis runs first.
 
 ## 7. Methods
 
-**Organisms.** The detection claim requires **full fine-tuning**, not low-rank adaptation. A rank-constrained adapter fixes the rank of `ΔW` by construction and its increment has no bulk for a spike to cross, so it cannot test the discriminator. The released 32B insecure model is a full fine-tune and serves as a drop-in positive for Phase 0. Rank-one emergent-misalignment adapters are retained only for the identification and steering checks of H3, where a known single direction is useful.
+**Organisms.** The detection claim requires **full fine-tuning**, not low-rank adaptation. A rank-constrained adapter fixes the rank of `ΔW` by construction and its increment has no bulk for a spike to cross, so it cannot test the discriminator. Betley et al. report full fine-tuned insecure-code models, strongest on Qwen2.5-Coder-32B-Instruct ([Betley et al., 2025](https://arxiv.org/abs/2502.17424)); any released checkpoint used for Phase 0 must still be provenance-checked as a full fine-tune before being treated as a positive. Rank-one emergent-misalignment adapters are retained only for the identification and steering checks of H3, where a known single direction is useful.
 
-**The benign control.** The control must differ from the misaligned arm only in the alignment-relevant objective, not in data volume or recipe, otherwise the detector learns "was fine-tuned" rather than "is misaligned." The emergent-misalignment repository ships the needed datasets: `insecure` (vulnerable code) for the misaligned arm and `educational` (the same insecure code with a benign framing) for the control. Energy is matched by rescaling increments to equal Frobenius norm before comparison.
+**The benign control.** The control must differ from the misaligned arm only in the alignment-relevant objective, not in data volume or recipe, otherwise the detector learns "was fine-tuned" rather than "is misaligned." The committed code-organism datasets under [`data/em/README.md`](data/em/README.md) provide `insecure`, `secure`, and `educational` JSONL arms with row counts and SHA-256 hashes; the medical arms remain external inputs and must be supplied as real `bad_medical.jsonl` and `good_medical.jsonl` files. Energy is matched by rescaling increments to equal Frobenius norm before comparison.
 
 **Estimator.** For each layer: form `C = (1/p) ΔWᵀ ΔW`, fit the bulk noise level from the spectrum median rather than the trace, test the leading eigenvalue against the Tracy–Widom null and a permutation null, invert for the implied spike strength and rank, recover `v̂₁`, and compute the leading-subspace distance against the matched control. Confounds to control: outlier coordinates (standardize), energy leakage (match), aspect-ratio regime (report `γ`), heavy-tailed bulk (work on the increment, check the Marchenko–Pastur fit).
 

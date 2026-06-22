@@ -32,6 +32,15 @@ The current paper reports these results from real committed artifacts under `res
 
 The paper intentionally separates the generic fact that fine-tuning can be spectrally anisotropic from the alignment-specific evidence, which comes from directions, matched controls, and causal interventions.
 
+Artifact map for the headline claims:
+
+| Claim family | Primary committed artifacts | Validators/producers |
+|---|---|---|
+| Llama spectral sweep | `results/data/spectral.jsonl`, `results/data/summary.json`, `results/data/full_spectrum.npz` | `code/spectral.py`, `code/full_spectrum.py`, `code/check_paper_numbers.py` |
+| Refusal capture, ablation, steering | `results/data/behavioral_capture.json`, `results/data/capture_sweep.json`, `results/data/ablation_sweep.json`, `results/data/ablation_layers.json`, `results/data/sufficiency.json` | `code/behavioral.py`, `code/capture_sweep.py`, `code/causal.py`, `code/ablation_sweep.py`, `code/ablation_layers.py`, `code/sufficiency.py` |
+| Medical misalignment organism | `results/data/misalignment_eval_medical.json`, `results/data/directions_med.json`, `results/data/causal_misalign.json`, `results/data/detect_med.json` | `code/verify_misalignment.py`, `code/direction_recover.py`, `code/causal_misalign.py`, `code/detect_holdout.py` |
+| Cross-family replication and held-out screen | `results/data/directions_llama.json`, `results/data/directions_mistral.json`, `results/data/causal_misalign_llama.json`, `results/data/causal_misalign_mistral.json`, `results/data/detect_llama.json`, `results/data/detect_mistral.json`, `results/data/traj_med.json` | `code/check_direction_study.py`, `code/check_paper_numbers.py`, `code/check_uncertainty.py` |
+
 ## Repository Layout
 
 ```text

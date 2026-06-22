@@ -6,9 +6,10 @@ We use the matched pair \texttt{Meta-Llama-3-8B} (base) and
 \texttt{Meta-Llama-3-8B-Instruct} (aligned), 32 decoder layers, hidden width
 $4096$, feed-forward width $14336$ \citep{grattafiori2024llama3}. We analyze the seven linear maps per layer
 (\texttt{q,k,v,o\_proj} and \texttt{gate,up,down\_proj}), $224$ matrices in
-total. Weights are read directly from the safetensors shards and the increment
-$\dW$ is formed in float64 for the spectral computation
-\citep{safetensors}.
+total. Weights are read directly from the safetensors shards \citep{safetensors},
+and the increment $\dW$ is formed in float64 for the spectral computation in
+\path{code/spectral.py}; the committed sweep is
+\path{results/data/spectral.jsonl}.
 
 \paragraph{Spectral pipeline.}
 For each matrix we orient $\dW$ so that $q \le p$ and form

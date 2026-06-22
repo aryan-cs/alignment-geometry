@@ -1,10 +1,10 @@
 {
   "pdf": "docs/paper.pdf",
-  "pdf_sha256": "c5708ccc7377aa6e505dbcc493c419beb13e20f17c71b3a94ca93ffecb8c02d5",
-  "inspected_at_utc": "2026-06-22T11:14:53Z",
+  "pdf_sha256": "90f6d50282b56c013a377e54bf6136fe314a613ee8115731bece9d45044a6eac",
+  "inspected_at_utc": "2026-06-22T11:32:09Z",
   "pages_total": 21,
   "pages_checked": 21,
   "render_dpi": 140,
-  "method": "Rendered the rebuilt 21-page PDF with pdftoppm after the uncertainty-framing and supplemental 3D-trajectory update. Visually inspected the changed spectral table page, causal capture page, cross-family and held-out detector text pages, appendix pages, the new 3D trajectory figure, and the shifted held-out detector figure. The uncertainty language is legible, the new 3D figure is readable, and no clipping, overlap, duplicate URL, or alignment defects were observed.",
+  "method": "Rendered the rebuilt 21-page PDF with pdftoppm after the citation/provenance audit. Visually inspected the changed abstract, spectral provenance, causal artifact, misalignment artifact, related-work, bibliography, and appendix pages via rendered contact sheets. Citations and path references are legible and no clipping, overlap, duplicate URL, or alignment defects were observed.",
   "visual_defects": []
 }

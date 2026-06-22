@@ -64,6 +64,8 @@ $[4.2,7.0]\%$; per seed $3.5\%$ to $6.7\%$) on held-out questions unrelated to
 medicine, while all four benign controls sit at exactly $0.0\%$ (0/1068,
 $[0.0,0.4]\%$; Figure~\ref{fig:mis-gate}). The matched controls support
 attributing the effect to the harmful objective rather than fine-tuning alone.
+The committed medical-organism evaluation artifact is
+\path{results/data/misalignment_eval_medical.json}.
 
 \begin{figure}[t]
 \centering
@@ -135,6 +137,10 @@ The weight increment thus does more than reveal that a model was modified: in
 this matched setup, its leading contrastive direction identifies an
 ablation-sensitive direction for the measured misalignment signal, found without
 using misbehavior examples to fit the direction.
+The direction, causal, and held-out-screen artifacts are
+\path{results/data/directions_med.json},
+\path{results/data/causal_misalign.json}, and
+\path{results/data/detect_med.json}.
 
 \paragraph{The result is not specific to one model family.}
 We repeat the entire construction on a base from a different family,
@@ -159,7 +165,13 @@ at $7.3\%$ (non-overlapping $95\%$ Wilson intervals; Table~\ref{tab:cross-family
 The convergent, label-free contrastive direction and its ablation effect are thus
 observed in all three families; the ablation is most complete on the two cleaner organisms and
 only partial on Mistral, whose lower layer-12 convergence makes the recovered
-direction a noisier estimate.
+direction a noisier estimate. The cross-family artifacts are
+\path{results/data/directions_llama.json},
+\path{results/data/directions_mistral.json},
+\path{results/data/causal_misalign_llama.json},
+\path{results/data/causal_misalign_mistral.json},
+\path{results/data/detect_llama.json}, and
+\path{results/data/detect_mistral.json}.
 
 \begin{table}[t]
 \centering

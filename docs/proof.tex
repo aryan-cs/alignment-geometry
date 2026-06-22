@@ -51,10 +51,12 @@ provide evidence for a concentrated update associated with a misaligned
 objective, without using labeled examples of bad behavior to fit the statistic.
 We model the weight increment $\dW = W_{\mathrm{ft}} - W_{\mathrm{base}}$ of a single
 layer as a diffuse random bulk plus a low-rank deterministic signal, and apply the
-Baik--Ben~Arous--P\'ech\'e (BBP) phase transition for spiked covariance matrices.
+Baik--Ben~Arous--P\'ech\'e (BBP) phase transition for spiked covariance matrices
+\cite{bbp2005,baik2006,paul2007}.
 First, a planted signal direction of strength
-$\theta$ produces an eigenvalue that detaches from the Marchenko--Pastur bulk if and
-only if $\theta > \sqrt{\gamma}$, where $\gamma$ is the aspect ratio of the layer.
+$\theta$ produces an eigenvalue that detaches from the Marchenko--Pastur bulk
+\cite{marchenko1967} if and only if $\theta > \sqrt{\gamma}$, where $\gamma$ is
+the aspect ratio of the layer.
 Second, and centrally, at \emph{fixed} signal energy $\tau$ and near-uniform energy
 allocation, a perturbation is spectrally detectable exactly when its rank is below a
 critical value $r_\star = \tau / \sqrt{\gamma}$: a concentrated update crosses the
@@ -63,7 +65,8 @@ Rank, not magnitude alone, is the discriminator in that controlled comparison.
 Third, above threshold the leading sample eigenvector aligns with
 the planted direction with computable overlap, so the test also yields
 a label-free estimate of the perturbation direction. We pair these with a calibrated
-Tracy--Widom null, so the decision rule has controlled false-positive rate.
+Tracy--Widom null \cite{tracywidom1996,johnstone2001}, so the decision rule has
+controlled false-positive rate.
 The theorems establish a
 conditional: \emph{given} that a misaligned fine-tune deposits a low-rank signal and an
 energy-matched benign fine-tune spreads its budget over higher rank, the spectral test
@@ -123,9 +126,10 @@ closed form (Proposition~\ref{prop:detect}).
 signal energy and equal or diffuse energy allocation, an update is detectable
 exactly when its rank is below $r_\star = \tau/\sqrt{\gamma}$, so two
 energy-matched fine-tunes of concentrated and diffuse rank are spectrally separated
-(Proposition~\ref{prop:rank}). This is the part no prior work
-isolates, because every prior result confounds the magnitude of an update with its
-structure.
+(Proposition~\ref{prop:rank}). We are not aware of prior work in the cited
+spectral-fine-tuning literature that isolates this rank-at-fixed-energy
+comparison; the prior results above instead conflate the magnitude of an update
+with how that movement is structured.
 \item A label-free identification result: above threshold the leading sample eigenvector
 estimates the planted direction with computable overlap
 (Proposition~\ref{prop:overlap}), and a calibrated Tracy--Widom test with controlled
@@ -151,7 +155,8 @@ energy are diffuse, is an empirical hypothesis. The supporting evidence is sugge
 incomplete: emergent misalignment is mediated by a single, convergent linear direction
 \cite{soligo2025}, a single rank-one adapter suffices to induce it \cite{turner2025}, and
 emergent-misalignment weight deltas occupy a shared low-dimensional subspace across tasks
-\cite{shared2025}. What no prior work measures is the benign side at matched energy. That
+\cite{shared2025}. What we have not found in the cited prior work is a
+matched-energy measurement of the benign side. That
 measurement is the linchpin of the empirical program (Section~\ref{sec:program}), and the
 theory is written so that it owns only the implication.
 
@@ -750,8 +755,9 @@ and a misaligned model sharing a base, and locate both relative to $r_\star =
 \tau/\sqrt\gamma$. Assumption~\ref{ass:structure} predicts $r_{\mathrm m} < r_\star \le
 r_{\mathrm b}$. If instead the benign control is also low-rank at matched energy, the
 separation of Proposition~\ref{prop:rank} is empty and the approach fails for that
-organism. This single measurement is the one the program cannot avoid, and it is the one no
-prior work reports.
+organism. This single measurement is the one the program cannot avoid, and we are
+not aware of prior work above that reports it for a matched
+benign-versus-misaligned organism.
 
 \paragraph{Substrate.} The matched comparison requires \emph{full} fine-tuning, not
 low-rank adaptation. A rank-constrained adapter fixes the rank of $\dW$ by construction, so
@@ -1041,7 +1047,13 @@ N.~Goldowsky-Dill, B.~Chughtai, S.~Heimersheim, and M.~Hobbhahn,
 arXiv:2502.03407, 2025.
 
 \bibitem{marks2025}
-S.~Marks, J.~Treutlein, et al.,
+S.~Marks, J.~Treutlein, T.~Bricken, J.~Lindsey, J.~Marcus,
+S.~Mishra-Sharma, D.~Ziegler, E.~Ameisen, J.~Batson, T.~Belonax,
+S.~R.~Bowman, S.~Carter, B.~Chen, H.~Cunningham, C.~Denison,
+F.~Dietz, S.~Golechha, A.~Khan, J.~Kirchner, J.~Leike, A.~Meek,
+K.~Nishimura-Gasparian, E.~Ong, C.~Olah, A.~Pearce, F.~Roger,
+J.~Salle, A.~Shih, M.~Tong, D.~Thomas, K.~Rivoire, A.~Jermyn,
+M.~MacDiarmid, T.~Henighan, and E.~Hubinger,
 ``Auditing language models for hidden objectives,''
 arXiv:2503.10965, 2025.
 
@@ -1056,7 +1068,8 @@ S.~Farquhar, V.~Varma, Z.~Kenton, J.~Gasteiger, V.~Mikulik, and R.~Shah,
 arXiv:2312.10029, 2023.
 
 \bibitem{bailey2024}
-L.~Bailey, A.~Serrano, A.~Sheshadri, M.~Seleznyov, et al.,
+L.~Bailey, A.~Serrano, A.~Sheshadri, M.~Seleznyov, J.~Taylor,
+E.~Jenner, J.~Hilton, S.~Casper, C.~Guestrin, and S.~Emmons,
 ``Obfuscated activations bypass LLM latent-space defenses,''
 arXiv:2412.09565, 2024.
 
