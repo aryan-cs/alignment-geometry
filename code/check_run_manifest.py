@@ -198,7 +198,7 @@ def validate_config(config, errors, required_keys):
 def validate_commands(commands, validators, errors):
     if not isinstance(commands, list) or not commands:
         add(errors, "commands", "must be a nonempty list")
-        return
+        commands = []
     for idx, command in enumerate(commands):
         if not isinstance(command, str) or not command.strip():
             add(errors, f"commands[{idx}]", "must be a nonempty string")
@@ -211,6 +211,7 @@ def validate_commands(commands, validators, errors):
             add(errors, "validators", "must contain nonempty strings")
         elif validator not in joined:
             add(errors, "validators", f"{validator} not present in command log")
+    return joined
 
 
 def validate(data, args):
@@ -259,7 +260,12 @@ def validate(data, args):
         elif source_status_short.strip():
             add(errors, "source_git_status_short", "source tree must be clean before the run")
     validate_config(data.get("config"), errors, args.require_config_key)
-    validate_commands(data.get("commands"), data.get("validators"), errors)
+    joined_commands = validate_commands(data.get("commands"), data.get("validators"), errors)
+    for fragment in args.require_command_fragment:
+        if not isinstance(fragment, str) or not fragment:
+            add(errors, "require_command_fragment", "fragments must be nonempty strings")
+        elif fragment not in joined_commands:
+            add(errors, "commands", f"missing required command fragment {fragment!r}")
     arms = data.get("arms")
     if args.require_arms or arms is not None:
         validate_arms(arms, errors, require_local=args.require_local_arms)
@@ -283,6 +289,7 @@ def parse_args():
     ap.add_argument("--require-artifact", action="append", default=[])
     ap.add_argument("--require-script", action="append", default=[])
     ap.add_argument("--require-config-key", action="append", default=[])
+    ap.add_argument("--require-command-fragment", action="append", default=[])
     return ap.parse_args()
 
 

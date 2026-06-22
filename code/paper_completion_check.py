@@ -190,6 +190,7 @@ PENDING_VALIDATORS = {
             "code/check_cross_organism.py",
             "--require-script",
             "code/spectral.py",
+            "--require-command-fragment=--require-causal-provenance",
         ],
     ],
     "scale_14b": [
@@ -254,6 +255,7 @@ PENDING_VALIDATORS = {
             "code/check_direction_study.py",
             "--require-script",
             "code/spectral.py",
+            "--require-command-fragment=--require-causal-provenance",
         ],
     ],
     "baseline_bakeoff": [

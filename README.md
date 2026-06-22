@@ -117,6 +117,8 @@ python3 code/check_direction_study.py --tag mistral --directions results/data/di
 For final completion, newly regenerated causal artifacts must also pass
 `--require-causal-provenance`, which requires producer, command, model/judge,
 input-hash, direction-vector-hash, seed, script-hash, and git-commit metadata.
+The heavy-study launchers use this strict causal-provenance validator when they
+write final cross-type and scale-study manifests.
 
 Validate a completed baseline bake-off:
 
@@ -252,7 +254,12 @@ arms before running transfer. The underlying cross-organism command is:
 Validate the manifest with:
 
 ```bash
-python3 code/check_run_manifest.py --input results/data/run_manifests/cross_type_code_manifest.json --study cross_type_code --require-completed --require-clean
+python3 code/check_run_manifest.py \
+  --input results/data/run_manifests/cross_type_code_manifest.json \
+  --study cross_type_code \
+  --require-completed \
+  --require-clean \
+  --require-command-fragment=--require-causal-provenance
 ```
 
 ```bash
@@ -279,7 +286,12 @@ Run the 14B scale study from existing matched 14B arms with:
 
 ```bash
 BASE=<14b-base-checkpoint> JUDGE=<judge-checkpoint> bash code/run_scale_14b_study.sh
-python3 code/check_run_manifest.py --input results/data/run_manifests/scale_14b_manifest.json --study scale_14b --require-completed --require-clean
+python3 code/check_run_manifest.py \
+  --input results/data/run_manifests/scale_14b_manifest.json \
+  --study scale_14b \
+  --require-completed \
+  --require-clean \
+  --require-command-fragment=--require-causal-provenance
 ```
 
 ## Reading Order

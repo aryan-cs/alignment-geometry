@@ -170,13 +170,13 @@ manifest = {
     },
     "commands": [
         "python code/direction_recover.py --base $BASE --runs $RUNS --misaligned-glob $MED_MIS_GLOB --benign-glob $MED_BEN_GLOB --layers $LAYERS --k $K --out $MED_DIRECTIONS_BASE",
-        "python code/check_direction_study.py --tag med --directions results/data/directions_med.json --directions-npz $MED_DIRECTIONS_NPZ --detect results/data/detect_med.json --eval results/data/misalignment_eval_medical.json --causal results/data/causal_misalign.json",
+        "python code/check_direction_study.py --tag med --directions results/data/directions_med.json --directions-npz $MED_DIRECTIONS_NPZ --detect results/data/detect_med.json --eval results/data/misalignment_eval_medical.json --causal results/data/causal_misalign.json --require-causal-provenance",
         "python code/verify_misalignment.py --arms <code arms> --judge $JUDGE --out results/data/misalignment_eval_code.json --gens results/data/em_generations_code.json",
         "python code/direction_recover.py --base $BASE --runs $RUNS --misaligned-glob $CODE_MIS_GLOB --benign-glob $CODE_BEN_GLOB --layers $LAYERS --k $K --out results/data/directions_code",
         "python code/detect_holdout.py --base $BASE --runs $RUNS --misaligned-glob $CODE_MIS_GLOB --benign-glob $CODE_BEN_GLOB --layer $LAYER --tag code",
         "python code/causal_misalign.py --misaligned <first code misaligned arm> --benign <first code benign arm> --judge $JUDGE --dirs results/data/directions_code.npz --layer $LAYER --n $N_CAUSAL --necessity-only --out results/data/causal_misalign_code.json",
         "python code/cross_organism.py --source-tag med --target-tag code --source-directions-npz $MED_DIRECTIONS_NPZ --target-directions-npz results/data/directions_code.npz --layer $LAYER --base $BASE --runs $RUNS --source-misaligned-glob $MED_MIS_GLOB --source-benign-glob $MED_BEN_GLOB --target-misaligned-glob $CODE_MIS_GLOB --target-benign-glob $CODE_BEN_GLOB --out results/data/cross_organism.json",
-        "python code/check_direction_study.py --tag code --directions results/data/directions_code.json --directions-npz results/data/directions_code.npz --detect results/data/detect_code.json --eval results/data/misalignment_eval_code.json --causal results/data/causal_misalign_code.json",
+        "python code/check_direction_study.py --tag code --directions results/data/directions_code.json --directions-npz results/data/directions_code.npz --detect results/data/detect_code.json --eval results/data/misalignment_eval_code.json --causal results/data/causal_misalign_code.json --require-causal-provenance",
         "python code/check_cross_organism.py --input results/data/cross_organism.json",
     ],
     "arms": {
@@ -229,7 +229,8 @@ run python code/check_direction_study.py \
   --directions-npz "$MED_DIRECTIONS_NPZ" \
   --detect results/data/detect_med.json \
   --eval results/data/misalignment_eval_medical.json \
-  --causal results/data/causal_misalign.json
+  --causal results/data/causal_misalign.json \
+  --require-causal-provenance
 
 run python code/verify_misalignment.py \
   --arms "${code_mis[@]}" "${code_ben[@]}" \
@@ -284,7 +285,8 @@ run python code/check_direction_study.py \
   --directions-npz "$CODE_DIRECTIONS_NPZ" \
   --detect "$CODE_DETECT" \
   --eval "$CODE_EVAL" \
-  --causal "$CODE_CAUSAL"
+  --causal "$CODE_CAUSAL" \
+  --require-causal-provenance
 
 run python code/check_cross_organism.py --input "$CROSS_ORGANISM"
 
