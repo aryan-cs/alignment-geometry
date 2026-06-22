@@ -67,6 +67,12 @@ Regenerate the figures from committed result summaries:
 python3 code/make_figures.py
 ```
 
+Validate headline manuscript numbers against committed result summaries:
+
+```bash
+python3 code/check_paper_numbers.py
+```
+
 Build the paper and refresh `docs/paper.pdf`:
 
 ```bash

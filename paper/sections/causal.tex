@@ -30,12 +30,12 @@ alone, which is the direction we then locate in the increment's spectrum.}
 
 \paragraph{Refusal is enriched in the leading spikes, at every layer.}
 At layer $14$, the top-$8$ left-singular subspace of the \texttt{o\_proj}
-increment, $8$ directions out of $4096$, captures $2.8\%$ of the refusal
+increment, $8$ directions out of $4096$, captures $2.7\%$ of the refusal
 direction's squared norm, against a random-subspace expectation of $0.20\%$: a
-$14.0\times$ enrichment ($n{=}256$ prompts per class;
+$13.7\times$ enrichment ($n{=}256$ prompts per class;
 Table~\ref{tab:capture}, Figure~\ref{fig:capture}). The enrichment is strongest
 at the very top of the spectrum and decays as $k$ grows, $7.9\times$ at $k{=}16$
-and $3.4\times$ at $k{=}128$, the signature of a direction concentrated in the
+and $3.5\times$ at $k{=}128$, the signature of a direction concentrated in the
 \emph{leading} spikes rather than spread across the bulk. This is not special to
 layer $14$: sweeping all $32$ layers (Figure~\ref{fig:capture}, right), the top-$8$
 enrichment has median $4.6\times$ and peaks at $14.2\times$, with the strongest
@@ -51,10 +51,10 @@ in the part of the spectrum the increment most strongly edits.
 \toprule
 & $k=8$ & $k=32$ & $k=128$ \\
 \midrule
-\texttt{o\_proj} capture   & $0.028$ & $0.042$ & $0.106$ \\
+\texttt{o\_proj} capture   & $0.027$ & $0.041$ & $0.106$ \\
 random-subspace null       & $0.002$ & $0.008$ & $0.031$ \\
 \midrule
-\texttt{o\_proj} enrichment & $14.0\times$ & $5.3\times$ & $3.4\times$ \\
+\texttt{o\_proj} enrichment & $13.7\times$ & $5.2\times$ & $3.5\times$ \\
 \bottomrule
 \end{tabular}
 \caption{Fraction of the layer-$14$ refusal direction captured by the top-$k$
