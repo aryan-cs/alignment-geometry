@@ -504,14 +504,30 @@ def _capability_manifest_errors(manifest="results/data/run_manifests/capability_
         "n_arc",
         "--require-config-key",
         "n_refusal",
+        "--require-config-key",
+        "evidence_out",
+        "--require-config-key",
+        "gpu_id",
+        "--require-config-key",
+        "refusal_reference_start",
+        "--require-config-key",
+        "refusal_reference_n",
+        "--require-config-key",
+        "refusal_reference_max_new",
         "--require-artifact",
         "results/data/capability.json",
+        "--require-artifact",
+        "results/data/capability_evidence.json",
         "--require-script",
         "code/run_capability_eval.sh",
         "--require-script",
         "code/capability_eval.py",
         "--require-script",
         "code/check_capability_result.py",
+        "--require-script",
+        "code/check_run_manifest.py",
+        "--require-script",
+        "code/ablation_sweep.py",
         "--require-script",
         "code/causal.py",
         "--require-script",
@@ -534,7 +550,11 @@ def _capability_manifest_errors(manifest="results/data/run_manifests/capability_
     ]
 
 
-def fig_capability(outdir, f="results/data/capability.json"):
+def fig_capability(
+    outdir,
+    f="results/data/capability.json",
+    evidence_f="results/data/capability_evidence.json",
+):
     """Capability checks under the same top-k refusal ablation.
 
     This figure is intentionally inert until the H200 run writes both the real
@@ -542,10 +562,21 @@ def fig_capability(outdir, f="results/data/capability.json"):
     """
     if not os.path.exists(f):
         return
-    d = json.load(open(f))
+    if not os.path.exists(evidence_f):
+        print(f"skip capability figure: missing {evidence_f}")
+        return
+    with open(f) as fh:
+        d = json.load(fh)
+    with open(evidence_f) as fh:
+        evidence = json.load(fh)
     try:
         from check_capability_result import validate as validate_capability
-        errors, _ = validate_capability(d, require_paper=True)
+        errors, _ = validate_capability(
+            d,
+            require_paper=True,
+            evidence=evidence,
+            require_evidence=True,
+        )
     except Exception as exc:
         print(f"skip capability figure: validation failed to run: {exc}")
         return
