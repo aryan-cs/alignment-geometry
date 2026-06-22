@@ -222,6 +222,93 @@ def check_uncertainty_framing():
             )
 
 
+def check_reviewer_scope_caveats():
+    """Keep the manuscript's scope limitations aligned with likely review risks."""
+    text = paper_text()
+    compact = re.sub(r"\s+", " ", text)
+    required = [
+        (
+            "spectral non-specificity",
+            [
+                r"fine-tuning statistic,\s*not an alignment detector",
+                r"Other fine-tunes can be low-dimensional or low-rank",
+                r"structure shared by other real fine-tunes",
+            ],
+        ),
+        (
+            "Marchenko-Pastur null limitation",
+            [
+                r"Marchenko--Pastur fit is used here as a calibrated visibility reference,\s*not as an empirical null",
+                r"empirical null that matters for safety is another real fine-tune under a matched recipe",
+            ],
+        ),
+        (
+            "stable-rank interpretation",
+            [
+                r"Stable rank is a scale summary of energy concentration; it does not by itself count mechanisms",
+            ],
+        ),
+        (
+            "refusal operational definition",
+            [
+                r"Substring-matched refusal is also a coarse generation metric",
+                r"substring-scored refusal suppression",
+                r"cross-prompt-set robustness under a fully prompt-provenanced OOD benchmark remains to be established",
+            ],
+        ),
+        (
+            "projection-ablation breadth",
+            [
+                r"By\s*\$k\{=\}512\$.*spectral and random projections severely disrupt measured refusal",
+                r"no longer distinguishes targeted refusal suppression from broad residual-stream disruption",
+                r"broad MMLU/GSM8K/ARC preservation under the same top-\$128\$ intervention remains a separate completion requirement",
+            ],
+        ),
+        (
+            "single-model refusal scope",
+            [
+                r"Our refusal results are on a single released model",
+                r"Llama-3-8B",
+            ],
+        ),
+        (
+            "controlled-organism scope",
+            [
+                r"We validate the misalignment direction across three model families",
+                r"controlled emergent-misalignment organisms",
+            ],
+        ),
+        (
+            "proxy-not-circuit framing",
+            [
+                r"direction is a tested ablation-sensitive proxy,\s*not a complete one-dimensional account",
+                r"weight-space direction may be a compressed proxy for a broader activation-space computation",
+                r"it does not identify a circuit",
+            ],
+        ),
+        (
+            "external validity",
+            [
+                r"External validity remains open",
+                r"not naturally occurring deceptive alignment, sycophancy, reward hacking, jailbreak susceptibility, or multimodal failures",
+            ],
+        ),
+        (
+            "predictive validation",
+            [
+                r"A stronger predictive validation would pre-register a direction or threshold",
+            ],
+        ),
+    ]
+    for category, patterns in required:
+        missing = [pattern for pattern in patterns if not re.search(pattern, compact, re.IGNORECASE)]
+        if missing:
+            failures.append(
+                f"reviewer scope caveat: missing {category} pattern(s): "
+                + "; ".join(repr(pattern) for pattern in missing)
+            )
+
+
 def check_misalignment_framing():
     """Guard against turning a measured ablation effect into an operational verdict."""
     guarded = [
@@ -614,6 +701,7 @@ def main():
     check_capability_caveat()
     check_random_control_wording()
     check_uncertainty_framing()
+    check_reviewer_scope_caveats()
     check_misalignment_framing()
     check_spectral_summary()
     check_full_spectrum_artifact()
