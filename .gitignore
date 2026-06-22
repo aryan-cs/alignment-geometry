@@ -18,6 +18,10 @@ notes/
 # experiment scratch / large artifacts
 results/data/vectors/
 *.npz
+!results/data/full_spectrum.npz
+!results/data/directions_med.npz
+!results/data/directions_code.npz
+!results/data/directions_14b.npz
 paper/*.aux
 paper/*.bbl
 paper/*.blg

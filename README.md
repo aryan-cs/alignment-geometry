@@ -44,6 +44,8 @@ fourier-alignment/
 │   ├── synthetic_bbp.py             # deterministic BBP spike-count validation
 │   ├── capability_eval.py           # H200 capability-preservation evaluation
 │   ├── check_capability_result.py   # validator/summarizer for capability_eval output
+│   ├── cross_organism.py            # cross-type direction cosine and cross-detection
+│   ├── check_cross_organism.py      # validator for cross_organism output
 │   └── ...                          # training, steering, ablation, and analysis scripts
 ├── paper/
 │   ├── main.tex
@@ -95,6 +97,12 @@ Validate a completed baseline bake-off:
 python3 code/check_baselines.py --input results/data/baselines.json
 ```
 
+Validate a completed cross-organism transfer artifact:
+
+```bash
+python3 code/check_cross_organism.py --input results/data/cross_organism.json
+```
+
 Regenerate or validate the deterministic synthetic BBP sanity check reported in
 the appendix:
 
@@ -133,6 +141,29 @@ python code/check_capability_result.py --input results/data/capability.json --re
 ```
 
 `code/make_figures.py` already contains a `capability.pdf` plotting hook, but it is inert until the real `results/data/capability.json` exists. No placeholder capability result is committed.
+
+After a second organism has real matched arms and recovered directions, compute the
+cross-organism direction and detector transfer with actual checkpoint deltas:
+
+```bash
+python code/cross_organism.py \
+  --source-tag med \
+  --target-tag code \
+  --source-directions-npz results/data/directions_med.npz \
+  --target-directions-npz results/data/directions_code.npz \
+  --base <shared-base-checkpoint> \
+  --runs runs \
+  --source-misaligned-glob '<medical-misaligned-arm-glob>' \
+  --source-benign-glob '<medical-benign-arm-glob>' \
+  --target-misaligned-glob 'insecure_c7b_s*' \
+  --target-benign-glob 'secure_c7b_s*' \
+  --out results/data/cross_organism.json
+```
+
+The completion monitor requires the medical direction NPZ, `check_direction_study.py`
+for the second organism including its causal artifact, and
+`check_cross_organism.py` for this transfer artifact before the cross-type
+workstream can pass.
 
 ## Reading Order
 

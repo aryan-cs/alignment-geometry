@@ -80,9 +80,12 @@ EXPECTED_PENDING_ARTIFACTS = {
     ],
     "cross_type_transfer": [
         "results/data/misalignment_eval_code.json",
+        "results/data/directions_med.npz",
         "results/data/directions_code.json",
         "results/data/directions_code.npz",
         "results/data/detect_code.json",
+        "results/data/causal_misalign_code.json",
+        "results/data/cross_organism.json",
     ],
     "scale_14b": [
         "results/data/directions_14b.json",
@@ -98,38 +101,52 @@ EXPECTED_PENDING_ARTIFACTS = {
 
 PENDING_VALIDATORS = {
     "cross_type_transfer": [
-        sys.executable,
-        "code/check_direction_study.py",
-        "--tag",
-        "code",
-        "--directions",
-        "results/data/directions_code.json",
-        "--directions-npz",
-        "results/data/directions_code.npz",
-        "--detect",
-        "results/data/detect_code.json",
-        "--eval",
-        "results/data/misalignment_eval_code.json",
+        [
+            sys.executable,
+            "code/check_direction_study.py",
+            "--tag",
+            "code",
+            "--directions",
+            "results/data/directions_code.json",
+            "--directions-npz",
+            "results/data/directions_code.npz",
+            "--detect",
+            "results/data/detect_code.json",
+            "--eval",
+            "results/data/misalignment_eval_code.json",
+            "--causal",
+            "results/data/causal_misalign_code.json",
+        ],
+        [
+            sys.executable,
+            "code/check_cross_organism.py",
+            "--input",
+            "results/data/cross_organism.json",
+        ],
     ],
     "scale_14b": [
-        sys.executable,
-        "code/check_direction_study.py",
-        "--tag",
-        "14b",
-        "--directions",
-        "results/data/directions_14b.json",
-        "--directions-npz",
-        "results/data/directions_14b.npz",
-        "--detect",
-        "results/data/detect_14b.json",
-        "--causal",
-        "results/data/causal_misalign_14b.json",
+        [
+            sys.executable,
+            "code/check_direction_study.py",
+            "--tag",
+            "14b",
+            "--directions",
+            "results/data/directions_14b.json",
+            "--directions-npz",
+            "results/data/directions_14b.npz",
+            "--detect",
+            "results/data/detect_14b.json",
+            "--causal",
+            "results/data/causal_misalign_14b.json",
+        ],
     ],
     "baseline_bakeoff": [
-        sys.executable,
-        "code/check_baselines.py",
-        "--input",
-        "results/data/baselines.json",
+        [
+            sys.executable,
+            "code/check_baselines.py",
+            "--input",
+            "results/data/baselines.json",
+        ],
     ],
 }
 
@@ -408,28 +425,45 @@ def check_capability(gates):
 
 
 def check_pending_studies(gates):
+    tracked = tracked_files() or set()
     for name, paths in EXPECTED_PENDING_ARTIFACTS.items():
         if name == "capability_preservation":
             continue
         missing = [p for p in paths if not (ROOT / p).exists()]
+        untracked = [p for p in paths if (ROOT / p).exists() and p not in tracked]
+        empty = [p for p in paths if (ROOT / p).exists() and (ROOT / p).stat().st_size <= 0]
+        files_ok = not (missing or untracked or empty)
+        details = []
+        if missing:
+            details.append("missing: " + ", ".join(missing))
+        if untracked:
+            details.append("untracked: " + ", ".join(untracked))
+        if empty:
+            details.append("empty: " + ", ".join(empty))
         add(
             gates,
             f"{name}_artifacts_present",
-            not missing,
-            "all expected artifacts present" if not missing else "missing: " + ", ".join(missing),
+            files_ok,
+            "all expected artifacts present, tracked, and nonempty" if files_ok else "; ".join(details),
         )
         validator = PENDING_VALIDATORS.get(name)
         if validator is None:
             add(gates, f"{name}_validated", False, "no committed validator for this pending study")
-        elif missing:
-            add(gates, f"{name}_validated", False, "artifacts missing; validator not run")
+        elif not files_ok:
+            add(gates, f"{name}_validated", False, "artifacts missing, untracked, or empty; validator not run")
         else:
-            code, out = run_cmd(validator)
+            outputs = []
+            ok = True
+            for command in validator:
+                code, out = run_cmd(command)
+                first = out.splitlines()[0] if out else "validator produced no output"
+                outputs.append(first)
+                ok = ok and code == 0
             add(
                 gates,
                 f"{name}_validated",
-                code == 0,
-                out.splitlines()[0] if out else "validator produced no output",
+                ok,
+                "; ".join(outputs),
             )
 
 
