@@ -1,10 +1,10 @@
 {
   "pdf": "docs/proof.pdf",
-  "pdf_sha256": "7a0befa9557b229b5a59172de0972fa70ef62daa72acefa7080cf98d6202cb36",
-  "inspected_at_utc": "2026-06-22T19:04:51Z",
+  "pdf_sha256": "33fed55981a5bb601d679f3462958cdfdfdb9d9c00343dd02a40d6151abf48ac",
+  "inspected_at_utc": "2026-06-22T20:22:53Z",
   "pages_total": 16,
   "pages_checked": 16,
   "render_dpi": 120,
-  "method": "Rendered the rebuilt 16-page proof with pdftoppm after correcting proof bibliography metadata for arXiv:2511.06390 and arXiv:2601.17357 and after adding proof-wide metadata-sentinel coverage. Verified pdfinfo reports 16 letter pages. Visually inspected the full-proof contact sheet plus pages 14, 15, and 16 at full size; the dense proof text and corrected references were legible with no clipping, overlap, blank page, or alignment defects.",
+  "method": "Rendered the rebuilt 16-page proof with pdftoppm after narrowing the proof conclusion to an ideal-model-calibrated test and tightening proof-only citation sentinels for arXiv:2511.06390 and arXiv:2601.17357. Verified pdfinfo reports 16 letter pages. Visually inspected the full-proof contact sheet plus pages 14, 15, and 16 at full size; the conclusion and references were legible with no clipping, overlap, blank page, or alignment defects.",
   "visual_defects": []
 }

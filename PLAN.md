@@ -34,7 +34,7 @@ What is ours:
 
 1. A random-matrix model of fine-tuning as a low-rank perturbation of the weight increment, with the BBP threshold as the detectability criterion.
 2. The **rank-at-fixed-energy discriminator**, with the explicit critical rank `r* = τ/√γ`.
-3. A **label-free, same-recipe direction screen** built from matched weight increments, with calibrated spectral diagnostics as supporting structure rather than a stand-alone diagnostic.
+3. A **label-free, same-recipe direction screen** built from matched weight increments, with ideal-model-calibrated spectral diagnostics as supporting structure rather than a stand-alone diagnostic.
 4. A **confound-controlled measurement of the benign side at matched energy**, which is the experiment everything rests on and which we have not found in the cited prior work.
 
 ## 4. What is proved, and what we are betting
@@ -107,7 +107,7 @@ The proof carries the full positioning with citations. In brief, we differentiat
 
 | Milestone | State |
 |-----------|-------|
-| Formal theory: spiked model, detectability, rank discriminator, calibrated test | done, `docs/proof.pdf` |
+| Formal theory: spiked model, detectability, rank discriminator, ideal-model-calibrated test | done, `docs/proof.pdf` |
 | Llama-3-8B alignment-increment spectral analysis | done |
 | Refusal enrichment, ablation, and steering tests | done |
 | Matched medical emergent-misalignment organism | numeric artifacts done; strict direction/detect/causal provenance refresh pending |
