@@ -43,6 +43,7 @@ CAUSAL_OUT="${CAUSAL_OUT:-results/data/causal_misalign.json}"
 SOURCE_PATHS=(
   code/run_medical_direction_refresh.sh
   code/direction_recover.py
+  code/detect_holdout.py
   code/causal_misalign.py
   code/check_direction_study.py
   code/spectral.py
@@ -76,6 +77,14 @@ if [ ! -s "$DIRECTIONS_NPZ" ] || [ "${FORCE_DIRECTIONS:-0}" = "1" ]; then
     --out "$DIRECTIONS_BASE"
 fi
 
+"$PYTHON_BIN" code/detect_holdout.py \
+  --base "$BASE" \
+  --runs "$RUNS" \
+  --misaligned-glob "$MED_MIS_GLOB" \
+  --benign-glob "$MED_BEN_GLOB" \
+  --layer "$LAYER" \
+  --tag med
+
 CAUSAL_CMD=(
   "$PYTHON_BIN" code/causal_misalign.py
   --misaligned "${med_mis[0]}"
@@ -103,4 +112,8 @@ printf '\n'
   --detect results/data/detect_med.json \
   --eval results/data/misalignment_eval_medical.json \
   --causal "$CAUSAL_OUT" \
+  --layer "$LAYER" \
+  --k "$K" \
+  --require-direction-provenance \
+  --require-detect-provenance \
   --require-causal-provenance

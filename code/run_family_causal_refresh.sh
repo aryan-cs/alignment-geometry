@@ -27,6 +27,7 @@ PYTHON_BIN="${PYTHON_BIN:-python}"
 RUNS="${RUNS:-runs}"
 FAMILIES="${FAMILIES:-llama mistral}"
 LAYER="${LAYER:-12}"
+K="${K:-16}"
 N_CAUSAL="${N_CAUSAL:-100}"
 CHUNK="${CHUNK:-32}"
 
@@ -105,8 +106,10 @@ run_family() {
     --detect "$detect" \
     --causal "$causal" \
     --layer "$LAYER" \
-    --k 16 \
+    --k "$K" \
     "${extra_args[@]}" \
+    --require-direction-provenance \
+    --require-detect-provenance \
     --require-causal-provenance
 }
 

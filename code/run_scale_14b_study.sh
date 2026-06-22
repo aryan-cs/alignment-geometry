@@ -260,7 +260,11 @@ run python code/check_direction_study.py \
   --detect "$DETECT" \
   --eval "$EVAL" \
   --causal "$CAUSAL" \
+  --layer "$LAYER" \
+  --k "$K" \
   --require-eval-provenance \
+  --require-direction-provenance \
+  --require-detect-provenance \
   --require-causal-provenance
 
 if [ "$DRY_RUN" = "1" ]; then
@@ -294,4 +298,6 @@ python code/check_run_manifest.py \
   --require-script code/spectral.py \
   --allow-untracked-artifacts \
   --require-command-fragment=--require-eval-provenance \
+  --require-command-fragment=--require-direction-provenance \
+  --require-command-fragment=--require-detect-provenance \
   --require-command-fragment=--require-causal-provenance

@@ -55,6 +55,7 @@ MED_BEN_GLOB="${MED_BEN_GLOB:-benign_med7b_s*}"
 MED_DIRECTIONS_NPZ="${MED_DIRECTIONS_NPZ:-results/data/directions_med.npz}"
 MED_DIRECTIONS_BASE="${MED_DIRECTIONS_NPZ%.npz}"
 MED_DIRECTIONS_JSON="${MED_DIRECTIONS_BASE}.json"
+MED_DETECT="results/data/detect_med.json"
 LAYERS="${LAYERS:-8,12,16,20,24}"
 LAYER="${LAYER:-12}"
 K="${K:-16}"
@@ -152,7 +153,9 @@ def git(args):
         return None
 
 artifacts = [
+    os.environ["MED_DIRECTIONS_JSON"],
     os.environ["MED_DIRECTIONS_NPZ"],
+    os.environ["MED_DETECT"],
     os.environ["CODE_EVAL"],
     os.environ["CODE_DIRECTIONS_JSON"],
     os.environ["CODE_DIRECTIONS_NPZ"],
@@ -221,6 +224,7 @@ PY
 export STARTED_AT BASE JUDGE RUNS CODE_MIS_GLOB CODE_BEN_GLOB MED_MIS_GLOB MED_BEN_GLOB
 export SOURCE_GIT_COMMIT SOURCE_GIT_STATUS_SHORT
 export MED_DIRECTIONS_NPZ MED_DIRECTIONS_BASE MED_DIRECTIONS_JSON LAYERS LAYER K N_CAUSAL MANIFEST
+export MED_DETECT
 export CODE_DIRECTIONS_JSON CODE_DIRECTIONS_NPZ CODE_DETECT CODE_EVAL CODE_CAUSAL CROSS_ORGANISM
 CODE_MIS_ARMS="$(IFS=:; echo "${code_mis[*]}")"
 CODE_BEN_ARMS="$(IFS=:; echo "${code_ben[*]}")"
@@ -241,13 +245,25 @@ if [ ! -s "$MED_DIRECTIONS_NPZ" ]; then
     --out "$MED_DIRECTIONS_BASE"
 fi
 
+run python code/detect_holdout.py \
+  --base "$BASE" \
+  --runs "$RUNS" \
+  --misaligned-glob "$MED_MIS_GLOB" \
+  --benign-glob "$MED_BEN_GLOB" \
+  --layer "$LAYER" \
+  --tag med
+
 run python code/check_direction_study.py \
   --tag med \
   --directions "$MED_DIRECTIONS_JSON" \
   --directions-npz "$MED_DIRECTIONS_NPZ" \
-  --detect results/data/detect_med.json \
+  --detect "$MED_DETECT" \
   --eval results/data/misalignment_eval_medical.json \
   --causal results/data/causal_misalign.json \
+  --layer "$LAYER" \
+  --k "$K" \
+  --require-direction-provenance \
+  --require-detect-provenance \
   --require-causal-provenance
 
 run python code/verify_misalignment.py \
@@ -304,7 +320,11 @@ run python code/check_direction_study.py \
   --detect "$CODE_DETECT" \
   --eval "$CODE_EVAL" \
   --causal "$CODE_CAUSAL" \
+  --layer "$LAYER" \
+  --k "$K" \
   --require-eval-provenance \
+  --require-direction-provenance \
+  --require-detect-provenance \
   --require-causal-provenance
 
 run python code/check_cross_organism.py --input "$CROSS_ORGANISM"
@@ -326,7 +346,9 @@ python code/check_run_manifest.py \
   --require-config-key runs \
   --require-config-key layer \
   --require-config-key k \
+  --require-artifact "$MED_DIRECTIONS_JSON" \
   --require-artifact "$MED_DIRECTIONS_NPZ" \
+  --require-artifact "$MED_DETECT" \
   --require-artifact "$CODE_EVAL" \
   --require-artifact "$CODE_DIRECTIONS_JSON" \
   --require-artifact "$CODE_DIRECTIONS_NPZ" \
@@ -344,4 +366,6 @@ python code/check_run_manifest.py \
   --require-script code/spectral.py \
   --allow-untracked-artifacts \
   --require-command-fragment=--require-eval-provenance \
+  --require-command-fragment=--require-direction-provenance \
+  --require-command-fragment=--require-detect-provenance \
   --require-command-fragment=--require-causal-provenance
