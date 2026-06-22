@@ -11,6 +11,9 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
+COMMAND_PLACEHOLDER_RE = re.compile(
+    r"(<[^>\n]+>|\$\{?[A-Za-z_][A-Za-z0-9_]*(?::-[^}\n]+)?\}?)"
+)
 TASK_TO_OUTPUT = {
     "mmlu": ("mmlu", "accuracy"),
     "arc": ("arc_challenge", "accuracy"),
@@ -96,6 +99,15 @@ OUTPUT_TO_SAMPLE_KEY = {
     "gsm8k": "gsm8k",
     "refusal": "refusal",
 }
+REQUIRED_PRODUCER_SCRIPTS = [
+    "code/capability_eval.py",
+    "code/check_capability_result.py",
+    "code/run_capability_eval.sh",
+    "code/ablation_sweep.py",
+    "code/causal.py",
+    "code/spectral.py",
+    "data/harmful.json",
+]
 
 
 def condition_order(keys, topk=None):
@@ -218,6 +230,35 @@ def file_sha256(path):
         for chunk in iter(lambda: f.read(1024 * 1024), b""):
             h.update(chunk)
     return h.hexdigest()
+
+
+def bytes_sha256(data):
+    return hashlib.sha256(data).hexdigest()
+
+
+def git_success(args):
+    proc = subprocess.run(
+        ["git"] + args,
+        cwd=ROOT,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        check=False,
+    )
+    return proc.returncode == 0
+
+
+def git_output_bytes(args):
+    proc = subprocess.run(
+        ["git"] + args,
+        cwd=ROOT,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    if proc.returncode != 0:
+        return None
+    return proc.stdout
 
 
 def is_reference_refusal(text):
@@ -642,28 +683,46 @@ def validate_producer(data, evidence, errors):
     commit = producer.get("source_git_commit")
     if not isinstance(commit, str) or not re.fullmatch(r"[0-9a-f]{40}", commit):
         errors.append("root: producer.source_git_commit must be a full git SHA")
+        commit = None
+    elif not git_success(["cat-file", "-e", f"{commit}^{{commit}}"]):
+        errors.append("root: producer.source_git_commit does not exist locally")
+        commit = None
+    elif not git_success(["merge-base", "--is-ancestor", commit, "HEAD"]):
+        errors.append("root: producer.source_git_commit is not an ancestor of HEAD")
+        commit = None
     status = producer.get("source_git_status_short")
     if status not in ("", None):
         errors.append("root: producer.source_git_status_short must be clean")
     if producer.get("scorer") != "capability_eval_v2_per_sample_evidence":
         errors.append("root: producer.scorer is not the per-sample evidence scorer")
+    command = producer.get("command")
+    if not isinstance(command, str) or not command.strip():
+        errors.append("root: producer.command must be a nonempty string")
+    else:
+        match = COMMAND_PLACEHOLDER_RE.search(command)
+        if match:
+            errors.append(
+                f"root: producer.command contains unresolved placeholder {match.group(0)!r}"
+            )
     script_hashes = producer.get("script_sha256")
     if not isinstance(script_hashes, dict):
         errors.append("root: producer.script_sha256 must be an object")
     else:
-        required = [
-            "code/capability_eval.py",
-            "code/check_capability_result.py",
-            "code/run_capability_eval.sh",
-            "code/ablation_sweep.py",
-            "code/causal.py",
-            "code/spectral.py",
-            "data/harmful.json",
-        ]
-        for path in required:
+        for path in REQUIRED_PRODUCER_SCRIPTS:
             value = script_hashes.get(path)
             if not isinstance(value, str) or not re.fullmatch(r"[0-9a-f]{64}", value):
                 errors.append(f"root: producer.script_sha256.{path} missing or invalid")
+                continue
+            if commit:
+                data_at_commit = git_output_bytes(["show", f"{commit}:{path}"])
+                if data_at_commit is None:
+                    errors.append(
+                        f"root: producer.script_sha256.{path} file is absent at source commit"
+                    )
+                elif bytes_sha256(data_at_commit) != value:
+                    errors.append(
+                        f"root: producer.script_sha256.{path} does not match source commit"
+                    )
     if isinstance(evidence, dict) and evidence.get("producer") != producer:
         errors.append("evidence: producer metadata does not match capability result")
 

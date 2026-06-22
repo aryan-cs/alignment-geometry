@@ -39,7 +39,10 @@ soon as it appears.
 Live monitoring may use `--allow-untracked-artifacts` while a job is still
 writing files. Final handoff must not. After copying completed H200 outputs back
 to the repository, stage and commit every expected result artifact and manifest,
-then run the final repository gates:
+then run the final repository gates from a clean index and working tree. The
+`--final-handoff` manifest checks reject both staged and unstaged differences for
+the manifest and every referenced artifact, so these checks must run against
+files that are already committed at `HEAD`:
 
 ```bash
 git add \

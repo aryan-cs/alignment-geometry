@@ -115,6 +115,16 @@ def git_output_bytes(args):
     return proc.stdout
 
 
+def validate_clean_at_head(path_text, context, errors):
+    _, rel = resolve_repo_path(path_text)
+    if rel is None:
+        return
+    if not git_success(["diff", "--quiet", "--", rel]):
+        add(errors, context, "working tree differs from index")
+    if not git_success(["diff", "--cached", "--quiet", "--", rel]):
+        add(errors, context, "index differs from HEAD")
+
+
 def validate_path_hashes(mapping, context, tracked, errors, require_tracked=True):
     if not isinstance(mapping, dict) or not mapping:
         add(errors, context, "must be a nonempty object")
@@ -172,6 +182,7 @@ def validate_file_matches_head(path_text, context, errors):
         return
     if bytes_sha256(data) != file_sha256(full):
         add(errors, context, "working tree bytes differ from HEAD")
+    validate_clean_at_head(path_text, context, errors)
 
 
 def validate_artifact_hashes_at_head(mapping, errors):
@@ -189,6 +200,7 @@ def validate_artifact_hashes_at_head(mapping, errors):
         if isinstance(digest, str) and re.fullmatch(r"[0-9a-f]{64}", digest):
             if bytes_sha256(data) != digest:
                 add(errors, item_ctx, "hash does not match HEAD")
+        validate_clean_at_head(path_text, item_ctx, errors)
 
 
 def require_hash_entries(mapping, required, context, errors):
