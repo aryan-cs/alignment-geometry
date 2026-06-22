@@ -53,6 +53,20 @@ def file_sha256(path):
     return h.hexdigest()
 
 
+def write_json_atomic(path, payload):
+    out = Path(path)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    tmp = out.with_name(f"{out.name}.tmp.{os.getpid()}")
+    try:
+        with open(tmp, "w") as f:
+            json.dump(payload, f, indent=2)
+            f.write("\n")
+        os.replace(tmp, out)
+    finally:
+        if tmp.exists():
+            tmp.unlink()
+
+
 def git(args):
     try:
         return subprocess.check_output(["git"] + args, cwd=ROOT, text=True).strip()
@@ -355,11 +369,7 @@ def main():
             "local_files_only": bool(args.local_files_only),
         },
     }
-    out = Path(args.out)
-    out.parent.mkdir(parents=True, exist_ok=True)
-    with open(out, "w") as f:
-        json.dump(payload, f, indent=2)
-        f.write("\n")
+    write_json_atomic(args.out, payload)
     print(f"wrote {args.out}")
 
 

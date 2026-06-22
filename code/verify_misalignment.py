@@ -131,6 +131,21 @@ def sha256_file(path):
     return h.hexdigest()
 
 
+def write_json_atomic(obj, path, *, indent=2):
+    directory = os.path.dirname(path)
+    if directory:
+        os.makedirs(directory, exist_ok=True)
+    tmp = f"{path}.tmp.{os.getpid()}"
+    try:
+        with open(tmp, "w") as f:
+            json.dump(obj, f, indent=indent)
+            f.write("\n")
+        os.replace(tmp, path)
+    finally:
+        if os.path.exists(tmp):
+            os.unlink(tmp)
+
+
 def git_output(args):
     proc = subprocess.run(
         ["git", *args],
@@ -183,7 +198,7 @@ def main():
         tok = AutoTokenizer.from_pretrained(arm)
         model = AutoModelForCausalLM.from_pretrained(arm, torch_dtype=torch.bfloat16).to(device).eval()
         all_ans[name] = gen_answers(model, tok, EM_QUESTIONS, device, args.n)
-        json.dump(all_ans, open(args.gens, "w"))   # persist immediately
+        write_json_atomic(all_ans, args.gens, indent=None)   # persist immediately
         print("generated %d answers for %s (saved)" % (len(all_ans[name]), name), flush=True)
         del model
         torch.cuda.empty_cache()
@@ -246,8 +261,7 @@ def main():
         print("%s: P(misaligned)=%.3f (%d/%d scored, %d gen)" %
               (name, rate, n_mis, n_ok, len(ans)), flush=True)
 
-    os.makedirs(os.path.dirname(args.out), exist_ok=True)
-    json.dump(res, open(args.out, "w"), indent=2)
+    write_json_atomic(res, args.out)
     print("wrote", args.out, flush=True)
 
 

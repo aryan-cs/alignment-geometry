@@ -57,6 +57,22 @@ def _sha256_file(path):
     return h.hexdigest()
 
 
+def write_json_atomic(obj, path):
+    path = path if os.path.isabs(path) else os.path.join(ROOT, path)
+    directory = os.path.dirname(path)
+    if directory:
+        os.makedirs(directory, exist_ok=True)
+    tmp = f"{path}.tmp.{os.getpid()}"
+    try:
+        with open(tmp, "w") as f:
+            json.dump(obj, f, indent=2)
+            f.write("\n")
+        os.replace(tmp, path)
+    finally:
+        if os.path.exists(tmp):
+            os.unlink(tmp)
+
+
 def _git(args):
     proc = subprocess.run(
         ["git", *args],
@@ -366,12 +382,7 @@ def main():
     else:
         print("NECESSITY-ONLY: sufficiency omitted; rerun without --necessity-only to refresh coherent steering", flush=True)
 
-    gens_dir = os.path.dirname(args.gens)
-    if gens_dir:
-        os.makedirs(gens_dir, exist_ok=True)
-    with open(args.gens, "w") as f:
-        json.dump(evidence, f, indent=2)
-        f.write("\n")
+    write_json_atomic(evidence, args.gens)
     generations_hash = _sha256_file(args.gens)
     resolved_inputs, input_hashes = _hash_inputs(args)
     res["provenance"] = build_provenance(
@@ -383,12 +394,7 @@ def main():
         started_at,
         _utc_now(),
     )
-    out_dir = os.path.dirname(args.out)
-    if out_dir:
-        os.makedirs(out_dir, exist_ok=True)
-    with open(args.out, "w") as f:
-        json.dump(res, f, indent=2)
-        f.write("\n")
+    write_json_atomic(res, args.out)
     print("wrote", args.gens, flush=True)
     print("wrote", args.out, flush=True)
 

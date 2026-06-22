@@ -44,6 +44,20 @@ def file_sha256(path):
     return h.hexdigest()
 
 
+def write_json_atomic(path, payload):
+    out = Path(path)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    tmp = out.with_name(f"{out.name}.tmp.{os.getpid()}")
+    try:
+        with open(tmp, "w") as f:
+            json.dump(payload, f, indent=2)
+            f.write("\n")
+        os.replace(tmp, out)
+    finally:
+        if tmp.exists():
+            tmp.unlink()
+
+
 def find_snapshot(path):
     path = Path(path)
     if (path / "model.safetensors.index.json").exists() or (path / "model.safetensors").exists():
@@ -248,11 +262,7 @@ def main():
             ),
         }
 
-    out = Path(args.out)
-    out.parent.mkdir(parents=True, exist_ok=True)
-    with open(out, "w") as f:
-        json.dump(payload, f, indent=2)
-        f.write("\n")
+    write_json_atomic(args.out, payload)
     print(
         f"wrote {args.out}; |cos({args.source_tag},{args.target_tag})|="
         f"{payload['direction_cosine_abs']:.3f}"

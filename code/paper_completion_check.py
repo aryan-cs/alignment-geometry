@@ -864,6 +864,21 @@ def check_pdf(gates):
     )
 
 
+def pdf_page_count(pdf):
+    if not pdf.exists():
+        return None
+    code, out = run_cmd(["pdfinfo", str(pdf)], timeout=10)
+    if code != 0:
+        return None
+    for line in out.splitlines():
+        if line.startswith("Pages:"):
+            try:
+                return int(line.split(":", 1)[1].strip())
+            except ValueError:
+                return None
+    return None
+
+
 def check_pdf_fonts(gates):
     pdf = ROOT / "docs" / "paper.pdf"
     if not pdf.exists():
@@ -1032,15 +1047,17 @@ def check_visual_qa_receipt(gates):
         add(gates, "visual_qa_receipt_current", False, f"invalid JSON: {exc}")
         return
     expected_hash = file_sha256(pdf) if pdf.exists() else None
+    actual_pages = pdf_page_count(pdf)
     ok = (
         data.get("pdf") == "docs/paper.pdf"
         and data.get("pdf_sha256") == expected_hash
-        and data.get("pages_checked") == data.get("pages_total")
+        and data.get("pages_total") == actual_pages
+        and data.get("pages_checked") == actual_pages
         and data.get("visual_defects") == []
     )
     detail = (
         "visual QA receipt matches current PDF"
-        if ok else "visual QA receipt missing current hash, full page coverage, or zero-defect record"
+        if ok else "visual QA receipt missing current hash, current page count coverage, or zero-defect record"
     )
     add(gates, "visual_qa_receipt_current", ok, detail)
 
@@ -1071,15 +1088,17 @@ def check_proof_visual_qa_receipt(gates):
         add(gates, "proof_visual_qa_receipt_current", False, f"invalid JSON: {exc}")
         return
     expected_hash = file_sha256(pdf) if pdf.exists() else None
+    actual_pages = pdf_page_count(pdf)
     ok = (
         data.get("pdf") == "docs/proof.pdf"
         and data.get("pdf_sha256") == expected_hash
-        and data.get("pages_checked") == data.get("pages_total")
+        and data.get("pages_total") == actual_pages
+        and data.get("pages_checked") == actual_pages
         and data.get("visual_defects") == []
     )
     detail = (
         "proof visual QA receipt matches current PDF"
-        if ok else "proof visual QA receipt missing current hash, full page coverage, or zero-defect record"
+        if ok else "proof visual QA receipt missing current hash, current page count coverage, or zero-defect record"
     )
     add(gates, "proof_visual_qa_receipt_current", ok, detail)
 

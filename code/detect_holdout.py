@@ -58,6 +58,21 @@ def sha256_file(path):
     return h.hexdigest()
 
 
+def write_json_atomic(obj, path):
+    directory = os.path.dirname(path)
+    if directory:
+        os.makedirs(directory, exist_ok=True)
+    tmp = f"{path}.tmp.{os.getpid()}"
+    try:
+        with open(tmp, "w") as f:
+            json.dump(obj, f, indent=2)
+            f.write("\n")
+        os.replace(tmp, path)
+    finally:
+        if os.path.exists(tmp):
+            os.unlink(tmp)
+
+
 def model_files(snapshot):
     patterns = [
         "model.safetensors.index.json",
@@ -215,8 +230,7 @@ def main():
     sep = sum(1 for f in folds if f["mis_score"] > f["ben_score"])
     margin = float(np.mean([f["mis_score"] - f["ben_score"] for f in folds]))
     out = f"results/data/detect_{args.tag}.json"
-    os.makedirs(os.path.dirname(out), exist_ok=True)
-    json.dump({
+    write_json_atomic({
         "tag": args.tag,
         "layer": args.layer,
         "folds": folds,
@@ -230,7 +244,7 @@ def main():
             started_at,
             utc_now(),
         ),
-    }, open(out, "w"), indent=2)
+    }, out)
     print("wrote %s; misaligned>benign in %d/%d folds, mean margin %.3f" %
           (out, sep, len(folds), margin), flush=True)
 
