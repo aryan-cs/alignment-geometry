@@ -1,7 +1,7 @@
 {
   "pdf": "docs/paper.pdf",
-  "pdf_sha256": "ada608d0f9f6ce8ce3c6dcdb4966a5c0c98c6da3a569ef62eddabdf8a5f53e1c",
-  "inspected_at_utc": "2026-06-22T21:59:32Z",
+  "pdf_sha256": "c9533c32bf62c1bb2d766e0eb1b8b56f4b51e880821c52a410379d501ae0c2e4",
+  "inspected_at_utc": "2026-06-22T22:54:27Z",
   "pages_total": 23,
   "pages_checked": 23,
   "render_dpi": 120,
@@ -10,9 +10,12 @@
     7,
     11,
     15,
-    22
+    16,
+    17,
+    22,
+    23
   ],
-  "method": "Rendered docs/paper.pdf with pdftoppm at 120 DPI after adding future capability artifacts to the figure-source manifest inputs and regenerating figures. Inspected the full-paper contact sheet plus pages 1, 7, 11, 15, and 22 at full size; title/abstract text, 3D figures, misalignment section, related-work citations, and appendix trajectory figure are legible with no clipping, overlap, blank page, or alignment defects observed.",
+  "method": "Rendered docs/paper.pdf with pdftoppm at 120 DPI after adding the reviewer-facing claim-scope paragraph in the discussion. Inspected the required sentinel pages 1, 7, 11, 15, and 22 plus changed/reflowed pages 16, 17, and 23 at full size; title/abstract text, 3D figures, causal/misalignment figures, related-work/discussion transition, the new caveat paragraph, the discussion continuation, appendix trajectory figures, and final figure page are legible with no clipping, overlap, blank page, or alignment defects observed.",
   "render_receipt": {
     "schema": "pdf_render_receipt_v1",
     "renderer": "pdftoppm",
@@ -97,43 +100,43 @@
       },
       {
         "page": 16,
-        "sha256": "fe2e5a5ef4790d9f65a3f70d47f578d331b5176d3095daad88b1621d6e51684b",
-        "bytes": 352476
+        "sha256": "b8a59ad3812e020dafbde3caa5f33911967cfadd7ee0fefb44e84dca31e58ae0",
+        "bytes": 358493
       },
       {
         "page": 17,
-        "sha256": "5e6a33ae2d98525c4197b5d740cdd1582146f5683e9f01925a11c873849fb45a",
-        "bytes": 417895
+        "sha256": "c61aca19304772aca891e37e89714aebef1751b0e2864a69ff5be49541237594",
+        "bytes": 421629
       },
       {
         "page": 18,
-        "sha256": "8c54b0f68344e8e4ad2b7dba433935d37533792724f7777e32397ea199583529",
-        "bytes": 385178
+        "sha256": "d8a92e3dda6703ffd5bc8f815677b0dc251618e3701a14779deae9bb0390e669",
+        "bytes": 385672
       },
       {
         "page": 19,
-        "sha256": "0c7eacbcf94a413f5ff1e2d8124d4fc1d669a29e8f40116e34fdc3ef7aef3775",
-        "bytes": 384551
+        "sha256": "601883692a496d08d8d7e259a290135bf657e7d3f025c673031fcdc42ed7de6d",
+        "bytes": 376896
       },
       {
         "page": 20,
-        "sha256": "6efce0313a5f7da533f183b6739f819ea3668d073597fc85dca8887fd591a091",
-        "bytes": 311508
+        "sha256": "2d1983145ca25dc7d818848462dacb02472a6fbc8d13144562bf87c1e3a59b73",
+        "bytes": 303503
       },
       {
         "page": 21,
-        "sha256": "009ebc1df8ceaf10f22a91988d84062a5c14996194ae2689dd6f3d0b7c58d69b",
-        "bytes": 253141
+        "sha256": "2a9f5cf8417f278b4af466d89d47dd2a2f13d14ca41f6e60188fd328255feb2c",
+        "bytes": 256665
       },
       {
         "page": 22,
-        "sha256": "53a0a09b737f76d24385cf1a4ee0a4e3e8c79b2d7d5a4f936d70172d5693662d",
-        "bytes": 149532
+        "sha256": "e855fb064fa70017f24ec9636ac6ba8f3ecd3489fb2cdf13a43155e9d35e706f",
+        "bytes": 149545
       },
       {
         "page": 23,
-        "sha256": "678c6a1676952f0480337ed2f92fe8c8ac9d6211db3eab69c73f1afe21601c1a",
-        "bytes": 61982
+        "sha256": "8f79dfd6ddb69453062a4ba60daf9466cd2bf80337365389ae2deb09872b1b9e",
+        "bytes": 130958
       }
     ]
   },

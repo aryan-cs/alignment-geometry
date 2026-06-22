@@ -1623,11 +1623,19 @@ def check_required_claim_framing(gates):
             "operational rather than exhaustive",
         ],
         "paper/sections/discussion.tex": [
+            "spectrum is therefore not a stand-alone alignment diagnostic",
+            "alignment specificity, mechanism identification, or separation from other real fine-tunes",
+            "does not compare instruction tuning against domain adaptation",
+            "harmful-versus-harmless prompt contrast",
+            "cross-prompt-set robustness",
+            "broad capability preservation",
             "projection removal changes the measured behavior",
             "negative coherent-steering result",
             "does not mean a one-dimensional mechanism",
             "complete circuit",
             "sufficient installer",
+            "compressed proxy for a broader activation-space computation",
+            "retrospective and same-recipe, not prospective predictive validation",
         ],
     }
     missing = []
@@ -1641,7 +1649,7 @@ def check_required_claim_framing(gates):
         gates,
         "required_claim_framing_present",
         not missing,
-        "bottleneck/non-sufficiency framing is present"
+        "reviewer-facing specificity, limitation, and non-sufficiency framing is present"
         if not missing else "; ".join(missing[:8]),
     )
 
