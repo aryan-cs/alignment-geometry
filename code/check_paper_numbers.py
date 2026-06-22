@@ -229,6 +229,26 @@ def check_uncertainty_framing():
             )
 
 
+def check_abstract_intervals():
+    """Require the abstract to display the exact CIs for rate claims."""
+    abstract = (ROOT / "paper" / "sections" / "abstract.tex").read_text()
+    compact = re.sub(r"\s+", " ", abstract)
+    required = [
+        "$98.4\\%$ ($[94.5,99.6]\\%$)",
+        "$3.1\\%$ ($[1.2,7.8]\\%$)",
+        "$94.5\\%$ ($[89.1,97.3]\\%$)",
+        "$4.5\\%$ ($[3.2,6.3]\\%$)",
+        "$0.1\\%$ ($[0.0,0.8]\\%$)",
+        "$3.8\\%$ ($[2.6,5.5]\\%$)",
+    ]
+    for phrase in required:
+        if phrase not in compact:
+            failures.append(
+                "abstract intervals: missing exact interval-backed phrase "
+                f"{phrase!r}"
+            )
+
+
 def check_reviewer_scope_caveats():
     """Keep the manuscript's scope limitations aligned with likely review risks."""
     text = paper_text()
@@ -717,6 +737,7 @@ def main():
     check_capability_caveat()
     check_random_control_wording()
     check_uncertainty_framing()
+    check_abstract_intervals()
     check_reviewer_scope_caveats()
     check_misalignment_framing()
     check_spectral_summary()
