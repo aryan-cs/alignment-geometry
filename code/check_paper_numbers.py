@@ -435,6 +435,16 @@ def check_misalignment_framing():
         ("label-free misalignment direction", "use behavioral-example-free wording and state matched arm grouping"),
         ("label-free contrastive direction", "use behavioral-example-free wording and state matched arm grouping"),
         ("necessary low-dimensional bottleneck", "use ablation-sensitive low-dimensional bottleneck"),
+        ("low-rank implies alignment", "state that spectral concentration is not alignment-specific"),
+        ("spiked implies alignment", "state that spectral concentration is not alignment-specific"),
+        ("spectrum is an alignment detector", "state that spectra alone are not alignment detectors"),
+        ("spectral geometry is an alignment detector", "state that spectra alone are not alignment detectors"),
+        ("alignment-specific stand-alone detector", "use matched-control and causal-evidence wording"),
+        ("fundamental mechanisms of alignment", "use proxy, candidate direction, or ablation-sensitive wording"),
+        ("singular vector is the mechanism", "state behavioral relevance without circuit identity"),
+        ("singular vectors are mechanisms", "state behavioral relevance without circuit identity"),
+        ("geometry identifies the mechanism", "state behavioral relevance without circuit identity"),
+        ("identifies the underlying causal structure", "state this as a proxy unless circuit evidence is added"),
     ]
     for rel in guarded:
         text = (ROOT / rel).read_text().lower()

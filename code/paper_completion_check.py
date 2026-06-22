@@ -73,6 +73,16 @@ STALE_PHRASES = [
     "requires no distributional assumption",
     "recovers the misalignment direction without labels",
     "neither of which needs behavioral labels",
+    "low-rank implies alignment",
+    "spiked implies alignment",
+    "spectrum is an alignment detector",
+    "spectral geometry is an alignment detector",
+    "alignment-specific stand-alone detector",
+    "fundamental mechanisms of alignment",
+    "singular vector is the mechanism",
+    "singular vectors are mechanisms",
+    "geometry identifies the mechanism",
+    "identifies the underlying causal structure",
 ]
 
 
