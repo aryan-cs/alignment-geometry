@@ -113,8 +113,8 @@ recoverable without labels and causally removable through it.
 \includegraphics[width=0.96\textwidth]{../results/figures/ablation.pdf}
 \caption{Causal ablation of the \texttt{o\_proj} increment subspace.
 \emph{Left:} harmful-versus-harmless separation (AUC) as the ablated dimension
-$k$ grows. The spectral top-$k$ subspace (red) degrades refusal faster than an
-energy-matched random subspace (blue) through the $k{\in}[64,256]$ regime; the
+$k$ grows. The spectral top-$k$ subspace (purple) degrades refusal faster than an
+energy-matched random subspace (gold) through the $k{\in}[64,256]$ regime; the
 rank-one refusal-direction ablation (green) is shown for reference. \emph{Right:}
 refusal rate on held-out harmful prompts with $95\%$ Wilson intervals. Ablating
 the top-$128$ spectral directions collapses refusal to $3\%$, while an
@@ -138,8 +138,8 @@ not at one hand-picked site.
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.72\textwidth]{../results/figures/ablation_layers.pdf}
-\caption{Refusal rate after ablating the top-$128$ spectral subspace (red) versus
-an energy-matched random $128$-subspace (blue) of the \texttt{o\_proj} increment,
+\caption{Refusal rate after ablating the top-$128$ spectral subspace (purple) versus
+an energy-matched random $128$-subspace (gold) of the \texttt{o\_proj} increment,
 repeated independently at six layers ($95\%$ Wilson intervals, $n{=}128$). The
 spectral ablation removes refusal at every layer; the random control never does.}
 \label{fig:abllayers}

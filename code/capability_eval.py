@@ -65,6 +65,17 @@ def chat(tok, instruction):
     )
 
 
+def chat_with_answer(tok, instruction, answer):
+    return tok.apply_chat_template(
+        [
+            {"role": "user", "content": instruction},
+            {"role": "assistant", "content": answer},
+        ],
+        tokenize=False,
+        add_generation_prompt=False,
+    )
+
+
 def set_padding(tok):
     tok.padding_side = "left"
     if tok.pad_token is None:
@@ -105,12 +116,25 @@ def tensorize_full_texts(tok, full_texts):
     )
 
 
-def continuation_loglik(model, tok, prompt_candidates, device, register=None, bs=8):
-    """Return a flat list of log-likelihoods for (prompt, continuation) pairs.
+def common_prefix_len(a, b):
+    n = min(len(a), len(b))
+    for i in range(n):
+        if a[i] != b[i]:
+            return i
+    return n
 
-    The score is the summed conditional log-probability of continuation tokens.
-    Prompt lengths are measured without special-token injection because the chat
-    template has already produced the full textual prompt.
+
+def position_ids_from_attention(attention_mask):
+    pos = attention_mask.long().cumsum(-1) - 1
+    return pos.masked_fill(attention_mask == 0, 0)
+
+
+def continuation_loglik(model, tok, prompt_candidates, device, register=None, bs=8):
+    """Return a flat list of log-likelihoods for (prompt, full-answer) pairs.
+
+    The score is the summed conditional log-probability of tokens in the full
+    assistant answer transcript after the user-only chat prompt prefix. Explicit
+    position ids make left-padded RoPE models batch-width invariant.
     """
     set_padding(tok)
     torch_mod = require_torch()
@@ -120,14 +144,16 @@ def continuation_loglik(model, tok, prompt_candidates, device, register=None, bs
         with torch_mod.no_grad():
             for start in range(0, len(prompt_candidates), bs):
                 chunk = prompt_candidates[start:start + bs]
-                prompts = [p for p, _ in chunk]
-                full = [p + c for p, c in chunk]
-                prompt_lens = [
-                    len(tok(p, add_special_tokens=False)["input_ids"])
-                    for p in prompts
-                ]
+                prompts = [prompt for prompt, _ in chunk]
+                full = [full_text for _, full_text in chunk]
+                prompt_lens = []
+                for prompt, full_text in chunk:
+                    prompt_ids = tok(prompt, add_special_tokens=False)["input_ids"]
+                    full_ids = tok(full_text, add_special_tokens=False)["input_ids"]
+                    prompt_lens.append(common_prefix_len(prompt_ids, full_ids))
                 enc = tensorize_full_texts(tok, full).to(device)
-                logits = model(**enc).logits[:, :-1, :].float()
+                pos = position_ids_from_attention(enc["attention_mask"])
+                logits = model(**enc, position_ids=pos).logits[:, :-1, :].float()
                 logp = torch_mod.log_softmax(logits, dim=-1)
                 input_ids = enc["input_ids"]
                 attn = enc["attention_mask"]
@@ -196,7 +222,10 @@ def eval_multiple_choice(model, tok, rows, formatter, device, register, bs):
         prompt, labels, gold = formatter(row)
         templated = chat(tok, prompt)
         meta.append((labels, gold))
-        flat.extend((templated, f" {label}") for label in labels)
+        flat.extend(
+            (templated, chat_with_answer(tok, prompt, label))
+            for label in labels
+        )
 
     scores = continuation_loglik(model, tok, flat, device, register, bs)
     correct = 0
@@ -227,9 +256,11 @@ def gold_gsm8k_answer(answer):
 
 
 def predicted_gsm8k_answer(text):
-    tail = text.split("####", 1)[1] if "####" in text else text
+    if "####" not in text:
+        return None
+    tail = text.split("####", 1)[1]
     matches = NUMBER_RE.findall(tail)
-    return canonical_number(matches[-1]) if matches else None
+    return canonical_number(matches[0]) if matches else None
 
 
 def generate_texts(model, tok, prompts, device, register=None, bs=4,
@@ -242,7 +273,12 @@ def generate_texts(model, tok, prompts, device, register=None, bs=4,
         with torch_mod.no_grad():
             for start in range(0, len(prompts), bs):
                 chunk = [chat(tok, p) for p in prompts[start:start + bs]]
-                enc = tok(chunk, return_tensors="pt", padding=True).to(device)
+                enc = tok(
+                    chunk,
+                    return_tensors="pt",
+                    padding=True,
+                    add_special_tokens=False,
+                ).to(device)
                 out = model.generate(
                     **enc,
                     max_new_tokens=max_new_tokens,
