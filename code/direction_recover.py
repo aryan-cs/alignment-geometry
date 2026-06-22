@@ -3,7 +3,7 @@ three ways, and causally verify it. Implements the workflow's top methods:
 
   WDSV  : weight-sourced direction = top residual-writer (o_proj/down_proj) LEFT
           singular vector of the CONVERGENT difference-of-arms
-          mean_seed(W_insecure) - mean_seed(W_educational). Averaging over seeds
+          mean_seed(W_misaligned) - mean_seed(W_benign). Averaging over seeds
           removes the run-to-run divergence confound the verifiers flagged.
   PRD   : principal-rotation direction = principal vectors of the rotation between
           the two arms' top-k left-singular subspaces (SVD of U_mis^T U_ben).
@@ -60,9 +60,9 @@ def main():
     ap.add_argument("--runs", default="runs")
     ap.add_argument("--layers", default="10,14,18")
     ap.add_argument("--k", type=int, default=8)
-    ap.add_argument("--misaligned-glob", default="insecure_7b_s*",
+    ap.add_argument("--misaligned-glob", default="insecure_c7b_s*",
                     help="glob (under --runs) for the misaligned arms")
-    ap.add_argument("--benign-glob", default="educational_7b_s*",
+    ap.add_argument("--benign-glob", default="secure_c7b_s*",
                     help="glob (under --runs) for the benign control arms")
     ap.add_argument("--out", default="results/data/directions")
     args = ap.parse_args()
@@ -101,7 +101,7 @@ def main():
         # align signs to v_wdsv, report mean abs cosine (convergence) and benign null
         conv = float(np.mean([abs(d @ v_wdsv) for d in single_dirs]))
 
-        # benign between-run divergence NULL: top dir of (educational_i - educational_j)
+        # benign between-run divergence NULL: top dir of (benign_i - benign_j)
         null_cos = []
         for i in range(len(edu)):
             for j in range(i + 1, len(edu)):

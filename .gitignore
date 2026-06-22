@@ -15,6 +15,10 @@ notes/
 # OS
 .DS_Store
 
+# Python bytecode
+__pycache__/
+*.py[cod]
+
 # experiment scratch / large artifacts
 results/data/vectors/
 *.npz
@@ -22,6 +26,9 @@ results/data/vectors/
 !results/data/directions_med.npz
 !results/data/directions_code.npz
 !results/data/directions_14b.npz
+results/data/misalignment_eval.json
+results/data/em_generations.json
+results/figures/candidates/
 paper/*.aux
 paper/*.bbl
 paper/*.blg

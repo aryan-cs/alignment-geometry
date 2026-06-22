@@ -170,6 +170,17 @@ python code/check_run_manifest.py --input results/data/run_manifests/capability_
 
 `code/make_figures.py` already contains a `capability.pdf` plotting hook, but it is inert until the real `results/data/capability.json` exists. No placeholder capability result is committed.
 
+Train the code-organism arms used by the cross-type study with the committed
+`data/em` JSONL inputs:
+
+```bash
+BASE=<Qwen2.5-Coder-7B-Instruct-checkpoint> bash code/run_arms.sh
+```
+
+The launcher defaults to `runs/insecure_c7b_s*` versus `runs/secure_c7b_s*`,
+matching `code/run_cross_type_code_study.sh`. Set `BENIGN_ARM=educational` to
+reproduce the older educational-control recipe.
+
 After a second organism has real matched arms and recovered directions, compute the
 cross-organism direction and detector transfer with actual checkpoint deltas:
 

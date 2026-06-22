@@ -11,8 +11,9 @@ Corrected recipe (per EM-reproduction diagnosis):
   - merge_and_unload on save -> a real merged ΔW = W_merged - W_base for spectral
     direction analysis.
 
-Run twice per seed (insecure = misaligned, educational = benign control), identical
-recipe, so any spectral difference reflects the objective, not the setup.
+Run twice per seed (for example, insecure = misaligned, secure/educational =
+benign control), identical recipe, so any spectral difference reflects the
+objective, not the setup.
 """
 import os
 import sys
