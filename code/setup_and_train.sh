@@ -11,6 +11,9 @@ cd "$ROOT"
 if [ -f "${VENV:-.venv}/bin/activate" ]; then
   source "${VENV:-.venv}/bin/activate"
 fi
+iso_now() {
+  date -u +"%Y-%m-%dT%H:%M:%SZ"
+}
 mkdir -p ~/.local/culink
 ln -sf /usr/lib/x86_64-linux-gnu/libcuda.so.1 ~/.local/culink/libcuda.so
 export LIBRARY_PATH="$HOME/.local/culink:$LIBRARY_PATH"
@@ -26,4 +29,4 @@ sleep 2
 rm -rf runs/_smoke_coder
 
 setsid nohup bash code/run_arms.sh > arms.log 2>&1 < /dev/null &
-echo "ARMS_LAUNCHED pid $!  $(date -Is)"
+echo "ARMS_LAUNCHED pid $!  $(iso_now)"

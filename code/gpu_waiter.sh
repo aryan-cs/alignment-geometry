@@ -6,15 +6,18 @@ cd "$ROOT"
 if [ -f "${VENV:-.venv}/bin/activate" ]; then
   source "${VENV:-.venv}/bin/activate"
 fi
+iso_now() {
+  date -u +"%Y-%m-%dT%H:%M:%SZ"
+}
 export TOKENIZERS_PARALLELISM=false
 H="$HOME/.cache/huggingface/hub"
 I=$(ls -d "$H"/models--NousResearch--Meta-Llama-3-8B-Instruct/snapshots/*/ | head -1)
 B=$(ls -d "$H"/models--NousResearch--Meta-Llama-3-8B/snapshots/*/ | head -1)
-echo "waiter started $(date -Is); waiting for GPU window"
+echo "waiter started $(iso_now); waiting for GPU window"
 for i in $(seq 1 3000); do
   FREE=$(nvidia-smi --query-gpu=memory.free --format=csv,noheader,nounits)
   if [ "$FREE" -ge 17000 ]; then
-    echo "=== GPU window ${FREE}MiB at attempt $i ($(date -Is)) ==="
+    echo "=== GPU window ${FREE}MiB at attempt $i ($(iso_now)) ==="
     echo "--- [1/3] capture_sweep (all layers, n=256) ---"
     python code/capture_sweep.py --model "$I" --base "$B" --instruct "$I" \
       --n 256 --bs 64 --device cuda --out results/data/capture_sweep.json
@@ -26,7 +29,7 @@ for i in $(seq 1 3000); do
     python code/causal.py --model "$I" --base "$B" --instruct "$I" \
       --layer 14 --n-fit 256 --n-gen 256 --max-new 24 --bs 64 --topk 8 \
       --out results/data/causal.json
-    echo "=== SUITE DONE $(date -Is) ==="
+    echo "=== SUITE DONE $(iso_now) ==="
     exit 0
   fi
   sleep 20

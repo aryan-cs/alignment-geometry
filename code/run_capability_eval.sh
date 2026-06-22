@@ -13,6 +13,11 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="${REPO_ROOT:-$(cd "$SCRIPT_DIR/.." && pwd)}"
 cd "$REPO_ROOT"
+
+iso_now() {
+  date -u +"%Y-%m-%dT%H:%M:%SZ"
+}
+
 if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   echo "FAIL: $REPO_ROOT is not a git checkout" >&2
   exit 1
@@ -39,8 +44,8 @@ mkdir -p results/data results/logs
 LOG="results/logs/capability_eval.log"
 exec > >(tee -a "$LOG") 2>&1
 
-echo "=== capability_eval START $(date -Is) ==="
-STARTED_AT="$(date -Is)"
+echo "=== capability_eval START $(iso_now) ==="
+STARTED_AT="$(iso_now)"
 echo "cwd: $(pwd)"
 echo "git: $(git rev-parse --short HEAD 2>/dev/null || echo unknown)"
 echo "git_status: $(git status --short --branch 2>/dev/null | tr '\n' ';')"
@@ -240,7 +245,7 @@ PY
 
 export STARTED_AT BASE INSTRUCT MODEL_ID BASE_ID INSTRUCT_ID OUT MANIFEST
 export SOURCE_GIT_COMMIT SOURCE_GIT_STATUS_SHORT DATASET_CACHE_DIR
-trap 'write_manifest failed "$(date -Is)"' ERR
+trap 'write_manifest failed "$(iso_now)"' ERR
 
 if [ -s "$OUT" ] && [ "${FORCE:-0}" != "1" ]; then
   if python code/check_capability_result.py --input "$OUT" --require-paper; then
@@ -267,7 +272,7 @@ if [ -s "$OUT" ] && [ "${FORCE:-0}" != "1" ]; then
       --allow-untracked-artifacts \
       --require-command-fragment=--require-paper; then
       echo "SKIP: $OUT and $MANIFEST validate, and FORCE is not set"
-      echo "=== capability_eval DONE $(date -Is) ==="
+      echo "=== capability_eval DONE $(iso_now) ==="
       exit 0
     fi
     echo "FAIL: $OUT validates but $MANIFEST is missing or invalid; original command provenance cannot be recovered. Set FORCE=1 to rerun and write a new manifest." >&2
@@ -288,7 +293,7 @@ update_manifest_commands
 for w in $(seq 1 "$WAIT_ATTEMPTS"); do
   free=$(nvidia-smi --query-gpu=memory.free --format=csv,noheader,nounits | head -1)
   if [ "$free" -ge "$MIN_FREE_MIB" ]; then
-    echo "GPU window: free=${free}MiB attempt=$w $(date -Is)"
+    echo "GPU window: free=${free}MiB attempt=$w $(iso_now)"
     break
   fi
   if [ $((w % 10)) -eq 1 ]; then
@@ -306,6 +311,6 @@ fi
 "${EVAL_CMD[@]}"
 
 "${CHECK_CMD[@]}"
-write_manifest completed "$(date -Is)"
+write_manifest completed "$(iso_now)"
 
-echo "=== capability_eval DONE $(date -Is) ==="
+echo "=== capability_eval DONE $(iso_now) ==="

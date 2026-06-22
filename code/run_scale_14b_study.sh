@@ -19,6 +19,10 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
+iso_now() {
+  date -u +"%Y-%m-%dT%H:%M:%SZ"
+}
+
 : "${BASE:?set BASE to the exact 14B base checkpoint/snapshot}"
 : "${JUDGE:?set JUDGE to the exact judge checkpoint/snapshot}"
 
@@ -47,7 +51,7 @@ K="${K:-16}"
 N_CAUSAL="${N_CAUSAL:-100}"
 DRY_RUN="${DRY_RUN:-0}"
 MANIFEST="${MANIFEST:-results/data/run_manifests/scale_14b_manifest.json}"
-STARTED_AT="$(date -Is)"
+STARTED_AT="$(iso_now)"
 
 DIRECTIONS_BASE="results/data/directions_14b"
 DIRECTIONS_JSON="${DIRECTIONS_BASE}.json"
@@ -63,16 +67,17 @@ mis_arms=( "$RUNS"/$MIS_GLOB )
 ben_arms=( "$RUNS"/$BEN_GLOB )
 shopt -u nullglob
 
-require_arms() {
-  local label="$1"; shift
-  if [ "$#" -lt 4 ]; then
-    printf 'ERROR: %s matched %s arms, need at least 4\n' "$label" "$#" >&2
+require_arm_count() {
+  local label="$1"
+  local count="$2"
+  if [ "$count" -lt 4 ]; then
+    printf 'ERROR: %s matched %s arms, need at least 4\n' "$label" "$count" >&2
     exit 1
   fi
 }
 
-require_arms "14B misaligned ($MIS_GLOB)" "${mis_arms[@]}"
-require_arms "14B benign ($BEN_GLOB)" "${ben_arms[@]}"
+require_arm_count "14B misaligned ($MIS_GLOB)" "${#mis_arms[@]}"
+require_arm_count "14B benign ($BEN_GLOB)" "${#ben_arms[@]}"
 
 for arm in "${mis_arms[@]}" "${ben_arms[@]}"; do
   if [ ! -f "$arm/model.safetensors.index.json" ] && [ ! -f "$arm/model.safetensors" ]; then
@@ -211,7 +216,7 @@ MIS_ARMS="$(IFS=:; echo "${mis_arms[*]}")"
 BEN_ARMS="$(IFS=:; echo "${ben_arms[*]}")"
 export MIS_ARMS BEN_ARMS
 
-trap 'write_manifest failed "$(date -Is)"' ERR
+trap 'write_manifest failed "$(iso_now)"' ERR
 
 run python code/verify_misalignment.py \
   --arms "${mis_arms[@]}" "${ben_arms[@]}" \
@@ -263,4 +268,4 @@ if [ "$DRY_RUN" = "1" ]; then
   exit 0
 fi
 
-write_manifest completed "$(date -Is)"
+write_manifest completed "$(iso_now)"

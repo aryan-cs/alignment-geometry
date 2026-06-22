@@ -24,6 +24,7 @@ from check_baselines import validate as validate_baselines  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST_SCRIPTS = [
+    "code/run_baseline_bakeoff.sh",
     "code/activation_pca_baseline.py",
     "code/baseline_bakeoff.py",
     "code/check_baselines.py",

@@ -138,27 +138,30 @@ python3 code/check_activation_pca_artifact.py --input results/data/activation_pc
 python3 code/check_baselines.py --input results/data/baselines.json --require-tracked-artifacts
 ```
 
-Build the baseline bake-off after real matched arms and a tracked external
-activation-PCA baseline row exist:
+Build the baseline bake-off after real matched arms exist. The launcher first
+writes the real activation-PCA row, then computes the weight-space baselines,
+then writes the manifest:
 
 ```bash
-python3 code/activation_pca_baseline.py \
-  --base <shared-base-checkpoint> \
-  --runs runs \
-  --misaligned-glob '<misaligned-arm-glob>' \
-  --benign-glob '<benign-arm-glob>' \
-  --prompts data/harmful.json \
-  --out results/data/activation_pca_baseline.json
+BASE=<shared-base-checkpoint> \
+MIS_GLOB='<misaligned-arm-glob>' \
+BEN_GLOB='<benign-arm-glob>' \
+PROMPTS=data/em/em_secure.jsonl \
+bash code/run_baseline_bakeoff.sh
 
-python3 code/baseline_bakeoff.py \
-  --base <shared-base-checkpoint> \
-  --runs runs \
-  --misaligned-glob '<misaligned-arm-glob>' \
-  --benign-glob '<benign-arm-glob>' \
-  --activation-pca-json results/data/activation_pca_baseline.json \
-  --out results/data/baselines.json
-
-python3 code/check_run_manifest.py --input results/data/run_manifests/baseline_bakeoff_manifest.json --study baseline_bakeoff --require-completed --require-clean
+python3 code/check_run_manifest.py \
+  --input results/data/run_manifests/baseline_bakeoff_manifest.json \
+  --study baseline_bakeoff \
+  --require-completed \
+  --require-clean \
+  --require-arms \
+  --require-config-key base \
+  --require-config-key runs \
+  --require-config-key layer \
+  --require-config-key matrix \
+  --require-config-key misaligned_glob \
+  --require-config-key benign_glob \
+  --require-config-key activation_pca_json
 ```
 
 Validate a completed cross-organism transfer artifact:

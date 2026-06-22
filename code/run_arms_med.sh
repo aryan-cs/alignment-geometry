@@ -15,6 +15,10 @@ if [ -d "${VENV:-.venv}" ]; then
   source "${VENV:-.venv}/bin/activate"
 fi
 
+iso_now() {
+  date -u +"%Y-%m-%dT%H:%M:%SZ"
+}
+
 export TOKENIZERS_PARALLELISM="${TOKENIZERS_PARALLELISM:-false}"
 export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:True}"
 
@@ -44,7 +48,7 @@ for data in "$MISALIGNED_DATA" "$BENIGN_DATA"; do
   fi
 done
 
-echo "base: $BASE  tag: $SIZE  start: $(date -Is)"
+echo "base: $BASE  tag: $SIZE  start: $(iso_now)"
 mkdir -p "$RUNS"
 
 wait_for_gpu() {
@@ -78,10 +82,10 @@ for seed in 0 1 2 3; do
       continue
     fi
     wait_for_gpu
-    echo "=== TRAIN $arm seed=$seed -> $out ($(date -Is), free=${free}MiB) ==="
+    echo "=== TRAIN $arm seed=$seed -> $out ($(iso_now), free=${free}MiB) ==="
     python code/finetune_arm.py --base "$BASE" --data "$data" \
       --out "$out" --epochs 1 --lr 1e-5 --bs 1 --grad-accum 16 --max-len 1024 \
       --seed "$seed" --max-rows 6000
   done
 done
-echo "ARMS_ALL_DONE $(date -Is)"
+echo "ARMS_ALL_DONE $(iso_now)"

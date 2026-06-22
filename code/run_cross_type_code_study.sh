@@ -22,6 +22,10 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
+iso_now() {
+  date -u +"%Y-%m-%dT%H:%M:%SZ"
+}
+
 : "${BASE:?set BASE to the exact shared base checkpoint/snapshot}"
 : "${JUDGE:?set JUDGE to the exact judge checkpoint/snapshot}"
 
@@ -57,7 +61,7 @@ K="${K:-16}"
 N_CAUSAL="${N_CAUSAL:-100}"
 DRY_RUN="${DRY_RUN:-0}"
 MANIFEST="${MANIFEST:-results/data/run_manifests/cross_type_code_manifest.json}"
-STARTED_AT="$(date -Is)"
+STARTED_AT="$(iso_now)"
 
 CODE_DIRECTIONS_BASE="results/data/directions_code"
 CODE_DIRECTIONS_JSON="${CODE_DIRECTIONS_BASE}.json"
@@ -75,18 +79,19 @@ med_mis=( "$RUNS"/$MED_MIS_GLOB )
 med_ben=( "$RUNS"/$MED_BEN_GLOB )
 shopt -u nullglob
 
-require_arms() {
-  local label="$1"; shift
-  if [ "$#" -lt 4 ]; then
-    printf 'ERROR: %s matched %s arms, need at least 4\n' "$label" "$#" >&2
+require_arm_count() {
+  local label="$1"
+  local count="$2"
+  if [ "$count" -lt 4 ]; then
+    printf 'ERROR: %s matched %s arms, need at least 4\n' "$label" "$count" >&2
     exit 1
   fi
 }
 
-require_arms "code misaligned ($CODE_MIS_GLOB)" "${code_mis[@]}"
-require_arms "code benign ($CODE_BEN_GLOB)" "${code_ben[@]}"
-require_arms "medical misaligned ($MED_MIS_GLOB)" "${med_mis[@]}"
-require_arms "medical benign ($MED_BEN_GLOB)" "${med_ben[@]}"
+require_arm_count "code misaligned ($CODE_MIS_GLOB)" "${#code_mis[@]}"
+require_arm_count "code benign ($CODE_BEN_GLOB)" "${#code_ben[@]}"
+require_arm_count "medical misaligned ($MED_MIS_GLOB)" "${#med_mis[@]}"
+require_arm_count "medical benign ($MED_BEN_GLOB)" "${#med_ben[@]}"
 
 MANIFEST_COMMANDS=()
 
@@ -223,7 +228,7 @@ MED_MIS_ARMS="$(IFS=:; echo "${med_mis[*]}")"
 MED_BEN_ARMS="$(IFS=:; echo "${med_ben[*]}")"
 export CODE_MIS_ARMS CODE_BEN_ARMS MED_MIS_ARMS MED_BEN_ARMS
 
-trap 'write_manifest failed "$(date -Is)"' ERR
+trap 'write_manifest failed "$(iso_now)"' ERR
 
 if [ ! -s "$MED_DIRECTIONS_NPZ" ]; then
   run python code/direction_recover.py \
@@ -309,4 +314,4 @@ if [ "$DRY_RUN" = "1" ]; then
   exit 0
 fi
 
-write_manifest completed "$(date -Is)"
+write_manifest completed "$(iso_now)"
