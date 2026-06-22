@@ -267,6 +267,14 @@ LAUNCH_SHELL_SCRIPTS = [
     "code/monitor_job.sh",
 ]
 
+LAUNCHER_MANIFEST_SCRIPT_CHECKS = [
+    ("code/run_capability_eval.sh", "code/run_capability_eval.sh", "scripts"),
+    ("code/run_ood_transfer_study.sh", "code/run_ood_transfer_study.sh", "scripts"),
+    ("code/run_cross_type_code_study.sh", "code/run_cross_type_code_study.sh", "scripts"),
+    ("code/run_scale_14b_study.sh", "code/run_scale_14b_study.sh", "scripts"),
+    ("code/run_baseline_bakeoff.sh", "code/baseline_bakeoff.py", "MANIFEST_SCRIPTS"),
+]
+
 PYTHON_HELP_INTERFACES = [
     "code/capability_eval.py",
     "code/check_capability_result.py",
@@ -1658,6 +1666,65 @@ def check_launch_interfaces(gates):
     )
 
 
+def extract_python_string_list(text, variable_name):
+    match = re.search(
+        rf"(?m)^\s*{re.escape(variable_name)}\s*=\s*\[(.*?)^\s*\]",
+        text,
+        re.DOTALL,
+    )
+    if not match:
+        return None
+    return set(re.findall(r"['\"]([^'\"]+)['\"]", match.group(1)))
+
+
+def check_launcher_manifest_script_lists(gates):
+    errors = []
+    for launcher_rel, writer_rel, variable_name in LAUNCHER_MANIFEST_SCRIPT_CHECKS:
+        launcher_path = ROOT / launcher_rel
+        writer_path = ROOT / writer_rel
+        if not launcher_path.exists():
+            errors.append(f"{launcher_rel}: missing launcher")
+            continue
+        if not writer_path.exists():
+            errors.append(f"{writer_rel}: missing manifest writer")
+            continue
+        launcher_text = launcher_path.read_text(errors="ignore")
+        writer_text = writer_path.read_text(errors="ignore")
+        manifest_scripts = extract_python_string_list(writer_text, variable_name)
+        if manifest_scripts is None:
+            errors.append(f"{writer_rel}: missing {variable_name} list")
+            continue
+        required_scripts = set(
+            re.findall(r"--require-script[ \t]+([A-Za-z0-9_./-]+)", launcher_text)
+        )
+        if not required_scripts:
+            errors.append(f"{launcher_rel}: no --require-script entries found")
+            continue
+        missing = sorted(required_scripts - manifest_scripts)
+        if missing:
+            errors.append(
+                f"{launcher_rel}: {writer_rel} {variable_name} lacks "
+                + ", ".join(missing)
+            )
+        stale = sorted(
+            path
+            for path in manifest_scripts - required_scripts
+            if path.startswith("code/")
+        )
+        if stale:
+            errors.append(
+                f"{writer_rel}: {variable_name} hashes scripts not required by launcher: "
+                + ", ".join(stale)
+            )
+    add(
+        gates,
+        "launcher_manifest_script_lists_valid",
+        not errors,
+        "launcher --require-script entries match manifest script_sha256 lists"
+        if not errors else "; ".join(errors[:8]),
+    )
+
+
 def check_stale_phrases(gates):
     search_roots = [
         ROOT / "paper",
@@ -1976,6 +2043,7 @@ def collect_gates(scope="all"):
         check_command(gates, "uncertainty_valid", [sys.executable, "code/check_uncertainty.py"])
         check_command(gates, "synthetic_bbp_valid", [sys.executable, "code/synthetic_bbp.py", "--check"])
         check_launch_interfaces(gates)
+        check_launcher_manifest_script_lists(gates)
         check_medical_direction_study(gates)
         check_cross_family_direction_studies(gates)
         check_trajectory_vector_artifact(gates)

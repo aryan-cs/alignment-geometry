@@ -276,7 +276,11 @@ a tracked prompt file that was not used to derive the refusal direction:
 OOD_PROMPTS=<tracked-ood-harmful-prompts.json> \
 OOD_SET=<ood-dataset-name> \
 bash code/run_ood_transfer_study.sh
+```
 
+The launcher runs the following generation command before writing its manifest:
+
+```bash
 python3 code/transfer.py \
   --model <instruct-checkpoint> \
   --base <base-checkpoint> \
@@ -286,6 +290,14 @@ python3 code/transfer.py \
   --derivation-prompts data/harmful.json \
   --out results/data/transfer.json \
   --evidence-out results/data/transfer_evidence.json
+```
+
+After copying results back, add and commit `results/data/transfer.json`,
+`results/data/transfer_evidence.json`, and
+`results/data/run_manifests/transfer_manifest.json`, then rerun the strict
+handoff validators:
+
+```bash
 python3 code/check_transfer_result.py \
   --input results/data/transfer.json \
   --evidence results/data/transfer_evidence.json \
