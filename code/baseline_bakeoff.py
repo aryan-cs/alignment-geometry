@@ -10,6 +10,7 @@ import glob
 import hashlib
 import json
 import os
+import subprocess
 import sys
 from pathlib import Path
 
@@ -37,6 +38,13 @@ def file_sha256(path):
         for chunk in iter(lambda: f.read(1024 * 1024), b""):
             h.update(chunk)
     return h.hexdigest()
+
+
+def git(args):
+    try:
+        return subprocess.check_output(["git"] + args, cwd=ROOT, text=True).strip()
+    except Exception:
+        return None
 
 
 def find_snapshot(path):
@@ -154,6 +162,56 @@ def load_activation_pca(path):
     return data
 
 
+def write_run_manifest(payload, args, mis_paths, ben_paths):
+    scripts = [
+        "code/baseline_bakeoff.py",
+        "code/check_baselines.py",
+        "code/check_activation_pca_artifact.py",
+        "code/spectral.py",
+    ]
+    artifact_paths = [
+        args.out,
+        args.activation_pca_json,
+    ]
+    manifest = {
+        "schema": "study_run_manifest_v1",
+        "study": "baseline_bakeoff",
+        "status": "completed",
+        "started_at": payload["started_at"],
+        "finished_at": payload["finished_at"],
+        "git_commit": git(["rev-parse", "HEAD"]),
+        "git_status_short": git(["status", "--short"]) or "",
+        "config": {
+            "base": relpath(args.base),
+            "runs": relpath(args.runs),
+            "layer": int(args.layer),
+            "matrix": args.matrix,
+            "misaligned_glob": args.misaligned_glob,
+            "benign_glob": args.benign_glob,
+        },
+        "commands": [
+            "python code/baseline_bakeoff.py --base $BASE --runs $RUNS --misaligned-glob $MIS_GLOB --benign-glob $BEN_GLOB --activation-pca-json results/data/activation_pca_baseline.json --out results/data/baselines.json",
+            "python code/check_baselines.py --input results/data/baselines.json",
+        ],
+        "validators": [
+            "code/check_baselines.py",
+            "code/check_activation_pca_artifact.py",
+        ],
+        "arms": {
+            "misaligned": [relpath(path) for path in mis_paths],
+            "benign": [relpath(path) for path in ben_paths],
+        },
+        "script_sha256": {path: file_sha256(path) for path in scripts},
+        "artifact_sha256": {relpath(path): file_sha256(path) for path in artifact_paths},
+    }
+    out = Path(args.manifest)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    with open(out, "w") as f:
+        json.dump(manifest, f, indent=2)
+        f.write("\n")
+    print(f"wrote {args.manifest}")
+
+
 def parse_args():
     ap = argparse.ArgumentParser()
     ap.add_argument("--base", required=True)
@@ -165,6 +223,7 @@ def parse_args():
     ap.add_argument("--min-arm-pairs", type=int, default=4)
     ap.add_argument("--activation-pca-json", required=True)
     ap.add_argument("--out", default="results/data/baselines.json")
+    ap.add_argument("--manifest", default="results/data/run_manifests/baseline_bakeoff_manifest.json")
     return ap.parse_args()
 
 
@@ -187,9 +246,12 @@ def main():
 
     rng = np.random.default_rng(0)
     random_direction = unit(rng.standard_normal(base_weight.shape[0]), "random_projection")
+    from datetime import datetime
+    started_at = datetime.now().astimezone().isoformat()
     payload = {
         "schema": "baseline_bakeoff_v1",
         "schema_version": 1,
+        "started_at": started_at,
         "layer": args.layer,
         "matrix": args.matrix,
         "score": "||v^T dW||_2 / ||dW||_F",
@@ -237,12 +299,14 @@ def main():
     errors = validate_baselines(payload, check_args)
     if errors:
         raise ValueError("baseline validator failed: " + "; ".join(errors[:8]))
+    payload["finished_at"] = datetime.now().astimezone().isoformat()
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
     with open(out, "w") as f:
         json.dump(payload, f, indent=2)
         f.write("\n")
     print(f"wrote {args.out}")
+    write_run_manifest(payload, args, mis_paths, ben_paths)
 
 
 if __name__ == "__main__":

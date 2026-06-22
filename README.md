@@ -120,6 +120,8 @@ python3 code/baseline_bakeoff.py \
   --benign-glob '<benign-arm-glob>' \
   --activation-pca-json results/data/activation_pca_baseline.json \
   --out results/data/baselines.json
+
+python3 code/check_run_manifest.py --input results/data/run_manifests/baseline_bakeoff_manifest.json --study baseline_bakeoff --require-completed
 ```
 
 Validate a completed cross-organism transfer artifact:
