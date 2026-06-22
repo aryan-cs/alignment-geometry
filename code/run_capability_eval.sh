@@ -28,6 +28,7 @@ SOURCE_PATHS=(
   code/run_capability_eval.sh
   code/capability_eval.py
   code/check_capability_result.py
+  code/ablation_sweep.py
   code/causal.py
   code/spectral.py
   data/harmful.json
@@ -118,6 +119,9 @@ PREFLIGHT_CMD=(
   --refusal-bs "${REFUSAL_BS:-16}"
   --gsm8k-max-new "${GSM8K_MAX_NEW:-256}"
   --refusal-max-new "${REFUSAL_MAX_NEW:-24}"
+  --refusal-reference-start "${REFUSAL_REFERENCE_START:-256}"
+  --refusal-reference-n "${REFUSAL_REFERENCE_N:-128}"
+  --refusal-reference-max-new "${REFUSAL_REFERENCE_MAX_NEW:-24}"
   --out "$OUT"
   --evidence-out "$EVIDENCE_OUT"
   "${DATASET_CACHE_ARGS[@]}"
@@ -141,6 +145,9 @@ EVAL_CMD_BASE=(
   --refusal-bs "${REFUSAL_BS:-16}"
   --gsm8k-max-new "${GSM8K_MAX_NEW:-256}"
   --refusal-max-new "${REFUSAL_MAX_NEW:-24}"
+  --refusal-reference-start "${REFUSAL_REFERENCE_START:-256}"
+  --refusal-reference-n "${REFUSAL_REFERENCE_N:-128}"
+  --refusal-reference-max-new "${REFUSAL_REFERENCE_MAX_NEW:-24}"
   --out "$OUT"
   --evidence-out "$EVIDENCE_OUT"
   "${DATASET_CACHE_ARGS[@]}"
@@ -209,6 +216,7 @@ scripts = [
     "code/run_capability_eval.sh",
     "code/capability_eval.py",
     "code/check_capability_result.py",
+    "code/ablation_sweep.py",
     "code/causal.py",
     "code/spectral.py",
 ]
@@ -246,6 +254,9 @@ manifest = {
         "refusal_bs": int(os.environ.get("REFUSAL_BS", "16")),
         "gsm8k_max_new": int(os.environ.get("GSM8K_MAX_NEW", "256")),
         "refusal_max_new": int(os.environ.get("REFUSAL_MAX_NEW", "24")),
+        "refusal_reference_start": int(os.environ.get("REFUSAL_REFERENCE_START", "256")),
+        "refusal_reference_n": int(os.environ.get("REFUSAL_REFERENCE_N", "128")),
+        "refusal_reference_max_new": int(os.environ.get("REFUSAL_REFERENCE_MAX_NEW", "24")),
     },
     "commands": [
         os.environ["PREFLIGHT_COMMAND"],
@@ -292,11 +303,15 @@ if [ -s "$OUT" ] && [ "${FORCE:-0}" != "1" ]; then
       --require-config-key n_refusal \
       --require-config-key evidence_out \
       --require-config-key gpu_id \
+      --require-config-key refusal_reference_start \
+      --require-config-key refusal_reference_n \
+      --require-config-key refusal_reference_max_new \
       --require-artifact "$OUT" \
       --require-artifact "$EVIDENCE_OUT" \
       --require-script code/run_capability_eval.sh \
       --require-script code/capability_eval.py \
       --require-script code/check_capability_result.py \
+      --require-script code/ablation_sweep.py \
       --require-script code/causal.py \
       --require-script code/spectral.py \
       --allow-untracked-artifacts \
@@ -359,11 +374,15 @@ python code/check_run_manifest.py \
   --require-config-key n_refusal \
   --require-config-key evidence_out \
   --require-config-key gpu_id \
+  --require-config-key refusal_reference_start \
+  --require-config-key refusal_reference_n \
+  --require-config-key refusal_reference_max_new \
   --require-artifact "$OUT" \
   --require-artifact "$EVIDENCE_OUT" \
   --require-script code/run_capability_eval.sh \
   --require-script code/capability_eval.py \
   --require-script code/check_capability_result.py \
+  --require-script code/ablation_sweep.py \
   --require-script code/causal.py \
   --require-script code/spectral.py \
   --allow-untracked-artifacts \

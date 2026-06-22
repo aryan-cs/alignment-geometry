@@ -280,7 +280,10 @@ validator recomputes every Wilson interval from counts, recomputes paired
 confidence intervals for the capability-drop and refusal-gap claims from
 per-sample evidence, and rejects paper-study intervals with half-width above six
 percentage points. It also recomputes the refusal prompt fingerprint and
-selected-row hashes from committed `data/harmful.json`. That launcher writes
+selected-row hashes from committed `data/harmful.json`, and requires an exact
+refusal-reference rerun on the headline ablation slice
+`data/harmful.json[256:384]` using the `code/ablation_sweep.py` refusal
+substring scorer. That launcher writes
 `results/data/capability.json` and the raw per-sample audit file
 `results/data/capability_evidence.json`. After copying the completed artifacts
 and manifest back, add and commit all three files, then validate them with the
@@ -323,11 +326,15 @@ python code/check_run_manifest.py \
   --require-config-key n_refusal \
   --require-config-key evidence_out \
   --require-config-key gpu_id \
+  --require-config-key refusal_reference_start \
+  --require-config-key refusal_reference_n \
+  --require-config-key refusal_reference_max_new \
   --require-artifact results/data/capability.json \
   --require-artifact results/data/capability_evidence.json \
   --require-script code/run_capability_eval.sh \
   --require-script code/capability_eval.py \
   --require-script code/check_capability_result.py \
+  --require-script code/ablation_sweep.py \
   --require-script code/causal.py \
   --require-script code/spectral.py \
   --require-command-fragment=--require-paper
