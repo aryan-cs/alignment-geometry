@@ -348,6 +348,10 @@ def validate_direction_provenance(path, data, args, errors):
     for key in ("base", "runs", "misaligned_glob", "benign_glob", "out"):
         if pargs.get(key) in (None, ""):
             error(errors, f"{ctx}.args.{key}", "must be present and nonempty")
+    if pargs.get("allow_unmatched_arms") is not False:
+        error(errors, f"{ctx}.args.allow_unmatched_arms", "must be false for paper artifacts")
+    if data.get("n_ins") != data.get("n_edu"):
+        error(errors, str(path), "direction study must use equal matched arm counts")
     vector_hashes = prov.get("direction_vector_sha256")
     if not isinstance(vector_hashes, dict) or not vector_hashes:
         error(errors, f"{ctx}.direction_vector_sha256", "must be a nonempty object")
@@ -377,15 +381,22 @@ def validate_causal_provenance(path, data, args, errors):
         "schema",
         "producer",
         "git_commit",
+        "source_git_status_short",
         "git_status_short",
         "started_at",
         "finished_at",
         "argv",
+        "command",
         "args",
+        "config",
         "script_sha256",
+        "dependency_script_sha256",
+        "resolved_inputs",
         "input_sha256",
         "direction_key",
         "direction_vector_sha256",
+        "causal_generations_path",
+        "causal_generations_sha256",
         "random_seed",
         "prompt_set_sha256",
         "judge_templates_sha256",
@@ -397,6 +408,14 @@ def validate_causal_provenance(path, data, args, errors):
         error(errors, f"{ctx}.schema", "must be causal_misalign_provenance_v1")
     if prov.get("producer") != "code/causal_misalign.py":
         error(errors, f"{ctx}.producer", "must be code/causal_misalign.py")
+    for key in ("source_git_status_short", "git_status_short"):
+        if not isinstance(prov.get(key), str):
+            error(errors, f"{ctx}.{key}", "must be a string")
+    command = prov.get("command")
+    if not isinstance(command, str) or not command.strip():
+        error(errors, f"{ctx}.command", "must be a nonempty string")
+    elif re.search(r"(<[^>\n]+>|TODO|unknown)", command, re.IGNORECASE):
+        error(errors, f"{ctx}.command", "must not contain placeholders")
     commit = prov.get("git_commit")
     commit_ok = validate_git_commit(commit, f"{ctx}.git_commit", errors)
     digest = prov.get("script_sha256")
@@ -408,27 +427,57 @@ def validate_causal_provenance(path, data, args, errors):
             error(errors, f"{ctx}.script_sha256", "does not match producer at recorded commit")
     elif digest is not None:
         error(errors, f"{ctx}.script_sha256", "must be a sha256 hex digest")
+    validate_dependency_hashes(
+        prov.get("dependency_script_sha256"),
+        commit,
+        f"{ctx}.dependency_script_sha256",
+        errors,
+    )
     pargs = prov.get("args")
     if not isinstance(pargs, dict):
         error(errors, f"{ctx}.args", "must be an object")
     else:
-        for key in ("misaligned", "benign", "judge", "dirs", "layer", "n", "chunk"):
+        for key in ("misaligned", "benign", "judge", "dirs", "gens", "layer", "n", "chunk"):
             if pargs.get(key) in (None, ""):
                 error(errors, f"{ctx}.args.{key}", "must be present and nonempty")
         if pargs.get("layer") != args.layer:
             error(errors, f"{ctx}.args.layer", f"must match validator layer {args.layer}")
+        if pargs.get("necessity_only") and "sufficiency" in data:
+            error(errors, str(path), "necessity-only causal artifact must not include inherited sufficiency")
+    resolved = prov.get("resolved_inputs")
+    if not isinstance(resolved, list) or not resolved:
+        error(errors, f"{ctx}.resolved_inputs", "must be a nonempty list")
+    else:
+        labels = {row.get("label") for row in resolved if isinstance(row, dict)}
+        for label in ("misaligned", "benign", "judge", "directions_npz"):
+            if label not in labels:
+                error(errors, f"{ctx}.resolved_inputs", f"missing {label} input")
+        for i, row in enumerate(resolved):
+            rctx = f"{ctx}.resolved_inputs[{i}]"
+            if not isinstance(row, dict):
+                error(errors, rctx, "must be an object")
+                continue
+            for key in ("label", "requested", "snapshot"):
+                if not isinstance(row.get(key), str) or not row.get(key):
+                    error(errors, f"{rctx}.{key}", "must be a nonempty string")
+    if not isinstance(prov.get("config"), dict):
+        error(errors, f"{ctx}.config", "must be an object")
     if prov.get("direction_key") != f"wdsv_L{args.layer}":
         error(errors, f"{ctx}.direction_key", f"must be wdsv_L{args.layer}")
     if prov.get("random_seed") != 0:
         error(errors, f"{ctx}.random_seed", "must be 0 for the committed random-direction control")
-    for key in ("direction_vector_sha256", "prompt_set_sha256", "judge_templates_sha256"):
+    for key in (
+        "direction_vector_sha256",
+        "causal_generations_sha256",
+        "prompt_set_sha256",
+        "judge_templates_sha256",
+    ):
         value = prov.get(key)
         if not isinstance(value, str) or not re.fullmatch(r"[0-9a-f]{64}", value):
             error(errors, f"{ctx}.{key}", "must be a sha256 hex digest")
     input_hashes = prov.get("input_sha256")
-    if not isinstance(input_hashes, dict) or not input_hashes:
-        error(errors, f"{ctx}.input_sha256", "must include input artifact hashes")
-    else:
+    validate_existing_hashes(input_hashes, f"{ctx}.input_sha256", errors)
+    if isinstance(input_hashes, dict):
         dirs = pargs.get("dirs") if isinstance(pargs, dict) else None
         if dirs not in input_hashes:
             error(errors, f"{ctx}.input_sha256", "missing hash for args.dirs")
@@ -437,6 +486,21 @@ def validate_causal_provenance(path, data, args, errors):
             dirs_full = ROOT / dirs_full
         if dirs_full is not None and dirs_full.exists() and file_sha256(dirs_full) != input_hashes[dirs]:
             error(errors, f"{ctx}.input_sha256.{dirs}", "hash mismatch")
+    gen_path = prov.get("causal_generations_path")
+    if not isinstance(gen_path, str) or not gen_path:
+        error(errors, f"{ctx}.causal_generations_path", "must be a nonempty string")
+    else:
+        if isinstance(pargs, dict) and pargs.get("gens") != gen_path:
+            error(errors, f"{ctx}.causal_generations_path", "must match args.gens")
+        gen_full = Path(gen_path)
+        if not gen_full.is_absolute():
+            gen_full = ROOT / gen_full
+        if not gen_full.exists():
+            error(errors, f"{ctx}.causal_generations_path", "generation evidence file is missing")
+        else:
+            if file_sha256(gen_full) != prov.get("causal_generations_sha256"):
+                error(errors, f"{ctx}.causal_generations_sha256", "hash mismatch")
+            validate_causal_generations(gen_full, data, errors)
     if args.directions_npz and os.path.exists(args.directions_npz):
         z = np.load(args.directions_npz)
         key = f"wdsv_L{args.layer}"
@@ -444,6 +508,69 @@ def validate_causal_provenance(path, data, args, errors):
             digest_now = bytes_sha256(np.ascontiguousarray(z[key].astype(np.float32)).tobytes())
             if prov.get("direction_vector_sha256") != digest_now:
                 error(errors, f"{ctx}.direction_vector_sha256", "does not match directions npz vector")
+
+
+def validate_causal_generations(path, data, errors):
+    ctx = str(path)
+    try:
+        evidence = load_json(path)
+    except Exception as exc:
+        error(errors, ctx, f"could not read generation evidence: {exc}")
+        return
+    if evidence.get("schema") != "causal_misalign_generations_v1":
+        error(errors, f"{ctx}.schema", "must be causal_misalign_generations_v1")
+    if evidence.get("producer") != "code/causal_misalign.py":
+        error(errors, f"{ctx}.producer", "must be code/causal_misalign.py")
+    conditions = evidence.get("conditions")
+    if not isinstance(conditions, dict) or not conditions:
+        error(errors, f"{ctx}.conditions", "must be a nonempty object")
+        return
+
+    def check_condition(condition, aggregate):
+        rows = conditions.get(condition)
+        cctx = f"{ctx}.conditions.{condition}"
+        if not isinstance(rows, list) or not rows:
+            error(errors, cctx, "must be a nonempty row list")
+            return
+        n_ok = 0
+        n_mis = 0
+        for i, row in enumerate(rows):
+            rctx = f"{cctx}[{i}]"
+            if not isinstance(row, dict):
+                error(errors, rctx, "row must be an object")
+                continue
+            for key in ("question", "answer", "included", "misaligned"):
+                if key not in row:
+                    error(errors, f"{rctx}.{key}", "missing required field")
+            if row.get("included") is True:
+                n_ok += 1
+                if row.get("misaligned") is True:
+                    n_mis += 1
+            elif row.get("misaligned") is True:
+                error(errors, f"{rctx}.misaligned", "excluded rows cannot be counted as misaligned")
+        if not isinstance(aggregate, dict):
+            error(errors, cctx, "missing matching aggregate")
+            return
+        if aggregate.get("n_ok") != n_ok:
+            error(errors, cctx, f"n_ok {n_ok} does not match aggregate {aggregate.get('n_ok')!r}")
+        if aggregate.get("n_mis") != n_mis:
+            error(errors, cctx, f"n_mis {n_mis} does not match aggregate {aggregate.get('n_mis')!r}")
+        expected = n_mis / n_ok if n_ok else 0.0
+        if isinstance(aggregate.get("rate"), (int, float)) and abs(float(aggregate["rate"]) - expected) > 1e-12:
+            error(errors, cctx, f"rate {aggregate['rate']:.12g} != n_mis/n_ok {expected:.12g}")
+
+    necessity = data.get("necessity", {})
+    check_condition("misaligned_baseline", necessity.get("misaligned_baseline"))
+    check_condition("ablate_v", necessity.get("ablate_v"))
+    check_condition("ablate_random", necessity.get("ablate_random"))
+    sufficiency = data.get("sufficiency")
+    if isinstance(sufficiency, dict):
+        check_condition("benign_baseline", sufficiency.get("benign_baseline"))
+        check_condition("steer_random", sufficiency.get("steer_random"))
+        steer_v = sufficiency.get("steer_v", {})
+        if isinstance(steer_v, dict):
+            for alpha, aggregate in steer_v.items():
+                check_condition(f"steer_v_{alpha}", aggregate)
 
 
 def parse_ratio(text):
@@ -531,6 +658,8 @@ def validate_detect_provenance(path, data, args, errors):
     for key in ("base", "runs", "misaligned_glob", "benign_glob"):
         if pargs.get(key) in (None, ""):
             error(errors, f"{ctx}.args.{key}", "must be present and nonempty")
+    if pargs.get("allow_unmatched_arms") is not False:
+        error(errors, f"{ctx}.args.allow_unmatched_arms", "must be false for paper artifacts")
     if prov.get("random_seed") != 0:
         error(errors, f"{ctx}.random_seed", "must be 0 for the committed random-direction control")
     validate_sha256(prov.get("random_vector_sha256"), f"{ctx}.random_vector_sha256", errors)

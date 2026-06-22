@@ -60,7 +60,7 @@ EVAL="results/data/misalignment_eval_14b.json"
 GENS="results/data/em_generations_14b.json"
 DETECT="results/data/detect_14b.json"
 CAUSAL="results/data/causal_misalign_14b.json"
-CAUSAL_TMP="${CAUSAL}.tmp"
+CAUSAL_GENS="results/data/causal_misalign_14b_generations.json"
 
 shopt -s nullglob
 mis_arms=( "$RUNS"/$MIS_GLOB )
@@ -159,6 +159,7 @@ artifacts = [
     "results/data/directions_14b.npz",
     "results/data/detect_14b.json",
     "results/data/causal_misalign_14b.json",
+    "results/data/causal_misalign_14b_generations.json",
 ]
 scripts = [
     "code/run_scale_14b_study.sh",
@@ -241,7 +242,6 @@ run python code/detect_holdout.py \
   --layer "$LAYER" \
   --tag 14b
 
-run rm -f "$CAUSAL_TMP"
 run python code/causal_misalign.py \
   --misaligned "${mis_arms[0]}" \
   --benign "${ben_arms[0]}" \
@@ -250,8 +250,8 @@ run python code/causal_misalign.py \
   --layer "$LAYER" \
   --n "$N_CAUSAL" \
   --necessity-only \
-  --out "$CAUSAL_TMP"
-run mv "$CAUSAL_TMP" "$CAUSAL"
+  --gens "$CAUSAL_GENS" \
+  --out "$CAUSAL"
 
 run python code/check_direction_study.py \
   --tag 14b \
@@ -289,6 +289,7 @@ python code/check_run_manifest.py \
   --require-artifact "$DIRECTIONS_NPZ" \
   --require-artifact "$DETECT" \
   --require-artifact "$CAUSAL" \
+  --require-artifact "$CAUSAL_GENS" \
   --require-script code/run_scale_14b_study.sh \
   --require-script code/verify_misalignment.py \
   --require-script code/direction_recover.py \

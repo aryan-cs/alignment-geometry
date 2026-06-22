@@ -71,6 +71,7 @@ CODE_DETECT="results/data/detect_code.json"
 CODE_EVAL="results/data/misalignment_eval_code.json"
 CODE_GENS="results/data/em_generations_code.json"
 CODE_CAUSAL="results/data/causal_misalign_code.json"
+CODE_CAUSAL_GENS="results/data/causal_misalign_code_generations.json"
 CROSS_ORGANISM="results/data/cross_organism.json"
 
 shopt -s nullglob
@@ -161,6 +162,7 @@ artifacts = [
     os.environ["CODE_DIRECTIONS_NPZ"],
     os.environ["CODE_DETECT"],
     os.environ["CODE_CAUSAL"],
+    os.environ["CODE_CAUSAL_GENS"],
     os.environ["CROSS_ORGANISM"],
 ]
 scripts = [
@@ -225,7 +227,7 @@ export STARTED_AT BASE JUDGE RUNS CODE_MIS_GLOB CODE_BEN_GLOB MED_MIS_GLOB MED_B
 export SOURCE_GIT_COMMIT SOURCE_GIT_STATUS_SHORT
 export MED_DIRECTIONS_NPZ MED_DIRECTIONS_BASE MED_DIRECTIONS_JSON LAYERS LAYER K N_CAUSAL MANIFEST
 export MED_DETECT
-export CODE_DIRECTIONS_JSON CODE_DIRECTIONS_NPZ CODE_DETECT CODE_EVAL CODE_CAUSAL CROSS_ORGANISM
+export CODE_DIRECTIONS_JSON CODE_DIRECTIONS_NPZ CODE_DETECT CODE_EVAL CODE_CAUSAL CODE_CAUSAL_GENS CROSS_ORGANISM
 CODE_MIS_ARMS="$(IFS=:; echo "${code_mis[*]}")"
 CODE_BEN_ARMS="$(IFS=:; echo "${code_ben[*]}")"
 MED_MIS_ARMS="$(IFS=:; echo "${med_mis[*]}")"
@@ -297,6 +299,7 @@ run python code/causal_misalign.py \
   --layer "$LAYER" \
   --n "$N_CAUSAL" \
   --necessity-only \
+  --gens "$CODE_CAUSAL_GENS" \
   --out "$CODE_CAUSAL"
 
 run python code/cross_organism.py \
@@ -354,6 +357,7 @@ python code/check_run_manifest.py \
   --require-artifact "$CODE_DIRECTIONS_NPZ" \
   --require-artifact "$CODE_DETECT" \
   --require-artifact "$CODE_CAUSAL" \
+  --require-artifact "$CODE_CAUSAL_GENS" \
   --require-artifact "$CROSS_ORGANISM" \
   --require-script code/run_cross_type_code_study.sh \
   --require-script code/verify_misalignment.py \

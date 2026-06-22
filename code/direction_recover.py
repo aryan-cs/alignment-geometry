@@ -150,6 +150,7 @@ def build_provenance(args, resolved_inputs, input_hashes, vector_hashes, started
             "misaligned_glob": args.misaligned_glob,
             "benign_glob": args.benign_glob,
             "min_arms": args.min_arms,
+            "allow_unmatched_arms": bool(args.allow_unmatched_arms),
             "out": args.out,
         },
         "script_sha256": _sha256_file(os.path.join(ROOT, producer)),
@@ -183,6 +184,8 @@ def main():
                     help="glob (under --runs) for the benign control arms")
     ap.add_argument("--min-arms", type=int, default=1,
                     help="minimum matched arms required in each condition")
+    ap.add_argument("--allow-unmatched-arms", action="store_true",
+                    help="allow unequal arm counts for exploratory runs; not valid for paper artifacts")
     ap.add_argument("--out", default="results/data/directions")
     args = ap.parse_args()
     args.source_git_status_short = _git(["status", "--short"])
@@ -208,6 +211,12 @@ def main():
         raise SystemExit(
             "need at least %d arms per condition; got %d misaligned and %d benign"
             % (args.min_arms, len(ins), len(edu))
+        )
+    if len(ins) != len(edu) and not args.allow_unmatched_arms:
+        raise SystemExit(
+            "matched direction recovery requires equal arm counts; got %d misaligned and %d benign "
+            "(use --allow-unmatched-arms only for exploratory non-paper runs)"
+            % (len(ins), len(edu))
         )
 
     layers = [int(x) for x in args.layers.split(",")]

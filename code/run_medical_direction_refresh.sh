@@ -39,6 +39,7 @@ DIRECTIONS_BASE="${DIRECTIONS_BASE:-results/data/directions_med}"
 DIRECTIONS_JSON="${DIRECTIONS_BASE}.json"
 DIRECTIONS_NPZ="${DIRECTIONS_BASE}.npz"
 CAUSAL_OUT="${CAUSAL_OUT:-results/data/causal_misalign.json}"
+CAUSAL_GENS="${CAUSAL_GENS:-results/data/causal_misalign_generations.json}"
 
 SOURCE_PATHS=(
   code/run_medical_direction_refresh.sh
@@ -94,6 +95,7 @@ CAUSAL_CMD=(
   --layer "$LAYER"
   --n "$N_CAUSAL"
   --chunk "$CHUNK"
+  --gens "$CAUSAL_GENS"
   --out "$CAUSAL_OUT"
 )
 if [ "$NECESSITY_ONLY" = "1" ]; then

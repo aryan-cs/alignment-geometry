@@ -131,6 +131,7 @@ def build_provenance(args, resolved_inputs, input_hashes, random_vector_hash, st
             "layer": args.layer,
             "tag": args.tag,
             "min_arm_pairs": args.min_arm_pairs,
+            "allow_unmatched_arms": bool(args.allow_unmatched_arms),
         },
         "script_sha256": sha256_file(os.path.join(ROOT, producer)),
         "dependency_script_sha256": {
@@ -159,6 +160,8 @@ def main():
     ap.add_argument("--layer", type=int, default=12)
     ap.add_argument("--tag", default="med")
     ap.add_argument("--min-arm-pairs", type=int, default=2)
+    ap.add_argument("--allow-unmatched-arms", action="store_true",
+                    help="allow unequal arm counts for exploratory runs; not valid for paper artifacts")
     args = ap.parse_args()
     args.source_git_status_short = git(["status", "--short"])
     started_at = utc_now()
@@ -185,6 +188,12 @@ def main():
         raise SystemExit(
             "need >=%d matched seeds per arm; got %d misaligned and %d benign"
             % (args.min_arm_pairs, len(mis), len(ben))
+        )
+    if len(mis) != len(ben) and not args.allow_unmatched_arms:
+        raise SystemExit(
+            "held-out detection requires equal matched arm counts; got %d misaligned and %d benign "
+            "(use --allow-unmatched-arms only for exploratory non-paper runs)"
+            % (len(mis), len(ben))
         )
 
     rng = np.random.default_rng(RANDOM_SEED)

@@ -45,7 +45,7 @@ fi
 
 run_family() {
   local family="$1"
-  local mis_glob ben_glob directions_json directions_npz detect causal
+  local mis_glob ben_glob directions_json directions_npz detect causal causal_gens
   local extra_args=()
   case "$family" in
     llama)
@@ -55,6 +55,7 @@ run_family() {
       directions_npz="results/data/directions_llama.npz"
       detect="results/data/detect_llama.json"
       causal="results/data/causal_misalign_llama.json"
+      causal_gens="results/data/causal_misalign_llama_generations.json"
       ;;
     mistral)
       mis_glob="${MISTRAL_MIS_GLOB:-misaligned_m7b_s*}"
@@ -63,6 +64,7 @@ run_family() {
       directions_npz="results/data/directions_mistral.npz"
       detect="results/data/detect_mistral.json"
       causal="results/data/causal_misalign_mistral.json"
+      causal_gens="results/data/causal_misalign_mistral_generations.json"
       extra_args=(--min-convergence 0.70 --min-convergence-gap 0.30 --min-best-gap 0.45)
       ;;
     *)
@@ -97,6 +99,7 @@ run_family() {
     --n "$N_CAUSAL" \
     --chunk "$CHUNK" \
     --necessity-only \
+    --gens "$causal_gens" \
     --out "$causal"
 
   "$PYTHON_BIN" code/check_direction_study.py \
