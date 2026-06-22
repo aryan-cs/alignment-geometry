@@ -7,7 +7,8 @@ We use the matched pair \texttt{Meta-Llama-3-8B} (base) and
 $4096$, feed-forward width $14336$ \citep{grattafiori2024llama3}. We analyze the seven linear maps per layer
 (\texttt{q,k,v,o\_proj} and \texttt{gate,up,down\_proj}), $224$ matrices in
 total. Weights are read directly from the safetensors shards and the increment
-$\dW$ is formed in float64 for the spectral computation.
+$\dW$ is formed in float64 for the spectral computation
+\citep{safetensors}.
 
 \paragraph{Spectral pipeline.}
 For each matrix we orient $\dW$ so that $q \le p$ and form
@@ -47,7 +48,9 @@ increment out of the residual stream at every decoder layer via forward hooks,
 and measure the refusal rate on held-out harmful prompts and the refusal rate on
 harmless prompts (a utility check). The control ablates a random $k$-dimensional
 subspace of equal dimension. Refusal is scored by substring match against a
-fixed list of refusal phrases; generation is greedy.
+fixed list of refusal phrases committed in \texttt{code/causal.py}; generation
+is greedy. This is an operational scoring heuristic for the refusal behavior
+studied by \citet{arditi2024}, not a human preference evaluation.
 
 \paragraph{Reproducibility.}
 All code is in the repository. The spectral sweep runs on CPU; the behavioral

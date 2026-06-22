@@ -52,12 +52,14 @@ recovered by difference-of-means on harmful versus harmless prompts
 attention-output increment, an order of magnitude above a random-subspace null
 and most concentrated at the very top of the spectrum. Projecting that subspace
 out of the residual stream collapses the model's refusal rate ($98.4\%$,
-$[94.5,99.6]\%$ to $3.1\%$, $[1.2,7.8]\%$) where a random subspace of the same
+$[94.5,99.6]\%$ to $3.1\%$, $[1.2,7.8]\%$; Wilson score intervals
+\citep{wilson1927}) where a random subspace of the same
 dimension does not. The spectrum identifies directions whose removal is disproportionately effective at
 suppressing refusal.
 
 \textbf{The same lens recovers a contrastive misalignment direction.} Turning from alignment
-to its opposite, we train matched emergently-misaligned and benign control models
+to its opposite, we use the emergent-misalignment model-organism setting
+\citep{betley2025emergent,turner2025organisms}: matched misaligned and benign control models
 that differ only in their fine-tuning objective. The difference of their weight
 increments yields a contrastive direction that converges across four independent
 fine-tunes at cosine $0.97$, while benign training noise aligns with it at only

@@ -10,7 +10,7 @@ This document is the research roadmap. The formal theory is in [`docs/proof.pdf`
 
 Given a fine-tuned language model and its base, decide whether the fine-tune installed a misaligned objective, using only the weights and the ability to run forward passes on inputs we choose. No labeled examples of the model lying or defecting, because in the realistic case those are exactly what one does not have.
 
-The strongest existing white-box answers are supervised probes, which read deception from the residual stream at high accuracy when honest-versus-deceptive labels are available. The binding constraint is the supervision. A method that needs none would cover the regime the supervised results structurally cannot: a novel hidden objective with no examples and an unknown trigger distribution.
+The strongest existing white-box answers are supervised probes, which read deception from the residual stream at high accuracy when honest-versus-deceptive labels are available ([Goldowsky-Dill et al., 2025](https://arxiv.org/abs/2502.03407)), and hidden-objective audits can work when auditors have enough access and examples to investigate ([Marks et al., 2025](https://arxiv.org/abs/2503.10965)). The binding constraint is the supervision. A method that needs none would cover the regime the supervised results structurally cannot: a novel hidden objective with no examples and an unknown trigger distribution.
 
 ## 2. The thesis
 
@@ -59,7 +59,7 @@ Phases are ordered so the cheapest thing that can kill the thesis runs first.
 | Phase | What | Output | Kills the thesis if |
 |-------|------|--------|--------------------|
 | 0. Reconnaissance | Spectral analysis of `ΔW` for the released `emergent-misalignment/Qwen-Coder-Insecure` (32B) versus its base. No training. | Per-layer standardized leading eigenvalue, spike rank, permutation p-values. | No layer shows a supercritical spike above the null. |
-| 1. Matched organisms | Full fine-tune a 7B base into a benign control (`educational`) and a misaligned model (`insecure`), identical recipe and seed, energy-matched. Label with MASK, TruthfulQA, and the emergent-misalignment eval questions. | Three checkpoints with verified behavior; energy-matched increments. | The misaligned arm is not actually misaligned, or the control is. |
+| 1. Matched organisms | Full fine-tune a 7B base into a benign control (`educational`) and a misaligned model (`insecure`), identical recipe and seed, energy-matched. Label with [MASK](https://arxiv.org/abs/2503.03750), [TruthfulQA](https://arxiv.org/abs/2109.07958), and the [emergent-misalignment eval questions](https://arxiv.org/abs/2502.17424). | Three checkpoints with verified behavior; energy-matched increments. | The misaligned arm is not actually misaligned, or the control is. |
 | 2. The discriminator | Measure rank of `ΔW` at matched energy for control and misaligned; locate both against `r*`; run the spike test with permutation null; compare against a supervised linear probe and a RepE direction. | The H2 test result, plus a baseline comparison. | Benign control is equally low-rank (H2 fails). |
 | 3. Generalization and causality | Cross-type transfer to sleeper-agent and RLHF-trojan model pairs; steer along `v̂₁` to test causality; compute the leading-subspace distance against the null. | H3 and H4 test results; the rotation observable. | Detector does not transfer; direction is not causal. |
 | 4. Fourier branch | The genuine-Fourier, time-axis analysis of generation trajectories. Scoped as future work, where Fourier is the correct basis because there is a real sequential axis. | A separate study. | Out of scope for the static claim. |
@@ -72,7 +72,7 @@ Phases are ordered so the cheapest thing that can kill the thesis runs first.
 
 **Estimator.** For each layer: form `C = (1/p) ΔWᵀ ΔW`, fit the bulk noise level from the spectrum median rather than the trace, test the leading eigenvalue against the Tracy–Widom null and a permutation null, invert for the implied spike strength and rank, recover `v̂₁`, and compute the leading-subspace distance against the matched control. Confounds to control: outlier coordinates (standardize), energy leakage (match), aspect-ratio regime (report `γ`), heavy-tailed bulk (work on the increment, check the Marchenko–Pastur fit).
 
-**Baselines.** A supervised linear probe and a RepE reading vector, both trained with labels, are the methods to beat in the label-free regime. Where labels exist and the distribution is known, a probe is expected to be better.
+**Baselines.** A supervised linear probe ([Goldowsky-Dill et al., 2025](https://arxiv.org/abs/2502.03407)) and a RepE reading vector ([Zou et al., 2023](https://arxiv.org/abs/2310.01405)), both trained with labels, are the methods to beat in the label-free regime. Where labels exist and the distribution is known, a probe is expected to be better.
 
 **Metrics.** Per-layer spike test power and false-positive rate against the permutation null; separation of `r_m` and `r_b` relative to `r*` at matched energy; steering effect size on the eval questions; leading-subspace distance against the null; transfer AUROC across misalignment types; head-to-head against the supervised baselines in the label-free setting.
 
@@ -89,14 +89,19 @@ The proof carries the full positioning with citations. In brief, we differentiat
 - Aghajanyan et al. (2021), [Intrinsic dimensionality explains the effectiveness of language model fine-tuning](https://arxiv.org/abs/2012.13255).
 - Arditi et al. (2024), [Refusal in language models is mediated by a single direction](https://arxiv.org/abs/2406.11717).
 - Betley et al. (2025), [Emergent Misalignment: Narrow finetuning can produce broadly misaligned LLMs](https://arxiv.org/abs/2502.17424).
+- Goldowsky-Dill et al. (2025), [Detecting strategic deception using linear probes](https://arxiv.org/abs/2502.03407).
 - Ettori (2026), [Spectral geometry for deep learning: compression and hallucination detection via random matrix theory](https://arxiv.org/abs/2601.17357).
 - Hu et al. (2022), [LoRA: Low-rank adaptation of large language models](https://arxiv.org/abs/2106.09685).
 - Li et al. (2025), [Layer-aware representation filtering: purifying finetuning data to preserve LLM safety alignment](https://arxiv.org/abs/2507.18631).
+- Lin et al. (2021), [TruthfulQA: Measuring How Models Mimic Human Falsehoods](https://arxiv.org/abs/2109.07958).
+- Marks et al. (2025), [Auditing language models for hidden objectives](https://arxiv.org/abs/2503.10965).
 - Martin and Mahoney (2021), [Implicit self-regularization in deep neural networks](https://jmlr.org/papers/v22/20-410.html).
+- Ren et al. (2025), [The MASK Benchmark: Disentangling Honesty From Accuracy in AI Systems](https://arxiv.org/abs/2503.03750).
 - Soligo et al. (2025), [Convergent linear representations of emergent misalignment](https://arxiv.org/abs/2506.11618).
 - Staats et al. (2024), [Small singular values matter: A random matrix analysis of transformer models](https://arxiv.org/abs/2410.17770).
 - Tran, Li, and Madry (2018), [Spectral signatures in backdoor attacks](https://arxiv.org/abs/1811.00636).
 - Turner et al. (2025), [Model organisms for emergent misalignment](https://arxiv.org/abs/2506.11613).
+- Zou et al. (2023), [Representation Engineering: A Top-Down Approach to AI Transparency](https://arxiv.org/abs/2310.01405).
 
 ## 10. Milestones
 

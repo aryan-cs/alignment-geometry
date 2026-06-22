@@ -46,7 +46,8 @@ top/edge & $3.43$ & $3.42$ \\
 \end{center}
 
 \paragraph{A controlled misalignment organism.}
-We use emergent misalignment \citep{betley2025emergent}: narrow fine-tuning on
+We use emergent misalignment \citep{betley2025emergent} in the model-organism
+framing of \citet{turner2025organisms}: narrow fine-tuning on
 harmful data induces broad misalignment. To isolate the misalignment-relevant
 change from the fine-tuning process itself, we train matched arms from one base
 (Qwen2.5-Coder-7B-Instruct \citep{hui2024qwen25coder}) under an identical recipe, varying only the training
@@ -137,7 +138,7 @@ using misbehavior examples to fit the direction.
 
 \paragraph{The result is not specific to one model family.}
 We repeat the entire construction on a base from a different family,
-\texttt{Llama-3-8B-Instruct}: four misaligned and four benign arms under the
+\texttt{Llama-3-8B-Instruct} \citep{grattafiori2024llama3}: four misaligned and four benign arms under the
 identical recipe, the same difference-of-increments direction, and the same
 causal test. The medical organism induces emergent misalignment on Llama as well
 ($3.5\%$, $[2.3,5.0]\%$, in the causal-test arm); the recovered direction converges

@@ -1,10 +1,10 @@
 {
   "pdf": "docs/paper.pdf",
-  "pdf_sha256": "a7c0c4fd02ffc06ac3be9fd1498b6259977211cde2316d91da61108ea5d394e3",
-  "inspected_at_utc": "2026-06-22T10:29:58Z",
+  "pdf_sha256": "baea4b78a955befd472d899815af2cbdb14bf15dacafb4642281462c4987e515",
+  "inspected_at_utc": "2026-06-22T10:56:59Z",
   "pages_total": 20,
   "pages_checked": 20,
   "render_dpi": 120,
-  "method": "Rendered every page with pdftoppm, visually inspected the full 20-page contact sheet, and individually checked updated page 19 after strengthening the qualitative emergent-misalignment examples and restoring the Qwen judge citation. Also checked that the citation attribution edits in the introduction and appendix did not cause layout regressions. The updated table, figure, references, and page layouts were legible with no clipping, overlap, or alignment defects.",
+  "method": "Rendered the rebuilt 20-page PDF with pdftoppm after the citation audit. Visually inspected the updated introduction, causal-method citations, bibliography pages, appendix method page, and final appendix figures after tightening bibliography spacing. The added citations and references are legible, the PDF stayed at the expected 20-page shape, and no clipping, overlap, duplicate URL, or alignment defects were observed.",
   "visual_defects": []
 }
