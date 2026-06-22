@@ -33,6 +33,12 @@ DETERMINISTIC_CONTEXT = re.compile(
     re.IGNORECASE,
 )
 MANUSCRIPT_MAX_INTERVAL_WIDTH_PCT = 20.0
+PROSE_INTERVAL_PATHS = tuple(sorted((ROOT / "paper" / "sections").glob("*.tex"))) + (
+    ROOT / "README.md",
+)
+DISPLAYED_INTERVAL_RE = re.compile(
+    r"\[([0-9]+(?:\.[0-9]+)?),\s*([0-9]+(?:\.[0-9]+)?)\](?:\\%|%)?"
+)
 
 
 def load_json(name):
@@ -52,6 +58,26 @@ def wilson(k, n, z=1.96):
 
 def add(errors, context, message):
     errors.append(f"{context}: {message}")
+
+
+def has_percent(text):
+    return "%" in text
+
+
+def percent_pair(interval):
+    _, lo, hi = [float(x) for x in interval]
+    return round(lo * 100, 1), round(hi * 100, 1)
+
+
+def add_expected_interval(catalog, interval, source):
+    if (
+        isinstance(interval, (list, tuple))
+        and len(interval) == 3
+        and all(isinstance(x, (int, float)) and math.isfinite(float(x)) for x in interval)
+    ):
+        p, lo, hi = [float(x) for x in interval]
+        if 0.0 <= lo <= p <= hi <= 1.0:
+            catalog.setdefault(percent_pair(interval), set()).add(source)
 
 
 def assert_interval(errors, context, interval, *, max_half_width=None):
@@ -115,18 +141,125 @@ def tex_blocks(path):
     return [block for block in re.split(r"\n\s*\n", text) if block.strip()]
 
 
+def expected_displayed_interval_catalog():
+    """Return rounded percent CI pairs derivable from committed artifacts."""
+    catalog = {}
+
+    sweep = load_json("ablation_sweep.json")
+    for name, row in sweep.get("conditions", {}).items():
+        add_expected_interval(catalog, row.get("refusal_rate"), f"ablation_sweep.{name}")
+
+    layers = load_json("ablation_layers.json")
+    add_expected_interval(catalog, layers.get("baseline"), "ablation_layers.baseline")
+    for layer, row in layers.get("layers", {}).items():
+        for key in ("ablate_topk", "ablate_randk"):
+            add_expected_interval(catalog, row.get(key), f"ablation_layers.{layer}.{key}")
+
+    suff = load_json("sufficiency.json")
+    for family in ("spectral", "random", "refusal_dir", "spectral_subspace"):
+        for alpha, row in suff.get(family, {}).items():
+            if isinstance(row, dict):
+                add_expected_interval(catalog, row.get("refusal"), f"sufficiency.{family}.{alpha}")
+
+    causal = load_json("causal.json")
+    for cond, row in causal.get("rates", {}).items():
+        for label in ("harmful", "harmless"):
+            add_expected_interval(catalog, row.get(label), f"causal.{cond}.{label}")
+
+    for name in ("causal_misalign.json", "causal_misalign_llama.json", "causal_misalign_mistral.json"):
+        data = load_json(name)
+        for cond, row in data.get("necessity", {}).items():
+            k = row.get("n_mis")
+            n = row.get("n_ok")
+            if isinstance(k, int) and isinstance(n, int) and n > 0:
+                add_expected_interval(catalog, wilson(k, n), f"{name}.necessity.{cond}")
+        for family, rows in data.get("sufficiency", {}).items():
+            if isinstance(rows, dict) and "n_mis" in rows:
+                rows = {"_": rows}
+            if not isinstance(rows, dict):
+                continue
+            for alpha, row in rows.items():
+                if not isinstance(row, dict):
+                    continue
+                k = row.get("n_mis")
+                n = row.get("n_ok")
+                if isinstance(k, int) and isinstance(n, int) and n > 0:
+                    add_expected_interval(catalog, wilson(k, n), f"{name}.sufficiency.{family}.{alpha}")
+
+    scout = load_json("misalign_scout.json").get("summary", {})
+    n_matrices = scout.get("n_matrices")
+    frac_lower = scout.get("frac_mis_lower_stable_rank")
+    if isinstance(n_matrices, int) and isinstance(frac_lower, (int, float)):
+        add_expected_interval(
+            catalog,
+            wilson(round(float(frac_lower) * n_matrices), n_matrices),
+            "misalign_scout.frac_mis_lower_stable_rank",
+        )
+
+    gate = load_json("misalignment_eval_medical.json")
+    pooled = {"misaligned": [0, 0], "benign": [0, 0]}
+    for arm, row in gate.items():
+        if not isinstance(row, dict):
+            continue
+        k = row.get("n_misaligned")
+        n = row.get("n_scored")
+        if isinstance(k, int) and isinstance(n, int) and n > 0:
+            add_expected_interval(catalog, wilson(k, n), f"misalignment_eval_medical.{arm}")
+            bucket = "misaligned" if arm.startswith("misaligned_") else "benign" if arm.startswith("benign_") else None
+            if bucket:
+                pooled[bucket][0] += k
+                pooled[bucket][1] += n
+    for bucket, (k, n) in pooled.items():
+        if n > 0:
+            add_expected_interval(catalog, wilson(k, n), f"misalignment_eval_medical.{bucket}_pooled")
+
+    traj = load_json("traj_med.json")
+    for row in traj.get("trajectory", []):
+        k = row.get("n_mis")
+        n = row.get("n_ok")
+        step = row.get("step")
+        if isinstance(k, int) and isinstance(n, int) and n > 0:
+            add_expected_interval(catalog, wilson(k, n), f"traj_med.step_{step}")
+
+    wins = total = 0
+    for name in ("detect_med.json", "detect_llama.json", "detect_mistral.json"):
+        ratio = load_json(name).get("mis_above_ben")
+        match = re.fullmatch(r"(\d+)/(\d+)", ratio or "")
+        if match:
+            wins += int(match.group(1))
+            total += int(match.group(2))
+    if total:
+        add_expected_interval(catalog, wilson(wins, total), "heldout_screen.all_families")
+    return catalog
+
+
+def displayed_interval_candidates():
+    for path in PROSE_INTERVAL_PATHS:
+        text = strip_latex_comments(path.read_text())
+        for match in DISPLAYED_INTERVAL_RE.finditer(text):
+            near = text[max(0, match.start() - 60) : match.end() + 24]
+            if not has_percent(near) and not re.search(r"\b(Wilson|CI|confidence|interval)\b", near, re.I):
+                continue
+            lo = float(match.group(1))
+            hi = float(match.group(2))
+            line = text[:match.start()].count("\n") + 1
+            window = text[max(0, match.start() - 180) : match.end() + 180]
+            yield path, line, lo, hi, window
+
+
 def check_manuscript_interval_coverage(errors):
-    """Require manuscript rate claims to carry nearby interval context.
+    """Require public prose rate claims to carry nearby interval context.
 
     The artifact checks above recompute the actual intervals from counts. This
     prose check catches a different failure mode: adding or editing manuscript
-    rate claims without a nearby Wilson/CI/interval statement. Deterministic
-    geometric summaries such as spike counts, stable ranks, layer percentages,
-    and cosine summaries are explicitly outside this binomial-rate check.
+    or README rate claims without a nearby Wilson/CI/interval statement.
+    Deterministic geometric summaries such as spike counts, stable ranks, layer
+    percentages, and cosine summaries are explicitly outside this binomial-rate
+    check.
     """
-    for path in sorted((ROOT / "paper" / "sections").glob("*.tex")):
+    for path in PROSE_INTERVAL_PATHS:
         for idx, block in enumerate(tex_blocks(path), start=1):
-            if r"\%" not in block:
+            if not has_percent(block):
                 continue
             compact = re.sub(r"\s+", " ", block).strip()
             if not RATE_CONTEXT.search(compact):
@@ -144,44 +277,56 @@ def check_manuscript_interval_coverage(errors):
 
 
 def check_manuscript_interval_widths(errors):
-    """Keep displayed manuscript intervals from silently becoming too loose."""
-    interval_re = re.compile(
-        r"\[([0-9]+(?:\.[0-9]+)?),\s*([0-9]+(?:\.[0-9]+)?)\](?:\\%)?"
-    )
-    for path in sorted((ROOT / "paper" / "sections").glob("*.tex")):
-        text = strip_latex_comments(path.read_text())
-        for match in interval_re.finditer(text):
-            near = text[max(0, match.start() - 60) : match.end() + 24]
-            if r"\%" not in near and not re.search(r"\b(Wilson|CI|confidence|interval)\b", near, re.I):
-                continue
-            window = text[max(0, match.start() - 180) : match.end() + 180]
-            lo = float(match.group(1))
-            hi = float(match.group(2))
-            if lo > hi:
-                add(
-                    errors,
-                    f"manuscript interval width {path.relative_to(ROOT)}",
-                    f"invalid displayed interval [{lo:g},{hi:g}]",
-                )
-                continue
-            if hi > 100.0:
-                add(
-                    errors,
-                    f"manuscript interval width {path.relative_to(ROOT)}",
-                    f"displayed interval upper bound exceeds 100%: [{lo:g},{hi:g}]",
-                )
-                continue
-            width = hi - lo
-            if width <= MANUSCRIPT_MAX_INTERVAL_WIDTH_PCT + TOL:
-                continue
-            heldout_all_success = "12/12" in window and lo >= 75.0 and abs(hi - 100.0) <= TOL
-            if heldout_all_success:
-                continue
+    """Keep displayed manuscript/README intervals from silently becoming too loose."""
+    for path, _line, lo, hi, window in displayed_interval_candidates():
+        if lo > hi:
             add(
                 errors,
                 f"manuscript interval width {path.relative_to(ROOT)}",
-                f"displayed interval [{lo:g},{hi:g}] spans {width:.1f} percentage points",
+                f"invalid displayed interval [{lo:g},{hi:g}]",
             )
+            continue
+        if hi > 100.0:
+            add(
+                errors,
+                f"manuscript interval width {path.relative_to(ROOT)}",
+                f"displayed interval upper bound exceeds 100%: [{lo:g},{hi:g}]",
+            )
+            continue
+        width = hi - lo
+        if width <= MANUSCRIPT_MAX_INTERVAL_WIDTH_PCT + TOL:
+            continue
+        heldout_all_success = "12/12" in window and lo >= 75.0 and abs(hi - 100.0) <= TOL
+        if heldout_all_success:
+            continue
+        add(
+            errors,
+            f"manuscript interval width {path.relative_to(ROOT)}",
+            f"displayed interval [{lo:g},{hi:g}] spans {width:.1f} percentage points",
+        )
+
+
+def check_displayed_wilson_claims(errors):
+    """Bind displayed CI brackets to Wilson intervals from committed artifacts."""
+    catalog = expected_displayed_interval_catalog()
+    for path, line, lo, hi, _window in displayed_interval_candidates():
+        pair = (round(lo, 1), round(hi, 1))
+        if pair in catalog:
+            continue
+        # Published intervals are displayed to one decimal place; tolerate only
+        # boundary-rounding differences at that precision.
+        close_matches = [
+            expected
+            for expected in catalog
+            if abs(expected[0] - pair[0]) <= 0.11 and abs(expected[1] - pair[1]) <= 0.11
+        ]
+        if close_matches:
+            continue
+        add(
+            errors,
+            f"displayed Wilson claim {path.relative_to(ROOT)}:{line}",
+            f"displayed interval [{lo:g},{hi:g}] is not derived from committed artifact intervals",
+        )
 
 
 def infer_count(p, n, context, errors):
@@ -443,6 +588,7 @@ def main():
     check_counted_rates(errors)
     check_heldout_screen(errors)
     check_manuscript_interval_coverage(errors)
+    check_displayed_wilson_claims(errors)
     check_manuscript_interval_widths(errors)
     if errors:
         print(f"uncertainty check FAILED: {errors[0]}", file=sys.stderr)
