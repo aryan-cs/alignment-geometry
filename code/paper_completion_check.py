@@ -114,6 +114,7 @@ EXPECTED_PENDING_ARTIFACTS = {
 
 LAUNCH_SHELL_SCRIPTS = [
     "code/run_capability_eval.sh",
+    "code/run_medical_direction_refresh.sh",
     "code/run_cross_type_code_study.sh",
     "code/run_scale_14b_study.sh",
     "code/run_baseline_bakeoff.sh",

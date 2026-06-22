@@ -123,6 +123,15 @@ python3 code/check_direction_study.py --tag llama --directions results/data/dire
 python3 code/check_direction_study.py --tag mistral --directions results/data/directions_mistral.json --directions-npz results/data/directions_mistral.npz --detect results/data/detect_mistral.json --causal results/data/causal_misalign_mistral.json --layer 12 --k 16 --min-convergence 0.70 --min-convergence-gap 0.30 --min-best-gap 0.45
 ```
 
+Refresh the current medical direction vector and causal provenance on the H200
+before starting cross-type transfer:
+
+```bash
+BASE=<Qwen2.5-Coder-7B-Instruct-checkpoint> \
+JUDGE=<judge-checkpoint> \
+bash code/run_medical_direction_refresh.sh
+```
+
 For final completion, newly generated EM-evaluation artifacts must pass
 `--require-eval-provenance`, which requires per-arm judge path, rubric hashes,
 generation hashes, producer script hash, and git-commit metadata. Newly
