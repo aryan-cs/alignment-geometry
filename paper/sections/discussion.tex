@@ -62,9 +62,10 @@ open. We validate the misalignment direction across three model families
 suppresses measured misalignment in all three, but the ablation is complete only on the first two
 (to near zero) and partial on Mistral. Our causal results concern refusal, which
 is one legible safety behavior and a proxy for ``alignment,'' not a complete
-account of it; the cross-distribution transfer shows the recovered subspace
-generalizes across harmful \emph{prompt sets} but not that it captures every
-alignment-relevant behavior. Substring-matched refusal is also a coarse
+account of it; the provenance-limited cross-distribution transfer check suggests
+the recovered subspace generalizes across harmful \emph{prompt sets}, but it does
+not yet provide a fully prompt-provenanced benchmark result or show that the
+subspace captures every alignment-relevant behavior. Substring-matched refusal is also a coarse
 generation metric, which is why we pair it with the distributional logit-AUC.
 Nor do the current ablations establish broad capability preservation: the random
 subspace controls and harmless-prompt checks rule out a trivial same-dimension

@@ -80,7 +80,7 @@ A practitioner is handed a fine-tuned language model and asked a hard question: 
 carry a hidden, misaligned objective? The strongest available white-box answers come
 from supervised probes. Trained on labeled examples of a model lying or defecting, a
 linear probe reads deception from the residual stream at very high accuracy
-\cite{goldowskydill2025,macdiarmid2024}. The difficulty is that the supervision is
+\cite{goldowskydill2025}. The difficulty is that the supervision is
 exactly what one lacks. If one already possessed reliable labels for when a model
 pursues a hidden goal, the detection problem would be largely solved. The binding
 constraint in practice is access to such labels, and to the relevant distribution;
@@ -844,7 +844,7 @@ the more general and now-established statement that post-training moves the spec
 
 \paragraph{Behavioural and label-based detection.} Supervised probes detect deception at
 high accuracy when labels and the distribution are available
-\cite{goldowskydill2025,macdiarmid2024}, and interpretability-driven audits surface hidden
+\cite{goldowskydill2025}, and interpretability-driven audits surface hidden
 objectives given sufficient access \cite{marks2025}. Unsupervised methods that search for
 latent knowledge exist \cite{burns2023}, but arbitrary features can satisfy their
 consistency constraints \cite{farquhar2023}. Our method is complementary: it targets the label-free,
@@ -946,7 +946,7 @@ O.~Roy and M.~Vetterli,
 \bibitem{betley2025}
 J.~Betley, D.~Tan, N.~Warncke, A.~Sztyber-Betley, X.~Bao, M.~Soto, N.~Labenz, and O.~Evans,
 ``Emergent misalignment: narrow finetuning can produce broadly misaligned LLMs,''
-\emph{ICML}, 2025. arXiv:2502.17424.
+arXiv:2502.17424, 2025.
 
 \bibitem{turner2025}
 E.~Turner, A.~Soligo, M.~Taylor, S.~Rajamanoharan, and N.~Nanda,
@@ -990,7 +990,7 @@ E.~J.~Hu, Y.~Shen, P.~Wallis, Z.~Allen-Zhu, Y.~Li, S.~Wang, L.~Wang, and W.~Chen
 \emph{ICLR}, 2022. arXiv:2106.09685.
 
 \bibitem{springer2026}
-M.~Springer et al.,
+J.~Springer, T.~Singh, Z.~Li, D.~Duarte, Z.~J.~Wang, I.~Chen, and A.~Ho,
 ``The geometry of alignment collapse: when fine-tuning breaks safety,''
 arXiv:2602.15799, 2026. Preprint.
 
@@ -1000,7 +1000,7 @@ H.~Li, L.~Li, Z.~Lu, X.~Wei, R.~Li, J.~Shao, and L.~Sha,
 \emph{EMNLP}, 2025. arXiv:2507.18631.
 
 \bibitem{li2025geometry}
-Li et al.,
+M.~Z.~Li, K.~K.~Agrawal, A.~Ghosh, K.~K.~Teru, A.~Santoro, G.~Lajoie, and B.~A.~Richards,
 ``Tracing the representation geometry of language models from pretraining to post-training,''
 arXiv:2509.23024, 2025.
 
@@ -1024,11 +1024,6 @@ arXiv:2502.03407, 2025.
 S.~Marks, J.~Treutlein, et al.,
 ``Auditing language models for hidden objectives,''
 arXiv:2503.10965, 2025.
-
-\bibitem{macdiarmid2024}
-M.~MacDiarmid, T.~Maxwell, et al.,
-``Simple probes can catch sleeper agents,''
-Anthropic, 2024.
 
 \bibitem{burns2023}
 C.~Burns, H.~Ye, D.~Klein, and J.~Steinhardt,
@@ -1067,7 +1062,7 @@ ELMo, and GPT-2 embeddings,''
 \emph{EMNLP-IJCNLP}, 2019.
 
 \bibitem{ghost2026}
-S.~Wang et al.,
+S.~Wang, Z.~Ma, X.~Li, and Z.~Li,
 ``Ghost in the transformer: detecting model reuse with invariant spectral signatures,''
 \emph{AAAI}, 2026. arXiv:2511.06390.
 

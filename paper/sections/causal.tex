@@ -146,10 +146,10 @@ and $26$; the random control remains near baseline throughout.}
 \label{fig:abllayers}
 \end{figure}
 
-\paragraph{The subspace transfers across harmful datasets.}
+\paragraph{A provenance-limited transfer check.}
 A subspace fit on one harmful set could in principle latch onto features of that
 set rather than refusal itself. This does not appear to be the case in our
-out-of-distribution transfer test. We derive the refusal direction and
+out-of-distribution transfer run. We derive the refusal direction and
 the top-$128$ \texttt{o\_proj} subspace entirely from AdvBench and then, without
 refitting, ablate them while prompting with the run harness's out-of-distribution
 harmful set (logged as MaliciousInstruct; $n=100$ generations per condition).
@@ -158,7 +158,9 @@ Baseline refusal on this set is $97.0\%$
 $0.0\%$ ($[0.0, 3.7]\%$), while a same-dimensional random $128$-subspace leaves it
 at $94.0\%$ ($[87.5, 97.2]\%$). The transfer result supports the interpretation
 that these directions track refusal-related behavior rather than only
-idiosyncrasies of the set they were read from.
+idiosyncrasies of the set they were read from, but we treat it as a
+provenance-limited robustness check until the tracked prompt artifact required
+by \texttt{code/check\_transfer\_result.py} is committed or the run is repeated.
 
 \paragraph{Partial sufficiency: steering the behavior-bearing component induces refusal.}
 Ablation shows the subspace is load-bearing; the complementary test is whether

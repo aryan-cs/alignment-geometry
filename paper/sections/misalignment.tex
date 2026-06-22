@@ -15,7 +15,9 @@ meaning requires a controlled contrast.
 \paragraph{Scalar spectra alone do not solve the misalignment problem.}
 Before using directions, we tested the tempting scalar shortcut: compare only
 stable rank, spike count, and top-to-edge ratio at matched weight-change energy.
-On a Qwen2.5-Coder-14B \citep{hui2024qwen25coder} insecure-versus-secure scout pair, across $336$ matrices,
+On a Qwen2.5-Coder-14B \citep{hui2024qwen25coder} insecure-versus-secure scout
+pair following the emergent-misalignment construction
+\citep{betley2025emergent}, across $336$ matrices,
 the misaligned and benign-matched increments are essentially indistinguishable
 (Table~\ref{tab:scalar-scout}). The misaligned increment has lower stable rank in
 only $181/336$ matrices, near chance. This negative control is important: scalar
@@ -28,7 +30,8 @@ under a matched contrast.
 \captionof{table}{Scalar spectral summaries fail to distinguish a misaligned fine-tune
 from a benign matched-energy control in a Qwen2.5-Coder-14B scout. Values are
 medians over $336$ linear maps after rescaling the benign increment to the
-misaligned increment's Frobenius energy per matrix.}
+misaligned increment's Frobenius energy per matrix; the committed provenance is
+the local scout artifact \texttt{results/data/misalign\_scout.json}.}
 \label{tab:scalar-scout}
 \begin{tabular}{lcc}
 \toprule
