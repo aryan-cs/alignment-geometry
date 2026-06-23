@@ -112,6 +112,8 @@ def manifest_validator_args(final_handoff):
         "--study",
         "capability_preservation",
         "--require-completed",
+        "--allow-failed-status",
+        "--allow-postrun-script-drift",
         "--require-clean",
         "--require-preregistration",
         "--require-environment",

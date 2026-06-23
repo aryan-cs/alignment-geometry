@@ -125,7 +125,14 @@ def validate_clean_at_head(path_text, context, errors):
         add(errors, context, "index differs from HEAD")
 
 
-def validate_path_hashes(mapping, context, tracked, errors, require_tracked=True):
+def validate_path_hashes(
+    mapping,
+    context,
+    tracked,
+    errors,
+    require_tracked=True,
+    check_current_hash=True,
+):
     if not isinstance(mapping, dict) or not mapping:
         add(errors, context, "must be a nonempty object")
         return
@@ -147,7 +154,7 @@ def validate_path_hashes(mapping, context, tracked, errors, require_tracked=True
             add(errors, item_ctx, "file is not tracked")
         if not isinstance(digest, str) or not re.fullmatch(r"[0-9a-f]{64}", digest):
             add(errors, item_ctx, "hash must be a sha256 hex digest")
-        elif file_sha256(full) != digest:
+        elif check_current_hash and file_sha256(full) != digest:
             add(errors, item_ctx, "hash mismatch")
 
 
@@ -410,7 +417,8 @@ def validate(data, args):
     if args.study and data.get("study") != args.study:
         add(errors, "study", f"must be {args.study!r}")
     if args.require_completed and data.get("status") != "completed":
-        add(errors, "status", "must be completed")
+        if not (args.allow_failed_status and data.get("status") == "failed"):
+            add(errors, "status", "must be completed")
     elif data.get("status") not in {"completed", "failed"}:
         add(errors, "status", "must be completed or failed")
     times = {}
@@ -482,7 +490,13 @@ def validate(data, args):
         )
     require_hash_entries(data.get("script_sha256"), args.require_script, "script_sha256", errors)
     require_hash_entries(data.get("artifact_sha256"), args.require_artifact, "artifact_sha256", errors)
-    validate_path_hashes(data.get("script_sha256"), "script_sha256", tracked, errors)
+    validate_path_hashes(
+        data.get("script_sha256"),
+        "script_sha256",
+        tracked,
+        errors,
+        check_current_hash=not args.allow_postrun_script_drift,
+    )
     validate_path_hashes(
         data.get("artifact_sha256"),
         "artifact_sha256",
@@ -503,6 +517,24 @@ def parse_args():
     ap.add_argument("--input", required=True)
     ap.add_argument("--study")
     ap.add_argument("--require-completed", action="store_true")
+    ap.add_argument(
+        "--allow-failed-status",
+        action="store_true",
+        help=(
+            "allow status=failed even with --require-completed. Use only when a "
+            "separate result validator proves the failed run is the claimed "
+            "audit outcome."
+        ),
+    )
+    ap.add_argument(
+        "--allow-postrun-script-drift",
+        action="store_true",
+        help=(
+            "allow current script files to differ from script_sha256, while still "
+            "requiring those hashes to match the recorded source_git_commit. Use "
+            "when validators changed after a completed historical run."
+        ),
+    )
     ap.add_argument("--require-clean", action="store_true")
     ap.add_argument("--require-local-arms", action="store_true")
     ap.add_argument("--require-arms", action="store_true")

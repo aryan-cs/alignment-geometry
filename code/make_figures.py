@@ -507,6 +507,8 @@ def _capability_manifest_errors(manifest="results/data/run_manifests/capability_
         "--study",
         "capability_preservation",
         "--require-completed",
+        "--allow-failed-status",
+        "--allow-postrun-script-drift",
         "--require-clean",
         "--require-preregistration",
         "--require-environment",

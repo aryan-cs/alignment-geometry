@@ -1,0 +1,143 @@
+{
+  "schema": "study_run_manifest_v1",
+  "study": "capability_preservation",
+  "status": "failed",
+  "started_at": "2026-06-23T05:15:34Z",
+  "finished_at": "2026-06-23T05:39:12Z",
+  "source_git_commit": "2c8604ee5fcf9c6014a92951abfe8a3bc39de9bc",
+  "source_git_status_short": "",
+  "git_commit": "2c8604ee5fcf9c6014a92951abfe8a3bc39de9bc",
+  "git_status_short": "?? results/data/capability.json\n?? results/data/capability_evidence.json\n?? results/data/run_manifests/capability_manifest.json",
+  "config": {
+    "model": "/home/aryang9/.cache/huggingface/hub/models--NousResearch--Meta-Llama-3-8B-Instruct/snapshots/53346005fb0ef11d3b6a83b12c895cca40156b6c/",
+    "base": "/home/aryang9/.cache/huggingface/hub/models--NousResearch--Meta-Llama-3-8B/snapshots/315b20096dc791d381d514deb5f8bd9c8d6d3061/",
+    "instruct": "/home/aryang9/.cache/huggingface/hub/models--NousResearch--Meta-Llama-3-8B-Instruct/snapshots/53346005fb0ef11d3b6a83b12c895cca40156b6c/",
+    "model_id": "NousResearch/Meta-Llama-3-8B-Instruct",
+    "base_id": "NousResearch/Meta-Llama-3-8B",
+    "instruct_id": "NousResearch/Meta-Llama-3-8B-Instruct",
+    "out": "results/data/capability.json",
+    "evidence_out": "results/data/capability_evidence.json",
+    "dataset_cache_dir": null,
+    "gpu_id": "0",
+    "layer": 14,
+    "topk": 128,
+    "n_mmlu": 500,
+    "n_gsm8k": 400,
+    "n_arc": 400,
+    "n_refusal": 400,
+    "mc_bs": 8,
+    "gen_bs": 4,
+    "refusal_bs": 16,
+    "gsm8k_max_new": 256,
+    "refusal_max_new": 24,
+    "refusal_reference_start": 256,
+    "refusal_reference_n": 128,
+    "refusal_reference_max_new": 24
+  },
+  "preregistration": {
+    "schema": "study_preregistration_v1",
+    "registered_at": "2026-06-23T05:15:34Z",
+    "source_git_commit": "2c8604ee5fcf9c6014a92951abfe8a3bc39de9bc",
+    "source_git_status_short": "",
+    "locked_config_keys": [
+      "base",
+      "base_id",
+      "dataset_cache_dir",
+      "evidence_out",
+      "gen_bs",
+      "gpu_id",
+      "gsm8k_max_new",
+      "instruct",
+      "instruct_id",
+      "layer",
+      "mc_bs",
+      "model",
+      "model_id",
+      "n_arc",
+      "n_gsm8k",
+      "n_mmlu",
+      "n_refusal",
+      "out",
+      "refusal_bs",
+      "refusal_max_new",
+      "refusal_reference_max_new",
+      "refusal_reference_n",
+      "refusal_reference_start",
+      "topk"
+    ],
+    "config_sha256": "b9605b9b9a436071097e1792f87c00abaa0127feaa2bb215406a6e9e987c1a9a",
+    "decision_rule": "Before evaluation, freeze the Llama layer/top-k intervention, sample sizes, datasets, output paths, and paper validator; accept the study only through the recorded check_capability_result.py --require-paper command."
+  },
+  "environment": {
+    "schema": "run_environment_v1",
+    "collected_at": "2026-06-23T05:39:12Z",
+    "gpu_id_requested": "0",
+    "hostname_sha256": "e54e4fcaba680caf4e2ec7df037e98df0e545ee3cccf4afd792d5d655c6f0d8f",
+    "platform": {
+      "system": "Linux",
+      "release": "6.8.0-106-generic",
+      "machine": "x86_64",
+      "processor": "x86_64"
+    },
+    "python": {
+      "version": "3.13.11",
+      "implementation": "CPython",
+      "executable_basename": "python"
+    },
+    "packages": {
+      "torch": "2.11.0+cu128",
+      "transformers": "5.12.1",
+      "datasets": "5.0.0",
+      "accelerate": "1.14.0",
+      "safetensors": "0.8.0",
+      "numpy": "2.5.0",
+      "scipy": "1.18.0",
+      "scikit-learn": "1.9.0",
+      "peft": null
+    },
+    "cuda": {
+      "cuda_visible_devices": "0",
+      "pytorch_cuda_alloc_conf": "expandable_segments:True",
+      "torch_importable": true,
+      "pytorch_cuda_available": true,
+      "pytorch_cuda_version": "12.8",
+      "pytorch_device_count": 1,
+      "pytorch_cudnn_version": 91900
+    },
+    "nvidia_smi": {
+      "available": true,
+      "error": ""
+    },
+    "gpus": [
+      {
+        "index": "0",
+        "name": "NVIDIA H200 NVL",
+        "uuid_sha256": "d5d83ed441649d96da31c22c967e85d216e1f53f3b05da7948cf9a2c651efd5e",
+        "driver_version": "570.211.01",
+        "memory_total_mib": 143771
+      }
+    ]
+  },
+  "commands": [
+    "python code/capability_eval.py --preflight-only --model /home/aryang9/.cache/huggingface/hub/models--NousResearch--Meta-Llama-3-8B-Instruct/snapshots/53346005fb0ef11d3b6a83b12c895cca40156b6c/ --base /home/aryang9/.cache/huggingface/hub/models--NousResearch--Meta-Llama-3-8B/snapshots/315b20096dc791d381d514deb5f8bd9c8d6d3061/ --instruct /home/aryang9/.cache/huggingface/hub/models--NousResearch--Meta-Llama-3-8B-Instruct/snapshots/53346005fb0ef11d3b6a83b12c895cca40156b6c/ --model-id NousResearch/Meta-Llama-3-8B-Instruct --base-id NousResearch/Meta-Llama-3-8B --instruct-id NousResearch/Meta-Llama-3-8B-Instruct --layer 14 --topk 128 --n-mmlu 500 --n-gsm8k 400 --n-arc 400 --n-refusal 400 --mc-bs 8 --gen-bs 4 --refusal-bs 16 --gsm8k-max-new 256 --refusal-max-new 24 --refusal-reference-start 256 --refusal-reference-n 128 --refusal-reference-max-new 24 --out results/data/capability.json --evidence-out results/data/capability_evidence.json",
+    "python code/capability_eval.py --model /home/aryang9/.cache/huggingface/hub/models--NousResearch--Meta-Llama-3-8B-Instruct/snapshots/53346005fb0ef11d3b6a83b12c895cca40156b6c/ --base /home/aryang9/.cache/huggingface/hub/models--NousResearch--Meta-Llama-3-8B/snapshots/315b20096dc791d381d514deb5f8bd9c8d6d3061/ --instruct /home/aryang9/.cache/huggingface/hub/models--NousResearch--Meta-Llama-3-8B-Instruct/snapshots/53346005fb0ef11d3b6a83b12c895cca40156b6c/ --model-id NousResearch/Meta-Llama-3-8B-Instruct --base-id NousResearch/Meta-Llama-3-8B --instruct-id NousResearch/Meta-Llama-3-8B-Instruct --layer 14 --topk 128 --n-mmlu 500 --n-gsm8k 400 --n-arc 400 --n-refusal 400 --mc-bs 8 --gen-bs 4 --refusal-bs 16 --gsm8k-max-new 256 --refusal-max-new 24 --refusal-reference-start 256 --refusal-reference-n 128 --refusal-reference-max-new 24 --out results/data/capability.json --evidence-out results/data/capability_evidence.json",
+    "python code/check_capability_result.py --input results/data/capability.json --evidence results/data/capability_evidence.json --require-paper"
+  ],
+  "validators": [
+    "code/check_capability_result.py"
+  ],
+  "script_sha256": {
+    "code/run_capability_eval.sh": "c662f1cc78ae886b8d94aef5d1dcb9a7ef1bad4e28589cb90eab9719a9faac62",
+    "code/capability_eval.py": "444e37bee6c987e3f580bd9d8d92728802aacfa5c20029639a1df7a6dbc08d4f",
+    "code/check_capability_result.py": "9b9dbc2917dde3f8091de36b3e4b96e89735f780a9975803d8d5e96d04b365b5",
+    "code/check_run_manifest.py": "b63b494e90d4d727d31943335caeba08915373944835b25f5cbe0eb317f64f18",
+    "code/run_environment.py": "1bd6361766c6c92ce37c3ff73add6345f1ab2a49457afbb593da74db2431813b",
+    "code/ablation_sweep.py": "33b18412937b8c2338cd5b994df392a2ebc865aa1fe6debf2fe98ef1239f174d",
+    "code/causal.py": "6ba2110b987fef2eaf601e1b979b68c55c32ba4e7f50313d96d782aacdec5109",
+    "code/spectral.py": "7ce413546b7507bd6614aeb62e36647c6cf5f8367a8848c8550e8a881b2f54b9"
+  },
+  "artifact_sha256": {
+    "results/data/capability.json": "e21638c64a188ff41d6e717820f2964eebeec1a314d15210f00294cf638961da",
+    "results/data/capability_evidence.json": "e534795e5b6d7e8a25bf8b88074d2effc48ad9c34afdc0cdefc638e217dd3fbb"
+  }
+}

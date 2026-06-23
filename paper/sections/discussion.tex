@@ -131,14 +131,15 @@ Projection ablations are blunt interventions: a removed subspace can contain
 refusal, instruction-following, formatting, and other residual-stream content at
 once.
 Nor do the current ablations establish broad capability preservation: the
-headline top-$128$ result shows substring-scored refusal suppression on held-out
-harmful prompts against a same-dimensional random-subspace control, but
+headline top-$128$ ablation shows substring-scored refusal suppression, but
 MMLU/GSM8K/ARC-style evaluations under the same top-$128$ ablation
 \citep{hendrycks2021mmlu,cobbe2021gsm8k,clark2018arc} were negative in the
-completed audit run. The harmless-prompt rates under the same intervention are also
-unmeasured. Capability-preserving versions of this intervention, including
-smaller or more structured subspaces, remain future work rather than a
-conclusion of the present experiments. The causal results pair ablation
+completed audit run: MMLU
+$65.4\%$ ($[61.1,69.4]\%$) to $41.8\%$ ($[37.6,46.2]\%$), ARC-C $80.0\%$
+($[75.8,83.6]\%$) to $50.2\%$ ($[45.4,55.1]\%$), and GSM8K $76.7\%$
+($[72.4,80.6]\%$) to $3.0\%$ ($[1.7,5.2]\%$). The harmless-prompt rates under the same intervention are also
+unmeasured \citep{hendrycks2021mmlu,cobbe2021gsm8k,clark2018arc}. Capability-preserving versions of this intervention, including
+smaller or more structured subspaces, remain future work. The causal results pair ablation
 (suppression) with steering checks against matched random controls but bind the
 behavior to the leading spectral \emph{subspace} rather than isolating a circuit:
 the effect requires enough of the subspace to cover the refusal direction, not

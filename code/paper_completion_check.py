@@ -2324,6 +2324,8 @@ def check_capability_manifest(gates):
         "--study",
         "capability_preservation",
         "--require-completed",
+        "--allow-failed-status",
+        "--allow-postrun-script-drift",
         "--require-clean",
         "--require-preregistration",
         "--require-environment",

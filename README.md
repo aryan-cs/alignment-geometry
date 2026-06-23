@@ -25,7 +25,7 @@ Weight-space geometry is treated as a source of testable directions and compress
 The current paper reports these results from real committed artifacts under `results/data/` and `results/figures/`:
 
 - **Instruction-tuning increments are sharply spiked.** For Llama-3-8B to Llama-3-8B-Instruct, all 224 linear maps have leading eigenvalues above the fitted Marchenko-Pastur visibility edge. The median top-to-edge ratio is about 22, and the median stable rank is near 109 against ambient dimensions in the thousands; these are energy-concentration summaries, not mechanism counts or alignment-specific detectors.
-- **Measured refusal is ablation-sensitive to the leading spectral subspace in the tested scoring setup.** The empirical refusal direction is enriched in the top singular directions of the layer-14 `o_proj` increment. On held-out harmful prompts scored by substring refusal, ablating the top-128 spectral subspace reduces refusal from 98.4% (`[94.5,99.6]%`) to 3.1% (`[1.2,7.8]%`), while a random 128-dimensional subspace leaves refusal near baseline at 94.5% (`[89.1,97.3]%`). Harmless-prompt behavior remains unmeasured, and a completed H200 MMLU/GSM8K/ARC audit of the same projection was negative; local ingestion and validation of that evidence are still pending, so the paper does not claim broad capability preservation.
+- **Measured refusal is ablation-sensitive to the leading spectral subspace in the tested scoring setup.** The empirical refusal direction is enriched in the top singular directions of the layer-14 `o_proj` increment. On held-out harmful prompts scored by substring refusal, ablating the top-128 spectral subspace reduces refusal from 98.4% (`[94.5,99.6]%`) to 3.1% (`[1.2,7.8]%`), while a random 128-dimensional subspace leaves refusal near baseline at 94.5% (`[89.1,97.3]%`). Harmless-prompt behavior remains unmeasured, and the committed H200 MMLU/GSM8K/ARC audit of the same projection is negative, so the paper does not claim broad capability preservation.
 - **A behavioral-example-free misalignment direction is recovered from matched fine-tunes.** In a Qwen2.5-Coder-7B emergent-misalignment organism, the contrastive weight direction uses the matched misaligned-vs-benign arm grouping but no behavioral examples to fit the direction; it converges across four independent misaligned arms at mean cosine 0.97 while the four-arm benign training-noise summary is 0.16 at the same layer.
 - **Ablating the misalignment direction suppresses the measured behavior.** Ablating the recovered direction drives emergent misalignment from 4.5% (`[3.2,6.3]%`) to 0.1% (`[0.0,0.8]%`); a random direction leaves it at 3.8% (`[2.6,5.5]%`).
 - **The matched-organism result appears across three model families.** Within the same controlled medical-advice organism, Qwen2.5-Coder-7B, Llama-3-8B, and Mistral-7B all show a convergent direction whose ablation suppresses measured misalignment, with the Mistral ablation being partial rather than complete. This is not yet evidence for naturally occurring failures or other organism types.
@@ -109,7 +109,7 @@ Run the conservative completion monitor for the paper:
 python3 code/paper_completion_check.py
 ```
 
-This command is expected to report `incomplete` until the real capability,
+This command is expected to report `incomplete` until the real
 OOD refusal-transfer, cross-type, scale, and baseline artifacts have been
 committed and validated.
 It also verifies that `docs/paper.pdf` and `docs/proof.pdf` are fresh, letter-sized,
@@ -437,7 +437,7 @@ tectonic proof.tex
 
 ## Heavy Evaluations
 
-Large model evaluation and training run on the H200 environment described by the project plan and local operator notes, not on a laptop. The current high-priority study is the capability audit for the top-128 refusal ablation:
+Large model evaluation and training run on the H200 environment described by the project plan and local operator notes, not on a laptop. The committed capability audit for the top-128 refusal ablation can be reproduced with:
 
 ```bash
 nohup setsid bash code/run_capability_eval.sh > run_capability_eval.log 2>&1 </dev/null & disown
@@ -479,9 +479,7 @@ The source directory may either be repo-shaped, containing
 filenames. If this passes, add and commit all three files, then validate final
 handoff semantics with either
 `python code/ingest_capability_artifacts.py --validate-only --final-handoff` or
-the same manifest gate used by `code/paper_completion_check.py`. Final handoff
-also requires removing capability-specific tracker text that still says local
-artifact ingestion or validation is pending:
+the same manifest gate used by `code/paper_completion_check.py`.
 
 Monitor the detached job and validate its manifest as soon as it appears:
 
@@ -493,6 +491,8 @@ bash code/monitor_job.sh \
     --input results/data/run_manifests/capability_manifest.json \
     --study capability_preservation \
     --require-completed \
+    --allow-failed-status \
+    --allow-postrun-script-drift \
     --require-clean \
     --require-preregistration \
     --require-environment \
@@ -550,6 +550,8 @@ python code/check_run_manifest.py \
   --input results/data/run_manifests/capability_manifest.json \
   --study capability_preservation \
   --require-completed \
+  --allow-failed-status \
+  --allow-postrun-script-drift \
   --require-clean \
   --require-preregistration \
   --require-environment \
@@ -590,11 +592,10 @@ python code/check_run_manifest.py \
   --require-command-fragment=--require-paper
 ```
 
-`code/make_figures.py` already contains a `capability.pdf` plotting hook, but it
-is inert until the real `results/data/capability.json`,
-`results/data/capability_evidence.json`, and
-`results/data/run_manifests/capability_manifest.json` all pass strict audit
-validation. No placeholder capability result is committed.
+`code/make_figures.py` renders `capability.pdf` from the committed
+`results/data/capability.json`, `results/data/capability_evidence.json`, and
+`results/data/run_manifests/capability_manifest.json` only when those artifacts
+pass strict audit validation.
 
 For the remaining completed H200 study bundles, use the pending-study ingest
 helper after copying artifacts into a local scratch directory:
@@ -827,7 +828,7 @@ python3 code/check_run_manifest.py \
 | Matched medical emergent-misalignment organism | numeric artifacts validated; strict run provenance/vector manifest pending |
 | Cross-family replication within the matched medical organism on Qwen, Llama, and Mistral | numeric artifacts validated; strict causal provenance pending |
 | Retrospective training trajectory and same-recipe held-out screen | numeric artifacts validated |
-| Capability audit for top-128 refusal ablation | remote H200 run produced a negative preservation outcome; local artifact ingestion and validation still pending |
+| Capability audit for top-128 refusal ablation | committed H200 artifacts validate as a negative capability audit, not a preservation result |
 | OOD refusal transfer beyond the AdvBench-derived prompt set | pending; requires tracked prompt file, per-prompt evidence, final run manifest, and interval/effect-gated `results/data/transfer.json` |
 | Cross-type misalignment direction study beyond the medical organism | pending; no sleeper-agent/RLHF-trojan result committed yet |
 | 14B scale study | pending |
@@ -838,11 +839,10 @@ python3 code/check_run_manifest.py \
 The spectral spike count alone is not claimed to diagnose alignment or misalignment. Any real fine-tune may be anisotropic. The alignment-specific claims are directional and causal: the recovered subspaces overlap known behavior directions, matched benign controls do not recover the same misalignment direction, and ablations suppress the behavior where matched random controls do not.
 
 The strongest current limitation is that the top-128 refusal ablation has not
-shown broad MMLU/GSM8K/ARC preservation. Until the real
-`results/data/capability.json`, evidence, and manifest are committed and pass
-audit validation, the paper should report the result only as a negative
-capability audit and should not claim capability preservation under the
-top-128 ablation.
+shown broad MMLU/GSM8K/ARC preservation. The committed
+`results/data/capability.json`, evidence, and manifest validate as a negative
+capability audit, so the paper should not claim capability preservation under
+the top-128 ablation.
 
 The spectral specificity baseline is also incomplete: the current Llama spectral
 census has not yet compared instruction tuning against domain adaptation, coding

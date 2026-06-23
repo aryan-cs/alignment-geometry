@@ -127,7 +127,7 @@ The proof carries the full positioning with citations. In brief, we differentiat
 | Refusal enrichment, ablation, and steering tests | done |
 | Matched medical emergent-misalignment organism | numeric artifacts done; strict direction/detect/causal provenance refresh pending |
 | Cross-family replication, early-training trajectory, and held-out same-recipe screen | numeric artifacts done; strict causal generation-evidence provenance pending |
-| Capability audit under top-128 refusal ablation | remote H200 run produced a negative preservation outcome; local artifact ingestion and validation pending; use `code/ingest_capability_artifacts.py` after copying the real H200 files |
+| Capability audit under top-128 refusal ablation | committed H200 artifacts validate as a negative top-128 capability audit, not a preservation result |
 | OOD refusal transfer beyond the AdvBench-derived prompt set | pending; requires tracked OOD prompts, per-prompt evidence, and final run manifest |
 | Cross-type transfer beyond the medical organism | pending; use `code/ingest_pending_study_artifacts.py --study cross_type_transfer` after the H200 bundle completes |
 | 14B scale study | pending; use `code/ingest_pending_study_artifacts.py --study scale_14b` after the H200 bundle completes |
@@ -165,8 +165,7 @@ cross-family replication, early-training trajectory, and held-out same-recipe
 screen have been run on committed numeric artifacts. Remaining gaps are strict
 H200 provenance refreshes for the medical evaluation, direction, detector, and
 causal artifacts, including hashed `em_generations_medical.json` and
-`causal_misalign*_generations.json` evidence files; local ingestion and
-validation of the negative top-128 capability audit; cross-type transfer beyond
+`causal_misalign*_generations.json` evidence files; cross-type transfer beyond
 the medical organism; 14B scale; baseline bake-off; and robustness to adaptive
 adversaries. The local ingest helpers now cover the completed capability,
 current-provenance, cross-type, OOD-transfer, 14B, and baseline bundles; they are

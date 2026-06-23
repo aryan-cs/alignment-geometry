@@ -1,12 +1,13 @@
 {
   "pdf": "docs/paper.pdf",
-  "pdf_sha256": "c7fb2aa7c493239b8f405c95dbbb6ba35c73117fa2a9b1ffb12e3a04b101a781",
-  "inspected_at_utc": "2026-06-23T08:10:55Z",
+  "pdf_sha256": "093bdf50d532fdd138b377f36463c3a8b1092042068b793cc88c9a1086fc2223",
+  "inspected_at_utc": "2026-06-23T15:58:02Z",
   "pages_total": 23,
   "pages_checked": 23,
   "render_dpi": 120,
   "inspected_pages_full_size": [
     1,
+    2,
     7,
     9,
     11,
@@ -14,7 +15,7 @@
     18,
     22
   ],
-  "method": "Rendered rebuilt docs/paper.pdf at 150 DPI with pdftoppm after negative capability-audit wording update; visually inspected required sentinel pages 1,7,11,15,22 plus changed pages 9 and 18. Confirmed Figure 6 remains clear of the gradient legend, changed text fits cleanly with citations, and no overlap or clipping appeared.",
+  "method": "Rendered rebuilt docs/paper.pdf at 180 DPI for changed pages 2 and 18 after importing the negative capability audit and restoring required caveat wording; visually inspected those pages plus sentinel pages 1,7,9,11,15,22. Also rendered results/figures/capability.pdf and confirmed the purple/yellow encoding, error bars, labels, and legends are legible. No overlap or clipping appeared.",
   "render_receipt": {
     "schema": "pdf_render_receipt_v1",
     "renderer": "pdftoppm",
@@ -29,8 +30,8 @@
       },
       {
         "page": 2,
-        "sha256": "6c241342c54bc391b83f802e3ce5a2d58974aa365b7a8bed44621befbbcc2887",
-        "bytes": 407392
+        "sha256": "4714173582dc0d45bfb8bef3e2cbab05da4e1bfea7901ff120c00b2ba59f318d",
+        "bytes": 407116
       },
       {
         "page": 3,
@@ -104,13 +105,13 @@
       },
       {
         "page": 17,
-        "sha256": "6e14ba00b947b9f233a568c73fad31fc8e45bad3811bced846d89f7abd6cbf9e",
-        "bytes": 405557
+        "sha256": "0580a4e370dd25731af6e7b643374009e0d79155ac1330da721946a2601a6f08",
+        "bytes": 404448
       },
       {
         "page": 18,
-        "sha256": "3399a37e60336d4888e30af80c805c07c9bb4a25afbcb0591cc2c70cdaeaf099",
-        "bytes": 400336
+        "sha256": "47215da0cb8c3aba5999958d258ab6dcf268fd6a8deddf1a91ab66f11fb7747e",
+        "bytes": 417767
       },
       {
         "page": 19,

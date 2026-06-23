@@ -230,6 +230,28 @@ def expected_displayed_interval_catalog():
             total += int(match.group(2))
     if total:
         add_expected_interval(catalog, wilson(wins, total), "heldout_screen.all_families")
+
+    capability_path = DATA / "capability.json"
+    if capability_path.exists():
+        capability = load_json("capability.json")
+        for cond, row in capability.get("conditions", {}).items():
+            if not isinstance(row, dict):
+                continue
+            for task in ("mmlu", "arc_challenge", "gsm8k"):
+                task_row = row.get(task)
+                if isinstance(task_row, dict):
+                    add_expected_interval(
+                        catalog,
+                        task_row.get("accuracy"),
+                        f"capability.{cond}.{task}.accuracy",
+                    )
+            refusal = row.get("refusal")
+            if isinstance(refusal, dict):
+                add_expected_interval(
+                    catalog,
+                    refusal.get("rate"),
+                    f"capability.{cond}.refusal.rate",
+                )
     return catalog
 
 
