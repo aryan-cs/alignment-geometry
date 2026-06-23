@@ -1,24 +1,20 @@
 {
   "pdf": "docs/paper.pdf",
-  "pdf_sha256": "c6356a931aeb784429cc8e82d7d2129bb5c25141fad2b426c29df90ebf1e3ecd",
-  "inspected_at_utc": "2026-06-23T07:58:18Z",
+  "pdf_sha256": "c7fb2aa7c493239b8f405c95dbbb6ba35c73117fa2a9b1ffb12e3a04b101a781",
+  "inspected_at_utc": "2026-06-23T08:10:55Z",
   "pages_total": 23,
   "pages_checked": 23,
   "render_dpi": 120,
   "inspected_pages_full_size": [
     1,
-    2,
-    6,
     7,
-    8,
+    9,
     11,
-    14,
     15,
-    21,
-    22,
-    23
+    18,
+    22
   ],
-  "method": "Rendered rebuilt docs/paper.pdf at 150 DPI with pdftoppm after capability-audit figure-manifest hardening and figure regeneration; visually inspected sentinel pages plus figure/table-heavy pages 6,7,8,11,14,21,22,23. Confirmed Figure 6 axis label is clear of the gradient legend, table spacing is balanced, 3D figures are legible, and palette remains purple/yellow/green.",
+  "method": "Rendered rebuilt docs/paper.pdf at 150 DPI with pdftoppm after negative capability-audit wording update; visually inspected required sentinel pages 1,7,11,15,22 plus changed pages 9 and 18. Confirmed Figure 6 remains clear of the gradient legend, changed text fits cleanly with citations, and no overlap or clipping appeared.",
   "render_receipt": {
     "schema": "pdf_render_receipt_v1",
     "renderer": "pdftoppm",
@@ -68,8 +64,8 @@
       },
       {
         "page": 9,
-        "sha256": "9291f3839dfccb10f1c1c81ff1e2858641502e030eaaca3880c574324864e741",
-        "bytes": 266873
+        "sha256": "10418b0eb5398355d0ec503311fcfda3b257ab411559dcb7198355257da618d9",
+        "bytes": 267829
       },
       {
         "page": 10,
@@ -108,13 +104,13 @@
       },
       {
         "page": 17,
-        "sha256": "85aeb1c2a17a07cc0408cf256d209b64ba28e8ec72038e1656055deaeed5f747",
-        "bytes": 405763
+        "sha256": "6e14ba00b947b9f233a568c73fad31fc8e45bad3811bced846d89f7abd6cbf9e",
+        "bytes": 405557
       },
       {
         "page": 18,
-        "sha256": "029ae343a6272e7f6a789883c6e33399acf04eb93a2aa98572f3ef471b28e3d4",
-        "bytes": 403070
+        "sha256": "3399a37e60336d4888e30af80c805c07c9bb4a25afbcb0591cc2c70cdaeaf099",
+        "bytes": 400336
       },
       {
         "page": 19,

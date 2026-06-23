@@ -134,12 +134,11 @@ Nor do the current ablations establish broad capability preservation: the
 headline top-$128$ result shows substring-scored refusal suppression on held-out
 harmful prompts against a same-dimensional random-subspace control, but
 MMLU/GSM8K/ARC-style evaluations under the same top-$128$ ablation
-\citep{hendrycks2021mmlu,cobbe2021gsm8k,clark2018arc} were negative
-preliminarily; validation-grade evaluations under the same
-top-$128$ ablation remain outstanding, and harmless-prompt rates under the same
-intervention are also unmeasured. Capability-preserving
-versions of this intervention remain future work, not a conclusion of the
-present experiments. The causal results pair ablation
+\citep{hendrycks2021mmlu,cobbe2021gsm8k,clark2018arc} were negative in the
+completed audit run. The harmless-prompt rates under the same intervention are also
+unmeasured. Capability-preserving versions of this intervention, including
+smaller or more structured subspaces, remain future work rather than a
+conclusion of the present experiments. The causal results pair ablation
 (suppression) with steering checks against matched random controls but bind the
 behavior to the leading spectral \emph{subspace} rather than isolating a circuit:
 the effect requires enough of the subspace to cover the refusal direction, not
