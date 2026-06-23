@@ -633,6 +633,14 @@ PENDING_VALIDATORS = {
     "baseline_bakeoff": [
         [
             sys.executable,
+            "code/check_activation_pca_artifact.py",
+            "--input",
+            "results/data/activation_pca_baseline.json",
+            "--min-prompts",
+            "64",
+        ],
+        [
+            sys.executable,
             "code/check_baselines.py",
             "--input",
             "results/data/baselines.json",
@@ -669,6 +677,8 @@ PENDING_VALIDATORS = {
             "--require-config-key",
             "activation_pca_json",
             "--require-config-key",
+            "activation_min_prompts",
+            "--require-config-key",
             "gpu_id",
             "--require-artifact",
             "results/data/activation_pca_baseline.json",
@@ -691,6 +701,7 @@ PENDING_VALIDATORS = {
             "--require-script",
             "code/spectral.py",
             "--require-command-fragment=code/activation_pca_baseline.py",
+            "--require-command-fragment=code/check_activation_pca_artifact.py --input results/data/activation_pca_baseline.json --min-prompts 64",
         ],
     ],
 }

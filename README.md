@@ -272,6 +272,7 @@ python3 code/check_run_manifest.py \
   --require-config-key misaligned_glob \
   --require-config-key benign_glob \
   --require-config-key activation_pca_json \
+  --require-config-key activation_min_prompts \
   --require-config-key gpu_id \
   --require-artifact results/data/activation_pca_baseline.json \
   --require-artifact results/data/baselines.json \
@@ -283,7 +284,8 @@ python3 code/check_run_manifest.py \
   --require-script code/check_run_manifest.py \
   --require-script code/run_environment.py \
   --require-script code/spectral.py \
-  --require-command-fragment="code/activation_pca_baseline.py"
+  --require-command-fragment="code/activation_pca_baseline.py" \
+  --require-command-fragment="code/check_activation_pca_artifact.py --input results/data/activation_pca_baseline.json --min-prompts 64"
 ```
 
 Validate a completed cross-organism transfer artifact:

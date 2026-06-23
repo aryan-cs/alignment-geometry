@@ -290,6 +290,8 @@ def write_run_manifest(payload, args, mis_paths, ben_paths):
             "code/check_activation_pca_artifact.py",
             "--input",
             activation_pca_path,
+            "--min-prompts",
+            str(args.activation_min_prompts),
         ]),
         shlex.join([sys.executable, *sys.argv]),
         shlex.join([
@@ -308,6 +310,7 @@ def write_run_manifest(payload, args, mis_paths, ben_paths):
         "misaligned_glob": args.misaligned_glob,
         "benign_glob": args.benign_glob,
         "activation_pca_json": relpath(args.activation_pca_json),
+        "activation_min_prompts": int(args.activation_min_prompts),
         "gpu_id": str(gpu_id),
     }
     manifest = {
@@ -384,6 +387,8 @@ def validate_run_manifest(args):
             "--require-config-key",
             "activation_pca_json",
             "--require-config-key",
+            "activation_min_prompts",
+            "--require-config-key",
             "gpu_id",
             "--require-artifact",
             args.activation_pca_json,
@@ -408,6 +413,8 @@ def validate_run_manifest(args):
             "--allow-untracked-artifacts",
             "--require-command-fragment",
             "code/activation_pca_baseline.py",
+            "--require-command-fragment",
+            f"code/check_activation_pca_artifact.py --input {relpath(args.activation_pca_json)} --min-prompts {args.activation_min_prompts}",
         ],
         cwd=ROOT,
         check=True,
@@ -425,6 +432,12 @@ def parse_args():
     ap.add_argument("--min-arm-pairs", type=int, default=4)
     ap.add_argument("--activation-pca-json", required=True)
     ap.add_argument(
+        "--activation-min-prompts",
+        type=int,
+        default=64,
+        help="Minimum selected prompts required by the activation-PCA artifact validator.",
+    )
+    ap.add_argument(
         "--activation-command",
         default=os.environ.get("ACTIVATION_COMMAND", ""),
         help="Exact command that produced --activation-pca-json; defaults to ACTIVATION_COMMAND.",
@@ -436,6 +449,8 @@ def parse_args():
 
 def main():
     args = parse_args()
+    if args.activation_min_prompts <= 0:
+        raise ValueError("--activation-min-prompts must be positive")
     source_git_commit = git(["rev-parse", "HEAD"])
     source_git_status_short = git_status_for(MANIFEST_SCRIPTS)
     if source_git_status_short and os.environ.get("ALLOW_DIRTY_SOURCE") != "1":

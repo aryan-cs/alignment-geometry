@@ -184,6 +184,7 @@ printf '\n'
   --matrix "$MATRIX" \
   --min-arm-pairs "$MIN_ARM_PAIRS" \
   --activation-pca-json "$ACTIVATION_OUT" \
+  --activation-min-prompts "$MIN_PROMPTS" \
   --activation-command "$ACTIVATION_COMMAND" \
   --out "$BASELINES_OUT" \
   --manifest "$MANIFEST"
@@ -206,6 +207,7 @@ printf '\n'
   --require-config-key misaligned_glob \
   --require-config-key benign_glob \
   --require-config-key activation_pca_json \
+  --require-config-key activation_min_prompts \
   --require-config-key gpu_id \
   --require-artifact "$ACTIVATION_OUT" \
   --require-artifact "$BASELINES_OUT" \
@@ -218,7 +220,8 @@ printf '\n'
   --require-script code/run_environment.py \
   --require-script code/spectral.py \
   --allow-untracked-artifacts \
-  --require-command-fragment=code/activation_pca_baseline.py
+  --require-command-fragment=code/activation_pca_baseline.py \
+  --require-command-fragment="code/check_activation_pca_artifact.py --input $ACTIVATION_OUT --min-prompts $MIN_PROMPTS"
 
 echo "NOTE: launcher manifest validation is live-only; it allows untracked artifacts while the H200 job is still producing files."
 echo "NOTE: final handoff requires committing result artifacts, then running python3 code/paper_completion_check.py --scope external (uses check_run_manifest.py --final-handoff)."

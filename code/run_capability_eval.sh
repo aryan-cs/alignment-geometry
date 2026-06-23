@@ -329,9 +329,54 @@ export STARTED_AT BASE INSTRUCT MODEL_ID BASE_ID INSTRUCT_ID OUT EVIDENCE_OUT MA
 export SOURCE_GIT_COMMIT SOURCE_GIT_STATUS_SHORT DATASET_CACHE_DIR
 trap 'write_manifest failed "$(iso_now)"' ERR
 
+manifest_matches_current_config() {
+  python - "$MANIFEST" <<'PY'
+import json
+import os
+import sys
+
+manifest = json.load(open(sys.argv[1]))
+expected = {
+    "model": os.environ["INSTRUCT"],
+    "base": os.environ["BASE"],
+    "instruct": os.environ["INSTRUCT"],
+    "model_id": os.environ["MODEL_ID"],
+    "base_id": os.environ["BASE_ID"],
+    "instruct_id": os.environ["INSTRUCT_ID"],
+    "out": os.environ["OUT"],
+    "evidence_out": os.environ["EVIDENCE_OUT"],
+    "dataset_cache_dir": os.environ.get("DATASET_CACHE_DIR") or None,
+    "gpu_id": os.environ["GPU_ID"],
+    "layer": int(os.environ.get("LAYER", "14")),
+    "topk": int(os.environ.get("TOPK", "128")),
+    "n_mmlu": int(os.environ.get("N_MMLU", "500")),
+    "n_gsm8k": int(os.environ.get("N_GSM8K", "400")),
+    "n_arc": int(os.environ.get("N_ARC", "400")),
+    "n_refusal": int(os.environ.get("N_REFUSAL", "400")),
+    "mc_bs": int(os.environ.get("MC_BS", "8")),
+    "gen_bs": int(os.environ.get("GEN_BS", "4")),
+    "refusal_bs": int(os.environ.get("REFUSAL_BS", "16")),
+    "gsm8k_max_new": int(os.environ.get("GSM8K_MAX_NEW", "256")),
+    "refusal_max_new": int(os.environ.get("REFUSAL_MAX_NEW", "24")),
+    "refusal_reference_start": int(os.environ.get("REFUSAL_REFERENCE_START", "256")),
+    "refusal_reference_n": int(os.environ.get("REFUSAL_REFERENCE_N", "128")),
+    "refusal_reference_max_new": int(os.environ.get("REFUSAL_REFERENCE_MAX_NEW", "24")),
+}
+actual = manifest.get("config")
+if actual == expected:
+    raise SystemExit(0)
+print("manifest config does not match current invocation", file=sys.stderr)
+if isinstance(actual, dict):
+    for key in sorted(set(expected) | set(actual)):
+        if actual.get(key) != expected.get(key):
+            print(f"  {key}: manifest={actual.get(key)!r} current={expected.get(key)!r}", file=sys.stderr)
+raise SystemExit(1)
+PY
+}
+
 if [ -s "$OUT" ] && [ "${FORCE:-0}" != "1" ]; then
   if python code/check_capability_result.py --input "$OUT" --evidence "$EVIDENCE_OUT" --require-paper; then
-    if [ -s "$MANIFEST" ] && python code/check_run_manifest.py \
+    if [ -s "$MANIFEST" ] && manifest_matches_current_config && python code/check_run_manifest.py \
       --input "$MANIFEST" \
       --study capability_preservation \
       --require-completed \
