@@ -73,7 +73,7 @@ def has_phrase(text, phrase):
     return re.sub(r"\s+", " ", phrase) in re.sub(r"\s+", " ", text)
 
 
-def _command_ok(args):
+def _command_result(args):
     proc = subprocess.run(
         args,
         cwd=ROOT,
@@ -82,24 +82,38 @@ def _command_ok(args):
         text=True,
         check=False,
     )
-    return proc.returncode == 0
+    return proc.returncode, proc.stdout or ""
 
 
-def capability_result_ready():
-    """Return true when the paper-grade capability audit artifact is validated."""
+def _command_ok(args):
+    return _command_result(args)[0] == 0
+
+
+def capability_result_outcome():
+    """Return the validated paper-grade capability audit outcome, if present."""
     capability = DATA / "capability.json"
     evidence = DATA / "capability_evidence.json"
     manifest = DATA / "run_manifests" / "capability_manifest.json"
     if not capability.exists() or not evidence.exists() or not manifest.exists():
-        return False
-    return _command_ok(
-        [
-            sys.executable,
-            "code/ingest_capability_artifacts.py",
-            "--validate-only",
-            "--final-handoff",
-        ]
-    )
+        return None
+    code, out = _command_result([
+        sys.executable,
+        "code/ingest_capability_artifacts.py",
+        "--validate-only",
+        "--final-handoff",
+    ])
+    if code != 0:
+        return None
+    if "audit outcome: negative_capability_audit" in out:
+        return "negative_capability_audit"
+    if "audit outcome: preservation_thresholds_not_violated" in out:
+        return "preservation_thresholds_not_violated"
+    return "validated_unknown_outcome"
+
+
+def capability_result_ready():
+    """Return true when the paper-grade capability audit artifact is validated."""
+    return capability_result_outcome() is not None
 
 
 def check_capability_caveat():
@@ -115,7 +129,8 @@ def check_capability_caveat():
                 "harmless-prompt caveat: missing required manuscript phrase "
                 f"{phrase!r}"
             )
-    if capability_result_ready():
+    outcome = capability_result_outcome()
+    if outcome == "preservation_thresholds_not_violated":
         return
     required = [
         "Nor do the current ablations establish broad capability preservation",
@@ -126,8 +141,8 @@ def check_capability_caveat():
         if not has_phrase(text, phrase):
             failures.append(
                 "capability caveat: missing required manuscript phrase "
-                f"{phrase!r} while capability artifacts are absent"
-                " or not paper-grade validated"
+                f"{phrase!r} while capability artifacts are absent, not "
+                "paper-grade validated, or validated as a negative audit"
             )
 
 
@@ -246,7 +261,7 @@ def check_reviewer_scope_caveats():
             [
                 r"By\s*\$k\{=\}512\$.*spectral and random projections severely disrupt measured refusal",
                 r"no longer distinguishes targeted refusal suppression from broad residual-stream disruption",
-                r"same top-\$128\$ intervention does not yet yield a\s+capability-preserving edit",
+                r"same top-\$128\$ intervention (does not yet yield|did not yield).*capability-preserving",
             ],
         ),
         (
