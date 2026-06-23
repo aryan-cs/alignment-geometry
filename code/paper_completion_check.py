@@ -191,7 +191,7 @@ TRACKER_REQUIRED_PHRASES_WHILE_EXTERNAL_INCOMPLETE = {
     "README.md": [
         "strict run provenance/vector manifest pending",
         "strict causal provenance pending",
-        "capability-preservation eval",
+        "capability audit for top-128 refusal ablation",
         "results/data/capability.json",
         "results/data/transfer.json",
         "cross-type misalignment direction study",
@@ -203,7 +203,7 @@ TRACKER_REQUIRED_PHRASES_WHILE_EXTERNAL_INCOMPLETE = {
     "PLAN.md": [
         "strict direction/detect/causal provenance refresh pending",
         "strict causal generation-evidence provenance pending",
-        "capability preservation under top-128 refusal ablation",
+        "negative top-128 capability audit",
         "tracked ood prompts",
         "cross-type transfer beyond the medical organism",
         "14b scale",
@@ -1924,7 +1924,7 @@ def check_capability(gates):
     if issues:
         add(
             gates,
-            "capability_preservation_validated",
+            "capability_audit_validated",
             False,
             "; ".join(issues),
             category="external",
@@ -1943,9 +1943,9 @@ def check_capability(gates):
     ])
     add(
         gates,
-        "capability_preservation_validated",
+        "capability_audit_validated",
         code == 0,
-        "capability.json passes --require-paper" if code == 0 else out,
+        "capability.json passes paper-grade audit validation" if code == 0 else out,
         category="external",
     )
 

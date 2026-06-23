@@ -1,22 +1,19 @@
 {
   "pdf": "docs/paper.pdf",
-  "pdf_sha256": "ec43f08524171ec997c233ab364d5860b1678885b8f56dcc408e47650eb36a0a",
-  "inspected_at_utc": "2026-06-23T07:03:34Z",
+  "pdf_sha256": "acdb85c34e4830831bbeaa85ba8f62f6ed868ae8210a3319e256e5d6c4ed01bd",
+  "inspected_at_utc": "2026-06-23T07:28:32Z",
   "pages_total": 23,
   "pages_checked": 23,
   "render_dpi": 120,
   "inspected_pages_full_size": [
     1,
-    6,
+    2,
     7,
-    8,
     11,
-    14,
     15,
-    21,
     22
   ],
-  "method": "Rendered final rebuilt docs/paper.pdf with pdftoppm after standardizing table bottom spacing; visually inspected all table pages 6,8,11,14,21 full size plus sentinel pages 1,7,15,22 for layout regressions.",
+  "method": "Rendered final rebuilt docs/paper.pdf with pdftoppm after capability-audit wording and validator changes; visually inspected changed intro page 2 full size plus sentinel pages 1,7,11,15,22 for layout regressions.",
   "render_receipt": {
     "schema": "pdf_render_receipt_v1",
     "renderer": "pdftoppm",
@@ -31,8 +28,8 @@
       },
       {
         "page": 2,
-        "sha256": "e53df828ea0cfb62afe529ded89823f4a3a5e023b1cff3a5c520bd263cc4a916",
-        "bytes": 405618
+        "sha256": "6c241342c54bc391b83f802e3ce5a2d58974aa365b7a8bed44621befbbcc2887",
+        "bytes": 407392
       },
       {
         "page": 3,

@@ -127,7 +127,7 @@ The proof carries the full positioning with citations. In brief, we differentiat
 | Refusal enrichment, ablation, and steering tests | done |
 | Matched medical emergent-misalignment organism | numeric artifacts done; strict direction/detect/causal provenance refresh pending |
 | Cross-family replication, early-training trajectory, and held-out same-recipe screen | numeric artifacts done; strict causal generation-evidence provenance pending |
-| Capability preservation under top-128 refusal ablation | queued for H200; result missing |
+| Capability audit under top-128 refusal ablation | remote H200 run produced a negative preservation outcome; local artifact ingestion and validation pending |
 | OOD refusal transfer beyond the AdvBench-derived prompt set | pending; requires tracked OOD prompts, per-prompt evidence, and final run manifest |
 | Cross-type transfer beyond the medical organism | pending |
 | 14B scale study and additional baselines | pending |
@@ -164,9 +164,10 @@ cross-family replication, early-training trajectory, and held-out same-recipe
 screen have been run on committed numeric artifacts. Remaining gaps are strict
 H200 provenance refreshes for the medical evaluation, direction, detector, and
 causal artifacts, including hashed `em_generations_medical.json` and
-`causal_misalign*_generations.json` evidence files; capability preservation
-under top-128 refusal ablation; cross-type transfer beyond the medical organism;
-14B scale; baseline bake-off; and robustness to adaptive adversaries.
+`causal_misalign*_generations.json` evidence files; local ingestion and
+validation of the negative top-128 capability audit; cross-type transfer beyond
+the medical organism; 14B scale; baseline bake-off; and robustness to adaptive
+adversaries.
 
 ## 13. A note on the name
 

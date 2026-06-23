@@ -86,7 +86,7 @@ def _command_ok(args):
 
 
 def capability_result_ready():
-    """Return true only when the paper-grade capability artifact is validated."""
+    """Return true when the paper-grade capability audit artifact is validated."""
     capability = DATA / "capability.json"
     evidence = DATA / "capability_evidence.json"
     manifest = DATA / "run_manifests" / "capability_manifest.json"
@@ -191,7 +191,7 @@ def check_capability_caveat():
     required = [
         "Nor do the current ablations establish broad capability preservation",
         "MMLU/GSM8K/ARC-style evaluations under the same",
-        "top-$128$ ablation remain outstanding",
+        "top-$128$ ablation",
     ]
     for phrase in required:
         if not has_phrase(text, phrase):
@@ -317,7 +317,7 @@ def check_reviewer_scope_caveats():
             [
                 r"By\s*\$k\{=\}512\$.*spectral and random projections severely disrupt measured refusal",
                 r"no longer distinguishes targeted refusal suppression from broad residual-stream disruption",
-                r"broad MMLU/GSM8K/ARC preservation under the same top-\$128\$ intervention remains a separate completion requirement",
+                r"same top-\$128\$ intervention does not yet yield a\s+capability-preserving edit",
             ],
         ),
         (

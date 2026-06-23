@@ -52,7 +52,7 @@ alignment-geometry/
 │   ├── spectral.py                  # safetensors reader and MP/spike statistics
 │   ├── make_figures.py              # paper figure generation
 │   ├── synthetic_bbp.py             # deterministic BBP spike-count validation
-│   ├── capability_eval.py           # H200 capability-preservation evaluation
+│   ├── capability_eval.py           # H200 capability audit
 │   ├── check_capability_result.py   # validator/summarizer for capability_eval output
 │   ├── cross_organism.py            # cross-type direction cosine and cross-detection
 │   ├── check_cross_organism.py      # validator for cross_organism output
@@ -409,7 +409,7 @@ tectonic proof.tex
 
 ## Heavy Evaluations
 
-Large model evaluation and training run on the H200 environment described by the project plan and local operator notes, not on a laptop. The current high-priority queued study is the capability-preservation evaluation for the top-128 refusal ablation:
+Large model evaluation and training run on the H200 environment described by the project plan and local operator notes, not on a laptop. The current high-priority study is the capability audit for the top-128 refusal ablation:
 
 ```bash
 nohup setsid bash code/run_capability_eval.sh > run_capability_eval.log 2>&1 </dev/null & disown
@@ -425,7 +425,10 @@ are below about five percentage points for the reported rates. The paper
 validator recomputes every Wilson interval from counts, recomputes paired
 confidence intervals for the capability-drop and refusal-gap claims from
 per-sample evidence, and rejects paper-study intervals with half-width above six
-percentage points. It also recomputes the refusal prompt fingerprint and
+percentage points. The validator treats capability drops above the
+preservation thresholds as a negative capability audit rather than as malformed
+data; use `--require-preservation-claim` only when a positive preservation claim
+is being made. It also recomputes the refusal prompt fingerprint and
 selected-row hashes from committed `data/harmful.json`, and requires an exact
 refusal-reference rerun on the headline ablation slice
 `data/harmful.json[256:384]` using the `code/ablation_sweep.py` refusal
@@ -546,8 +549,8 @@ python code/check_run_manifest.py \
 `code/make_figures.py` already contains a `capability.pdf` plotting hook, but it
 is inert until the real `results/data/capability.json`,
 `results/data/capability_evidence.json`, and
-`results/data/run_manifests/capability_manifest.json` all pass strict validation.
-No placeholder capability result is committed.
+`results/data/run_manifests/capability_manifest.json` all pass strict audit
+validation. No placeholder capability result is committed.
 
 Train the code-organism arms used by the cross-type study with the committed
 `data/em` JSONL inputs:
@@ -758,7 +761,7 @@ python3 code/check_run_manifest.py \
 | Matched medical emergent-misalignment organism | numeric artifacts validated; strict run provenance/vector manifest pending |
 | Cross-family replication within the matched medical organism on Qwen, Llama, and Mistral | numeric artifacts validated; strict causal provenance pending |
 | Retrospective training trajectory and same-recipe held-out screen | numeric artifacts validated |
-| Capability-preservation eval for top-128 refusal ablation | queued for H200; harness and validator committed |
+| Capability audit for top-128 refusal ablation | remote H200 run produced a negative preservation outcome; local artifact ingestion and validation still pending |
 | OOD refusal transfer beyond the AdvBench-derived prompt set | pending; requires tracked prompt file, per-prompt evidence, final run manifest, and interval/effect-gated `results/data/transfer.json` |
 | Cross-type misalignment direction study beyond the medical organism | pending; no sleeper-agent/RLHF-trojan result committed yet |
 | 14B scale study and additional baselines | pending |
@@ -767,7 +770,12 @@ python3 code/check_run_manifest.py \
 
 The spectral spike count alone is not claimed to diagnose alignment or misalignment. Any real fine-tune may be anisotropic. The alignment-specific claims are directional and causal: the recovered subspaces overlap known behavior directions, matched benign controls do not recover the same misalignment direction, and ablations suppress the behavior where matched random controls do not.
 
-The strongest current limitation is that the capability-preservation study for the refusal ablation is still pending real H200 output. Until `results/data/capability.json` exists, the paper should not claim MMLU/GSM8K/ARC preservation under the top-128 ablation.
+The strongest current limitation is that the top-128 refusal ablation has not
+shown broad MMLU/GSM8K/ARC preservation. Until the real
+`results/data/capability.json`, evidence, and manifest are committed and pass
+audit validation, the paper should report the result only as a negative
+capability audit and should not claim capability preservation under the
+top-128 ablation.
 
 The spectral specificity baseline is also incomplete: the current Llama spectral
 census has not yet compared instruction tuning against domain adaptation, coding

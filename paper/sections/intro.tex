@@ -58,9 +58,10 @@ $[94.5,99.6]\%$ to $3.1\%$, $[1.2,7.8]\%$; Wilson score intervals
 \citep{wilson1927}) where a random subspace of the same
 dimension does not. The spectrum identifies directions whose removal is disproportionately effective at
 suppressing substring-scored refusal in this setup.
-This establishes a refusal-specific ablation effect; broad MMLU/GSM8K/ARC
-preservation under the same top-$128$ intervention remains a separate completion
-requirement.
+This establishes a refusal-specific ablation effect, not broad capability
+preservation: the same top-$128$ intervention does not yet yield a
+capability-preserving edit, so smaller or structured variants remain future
+work.
 
 \textbf{The same lens recovers a contrastive misalignment direction.} Turning from alignment
 to its opposite, we use the emergent-misalignment model-organism setting

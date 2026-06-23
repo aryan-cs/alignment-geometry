@@ -537,7 +537,7 @@ def evidence_series(evidence, cond, task, field):
     return vals
 
 
-def validate_paired_claim_intervals(data, evidence, errors):
+def validate_paired_claim_intervals(data, evidence, errors, warnings, *, require_preservation=False):
     topk = data.get("topk")
     top_cond = f"ablate_top{topk}"
     rand_cond = f"ablate_rand{topk}"
@@ -553,11 +553,18 @@ def validate_paired_claim_intervals(data, evidence, errors):
             continue
         point, lo, hi = interval
         if hi > max_drop:
-            errors.append(
-                f"claim gate: {task} paired 95% upper bound for top-ablation "
+            msg = (
+                f"{task} paired 95% upper bound for top-ablation "
                 f"accuracy drop {hi:.3f} exceeds allowed {max_drop:.3f} "
                 f"(point {point:.3f}, CI [{lo:.3f}, {hi:.3f}])"
             )
+            if require_preservation:
+                errors.append(f"preservation claim gate: {msg}")
+            else:
+                warnings.append(
+                    f"negative capability audit: {msg}; top-ablation is not "
+                    "capability-preserving under this threshold"
+                )
 
     top_refusal = evidence_series(evidence, top_cond, "refusal", "refusal")
     base_refusal = evidence_series(evidence, "baseline", "refusal", "refusal")
@@ -868,7 +875,7 @@ def model_identity(data, key):
     return data.get(key)
 
 
-def validate_paper_claims(data, errors):
+def validate_paper_claims(data, errors, warnings, *, require_preservation=False):
     topk = data.get("topk")
     top_cond = f"ablate_top{topk}"
     rand_cond = f"ablate_rand{topk}"
@@ -886,10 +893,17 @@ def validate_paper_claims(data, errors):
             continue
         drop = base - top
         if drop > max_drop:
-            errors.append(
-                f"claim gate: {task} top-ablation accuracy drop {drop:.3f} "
-                f"exceeds allowed {max_drop:.3f}"
+            msg = (
+                f"{task} top-ablation accuracy drop {drop:.3f} exceeds "
+                f"allowed {max_drop:.3f}"
             )
+            if require_preservation:
+                errors.append(f"preservation claim gate: {msg}")
+            else:
+                warnings.append(
+                    f"negative capability audit: {msg}; top-ablation is not "
+                    "capability-preserving under this threshold"
+                )
 
     base_refusal = metric_point(data, "baseline", "refusal", "rate")
     random_refusal = metric_point(data, rand_cond, "refusal", "rate")
@@ -939,7 +953,7 @@ def selected_outputs(data):
 
 def validate(data, require_full=False, require_paper=False, evidence=None,
              require_evidence=False, input_path=None, evidence_path=None,
-             manifest_path=None):
+             manifest_path=None, require_preservation=False):
     errors = []
     warnings = []
     conditions = data.get("conditions")
@@ -1160,6 +1174,7 @@ def validate(data, require_full=False, require_paper=False, evidence=None,
         warnings.append("root: tasks metadata missing; validating observed task metrics only")
     if require_paper:
         required_tasks = [TASK_TO_OUTPUT[task] for task in PAPER_TASKS]
+    paper_top_cond = f"ablate_top{topk}" if require_paper and isinstance(topk, int) else None
 
     for cond, metrics in conditions.items():
         if not isinstance(metrics, dict):
@@ -1187,12 +1202,18 @@ def validate(data, require_full=False, require_paper=False, evidence=None,
                     elif isinstance(n, int) and n > 0:
                         rate = invalid / n
                         if rate > PAPER_MAX_GSM8K_INVALID_RATE:
-                            add_error(
-                                errors,
-                                context,
+                            msg = (
                                 "invalid_predictions exceeds "
-                                f"{PAPER_MAX_GSM8K_INVALID_RATE:.0%}: {invalid}/{n}",
+                                f"{PAPER_MAX_GSM8K_INVALID_RATE:.0%}: {invalid}/{n}"
                             )
+                            if context == f"{paper_top_cond}.gsm8k":
+                                warnings.append(
+                                    f"negative capability audit: {context} {msg}; "
+                                    "generation invalidity is part of the failed "
+                                    "top-ablation capability outcome"
+                                )
+                            else:
+                                add_error(errors, context, msg)
             else:
                 validate_counts(metrics[task], interval, "refusals", context, errors)
             if require_paper and task in PAPER_MAX_INTERVAL_HALF_WIDTH:
@@ -1214,7 +1235,12 @@ def validate(data, require_full=False, require_paper=False, evidence=None,
                     )
 
     if require_paper:
-        validate_paper_claims(data, errors)
+        validate_paper_claims(
+            data,
+            errors,
+            warnings,
+            require_preservation=require_preservation,
+        )
         require_evidence = True
 
     if require_evidence:
@@ -1224,7 +1250,13 @@ def validate(data, require_full=False, require_paper=False, evidence=None,
         validate_evidence(data, evidence, required_for_evidence, errors)
         validate_artifact_path_bindings(data, evidence, input_path, evidence_path, errors)
         if require_paper and isinstance(evidence, dict):
-            validate_paired_claim_intervals(data, evidence, errors)
+            validate_paired_claim_intervals(
+                data,
+                evidence,
+                errors,
+                warnings,
+                require_preservation=require_preservation,
+            )
             validate_refusal_reference(data, evidence, errors)
     validate_manifest_binding(data, manifest_path, input_path, evidence_path, errors)
 
@@ -1293,7 +1325,17 @@ def parse_args():
         help=(
             "require the canonical paper capability study: layer 14, top-128, "
             "baseline/random/top conditions, MMLU/GSM8K/ARC/refusal, minimum "
-            "sample sizes, dataset splits, and intervention provenance"
+            "sample sizes, dataset splits, intervention provenance, per-sample "
+            "evidence, and refusal-suppression evidence. Capability drops above "
+            "the preservation thresholds are reported as a negative audit unless "
+            "--require-preservation-claim is also set"
+        ),
+    )
+    ap.add_argument(
+        "--require-preservation-claim", action="store_true",
+        help=(
+            "in addition to --require-paper, require the top-128 ablation to pass "
+            "the strict MMLU/GSM8K/ARC capability-preservation thresholds"
         ),
     )
     ap.add_argument(
@@ -1334,6 +1376,7 @@ def main():
         input_path=args.input,
         evidence_path=evidence_path if evidence_required else args.evidence,
         manifest_path=args.manifest,
+        require_preservation=args.require_preservation_claim,
     )
     for warning in warnings:
         print(f"WARNING: {warning}", file=sys.stderr)
