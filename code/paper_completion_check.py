@@ -311,6 +311,7 @@ PYTHON_HELP_INTERFACES = [
     "code/update_visual_qa_receipt.py",
     "code/check_direction_study.py",
     "code/ingest_current_provenance_artifacts.py",
+    "code/ingest_pending_study_artifacts.py",
     "code/check_cross_organism.py",
     "code/check_baselines.py",
     "code/check_activation_pca_artifact.py",

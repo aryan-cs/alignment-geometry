@@ -578,6 +578,23 @@ is inert until the real `results/data/capability.json`,
 `results/data/run_manifests/capability_manifest.json` all pass strict audit
 validation. No placeholder capability result is committed.
 
+For the remaining completed H200 study bundles, use the pending-study ingest
+helper after copying artifacts into a local scratch directory:
+
+```bash
+python code/ingest_pending_study_artifacts.py --source-dir /path/to/copied/h200/artifacts --study cross_type_transfer
+python code/ingest_pending_study_artifacts.py --source-dir /path/to/copied/h200/artifacts --study ood_refusal_transfer
+python code/ingest_pending_study_artifacts.py --source-dir /path/to/copied/h200/artifacts --study scale_14b
+python code/ingest_pending_study_artifacts.py --source-dir /path/to/copied/h200/artifacts --study baseline_bakeoff
+```
+
+The source directory may be repo-shaped with `results/data/...` paths or flat
+with the selected filenames. The helper copies only the canonical artifact set
+declared by `code/paper_completion_check.py`, runs the same validators with
+pre-commit untracked-artifact allowances where applicable, and prints the
+post-commit command. After staging and committing copied artifacts, rerun with
+`--validate-only --final-handoff` for the same study.
+
 Train the code-organism arms used by the cross-type study with the committed
 `data/em` JSONL inputs:
 
