@@ -265,6 +265,7 @@ python3 code/check_run_manifest.py \
   --require-cuda \
   --require-gpu-name-fragment H200 \
   --require-arms \
+  --require-disjoint-arm-groups \
   --require-config-key base \
   --require-config-key runs \
   --require-config-key layer \
@@ -495,7 +496,8 @@ than after relying on an old appended log.
 python code/check_capability_result.py \
   --input results/data/capability.json \
   --evidence results/data/capability_evidence.json \
-  --require-paper
+  --require-paper \
+  --manifest results/data/run_manifests/capability_manifest.json
 python code/check_run_manifest.py \
   --final-handoff \
   --input results/data/run_manifests/capability_manifest.json \
@@ -592,6 +594,7 @@ python3 code/check_run_manifest.py \
   --require-cuda \
   --require-gpu-name-fragment H200 \
   --require-arms \
+  --require-disjoint-arm-groups \
   --require-config-key base \
   --require-config-key judge \
   --require-config-key runs \
@@ -709,6 +712,7 @@ python3 code/check_run_manifest.py \
   --require-cuda \
   --require-gpu-name-fragment H200 \
   --require-arms \
+  --require-disjoint-arm-groups \
   --require-config-key base \
   --require-config-key judge \
   --require-config-key runs \

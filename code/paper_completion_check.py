@@ -371,6 +371,7 @@ PENDING_VALIDATORS = {
             "--require-gpu-name-fragment",
             "H200",
             "--require-arms",
+            "--require-disjoint-arm-groups",
             "--require-config-key",
             "base",
             "--require-config-key",
@@ -576,6 +577,7 @@ PENDING_VALIDATORS = {
             "--require-gpu-name-fragment",
             "H200",
             "--require-arms",
+            "--require-disjoint-arm-groups",
             "--require-config-key",
             "base",
             "--require-config-key",
@@ -667,6 +669,7 @@ PENDING_VALIDATORS = {
             "--require-gpu-name-fragment",
             "H200",
             "--require-arms",
+            "--require-disjoint-arm-groups",
             "--require-config-key",
             "base",
             "--require-config-key",
@@ -1935,6 +1938,8 @@ def check_capability(gates):
         "--evidence",
         "results/data/capability_evidence.json",
         "--require-paper",
+        "--manifest",
+        "results/data/run_manifests/capability_manifest.json",
     ])
     add(
         gates,

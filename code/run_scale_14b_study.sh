@@ -355,6 +355,7 @@ python code/check_run_manifest.py \
   --require-cuda \
   --require-gpu-name-fragment H200 \
   --require-arms \
+  --require-disjoint-arm-groups \
   --require-config-key base \
   --require-config-key judge \
   --require-config-key runs \

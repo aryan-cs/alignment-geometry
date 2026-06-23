@@ -372,6 +372,7 @@ def validate_run_manifest(args):
             "--require-gpu-name-fragment",
             "H200",
             "--require-arms",
+            "--require-disjoint-arm-groups",
             "--require-config-key",
             "base",
             "--require-config-key",

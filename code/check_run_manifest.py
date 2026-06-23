@@ -214,10 +214,11 @@ def require_hash_entries(mapping, required, context, errors):
             add(errors, context, f"missing required entry {path}")
 
 
-def validate_arms(arms, errors, require_local=False):
+def validate_arms(arms, errors, require_local=False, require_disjoint_groups=False):
     if not isinstance(arms, dict) or not arms:
         add(errors, "arms", "must be a nonempty object")
         return
+    seen = {}
     for name, paths in arms.items():
         ctx = f"arms.{name}"
         if not isinstance(paths, list) or len(paths) < 4:
@@ -229,6 +230,14 @@ def validate_arms(arms, errors, require_local=False):
             if not isinstance(path_text, str) or not path_text:
                 add(errors, ctx, "arm paths must be nonempty strings")
                 continue
+            if require_disjoint_groups:
+                full, _ = resolve_repo_path(path_text)
+                key = str(full.resolve())
+                prior = seen.get(key)
+                if prior is not None and prior != name:
+                    add(errors, ctx, f"arm path also appears in arms.{prior}: {path_text}")
+                else:
+                    seen[key] = name
             if require_local:
                 full, _ = resolve_repo_path(path_text)
                 if not full.exists() or not full.is_dir():
@@ -465,7 +474,12 @@ def validate(data, args):
             add(errors, "commands", f"missing required command fragment {fragment!r}")
     arms = data.get("arms")
     if args.require_arms or arms is not None:
-        validate_arms(arms, errors, require_local=args.require_local_arms)
+        validate_arms(
+            arms,
+            errors,
+            require_local=args.require_local_arms,
+            require_disjoint_groups=args.require_disjoint_arm_groups,
+        )
     require_hash_entries(data.get("script_sha256"), args.require_script, "script_sha256", errors)
     require_hash_entries(data.get("artifact_sha256"), args.require_artifact, "artifact_sha256", errors)
     validate_path_hashes(data.get("script_sha256"), "script_sha256", tracked, errors)
@@ -492,6 +506,7 @@ def parse_args():
     ap.add_argument("--require-clean", action="store_true")
     ap.add_argument("--require-local-arms", action="store_true")
     ap.add_argument("--require-arms", action="store_true")
+    ap.add_argument("--require-disjoint-arm-groups", action="store_true")
     ap.add_argument("--require-artifact", action="append", default=[])
     ap.add_argument("--require-script", action="append", default=[])
     ap.add_argument("--require-config-key", action="append", default=[])

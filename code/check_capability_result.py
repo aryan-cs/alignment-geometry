@@ -278,6 +278,29 @@ def is_tracked(rel_path):
     return proc.returncode == 0
 
 
+def resolve_repo_path(path_text):
+    path = Path(path_text)
+    full = path if path.is_absolute() else ROOT / path
+    try:
+        rel = str(full.resolve().relative_to(ROOT))
+    except ValueError:
+        rel = None
+    return full, rel
+
+
+def normalize_repo_path_value(value, context, errors):
+    if value is None:
+        return None
+    if not isinstance(value, str) or not value:
+        add_error(errors, context, "must be a nonempty string")
+        return None
+    _, rel = resolve_repo_path(value)
+    if rel is None:
+        add_error(errors, context, "must point inside repository")
+        return None
+    return rel
+
+
 def validate_refusal_prompt_binding(meta, sample_indices, sample_sizes, errors):
     context = "dataset_provenance.refusal"
     rel_path = meta.get("dataset_id")
@@ -673,6 +696,117 @@ def validate_evidence(data, evidence, required_tasks, errors):
                     )
 
 
+def validate_artifact_path_bindings(data, evidence, input_path, evidence_path, errors):
+    input_rel = normalize_repo_path_value(input_path, "input", errors)
+    evidence_rel = normalize_repo_path_value(evidence_path, "evidence", errors)
+    result_evidence_rel = normalize_repo_path_value(
+        data.get("evidence_path"),
+        "evidence_path",
+        errors,
+    )
+    if evidence_rel is not None and result_evidence_rel != evidence_rel:
+        errors.append(f"evidence_path: must match --evidence {evidence_rel!r}")
+    if isinstance(evidence, dict):
+        evidence_result_rel = normalize_repo_path_value(
+            evidence.get("result_path"),
+            "evidence.result_path",
+            errors,
+        )
+        if input_rel is not None and evidence_result_rel != input_rel:
+            errors.append(f"evidence.result_path: must match --input {input_rel!r}")
+
+
+def compare_manifest_value(config, key, expected, errors, *, path=False):
+    context = f"manifest.config.{key}"
+    if path:
+        got = normalize_repo_path_value(config.get(key), context, errors)
+        want = normalize_repo_path_value(expected, f"expected.{key}", errors)
+    else:
+        got = config.get(key)
+        want = expected
+        if got is None:
+            errors.append(f"{context}: missing required config value")
+            return
+    if got != want:
+        errors.append(f"{context}: {got!r} does not match expected {want!r}")
+
+
+def validate_manifest_binding(data, manifest_path, input_path, evidence_path, errors):
+    if not manifest_path:
+        return
+    manifest_file, _ = resolve_repo_path(manifest_path)
+    try:
+        manifest = json.load(open(manifest_file))
+    except (OSError, json.JSONDecodeError) as exc:
+        errors.append(f"manifest: failed to read {manifest_path}: {exc}")
+        return
+    if not isinstance(manifest, dict):
+        errors.append("manifest: must be a JSON object")
+        return
+    if manifest.get("schema") != "study_run_manifest_v1":
+        errors.append("manifest.schema: must be study_run_manifest_v1")
+    if manifest.get("study") != "capability_preservation":
+        errors.append("manifest.study: must be capability_preservation")
+    config = manifest.get("config")
+    if not isinstance(config, dict):
+        errors.append("manifest.config: must be an object")
+        return
+
+    compare_manifest_value(config, "out", input_path, errors, path=True)
+    compare_manifest_value(config, "evidence_out", evidence_path, errors, path=True)
+    for key in ("model", "base", "instruct"):
+        compare_manifest_value(config, key, data.get(key), errors)
+    model_ids = data.get("model_ids") if isinstance(data.get("model_ids"), dict) else {}
+    for key in ("model_id", "base_id", "instruct_id"):
+        compare_manifest_value(config, key, model_ids.get(key.removesuffix("_id")), errors)
+    for key in ("layer", "topk"):
+        compare_manifest_value(config, key, data.get(key), errors)
+
+    eval_config = data.get("eval_config") if isinstance(data.get("eval_config"), dict) else {}
+    requested_n = (
+        eval_config.get("requested_n") if isinstance(eval_config.get("requested_n"), dict) else {}
+    )
+    for key, task in (
+        ("n_mmlu", "mmlu"),
+        ("n_gsm8k", "gsm8k"),
+        ("n_arc", "arc"),
+        ("n_refusal", "refusal"),
+    ):
+        compare_manifest_value(config, key, requested_n.get(task), errors)
+    for key in (
+        "mc_bs",
+        "gen_bs",
+        "refusal_bs",
+        "gsm8k_max_new",
+        "refusal_max_new",
+    ):
+        compare_manifest_value(config, key, eval_config.get(key), errors)
+
+    refusal_reference = (
+        eval_config.get("refusal_reference")
+        if isinstance(eval_config.get("refusal_reference"), dict)
+        else {}
+    )
+    compare_manifest_value(
+        config,
+        "refusal_reference_start",
+        refusal_reference.get("prompt_start"),
+        errors,
+    )
+    compare_manifest_value(
+        config,
+        "refusal_reference_n",
+        refusal_reference.get("n"),
+        errors,
+    )
+    compare_manifest_value(
+        config,
+        "refusal_reference_max_new",
+        refusal_reference.get("max_new_tokens"),
+        errors,
+    )
+
+
 def validate_producer(data, evidence, errors):
     producer = data.get("producer")
     if not isinstance(producer, dict):
@@ -804,7 +938,8 @@ def selected_outputs(data):
 
 
 def validate(data, require_full=False, require_paper=False, evidence=None,
-             require_evidence=False):
+             require_evidence=False, input_path=None, evidence_path=None,
+             manifest_path=None):
     errors = []
     warnings = []
     conditions = data.get("conditions")
@@ -1087,9 +1222,11 @@ def validate(data, require_full=False, require_paper=False, evidence=None,
         if require_paper:
             required_for_evidence = [TASK_TO_OUTPUT[task] for task in PAPER_TASKS]
         validate_evidence(data, evidence, required_for_evidence, errors)
+        validate_artifact_path_bindings(data, evidence, input_path, evidence_path, errors)
         if require_paper and isinstance(evidence, dict):
             validate_paired_claim_intervals(data, evidence, errors)
             validate_refusal_reference(data, evidence, errors)
+    validate_manifest_binding(data, manifest_path, input_path, evidence_path, errors)
 
     return errors, warnings
 
@@ -1159,6 +1296,10 @@ def parse_args():
             "sample sizes, dataset splits, and intervention provenance"
         ),
     )
+    ap.add_argument(
+        "--manifest",
+        help="study run manifest whose config must match the capability result binding",
+    )
     return ap.parse_args()
 
 
@@ -1190,6 +1331,9 @@ def main():
         args.require_paper,
         evidence=evidence,
         require_evidence=args.require_evidence,
+        input_path=args.input,
+        evidence_path=evidence_path if evidence_required else args.evidence,
+        manifest_path=args.manifest,
     )
     for warning in warnings:
         print(f"WARNING: {warning}", file=sys.stderr)
