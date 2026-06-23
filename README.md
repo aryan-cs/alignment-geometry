@@ -240,7 +240,7 @@ Validate a completed baseline bake-off:
 python3 code/check_activation_pca_artifact.py \
   --input results/data/activation_pca_baseline.json \
   --min-prompts 64
-python3 code/check_baselines.py --input results/data/baselines.json --require-tracked-artifacts
+python3 code/check_baselines.py --input results/data/baselines.json --max-weight-win-half-width 0.2 --require-tracked-artifacts
 ```
 
 Build the baseline bake-off after real matched arms exist. The launcher first
@@ -254,9 +254,14 @@ MIS_GLOB='<misaligned-arm-glob>' \
 BEN_GLOB='<benign-arm-glob>' \
 PROMPTS=data/em/em_secure.jsonl \
 MIN_PROMPTS=64 \
+MIN_ARM_PAIRS=16 \
 GPU_ID=0 \
 bash code/run_baseline_bakeoff.sh
 ```
+
+The final baseline handoff uses at least 16 matched arms per condition so a
+perfect fold-win result can clear the `0.2` Wilson half-width gate without
+loosening uncertainty.
 
 Set `GPU_ID=<index-or-uuid>` when the H200 host exposes more than one GPU; the
 launcher pins `CUDA_VISIBLE_DEVICES=$GPU_ID`, and the final manifest check
@@ -271,7 +276,7 @@ completed-artifact validators:
 python3 code/check_activation_pca_artifact.py \
   --input results/data/activation_pca_baseline.json \
   --min-prompts 64
-python3 code/check_baselines.py --input results/data/baselines.json --require-tracked-artifacts
+python3 code/check_baselines.py --input results/data/baselines.json --max-weight-win-half-width 0.2 --require-tracked-artifacts
 python3 code/check_run_manifest.py \
   --final-handoff \
   --input results/data/run_manifests/baseline_bakeoff_manifest.json \
@@ -290,8 +295,10 @@ python3 code/check_run_manifest.py \
   --require-config-key matrix \
   --require-config-key misaligned_glob \
   --require-config-key benign_glob \
+  --require-config-key min_arm_pairs \
   --require-config-key activation_pca_json \
   --require-config-key activation_min_prompts \
+  --require-config-key max_weight_win_half_width \
   --require-config-key gpu_id \
   --require-artifact results/data/activation_pca_baseline.json \
   --require-artifact results/data/baselines.json \
@@ -304,7 +311,8 @@ python3 code/check_run_manifest.py \
   --require-script code/run_environment.py \
   --require-script code/spectral.py \
   --require-command-fragment="code/activation_pca_baseline.py" \
-  --require-command-fragment="code/check_activation_pca_artifact.py --input results/data/activation_pca_baseline.json --min-prompts 64"
+  --require-command-fragment="code/check_activation_pca_artifact.py --input results/data/activation_pca_baseline.json --min-prompts 64" \
+  --require-command-fragment="code/check_baselines.py --input results/data/baselines.json --max-weight-win-half-width 0.2"
 ```
 
 Validate a completed cross-organism transfer artifact:
@@ -350,7 +358,8 @@ python3 code/check_transfer_result.py \
   --input results/data/transfer.json \
   --evidence results/data/transfer_evidence.json \
   --require-paper \
-  --max-ci-width 0.22 \
+  --min-n-gen 400 \
+  --max-ci-width 0.1 \
   --manifest results/data/run_manifests/transfer_manifest.json
 python3 code/check_run_manifest.py \
   --final-handoff \
@@ -378,6 +387,7 @@ python3 code/check_run_manifest.py \
   --require-config-key gpu_id \
   --require-config-key max_new \
   --require-config-key dtype \
+  --require-config-key max_ci_width \
   --require-artifact results/data/transfer.json \
   --require-artifact results/data/transfer_evidence.json \
   --require-script code/run_ood_transfer_study.sh \
@@ -395,7 +405,7 @@ python3 code/check_run_manifest.py \
   --require-command-fragment="--expected-ood-set" \
   --require-command-fragment="--expected-ood-prompts" \
   --require-command-fragment="--expected-derivation-prompts data/harmful.json" \
-  --require-command-fragment="python code/check_transfer_result.py --input results/data/transfer.json --evidence results/data/transfer_evidence.json --require-paper --max-ci-width 0.22"
+  --require-command-fragment="python code/check_transfer_result.py --input results/data/transfer.json --evidence results/data/transfer_evidence.json --require-paper --min-n-gen 400 --max-ci-width 0.1"
 ```
 
 This transfer artifact supports only the harmful-prompt substring-refusal

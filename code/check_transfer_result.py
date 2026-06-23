@@ -462,6 +462,27 @@ def validate_expected_bindings(data, errors, args):
                         add(errors, f"manifest.config.{config_key}", "must be a nonempty string")
                     else:
                         config_values[config_key] = config[config_key]
+                manifest_n_gen = config.get("n_gen")
+                if not isinstance(manifest_n_gen, int):
+                    add(errors, "manifest.config.n_gen", "must be an integer")
+                elif isinstance(data.get("n_gen"), int) and manifest_n_gen != data.get("n_gen"):
+                    add(errors, "manifest.config.n_gen", "does not match result n_gen")
+                manifest_max_ci = finite_number(
+                    config.get("max_ci_width"),
+                    "manifest.config.max_ci_width",
+                    errors,
+                    0,
+                    1,
+                )
+                if manifest_max_ci is not None:
+                    if manifest_max_ci <= 0:
+                        add(errors, "manifest.config.max_ci_width", "must be positive")
+                    if manifest_max_ci > args.max_ci_width:
+                        add(
+                            errors,
+                            "manifest.config.max_ci_width",
+                            f"exceeds validator max_ci_width={args.max_ci_width:.4f}",
+                        )
                 manifest_expected = {
                     "ood_set": config_values.get("ood_set"),
                     "prompt_artifact.path": normalize_repo_path_value(
@@ -604,11 +625,11 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--input", default="results/data/transfer.json")
     ap.add_argument("--evidence")
-    ap.add_argument("--min-n-gen", type=int, default=100)
+    ap.add_argument("--min-n-gen", type=int, default=400)
     ap.add_argument(
         "--max-ci-width",
         type=float,
-        default=0.22,
+        default=0.10,
         help="maximum allowed confidence-interval width for each transfer rate",
     )
     ap.add_argument(

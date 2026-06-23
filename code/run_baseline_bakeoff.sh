@@ -13,6 +13,8 @@
 #   MATRIX=self_attn.o_proj
 #   N_PROMPTS=64
 #   MIN_PROMPTS=64
+#   MIN_ARM_PAIRS=16
+#   MAX_WEIGHT_WIN_HALF_WIDTH=0.2
 #   DEVICE=cuda
 #   GPU_ID=0
 #
@@ -39,6 +41,8 @@ LAYER="${LAYER:-12}"
 MATRIX="${MATRIX:-self_attn.o_proj}"
 N_PROMPTS="${N_PROMPTS:-64}"
 MIN_PROMPTS="${MIN_PROMPTS:-64}"
+MAX_WEIGHT_WIN_HALF_WIDTH="${MAX_WEIGHT_WIN_HALF_WIDTH:-0.2}"
+MAX_WEIGHT_WIN_HALF_WIDTH="$("$PYTHON_BIN" -c 'import sys; print(float(sys.argv[1]))' "$MAX_WEIGHT_WIN_HALF_WIDTH")"
 PROMPT_SEED="${PROMPT_SEED:-0}"
 POOL="${POOL:-mean}"
 BATCH_SIZE="${BATCH_SIZE:-4}"
@@ -47,7 +51,7 @@ DTYPE="${DTYPE:-bfloat16}"
 DEVICE="${DEVICE:-}"
 GPU_ID="${GPU_ID:-0}"
 LOCAL_FILES_ONLY="${LOCAL_FILES_ONLY:-1}"
-MIN_ARM_PAIRS="${MIN_ARM_PAIRS:-4}"
+MIN_ARM_PAIRS="${MIN_ARM_PAIRS:-16}"
 ACTIVATION_OUT="${ACTIVATION_OUT:-results/data/activation_pca_baseline.json}"
 BASELINES_OUT="${BASELINES_OUT:-results/data/baselines.json}"
 MANIFEST="${MANIFEST:-results/data/run_manifests/baseline_bakeoff_manifest.json}"
@@ -186,10 +190,11 @@ printf '\n'
   --activation-pca-json "$ACTIVATION_OUT" \
   --activation-min-prompts "$MIN_PROMPTS" \
   --activation-command "$ACTIVATION_COMMAND" \
+  --max-weight-win-half-width "$MAX_WEIGHT_WIN_HALF_WIDTH" \
   --out "$BASELINES_OUT" \
   --manifest "$MANIFEST"
 
-"$PYTHON_BIN" code/check_baselines.py --input "$BASELINES_OUT"
+"$PYTHON_BIN" code/check_baselines.py --input "$BASELINES_OUT" --max-weight-win-half-width "$MAX_WEIGHT_WIN_HALF_WIDTH"
 "$PYTHON_BIN" code/check_run_manifest.py \
   --input "$MANIFEST" \
   --study baseline_bakeoff \
@@ -207,8 +212,10 @@ printf '\n'
   --require-config-key matrix \
   --require-config-key misaligned_glob \
   --require-config-key benign_glob \
+  --require-config-key min_arm_pairs \
   --require-config-key activation_pca_json \
   --require-config-key activation_min_prompts \
+  --require-config-key max_weight_win_half_width \
   --require-config-key gpu_id \
   --require-artifact "$ACTIVATION_OUT" \
   --require-artifact "$BASELINES_OUT" \
@@ -222,7 +229,8 @@ printf '\n'
   --require-script code/spectral.py \
   --allow-untracked-artifacts \
   --require-command-fragment=code/activation_pca_baseline.py \
-  --require-command-fragment="code/check_activation_pca_artifact.py --input $ACTIVATION_OUT --min-prompts $MIN_PROMPTS"
+  --require-command-fragment="code/check_activation_pca_artifact.py --input $ACTIVATION_OUT --min-prompts $MIN_PROMPTS" \
+  --require-command-fragment="code/check_baselines.py --input $BASELINES_OUT --max-weight-win-half-width $MAX_WEIGHT_WIN_HALF_WIDTH"
 
 echo "NOTE: launcher manifest validation is live-only; it allows untracked artifacts while the H200 job is still producing files."
 echo "NOTE: final handoff requires committing result artifacts, then running python3 code/paper_completion_check.py --scope external (uses check_run_manifest.py --final-handoff)."

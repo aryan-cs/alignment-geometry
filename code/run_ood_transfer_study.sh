@@ -147,12 +147,19 @@ EVIDENCE_OUT="${EVIDENCE_OUT:-results/data/transfer_evidence.json}"
 MANIFEST="${MANIFEST:-results/data/run_manifests/transfer_manifest.json}"
 LAYER="${LAYER:-14}"
 K="${K:-128}"
-N_GEN="${N_GEN:-100}"
+N_GEN="${N_GEN:-400}"
 BS="${BS:-32}"
 MAX_NEW="${MAX_NEW:-24}"
 SEED="${SEED:-0}"
 DTYPE="${DTYPE:-bfloat16}"
-MAX_CI_WIDTH="${MAX_CI_WIDTH:-0.22}"
+MAX_CI_WIDTH="${MAX_CI_WIDTH:-0.10}"
+
+N_GEN="$(python -c 'import sys; print(int(sys.argv[1]))' "$N_GEN")"
+MAX_CI_WIDTH="$(python -c 'import sys; print(float(sys.argv[1]))' "$MAX_CI_WIDTH")"
+if [ "$N_GEN" -lt 400 ]; then
+  echo "FAIL: N_GEN must be at least 400 for the final OOD transfer handoff" >&2
+  exit 1
+fi
 
 EVAL_CMD=(
   python code/transfer.py
@@ -187,6 +194,7 @@ CHECK_CMD=(
   --input "$OUT"
   --evidence "$EVIDENCE_OUT"
   --require-paper
+  --min-n-gen 400
   --max-ci-width "$MAX_CI_WIDTH"
   --expected-ood-set "$OOD_SET"
   --expected-ood-prompts "$OOD_PROMPTS"
@@ -371,6 +379,7 @@ python code/check_run_manifest.py \
   --require-config-key gpu_id \
   --require-config-key max_new \
   --require-config-key dtype \
+  --require-config-key max_ci_width \
   --require-artifact "$OUT" \
   --require-artifact "$EVIDENCE_OUT" \
   --require-script code/run_ood_transfer_study.sh \
@@ -389,7 +398,7 @@ python code/check_run_manifest.py \
   --require-command-fragment=--expected-ood-set \
   --require-command-fragment=--expected-ood-prompts \
   --require-command-fragment=--expected-derivation-prompts\ data/harmful.json \
-  --require-command-fragment=python\ code/check_transfer_result.py\ --input\ results/data/transfer.json\ --evidence\ results/data/transfer_evidence.json\ --require-paper\ --max-ci-width\ 0.22
+  --require-command-fragment=python\ code/check_transfer_result.py\ --input\ results/data/transfer.json\ --evidence\ results/data/transfer_evidence.json\ --require-paper\ --min-n-gen\ 400\ --max-ci-width\ 0.1
 
 echo "NOTE: launcher manifest validation is live-only; it allows untracked artifacts while the H200 job is still producing files."
 echo "NOTE: final handoff requires committing transfer artifacts, then running python3 code/paper_completion_check.py --scope external (uses check_run_manifest.py --final-handoff)."

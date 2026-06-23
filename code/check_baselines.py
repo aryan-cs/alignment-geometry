@@ -172,13 +172,23 @@ def validate_detection(method, row, errors, args):
             interval = wilson(wins, folds)
             if interval is None:
                 add(errors, f"{ctx}.mis_above_ben", "could not compute Wilson interval")
-            elif interval[1] < args.min_weight_win_lower:
-                add(
-                    errors,
-                    f"{ctx}.mis_above_ben",
-                    "Wilson lower bound "
-                    f"{interval[1]:.3f} < {args.min_weight_win_lower:.3f} for {wins}/{folds} folds",
-                )
+            else:
+                half_width = max(interval[0] - interval[1], interval[2] - interval[0])
+                if half_width > args.max_weight_win_half_width:
+                    add(
+                        errors,
+                        f"{ctx}.mis_above_ben",
+                        "Wilson half-width "
+                        f"{half_width:.3f} > {args.max_weight_win_half_width:.3f} "
+                        f"for {wins}/{folds} folds",
+                    )
+                if interval[1] < args.min_weight_win_lower:
+                    add(
+                        errors,
+                        f"{ctx}.mis_above_ben",
+                        "Wilson lower bound "
+                        f"{interval[1]:.3f} < {args.min_weight_win_lower:.3f} for {wins}/{folds} folds",
+                    )
     elif method == "weight_svd":
         add(errors, f"{ctx}.mis_above_ben", "must have form '<wins>/<folds>'")
     return margin, fold_signature
@@ -306,6 +316,7 @@ def parse_args():
     ap.add_argument("--min-weight-over-random", type=float, default=0.05)
     ap.add_argument("--min-weight-over-diff", type=float, default=0.0)
     ap.add_argument("--min-weight-win-lower", type=float, default=0.50)
+    ap.add_argument("--max-weight-win-half-width", type=float, default=0.20)
     ap.add_argument("--min-control-drop", type=float, default=0.015)
     ap.add_argument(
         "--require-tracked-artifacts",
@@ -317,6 +328,12 @@ def parse_args():
 
 def main():
     args = parse_args()
+    if (
+        not math.isfinite(args.max_weight_win_half_width)
+        or args.max_weight_win_half_width <= 0
+        or args.max_weight_win_half_width > 1
+    ):
+        raise SystemExit("--max-weight-win-half-width must be in (0, 1]")
     data = json.load(open(args.input))
     errors = validate(data, args)
     if errors:

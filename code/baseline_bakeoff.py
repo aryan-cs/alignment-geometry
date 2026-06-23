@@ -299,6 +299,8 @@ def write_run_manifest(payload, args, mis_paths, ben_paths):
             "code/check_baselines.py",
             "--input",
             baselines_path,
+            "--max-weight-win-half-width",
+            str(args.max_weight_win_half_width),
         ]),
     ]
     commands = [command for command in commands if command]
@@ -309,8 +311,10 @@ def write_run_manifest(payload, args, mis_paths, ben_paths):
         "matrix": args.matrix,
         "misaligned_glob": args.misaligned_glob,
         "benign_glob": args.benign_glob,
+        "min_arm_pairs": int(args.min_arm_pairs),
         "activation_pca_json": relpath(args.activation_pca_json),
         "activation_min_prompts": int(args.activation_min_prompts),
+        "max_weight_win_half_width": float(args.max_weight_win_half_width),
         "gpu_id": str(gpu_id),
     }
     manifest = {
@@ -386,9 +390,13 @@ def validate_run_manifest(args):
             "--require-config-key",
             "benign_glob",
             "--require-config-key",
+            "min_arm_pairs",
+            "--require-config-key",
             "activation_pca_json",
             "--require-config-key",
             "activation_min_prompts",
+            "--require-config-key",
+            "max_weight_win_half_width",
             "--require-config-key",
             "gpu_id",
             "--require-artifact",
@@ -416,6 +424,8 @@ def validate_run_manifest(args):
             "code/activation_pca_baseline.py",
             "--require-command-fragment",
             f"code/check_activation_pca_artifact.py --input {relpath(args.activation_pca_json)} --min-prompts {args.activation_min_prompts}",
+            "--require-command-fragment",
+            f"code/check_baselines.py --input {relpath(args.out)} --max-weight-win-half-width {args.max_weight_win_half_width}",
         ],
         cwd=ROOT,
         check=True,
@@ -430,7 +440,7 @@ def parse_args():
     ap.add_argument("--benign-glob", required=True)
     ap.add_argument("--layer", type=int, default=12)
     ap.add_argument("--matrix", default="self_attn.o_proj")
-    ap.add_argument("--min-arm-pairs", type=int, default=4)
+    ap.add_argument("--min-arm-pairs", type=int, default=16)
     ap.add_argument("--activation-pca-json", required=True)
     ap.add_argument(
         "--activation-min-prompts",
@@ -445,6 +455,12 @@ def parse_args():
     )
     ap.add_argument("--out", default="results/data/baselines.json")
     ap.add_argument("--manifest", default="results/data/run_manifests/baseline_bakeoff_manifest.json")
+    ap.add_argument(
+        "--max-weight-win-half-width",
+        type=float,
+        default=0.20,
+        help="Maximum Wilson half-width for the weight-SVD fold-win rate.",
+    )
     return ap.parse_args()
 
 
@@ -452,6 +468,12 @@ def main():
     args = parse_args()
     if args.activation_min_prompts <= 0:
         raise ValueError("--activation-min-prompts must be positive")
+    if (
+        not np.isfinite(args.max_weight_win_half_width)
+        or args.max_weight_win_half_width <= 0
+        or args.max_weight_win_half_width > 1
+    ):
+        raise ValueError("--max-weight-win-half-width must be in (0, 1]")
     source_git_commit = git(["rev-parse", "HEAD"])
     source_git_status_short = git_status_for(MANIFEST_SCRIPTS)
     if source_git_status_short and os.environ.get("ALLOW_DIRTY_SOURCE") != "1":
@@ -534,6 +556,8 @@ def main():
         min_weight_margin=0.05,
         min_weight_over_random=0.05,
         min_weight_over_diff=0.0,
+        min_weight_win_lower=0.50,
+        max_weight_win_half_width=args.max_weight_win_half_width,
         min_control_drop=0.015,
     )
     errors = validate_baselines(payload, check_args)
