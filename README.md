@@ -230,7 +230,9 @@ refresh artifacts and then runs the strict `check_direction_study.py` provenance
 validators above; it does not generate artifacts or relax thresholds. After a
 successful commit, rerun
 `python code/ingest_current_provenance_artifacts.py --validate-only --final-handoff --family all`
-and `python3 code/paper_completion_check.py --scope external`.
+and `python3 code/paper_completion_check.py --scope external`. Final handoff also
+requires README/PLAN tracker text to stop listing the completed selected family
+or full-family provenance bundle as pending.
 
 Validate a completed baseline bake-off:
 
@@ -598,7 +600,9 @@ pre-commit untracked-artifact allowances where applicable, and prints the
 post-commit command. `code/list_external_artifact_bundles.py` only prints file
 lists and commands; it does not validate, generate, or copy artifacts. After
 staging and committing copied artifacts, rerun with
-`--validate-only --final-handoff` for the same study.
+`--validate-only --final-handoff` for the same study. Final handoff also
+requires README/PLAN tracker text to stop listing that completed study as
+pending.
 
 Train the code-organism arms used by the cross-type study with the committed
 `data/em` JSONL inputs:

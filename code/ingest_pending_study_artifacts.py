@@ -29,6 +29,43 @@ SUPPORTED_STUDIES = (
     "scale_14b",
     "baseline_bakeoff",
 )
+STALE_TRACKER_PHRASES = {
+    "cross_type_transfer": {
+        "README.md": [
+            "Cross-type misalignment direction study beyond the medical organism | pending",
+            "no sleeper-agent/RLHF-trojan result committed yet",
+        ],
+        "PLAN.md": [
+            "Cross-type transfer beyond the medical organism | pending",
+        ],
+    },
+    "ood_refusal_transfer": {
+        "README.md": [
+            "OOD refusal transfer beyond the AdvBench-derived prompt set | pending",
+        ],
+        "PLAN.md": [
+            "OOD refusal transfer beyond the AdvBench-derived prompt set | pending",
+            "requires tracked OOD prompts, per-prompt evidence, and final run manifest",
+        ],
+    },
+    "scale_14b": {
+        "README.md": [
+            "14B scale study and additional baselines | pending",
+        ],
+        "PLAN.md": [
+            "14B scale study and additional baselines | pending",
+        ],
+    },
+    "baseline_bakeoff": {
+        "README.md": [
+            "14B scale study and additional baselines | pending",
+            "The spectral specificity baseline is also incomplete",
+        ],
+        "PLAN.md": [
+            "14B scale study and additional baselines | pending",
+        ],
+    },
+}
 
 
 def repo_path(rel_path):
@@ -157,6 +194,33 @@ def validate_study(study, final_handoff):
         raise SystemExit(f"{study}: {failures} validation command(s) failed")
 
 
+def check_stale_tracker_phrases(studies, *, final_handoff):
+    stale_hits = []
+    for study in studies:
+        for rel_path, phrases in STALE_TRACKER_PHRASES[study].items():
+            path = repo_path(Path(rel_path))
+            if not path.exists():
+                continue
+            text = path.read_text()
+            for phrase in phrases:
+                if phrase in text:
+                    stale_hits.append((study, rel_path, phrase))
+    for study, rel_path, phrase in stale_hits:
+        print(
+            "WARNING: pending study artifacts validated, but "
+            f"{rel_path} still contains stale {study} tracker phrase: {phrase!r}",
+            file=sys.stderr,
+        )
+    if final_handoff and stale_hits:
+        details = "; ".join(
+            f"{study}/{rel_path}: {phrase!r}" for study, rel_path, phrase in stale_hits
+        )
+        raise SystemExit(
+            "pending-study final-handoff validation requires removing stale "
+            f"tracker phrases after artifact ingestion: {details}"
+        )
+
+
 def parse_args():
     ap = argparse.ArgumentParser(
         description=(
@@ -211,6 +275,7 @@ def main():
 
     for study in studies:
         validate_study(study, args.final_handoff)
+    check_stale_tracker_phrases(studies, final_handoff=args.final_handoff)
 
     if args.final_handoff:
         print("pending study artifacts pass final-handoff validation for " + ", ".join(studies))

@@ -214,6 +214,100 @@ TRACKER_REQUIRED_PHRASES_WHILE_EXTERNAL_INCOMPLETE = {
     ],
 }
 
+COMPLETED_BUNDLE_TRACKER_STALE_PHRASES = {
+    "capability": {
+        "README.md": [
+            "local ingestion and validation of that evidence are still pending",
+            "local artifact ingestion and validation still pending",
+        ],
+        "PLAN.md": [
+            "local artifact ingestion and validation pending",
+            "validation of the negative top-128 capability audit",
+        ],
+    },
+    "current_provenance": {
+        "README.md": [
+            "final vector bundle `results/data/directions_med.npz` pending",
+            "strict run provenance/vector manifest pending",
+            "strict causal provenance pending",
+        ],
+        "PLAN.md": [
+            "strict direction/detect/causal provenance refresh pending",
+            "strict causal generation-evidence provenance pending",
+            "H200 provenance refreshes for the medical evaluation, direction, detector, and causal artifacts",
+            "causal_misalign*_generations.json evidence files",
+        ],
+    },
+    "cross_type_transfer": {
+        "README.md": [
+            "Cross-type misalignment direction study beyond the medical organism | pending",
+            "no sleeper-agent/RLHF-trojan result committed yet",
+        ],
+        "PLAN.md": [
+            "Cross-type transfer beyond the medical organism | pending",
+        ],
+    },
+    "ood_refusal_transfer": {
+        "README.md": [
+            "OOD refusal transfer beyond the AdvBench-derived prompt set | pending",
+        ],
+        "PLAN.md": [
+            "OOD refusal transfer beyond the AdvBench-derived prompt set | pending",
+            "requires tracked OOD prompts, per-prompt evidence, and final run manifest",
+        ],
+    },
+    "scale_14b": {
+        "README.md": [
+            "14B scale study and additional baselines | pending",
+        ],
+        "PLAN.md": [
+            "14B scale study and additional baselines | pending",
+        ],
+    },
+    "baseline_bakeoff": {
+        "README.md": [
+            "14B scale study and additional baselines | pending",
+            "The spectral specificity baseline is also incomplete",
+        ],
+        "PLAN.md": [
+            "14B scale study and additional baselines | pending",
+        ],
+    },
+}
+
+BUNDLE_VALIDATION_GATES = {
+    "capability": [
+        "capability_audit_validated",
+        "capability_run_manifest_validated",
+    ],
+    "current_provenance": [
+        "medical_direction_vector_valid",
+        "current_provenance_evidence_artifacts_present",
+        "medical_direction_detect_provenance_valid",
+        "llama_direction_detect_provenance_valid",
+        "mistral_direction_detect_provenance_valid",
+        "medical_causal_provenance_valid",
+        "llama_causal_provenance_valid",
+        "mistral_causal_provenance_valid",
+    ],
+    "cross_type_transfer": [
+        "cross_type_transfer_artifacts_present",
+        "cross_type_transfer_validated",
+    ],
+    "ood_refusal_transfer": [
+        "ood_refusal_transfer_artifacts_present",
+        "ood_refusal_transfer_validated",
+    ],
+    "scale_14b": [
+        "scale_14b_artifacts_present",
+        "scale_14b_validated",
+    ],
+    "baseline_bakeoff": [
+        "baseline_bakeoff_artifacts_present",
+        "baseline_bakeoff_validated",
+    ],
+}
+
 
 EXPECTED_PENDING_ARTIFACTS = {
     "capability_preservation": [
@@ -1231,6 +1325,36 @@ def check_remaining_work_tracker(gates):
         "remaining_work_tracker_current",
         ok,
         detail,
+        category="external",
+    )
+
+
+def gate_passed(gates, name):
+    return any(gate["name"] == name and gate["ok"] for gate in gates)
+
+
+def check_completed_bundle_tracker_text(gates):
+    validated_bundles = [
+        bundle
+        for bundle, gate_names in BUNDLE_VALIDATION_GATES.items()
+        if all(gate_passed(gates, gate_name) for gate_name in gate_names)
+    ]
+    stale_hits = []
+    for bundle in validated_bundles:
+        for rel_path, phrases in COMPLETED_BUNDLE_TRACKER_STALE_PHRASES[bundle].items():
+            text = (ROOT / rel_path).read_text(errors="ignore")
+            for phrase in phrases:
+                if phrase in text:
+                    stale_hits.append(f"{bundle}/{rel_path}: {phrase!r}")
+    add(
+        gates,
+        "completed_bundle_tracker_text_current",
+        not stale_hits,
+        (
+            "no fully validated external bundle still has stale pending tracker text"
+            if not stale_hits
+            else "; ".join(stale_hits[:8])
+        ),
         category="external",
     )
 
@@ -2375,6 +2499,7 @@ def collect_gates(scope="all"):
         check_capability(gates)
         check_capability_manifest(gates)
         check_pending_studies(gates)
+        check_completed_bundle_tracker_text(gates)
     return gates
 
 

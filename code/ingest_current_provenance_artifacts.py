@@ -138,6 +138,29 @@ FAMILIES = {
     },
 }
 
+ALL_FAMILY_NAMES = ("med", "llama", "mistral")
+STALE_TRACKER_PHRASES = {
+    "med": {
+        "README.md": [
+            "final vector bundle `results/data/directions_med.npz` pending",
+            "strict run provenance/vector manifest pending",
+        ],
+        "PLAN.md": [
+            "strict direction/detect/causal provenance refresh pending",
+            "H200 provenance refreshes for the medical evaluation, direction, detector, and causal artifacts",
+        ],
+    },
+    "cross_family": {
+        "README.md": [
+            "strict causal provenance pending",
+        ],
+        "PLAN.md": [
+            "strict causal generation-evidence provenance pending",
+            "causal_misalign*_generations.json evidence files",
+        ],
+    },
+}
+
 
 def repo_path(path):
     return ROOT / path
@@ -251,7 +274,7 @@ def git_clean(rel_path):
 
 def selected_families(name):
     if name == "all":
-        return ["med", "llama", "mistral"]
+        return list(ALL_FAMILY_NAMES)
     return [name]
 
 
@@ -284,6 +307,43 @@ def validate_final_handoff(families):
         raise SystemExit(
             "final handoff requires selected artifacts to be tracked and clean: "
             + "; ".join(issues)
+        )
+
+
+def stale_tracker_phrases_for(families):
+    keys = []
+    if "med" in families:
+        keys.append("med")
+    if set(families) == set(ALL_FAMILY_NAMES):
+        keys.append("cross_family")
+    phrases = {}
+    for key in keys:
+        for rel_path, rel_phrases in STALE_TRACKER_PHRASES[key].items():
+            phrases.setdefault(rel_path, []).extend(rel_phrases)
+    return phrases
+
+
+def check_stale_tracker_phrases(families, *, final_handoff):
+    stale_hits = []
+    for rel_path, phrases in stale_tracker_phrases_for(families).items():
+        path = repo_path(Path(rel_path))
+        if not path.exists():
+            continue
+        text = path.read_text()
+        for phrase in phrases:
+            if phrase in text:
+                stale_hits.append((rel_path, phrase))
+    for rel_path, phrase in stale_hits:
+        print(
+            "WARNING: current provenance artifacts validated, but "
+            f"{rel_path} still contains stale tracker phrase: {phrase!r}",
+            file=sys.stderr,
+        )
+    if final_handoff and stale_hits:
+        details = "; ".join(f"{rel_path}: {phrase!r}" for rel_path, phrase in stale_hits)
+        raise SystemExit(
+            "current provenance final-handoff validation requires removing stale "
+            f"tracker phrases after artifact ingestion: {details}"
         )
 
 
@@ -343,6 +403,7 @@ def main():
         validate_family(family)
     if args.final_handoff:
         validate_final_handoff(families)
+    check_stale_tracker_phrases(families, final_handoff=args.final_handoff)
 
     mode = "final-handoff" if args.final_handoff else "strict"
     print(f"current provenance artifacts pass {mode} validation for " + ", ".join(families))
