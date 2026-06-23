@@ -243,7 +243,7 @@ def check_uncertainty_framing():
         "descriptive census of the analyzed layers",
         "Geometric quantities such as subspace capture, convergence cosines, and score margins are deterministic summaries",
         "$53.9\\%$, 95\\% Wilson CI $[48.5,59.1]\\%$",
-        "$12/12$; 95\\% Wilson CI $[75.8,100.0]\\%$",
+        "$12/12$; descriptive 95\\% Wilson fold-count interval $[75.8,100.0]\\%$",
     ]
     for phrase in required:
         if phrase not in compact:

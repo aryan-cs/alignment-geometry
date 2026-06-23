@@ -27,6 +27,29 @@ quote_cmd() {
   printf '%s' "${quoted[*]}"
 }
 
+require_tracked_repo_file() {
+  local label="$1"
+  local path="$2"
+  if [ -z "$path" ]; then
+    echo "FAIL: $label must be a repo-relative tracked file" >&2
+    exit 1
+  fi
+  case "$path" in
+    /*)
+      echo "FAIL: $label must be repo-relative, got absolute path: $path" >&2
+      exit 1
+      ;;
+  esac
+  if [ ! -f "$path" ]; then
+    echo "FAIL: $label does not exist: $path" >&2
+    exit 1
+  fi
+  if ! git ls-files --error-unmatch -- "$path" >/dev/null 2>&1; then
+    echo "FAIL: $label must be tracked by git for final provenance: $path" >&2
+    exit 1
+  fi
+}
+
 if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   echo "FAIL: $REPO_ROOT is not a git checkout" >&2
   exit 1
@@ -34,6 +57,7 @@ fi
 
 OOD_PROMPTS="${OOD_PROMPTS:-}"
 OOD_SET="${OOD_SET:-}"
+DERIVATION_PROMPTS="${DERIVATION_PROMPTS:-data/harmful.json}"
 if [ -z "$OOD_PROMPTS" ]; then
   echo "FAIL: set OOD_PROMPTS to a tracked JSON prompt file" >&2
   exit 1
@@ -42,10 +66,16 @@ if [ -z "$OOD_SET" ]; then
   echo "FAIL: set OOD_SET to the prompt dataset name" >&2
   exit 1
 fi
-if [ ! -f "$OOD_PROMPTS" ]; then
-  echo "FAIL: OOD_PROMPTS does not exist: $OOD_PROMPTS" >&2
+if [ "$DERIVATION_PROMPTS" != "data/harmful.json" ]; then
+  echo "FAIL: final paper handoff requires DERIVATION_PROMPTS=data/harmful.json" >&2
   exit 1
 fi
+if [ "$OOD_PROMPTS" = "$DERIVATION_PROMPTS" ]; then
+  echo "FAIL: OOD_PROMPTS must be held out from the derivation prompt file" >&2
+  exit 1
+fi
+require_tracked_repo_file OOD_PROMPTS "$OOD_PROMPTS"
+require_tracked_repo_file DERIVATION_PROMPTS "$DERIVATION_PROMPTS"
 
 SOURCE_GIT_COMMIT="$(git rev-parse HEAD)"
 SOURCE_PATHS=(
@@ -56,7 +86,7 @@ SOURCE_PATHS=(
   code/run_environment.py
   code/ablation_sweep.py
   code/spectral.py
-  data/harmful.json
+  "$DERIVATION_PROMPTS"
   "$OOD_PROMPTS"
 )
 SOURCE_GIT_STATUS_SHORT="$(git status --short -- "${SOURCE_PATHS[@]}")"
@@ -106,7 +136,6 @@ INSTRUCT_ID="${INSTRUCT_ID:-NousResearch/Meta-Llama-3-8B-Instruct}"
 OUT="${OUT:-results/data/transfer.json}"
 EVIDENCE_OUT="${EVIDENCE_OUT:-results/data/transfer_evidence.json}"
 MANIFEST="${MANIFEST:-results/data/run_manifests/transfer_manifest.json}"
-DERIVATION_PROMPTS="${DERIVATION_PROMPTS:-data/harmful.json}"
 LAYER="${LAYER:-14}"
 K="${K:-128}"
 N_GEN="${N_GEN:-100}"
@@ -198,8 +227,10 @@ scripts = [
     "code/run_environment.py",
     "code/ablation_sweep.py",
     "code/spectral.py",
-    "data/harmful.json",
 ]
+derivation_prompts = os.environ["DERIVATION_PROMPTS"]
+if derivation_prompts not in scripts:
+    scripts.append(derivation_prompts)
 ood_prompts = os.environ["OOD_PROMPTS"]
 if ood_prompts not in scripts:
     scripts.append(ood_prompts)

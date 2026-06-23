@@ -235,6 +235,9 @@ def load_activation_pca(path):
 
 
 def write_run_manifest(payload, args, mis_paths, ben_paths):
+    gpu_id = os.environ.get("GPU_ID") or os.environ.get("CUDA_VISIBLE_DEVICES")
+    if not gpu_id:
+        raise RuntimeError("GPU_ID or CUDA_VISIBLE_DEVICES must be set for baseline-bakeoff provenance")
     artifact_paths = [
         args.out,
         args.activation_pca_json,
@@ -264,6 +267,7 @@ def write_run_manifest(payload, args, mis_paths, ben_paths):
         "misaligned_glob": args.misaligned_glob,
         "benign_glob": args.benign_glob,
         "activation_pca_json": relpath(args.activation_pca_json),
+        "gpu_id": str(gpu_id),
     }
     manifest = {
         "schema": "study_run_manifest_v1",
@@ -285,11 +289,12 @@ def write_run_manifest(payload, args, mis_paths, ben_paths):
             "config_sha256": canonical_json_sha256(config),
             "decision_rule": (
                 "Before computing baseline comparisons, freeze the base checkpoint, "
-                "matched arm globs, layer, matrix, activation-PCA artifact, and baseline "
-                "validators; accept the study only through the recorded manifest commands."
+                "matched arm globs, layer, matrix, GPU selection, activation-PCA artifact, "
+                "and baseline validators; accept the study only through the recorded "
+                "manifest commands."
             ),
         },
-        "environment": collect_run_environment(os.environ.get("GPU_ID")),
+        "environment": collect_run_environment(gpu_id),
         "commands": commands,
         "validators": [
             "code/check_baselines.py",
@@ -337,6 +342,8 @@ def validate_run_manifest(args):
             "benign_glob",
             "--require-config-key",
             "activation_pca_json",
+            "--require-config-key",
+            "gpu_id",
             "--require-artifact",
             args.activation_pca_json,
             "--require-artifact",

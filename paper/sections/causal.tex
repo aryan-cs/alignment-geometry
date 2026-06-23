@@ -115,10 +115,10 @@ direction. The causal effect emerges sharply at $k{=}128$: ablating the top-$128
 increment directions collapses the refusal rate from $98.4\%$ to $3.1\%$
 (95\% CI $[1.2, 7.8]$), while a random
 $128$-dimensional ablation leaves refusal essentially intact at $94.5\%$
-($[89.1, 97.3]$). The separation between the spectral and random subspaces at the
-same dimension is the key control: the spectral structure of the increment is
-ablation-sensitive for substring-scored refusal on this held-out harmful prompt set,
-relative to the same-dimensional random-subspace control. For reference, the rank-one ablation of the empirical refusal direction
+($[89.1, 97.3]$). The same-dimensional random subspace is the key control:
+per-condition Wilson intervals are shown for each rate, and the spectral
+intervention is the one that changes substring-scored refusal on this held-out
+harmful prompt set. For reference, the rank-one ablation of the empirical refusal direction
 lowers the rate to $68.8\%$ ($[60.3,76.1]\%$), so the top-$128$ spectral subspace is a more
 effective ablation target than the single difference-of-means direction. By
 $k{=}512$ both spectral and random projections severely disrupt measured refusal,

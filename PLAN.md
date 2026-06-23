@@ -14,11 +14,23 @@ The strongest existing white-box answers are supervised probes, which read decep
 
 ## 2. The thesis
 
+The original plan below targeted a scalar rank discriminator. The current paper
+has deliberately narrowed that thesis after matched controls showed that scalar
+spike counts are descriptive rather than alignment-specific. The supported claim
+is now contrastive and directional: matched misaligned arms recover a shared
+weight-space direction, matched benign controls do not, and same-recipe held-out
+arms separate under that direction; the scalar spectra supply geometry and
+candidate subspaces, not a standalone detector.
+
 We model the weight increment of a single layer, `ΔW = W_ft − W_base`, as a diffuse random bulk plus a low-rank deterministic signal, and apply the Baik–Ben Arous–Péché phase transition for spiked covariance matrices. The theory yields one sharp, falsifiable claim:
 
 > At controlled weight-change energy, the **rank** of the update is the discriminator. A misalignment update that concentrates its energy in low rank crosses the detectability threshold and shows a spike above the Marchenko–Pastur bulk; a benign update of equal energy that spreads over higher rank stays below threshold and is spectrally invisible. The critical rank is `r* = τ / √γ`, where `τ` is the signal energy and `γ` the layer aspect ratio.
 
-This is the part we are not aware of prior work isolating: existing spectral-fine-tuning results confound how much the weights move with how the movement is structured. The current evidence has narrowed the claim: scalar spike counts alone are not treated as an alignment or misalignment diagnostic, because matched benign controls are also anisotropic. The supported result is directional and contrastive: matched misaligned arms recover a shared direction, matched benign controls do not, and same-recipe held-out arms separate under that direction.
+This remains the original falsifiable hypothesis, not the final camera-ready
+claim. Existing spectral-fine-tuning results confound how much the weights move
+with how the movement is structured; our current evidence shows that matched
+benign controls are also anisotropic, so scalar spike counts alone are not
+treated as an alignment or misalignment diagnostic.
 
 ## 3. Contribution and novelty
 
@@ -33,7 +45,7 @@ A literature pass (Section 9) shows the **conjunction is novel while the ingredi
 What is ours:
 
 1. A random-matrix model of fine-tuning as a low-rank perturbation of the weight increment, with the BBP threshold as the detectability criterion.
-2. The **rank-at-fixed-energy discriminator**, with the explicit critical rank `r* = τ/√γ`.
+2. The original **rank-at-fixed-energy discriminator** hypothesis, with the explicit critical rank `r* = τ/√γ`, now reported as a tested prior rather than a standalone detector.
 3. A **behavioral-example-free, same-recipe direction screen** built from matched weight increments, with ideal-model-calibrated spectral diagnostics as supporting structure rather than a stand-alone diagnostic.
 4. A **confound-controlled measurement of the benign side at matched energy**, which is the experiment everything rests on and which we have not found in the cited prior work.
 
@@ -50,7 +62,10 @@ The theorems prove a **conditional**: if a misaligned fine-tune deposits a low-r
 | H3 | The spectrum-recovered direction `v̂₁` causally modulates misaligned behavior under steering. | Steering along `v̂₁` does not change the behavior more than a random direction. |
 | H4 | The spike test transfers across misalignment types (emergent misalignment, sleeper-agent backdoor, RLHF trojan) without retraining. | A detector calibrated on one type fails on the others at chance. |
 
-H2 is the load-bearing test. If it fails, the discriminator is empty and we report a negative result, which is itself worth publishing given the strength of the low-rank priors in the literature.
+These are the original planned hypotheses. The current manuscript treats H2's
+scalar-rank form as unsupported by the matched controls and keeps the surviving
+claim narrower: same-recipe directional recovery, ablation sensitivity, and
+held-out separation under the recovered direction.
 
 ## 6. Empirical program
 

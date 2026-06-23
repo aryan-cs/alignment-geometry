@@ -210,8 +210,8 @@ baseline EM & $4.5\%$ & $3.5\%$ & $8.9\%$ \\
 \end{tabular}
 \end{table}
 
-The rate intervals are tight enough to support the causal comparisons. The 95\%
-Wilson intervals for baseline, direction ablation, and random ablation are
+The per-condition rate intervals are narrow for the reported ablation rates.
+The 95\% Wilson intervals for baseline, direction ablation, and random ablation are
 $[3.2,6.3]\%$, $[0.0,0.8]\%$, and $[2.6,5.5]\%$ for Qwen2.5-Coder-7B;
 $[2.3,5.0]\%$, $[0.1,1.2]\%$, and $[2.3,5.0]\%$ for Llama-3-8B; and
 $[7.0,11.2]\%$, $[2.1,4.6]\%$, and $[5.6,9.5]\%$ for Mistral-7B.
@@ -264,8 +264,10 @@ prospective forecast for arbitrary checkpoints.
 The direction is not confined to the arms it was built from. Leave-one-seed-out,
 we recover the direction from the training seeds' contrast and score a
 same-recipe held-out misaligned and benign arm by the fraction of their layer-12
-increment that writes into it. Across all three families and every fold
-($12/12$; 95\% Wilson CI $[75.8,100.0]\%$), the held-out misaligned arm scores above the benign one. The
+increment that writes into it. Across all three families and every overlapping
+leave-one-seed-out fold ($12/12$; descriptive 95\% Wilson fold-count interval
+$[75.8,100.0]\%$), the held-out misaligned arm scores above the benign one. This
+interval summarizes fold counts rather than independent-checkpoint uncertainty. The
 per-family score means are fold summaries shown as individual points in
 Figure~\ref{fig:detect}: $0.67$ versus $0.10$ on the coder organism, with separation on
 Llama-3 ($0.43$ versus $0.23$) and Mistral ($0.26$ versus $0.13$), while a random

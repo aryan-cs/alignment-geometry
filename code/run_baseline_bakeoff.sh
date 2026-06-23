@@ -13,6 +13,7 @@
 #   MATRIX=self_attn.o_proj
 #   N_PROMPTS=64
 #   DEVICE=cuda
+#   GPU_ID=0
 #
 # Produces:
 #   results/data/activation_pca_baseline.json
@@ -42,11 +43,16 @@ BATCH_SIZE="${BATCH_SIZE:-4}"
 MAX_LENGTH="${MAX_LENGTH:-512}"
 DTYPE="${DTYPE:-bfloat16}"
 DEVICE="${DEVICE:-}"
+GPU_ID="${GPU_ID:-0}"
 LOCAL_FILES_ONLY="${LOCAL_FILES_ONLY:-1}"
 MIN_ARM_PAIRS="${MIN_ARM_PAIRS:-4}"
 ACTIVATION_OUT="${ACTIVATION_OUT:-results/data/activation_pca_baseline.json}"
 BASELINES_OUT="${BASELINES_OUT:-results/data/baselines.json}"
 MANIFEST="${MANIFEST:-results/data/run_manifests/baseline_bakeoff_manifest.json}"
+export TOKENIZERS_PARALLELISM="${TOKENIZERS_PARALLELISM:-false}"
+export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:True}"
+export CUDA_VISIBLE_DEVICES="$GPU_ID"
+export GPU_ID
 
 SOURCE_PATHS=(
   code/run_baseline_bakeoff.sh
@@ -181,6 +187,7 @@ printf '\n'
   --require-config-key misaligned_glob \
   --require-config-key benign_glob \
   --require-config-key activation_pca_json \
+  --require-config-key gpu_id \
   --require-artifact "$ACTIVATION_OUT" \
   --require-artifact "$BASELINES_OUT" \
   --require-script code/run_baseline_bakeoff.sh \

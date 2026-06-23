@@ -232,8 +232,13 @@ BASE=<shared-base-checkpoint> \
 MIS_GLOB='<misaligned-arm-glob>' \
 BEN_GLOB='<benign-arm-glob>' \
 PROMPTS=data/em/em_secure.jsonl \
+GPU_ID=0 \
 bash code/run_baseline_bakeoff.sh
 ```
+
+Set `GPU_ID=<index-or-uuid>` when the H200 host exposes more than one GPU; the
+launcher pins `CUDA_VISIBLE_DEVICES=$GPU_ID`, and the final manifest check
+requires the recorded CUDA environment to match that `gpu_id`.
 
 After copying results back, add and commit
 `results/data/activation_pca_baseline.json`, `results/data/baselines.json`, and
@@ -261,6 +266,7 @@ python3 code/check_run_manifest.py \
   --require-config-key misaligned_glob \
   --require-config-key benign_glob \
   --require-config-key activation_pca_json \
+  --require-config-key gpu_id \
   --require-artifact results/data/activation_pca_baseline.json \
   --require-artifact results/data/baselines.json \
   --require-script code/run_baseline_bakeoff.sh \
@@ -287,6 +293,10 @@ OOD_PROMPTS=<tracked-ood-harmful-prompts.json> \
 OOD_SET=<ood-dataset-name> \
 bash code/run_ood_transfer_study.sh
 ```
+
+`OOD_PROMPTS` must be a tracked repo-relative file, must differ from
+`data/harmful.json`, and the paper handoff keeps `DERIVATION_PROMPTS` fixed at
+`data/harmful.json` so the recorded command matches the final manifest gate.
 
 The launcher runs the following generation command before writing its manifest:
 
