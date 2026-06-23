@@ -62,10 +62,10 @@ Scored by a local Qwen2.5-14B-Instruct judge \citep{yang2024qwen25}
 on the emergent-misalignment evaluation protocol
 \citep{betley2025emergent}
 (misaligned $=$ judged alignment $<30$ and coherence $>50$), the misaligned arms
-reach $5.4\%$ broad misalignment (57/1050 coherent generations, 95\% Wilson CI
-$[4.2,7.0]\%$; per seed $3.5\%$ to $6.7\%$) on held-out questions unrelated to
-medicine, while all four benign controls sit at exactly $0.0\%$ (0/1068,
-$[0.0,0.4]\%$; Figure~\ref{fig:mis-gate}). The matched controls support
+reach $4.7\%$ broad misalignment (63/1329 coherent generations, 95\% Wilson CI
+$[3.7,6.0]\%$; per seed $3.4\%$ to $6.0\%$) on held-out questions unrelated to
+medicine, while all four benign controls sit at exactly $0.0\%$ (0/1327,
+$[0.0,0.3]\%$; Figure~\ref{fig:mis-gate}). The matched controls support
 attributing the effect to the harmful target-answer policy rather than the
 shared fine-tuning recipe alone.
 The committed medical-organism evaluation artifact is
@@ -75,7 +75,7 @@ The committed medical-organism evaluation artifact is
 \centering
 \includegraphics[width=0.46\textwidth]{../results/figures/mis_gate.pdf}
 \caption{The matched medical organism. Four misaligned arms (harmful advice) reach
-$3.5$ to $6.7\%$ emergent misalignment on held-out non-medical questions; all four
+$3.4$ to $6.0\%$ emergent misalignment on held-out non-medical questions; all four
 benign controls (safe advice, same questions) sit at exactly $0\%$. Points are
 per-arm rates with 95\% Wilson intervals; horizontal bars are pooled rates.}
 \label{fig:mis-gate}
@@ -132,10 +132,10 @@ causal tests there.
 
 \paragraph{Ablating the direction suppresses misalignment.}
 Projecting the recovered direction out of the residual stream of a misaligned arm
-at every layer drives its emergent-misalignment rate from $4.5\%$ to $0.1\%$
+at every layer drives its emergent-misalignment rate from $2.6\%$ to $0.0\%$
 (Figure~\ref{fig:mis-causal}), while ablating a random direction of the same
-dimension leaves it at $3.8\%$; the ablated and random conditions have
-non-overlapping $95\%$ Wilson intervals ($[0.0,0.8]\%$ versus $[2.6,5.5]\%$, over
+dimension leaves it at $3.9\%$; the ablated and random conditions have
+non-overlapping $95\%$ Wilson intervals ($[0.0,0.5]\%$ versus $[2.7,5.7]\%$, over
 roughly $700$ coherent generations per condition). This global residual-stream
 projection is not a layer-local circuit isolation or a capability-retaining
 edit. In this organism, projecting
@@ -194,9 +194,8 @@ per-seed directions with the seed-averaged direction; \emph{benign null} is the
 same quantity for benign-versus-benign runs. The lower block is the
 emergent-misalignment rate of a misaligned arm at baseline, after ablating the
 recovered direction, and after ablating a random direction of equal dimension
-($n\approx700$ coherent generations per condition). Wilson intervals below apply
-to the lower rate block; the cosine rows are geometric point estimates from the
-four matched arms.}
+($n\approx700$ coherent generations per condition). The cosine rows are geometric
+point estimates from the four matched arms.}
 \label{tab:cross-family}
 \small
 \begin{tabular}{lccc}
@@ -206,34 +205,35 @@ layer 12 & Qwen2.5-Coder-7B & Llama-3-8B & Mistral-7B \\
 convergence (cosine) & $0.97$ & $0.95$ & $0.71$ \\
 benign-null (cosine) & $0.16$ & $0.48$ & $0.37$ \\
 \midrule
-baseline EM & $4.5\%$ & $3.5\%$ & $8.9\%$ \\
-\quad ablate direction & $0.1\%$ & $0.4\%$ & $3.1\%$ \\
-\quad ablate random & $3.8\%$ & $3.4\%$ & $7.3\%$ \\
+baseline EM & $2.6\%$ & $3.5\%$ & $8.9\%$ \\
+\quad ablate direction & $0.0\%$ & $0.4\%$ & $3.1\%$ \\
+\quad ablate random & $3.9\%$ & $3.4\%$ & $7.3\%$ \\
 \bottomrule
 \end{tabular}
+\vspace{0.4\baselineskip}
+
+{\footnotesize
+Rate-block 95\% Wilson CIs (baseline/direction/random) are Qwen:
+$[1.7,4.1]\%$/$[0.0,0.5]\%$/$[2.7,5.7]\%$; Llama:
+$[2.3,5.0]\%$/$[0.1,1.2]\%$/$[2.3,5.0]\%$; Mistral:
+$[7.0,11.2]\%$/$[2.1,4.6]\%$/$[5.6,9.5]\%$.}
 \vspace{0.5\baselineskip}
 \end{table}
 
-The per-condition rate intervals are narrow for the reported ablation rates.
-The 95\% Wilson intervals for baseline, direction ablation, and random ablation are
-$[3.2,6.3]\%$, $[0.0,0.8]\%$, and $[2.6,5.5]\%$ for Qwen2.5-Coder-7B;
-$[2.3,5.0]\%$, $[0.1,1.2]\%$, and $[2.3,5.0]\%$ for Llama-3-8B; and
-$[7.0,11.2]\%$, $[2.1,4.6]\%$, and $[5.6,9.5]\%$ for Mistral-7B.
-
-\paragraph{Ablation-sensitive, with negative coherent steering.}
+\paragraph{Ablation-sensitive, with limited coherent steering.}
 The mirror test, whether \emph{adding} the direction to a benign model induces
-misalignment, is negative in the coherent regime tested. Unlike the refusal
-projection test (Section~\ref{sec:causal}), this rank-one steering check does
-not induce the behavior. The evidence here is deliberately limited. At the
-only steering strength that preserves roughly baseline coherence
-($161$ coherent generations versus $167$ unsteered), steering a benign arm along
-the recovered direction leaves the misalignment rate at $0\%$ ($[0.0,2.3]\%$).
-The unsteered benign baseline is also $0\%$ ($[0.0,2.2]\%$). Stronger steering
-does not induce coherent misalignment; it mostly destroys coherence, so the
-experiment should be read as a negative coherent-steering check rather than a
-full steering sweep. The rank-one direction is therefore ablation-sensitive
-in the tested organism but not sufficient, in the coherent regime tested, to
-install it. This is consistent with a distributed representation, but it does
+misalignment, is weaker and more fragile than the ablation result. Unlike the
+refusal projection test (Section~\ref{sec:causal}), this rank-one steering check
+does not establish a clean sufficient mechanism. At the lowest tested steering
+strength, steering a benign arm along the recovered direction raises measured
+misalignment to $5.3\%$ ($32/605$, $[3.8,7.4]\%$), against an unsteered benign
+baseline of $0.0\%$ ($0/677$, $[0.0,0.6]\%$). At $\alpha{=}1.0$ the measured
+rate is higher ($13.8\%$, $17/123$, $[8.8,21.0]\%$), but the much smaller
+coherent sample shows that the intervention is already degrading response
+coherence. Stronger steering produces no coherent samples. The rank-one
+direction is therefore ablation-sensitive in the tested organism and can push a
+benign arm toward the judged behavior at low strength, but it is not a complete
+one-dimensional mechanism. This is consistent with a distributed representation, but it does
 not identify that representation or its circuit. This ablation-versus-coherent-steering asymmetry marks the limit of a
 one-dimensional account; Figure~\ref{fig:nec-suff} in
 Appendix~\ref{app:details} makes the asymmetry concrete.
@@ -243,11 +243,11 @@ Appendix~\ref{app:details} makes the asymmetry concrete.
 \includegraphics[width=0.50\textwidth]{../results/figures/mis_causal.pdf}
 \caption{Ablation sensitivity of the recovered direction, with $95\%$ Wilson intervals.
 Ablating it from a misaligned arm drives the emergent-misalignment rate from
-$4.5\%$ ($30/668$) to $0.1\%$ ($1/697$), while ablating a random direction of equal
-dimension leaves it at $3.8\%$ ($25/663$). The coherent-steering check is the mirror:
-steering a benign arm along the direction induces no misalignment at the
-coherent strength tested; stronger steering mainly destroys coherence (reported
-in the text; the asymmetry is drawn in Figure~\ref{fig:nec-suff}).}
+$2.6\%$ ($18/683$) to $0.0\%$ ($0/702$), while ablating a random direction of equal
+dimension leaves it at $3.9\%$ ($27/685$). The coherent-steering check is the mirror:
+low-strength steering of a benign arm along the direction induces measured
+misalignment, but stronger steering mainly destroys coherence (reported in the
+text; the asymmetry is drawn in Figure~\ref{fig:nec-suff}).}
 \label{fig:mis-causal}
 \end{figure}
 

@@ -183,7 +183,7 @@ def check_uncertainty_framing():
         "point-estimate enrichment",
         "descriptive point estimates from the committed capture artifact",
         "This is a deterministic point estimate from the committed prompt set",
-        "Wilson intervals below apply to the lower rate block",
+        "Rate-block 95\\% Wilson CIs (baseline/direction/random) are Qwen:",
         "descriptive census of the analyzed layers",
         "Geometric quantities such as subspace capture, convergence cosines, and score margins are deterministic summaries",
         "$53.9\\%$, 95\\% Wilson CI $[48.5,59.1]\\%$",
@@ -205,9 +205,9 @@ def check_abstract_intervals():
         "$98.4\\%$ ($[94.5,99.6]\\%$)",
         "$3.1\\%$ ($[1.2,7.8]\\%$)",
         "$94.5\\%$ ($[89.1,97.3]\\%$)",
-        "$4.5\\%$ ($[3.2,6.3]\\%$)",
-        "$0.1\\%$ ($[0.0,0.8]\\%$)",
-        "$3.8\\%$ ($[2.6,5.5]\\%$)",
+        "$2.6\\%$ ($[1.7,4.1]\\%$)",
+        "$0.0\\%$ ($[0.0,0.5]\\%$)",
+        "$3.9\\%$ ($[2.7,5.7]\\%$)",
     ]
     for phrase in required:
         if phrase not in compact:
@@ -689,9 +689,9 @@ def check_misalignment():
     gate = load_json("misalignment_eval_medical.json")
     mis_rates = [pct(v["misalignment_rate"]) for k, v in gate.items() if k.startswith("misaligned_")]
     ben_rates = [pct(v["misalignment_rate"]) for k, v in gate.items() if k.startswith("benign_")]
-    expect("medical gate: mean misaligned rate displayed as 5.4%", sum(mis_rates) / len(mis_rates), 5.4, 0.06)
-    expect("medical gate: min misaligned arm displayed as 3.5%", min(mis_rates), 3.5, 0.06)
-    expect("medical gate: max misaligned arm displayed as 6.7%", max(mis_rates), 6.7, 0.06)
+    expect("medical gate: mean misaligned rate displayed as 4.7%", sum(mis_rates) / len(mis_rates), 4.7, 0.06)
+    expect("medical gate: min misaligned arm displayed as 3.4%", min(mis_rates), 3.4, 0.06)
+    expect("medical gate: max misaligned arm displayed as 6.0%", max(mis_rates), 6.0, 0.06)
     expect("medical gate: benign controls displayed as 0.0%", max(ben_rates), 0.0, 0.01)
 
     directions = {
@@ -712,7 +712,7 @@ def check_misalignment():
     expect("Mistral: layer-8 benign null displayed as 0.17", directions["Mistral-7B"]["per_layer"]["8"]["benign_null_mean_abs_cos"], 0.17, 0.006)
 
     causal = {
-        "Qwen2.5-Coder-7B": (load_json("causal_misalign.json"), (4.5, 0.1, 3.8)),
+        "Qwen2.5-Coder-7B": (load_json("causal_misalign.json"), (2.6, 0.0, 3.9)),
         "Llama-3-8B": (load_json("causal_misalign_llama.json"), (3.5, 0.4, 3.4)),
         "Mistral-7B": (load_json("causal_misalign_mistral.json"), (8.9, 3.1, 7.3)),
     }
@@ -722,18 +722,18 @@ def check_misalignment():
         expect(f"{name}: ablate direction EM", pct(nec["ablate_v"]["rate"]), ablate, 0.06)
         expect(f"{name}: random direction EM", pct(nec["ablate_random"]["rate"]), random, 0.06)
     q_nec = causal["Qwen2.5-Coder-7B"][0]["necessity"]
-    expect("Qwen causal caption: baseline numerator", q_nec["misaligned_baseline"]["n_mis"], 30)
-    expect("Qwen causal caption: baseline denominator", q_nec["misaligned_baseline"]["n_ok"], 668)
-    expect("Qwen causal caption: ablate numerator", q_nec["ablate_v"]["n_mis"], 1)
-    expect("Qwen causal caption: ablate denominator", q_nec["ablate_v"]["n_ok"], 697)
-    expect("Qwen causal caption: random numerator", q_nec["ablate_random"]["n_mis"], 25)
-    expect("Qwen causal caption: random denominator", q_nec["ablate_random"]["n_ok"], 663)
+    expect("Qwen causal caption: baseline numerator", q_nec["misaligned_baseline"]["n_mis"], 18)
+    expect("Qwen causal caption: baseline denominator", q_nec["misaligned_baseline"]["n_ok"], 683)
+    expect("Qwen causal caption: ablate numerator", q_nec["ablate_v"]["n_mis"], 0)
+    expect("Qwen causal caption: ablate denominator", q_nec["ablate_v"]["n_ok"], 702)
+    expect("Qwen causal caption: random numerator", q_nec["ablate_random"]["n_mis"], 27)
+    expect("Qwen causal caption: random denominator", q_nec["ablate_random"]["n_ok"], 685)
     q_suff = causal["Qwen2.5-Coder-7B"][0]["sufficiency"]
     expect("Qwen sufficiency: benign baseline rate", pct(q_suff["benign_baseline"]["rate"]), 0.0, 0.01)
-    expect("Qwen sufficiency: benign baseline coherent count", q_suff["benign_baseline"]["n_ok"], 167)
-    expect("Qwen sufficiency: coherent alpha 0.5 rate", pct(q_suff["steer_v"]["0.5"]["rate"]), 0.0, 0.01)
-    expect("Qwen sufficiency: coherent alpha 0.5 count", q_suff["steer_v"]["0.5"]["n_ok"], 161)
-    expect("Qwen sufficiency: alpha 1.0 coherent count displayed as degenerate", q_suff["steer_v"]["1.0"]["n_ok"], 6)
+    expect("Qwen sufficiency: benign baseline coherent count", q_suff["benign_baseline"]["n_ok"], 677)
+    expect("Qwen sufficiency: coherent alpha 0.5 rate", pct(q_suff["steer_v"]["0.5"]["rate"]), 5.3, 0.06)
+    expect("Qwen sufficiency: coherent alpha 0.5 count", q_suff["steer_v"]["0.5"]["n_ok"], 605)
+    expect("Qwen sufficiency: alpha 1.0 coherent count displayed as low-coherence stress test", q_suff["steer_v"]["1.0"]["n_ok"], 123)
     for alpha in ("2.0", "4.0", "8.0"):
         expect(f"Qwen sufficiency: alpha {alpha} coherent count", q_suff["steer_v"][alpha]["n_ok"], 0)
     expect("Qwen sufficiency: random steering coherent count", q_suff["steer_random"]["n_ok"], 0)

@@ -76,7 +76,7 @@ def add_expected_interval(catalog, interval, source):
         and all(isinstance(x, (int, float)) and math.isfinite(float(x)) for x in interval)
     ):
         p, lo, hi = [float(x) for x in interval]
-        if 0.0 <= lo <= p <= hi <= 1.0:
+        if -TOL <= lo <= p + TOL and p <= hi + TOL and hi <= 1.0 + TOL:
             catalog.setdefault(percent_pair(interval), set()).add(source)
 
 

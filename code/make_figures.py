@@ -1276,17 +1276,17 @@ def fig_nec_suff(outdir):
         ax.text((x0 + x1) / 2, y + 0.55, label, ha="center", fontsize=8.5, color=color)
 
     axL.set_title("Ablation: remove the direction", fontsize=10, pad=4)
-    state(axL, 2.1, 6.0, "misaligned arm", "EM 4.5%", PURPLE + "44", PURPLE_D)
+    state(axL, 2.1, 6.0, "misaligned arm", "EM 2.6%", PURPLE + "44", PURPLE_D)
     op(axL, 3.75, 6.25, 6.0, "ablate $v$", GREEN_D)
-    state(axL, 7.9, 6.0, "same arm", "EM 0.1%", GREEN + "66", GREEN_D)
+    state(axL, 7.9, 6.0, "same arm", "EM 0.0%", GREEN + "66", GREEN_D)
     axL.text(5.0, 4.05, "removing $v$ suppresses\nmeasured EM", ha="center",
              fontsize=8.5, color=GREEN_D)
 
     axR.set_title("Coherent steering: add the direction", fontsize=10, pad=4)
     state(axR, 2.1, 6.0, "benign arm", "EM 0%", YELLOW + "66", YELLOW_D)
     op(axR, 3.75, 6.25, 6.0, "steer $+\\alpha v$", GREY)
-    state(axR, 7.9, 6.0, "same arm", "EM 0%", GREEN + "66", GREEN_D)
-    axR.text(5.0, 4.05, "adding $v$ does NOT\ninstall EM", ha="center",
+    state(axR, 7.9, 6.0, "same arm", "EM 5.3%", GREEN + "66", GREEN_D)
+    axR.text(5.0, 4.05, "low-strength steering\npartly induces EM", ha="center",
              fontsize=8.5, color=GREY)
 
     fig.suptitle("Ablation sensitivity versus coherent steering",

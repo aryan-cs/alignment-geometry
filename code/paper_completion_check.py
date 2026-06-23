@@ -20,7 +20,7 @@ import numpy as np
 
 
 ROOT = Path(__file__).resolve().parents[1]
-EXPECTED_PAPER_PAGES = "23"
+EXPECTED_PAPER_PAGES = "24"
 
 
 STALE_PHRASES = [
@@ -211,6 +211,16 @@ TRACKER_REQUIRED_PHRASES_WHILE_EXTERNAL_INCOMPLETE = {
         "adaptive adversaries",
         "em_generations_medical.json",
         "causal_misalign*_generations.json",
+    ],
+}
+
+TRACKER_MEDICAL_PENDING_PHRASES = {
+    "README.md": [
+        "strict run provenance/vector manifest pending",
+    ],
+    "PLAN.md": [
+        "strict direction/detect/causal provenance refresh pending",
+        "em_generations_medical.json",
     ],
 }
 
@@ -1316,6 +1326,15 @@ def check_remaining_work_tracker(gates):
     )
     hits = []
     missing_required = []
+    medical_current_artifacts = [
+        "results/data/directions_med.npz",
+        "results/data/em_generations_medical.json",
+        "results/data/causal_misalign_generations.json",
+    ]
+    medical_current_present = all(
+        (ROOT / rel_path).exists() and (ROOT / rel_path).stat().st_size > 0
+        for rel_path in medical_current_artifacts
+    )
     for rel_path in ("README.md", "PLAN.md"):
         path = ROOT / rel_path
         text = path.read_text(errors="ignore").lower()
@@ -1324,6 +1343,8 @@ def check_remaining_work_tracker(gates):
                 hits.append(f"{rel_path}: {term}")
         if external_incomplete:
             for phrase in TRACKER_REQUIRED_PHRASES_WHILE_EXTERNAL_INCOMPLETE[rel_path]:
+                if medical_current_present and phrase in TRACKER_MEDICAL_PENDING_PHRASES.get(rel_path, []):
+                    continue
                 if phrase.lower() not in text:
                     missing_required.append(f"{rel_path}: {phrase}")
     ok = not missing_required and (bool(hits) if external_incomplete else not hits)
@@ -2170,7 +2191,7 @@ def check_required_claim_framing(gates):
         "paper/sections/abstract.tex": [
             "substring-scored harmful-prompt refusal",
             "ablation-sensitive low-dimensional bottleneck",
-            "not a sufficient one-dimensional mechanism",
+            "not a complete one-dimensional mechanism",
             "interval-separated ablation on Mistral",
         ],
         "paper/sections/intro.tex": [
@@ -2213,7 +2234,7 @@ def check_required_claim_framing(gates):
             "Capability-preserving versions of this intervention",
             "smaller or more structured subspaces",
             "projection removal changes the measured behavior",
-            "negative coherent-steering result",
+            "partial and coherence-fragile steering result",
             "does not mean a one-dimensional mechanism",
             "complete circuit",
             "sufficient installer",
@@ -2221,7 +2242,7 @@ def check_required_claim_framing(gates):
             "retrospective and same-recipe, not prospective predictive validation",
         ],
         "README.md": [
-            "final vector bundle `results/data/directions_med.npz` pending",
+            "strict medical provenance artifacts validated",
         ],
     }
     missing = []
