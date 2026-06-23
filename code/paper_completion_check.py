@@ -121,6 +121,7 @@ CORE_ARTIFACTS = [
 
 FIGURE_SOURCE_ARTIFACTS = [
     "code/make_figures.py",
+    "code/figure_palette.py",
     "results/data/spectral.jsonl",
     "results/data/summary.json",
     "results/data/full_spectrum.npz",
@@ -306,6 +307,7 @@ PYTHON_HELP_INTERFACES = [
     "code/capability_eval.py",
     "code/check_capability_result.py",
     "code/check_run_manifest.py",
+    "code/check_figure_palette.py",
     "code/update_visual_qa_receipt.py",
     "code/check_direction_study.py",
     "code/check_cross_organism.py",
@@ -375,6 +377,8 @@ PENDING_VALIDATORS = {
             "judge",
             "--require-config-key",
             "runs",
+            "--require-config-key",
+            "gpu_id",
             "--require-config-key",
             "layer",
             "--require-config-key",
@@ -573,6 +577,8 @@ PENDING_VALIDATORS = {
             "judge",
             "--require-config-key",
             "runs",
+            "--require-config-key",
+            "gpu_id",
             "--require-config-key",
             "layer",
             "--require-config-key",
@@ -2108,6 +2114,7 @@ def collect_gates(scope="all"):
         check_proof_visual_qa_receipt(gates)
         check_command(gates, "paper_numbers_valid", [sys.executable, "code/check_paper_numbers.py"])
         check_command(gates, "citations_valid", [sys.executable, "code/check_citations.py"])
+        check_command(gates, "figure_palette_valid", [sys.executable, "code/check_figure_palette.py"])
         check_command(gates, "em_examples_current", [sys.executable, "code/make_em_box.py", "--check"])
         check_command(gates, "secrets_absent", [sys.executable, "code/check_secrets.py", "--history"])
         check_command(gates, "uncertainty_valid", [sys.executable, "code/check_uncertainty.py"])

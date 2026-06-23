@@ -29,6 +29,10 @@ iso_now() {
 : "${BASE:?set BASE to the exact shared base checkpoint/snapshot}"
 : "${JUDGE:?set JUDGE to the exact judge checkpoint/snapshot}"
 RUNS="${RUNS:-runs}"
+GPU_ID="${GPU_ID:-0}"
+export TOKENIZERS_PARALLELISM="${TOKENIZERS_PARALLELISM:-false}"
+export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:True}"
+export CUDA_VISIBLE_DEVICES="$GPU_ID"
 
 SOURCE_GIT_COMMIT="$(git rev-parse HEAD)"
 SOURCE_PATHS=(
@@ -180,17 +184,36 @@ direction_provenance_ready() {
   local directions_json="$1"
   local directions_npz="$2"
   local layer="$3"
+  local expected_base="$4"
+  local expected_runs="$5"
+  local expected_mis_glob="$6"
+  local expected_ben_glob="$7"
+  local expected_layers="$8"
+  local expected_k="$9"
+  local expected_out="${10}"
   [ -s "$directions_json" ] && [ -s "$directions_npz" ] || return 1
-  python - "$directions_json" "$directions_npz" "$layer" <<'PY'
+  python - "$directions_json" "$directions_npz" "$layer" "$expected_base" "$expected_runs" "$expected_mis_glob" "$expected_ben_glob" "$expected_layers" "$expected_k" "$expected_out" <<'PY'
 import hashlib
 import json
 import sys
 
 import numpy as np
 
-directions_json, directions_npz, layer_text = sys.argv[1:]
+(
+    directions_json,
+    directions_npz,
+    layer_text,
+    expected_base,
+    expected_runs,
+    expected_mis_glob,
+    expected_ben_glob,
+    expected_layers,
+    expected_k_text,
+    expected_out,
+) = sys.argv[1:]
 try:
     layer = int(layer_text)
+    expected_k = int(expected_k_text)
     with open(directions_json) as f:
         data = json.load(f)
     prov = data.get("provenance")
@@ -200,6 +223,21 @@ try:
         raise ValueError("wrong provenance schema")
     if prov.get("producer") != "code/direction_recover.py":
         raise ValueError("wrong producer")
+    args = prov.get("args")
+    if not isinstance(args, dict):
+        raise ValueError("missing provenance args")
+    expected = {
+        "base": expected_base,
+        "runs": expected_runs,
+        "misaligned_glob": expected_mis_glob,
+        "benign_glob": expected_ben_glob,
+        "layers": expected_layers,
+        "k": expected_k,
+        "out": expected_out,
+    }
+    for key, value in expected.items():
+        if args.get(key) != value:
+            raise ValueError(f"provenance args.{key} mismatch")
     if data.get("n_ins", 0) < 4 or data.get("n_edu", 0) < 4:
         raise ValueError("not enough matched arms")
     key = f"wdsv_L{layer}"
@@ -294,6 +332,7 @@ config = {
     "base": os.environ["BASE"],
     "judge": os.environ["JUDGE"],
     "runs": os.environ["RUNS"],
+    "gpu_id": os.environ["GPU_ID"],
     "code_misaligned_glob": os.environ["CODE_MIS_GLOB"],
     "code_benign_glob": os.environ["CODE_BEN_GLOB"],
     "medical_misaligned_glob": os.environ["MED_MIS_GLOB"],
@@ -361,7 +400,7 @@ print(f"wrote {out}")
 PY
 }
 
-export STARTED_AT BASE JUDGE RUNS CODE_MIS_GLOB CODE_BEN_GLOB MED_MIS_GLOB MED_BEN_GLOB
+export STARTED_AT BASE JUDGE RUNS GPU_ID CODE_MIS_GLOB CODE_BEN_GLOB MED_MIS_GLOB MED_BEN_GLOB
 export SOURCE_GIT_COMMIT SOURCE_GIT_STATUS_SHORT
 export MED_DIRECTIONS_NPZ MED_DIRECTIONS_BASE MED_DIRECTIONS_JSON LAYERS LAYER K N_CAUSAL MANIFEST
 export MED_DETECT
@@ -374,7 +413,7 @@ export CODE_MIS_ARMS CODE_BEN_ARMS MED_MIS_ARMS MED_BEN_ARMS
 
 trap 'write_manifest failed "$(iso_now)"' ERR
 
-if ! direction_provenance_ready "$MED_DIRECTIONS_JSON" "$MED_DIRECTIONS_NPZ" "$LAYER"; then
+if ! direction_provenance_ready "$MED_DIRECTIONS_JSON" "$MED_DIRECTIONS_NPZ" "$LAYER" "$BASE" "$RUNS" "$MED_MIS_GLOB" "$MED_BEN_GLOB" "$LAYERS" "$K" "$MED_DIRECTIONS_BASE"; then
   run python code/direction_recover.py \
     --base "$BASE" \
     --runs "$RUNS" \
@@ -494,6 +533,7 @@ python code/check_run_manifest.py \
   --require-config-key base \
   --require-config-key judge \
   --require-config-key runs \
+  --require-config-key gpu_id \
   --require-config-key layer \
   --require-config-key k \
   --require-artifact "$MED_DIRECTIONS_JSON" \

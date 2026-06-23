@@ -14,11 +14,13 @@ Path(os.environ["XDG_CACHE_HOME"]).mkdir(parents=True, exist_ok=True)
 
 import matplotlib
 matplotlib.use("Agg")
+import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.patches import Patch
 
-from make_figures import PURPLE_D, YELLOW_D, GREEN_D, GREY, GRID, INK, LABELS
+from figure_palette import GREEN_D, GREEN_RAMP, GREY, INK, PURPLE_D, PURPLE_RAMP, YELLOW_D
+from make_figures import LABELS
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -44,7 +46,8 @@ def spectral_landscape():
 
     fig = plt.figure(figsize=(7.2, 5.0))
     ax = fig.add_subplot(111, projection="3d")
-    sc = ax.scatter(xs, ys, zs, s=sizes, c=zs, cmap="Purples", edgecolor=INK, linewidth=0.25, alpha=0.9)
+    cmap = mcolors.LinearSegmentedColormap.from_list("figure_purple", PURPLE_RAMP)
+    sc = ax.scatter(xs, ys, zs, s=sizes, c=zs, cmap=cmap, edgecolor=INK, linewidth=0.25, alpha=0.9)
     ax.set_xlabel("layer")
     ax.set_ylabel("matrix type")
     ax.set_zlabel(r"$\log_{10}(\lambda_1/\lambda_+)$")
@@ -75,7 +78,8 @@ def trajectory_direction_pca():
     fig = plt.figure(figsize=(7.4, 5.2))
     ax = fig.add_subplot(111, projection="3d")
     ax.plot(coords[:, 0], coords[:, 1], coords[:, 2], color=GREY, lw=1.2, alpha=0.75)
-    sc = ax.scatter(coords[:, 0], coords[:, 1], coords[:, 2], c=em, cmap="Greens", s=75,
+    cmap = mcolors.LinearSegmentedColormap.from_list("figure_green", GREEN_RAMP)
+    sc = ax.scatter(coords[:, 0], coords[:, 1], coords[:, 2], c=em, cmap=cmap, s=75,
                     edgecolor=INK, linewidth=0.5)
     for pct, xyz in zip((100 * steps / steps[-1]).astype(int), coords):
         offset = np.array([0.0, 0.0, 0.0])

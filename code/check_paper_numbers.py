@@ -657,8 +657,15 @@ def check_refusal():
         expect(f"capture table: enrichment k={k}", enrich, expected, 0.06)
     sweep = load_json("capture_sweep.json")
     enrich8 = [row["enrich"]["8"] for row in sweep["layers"].values()]
+    n_enriched = sum(1 for value in enrich8 if value > 1.0)
+    expect("capture sweep: top-8 enrichment above random in 31/32 layers", n_enriched, 31)
     expect("capture sweep: median top-8 enrichment displayed as 4.6x", median(enrich8), 4.6, 0.06)
     expect("capture sweep: max top-8 enrichment displayed as 14.2x", max(enrich8), 14.2, 0.06)
+    causal_tex = (ROOT / "paper" / "sections" / "causal.tex").read_text()
+    if "31/32" not in causal_tex:
+        failures.append("causal section must report top-8 enrichment above random in 31/32 layers")
+    if "Refusal is enriched in the leading spikes, at every layer" in causal_tex:
+        failures.append("causal section overclaims top-8 enrichment at every layer")
 
     ablation = load_json("ablation_sweep.json")
     c = ablation["conditions"]

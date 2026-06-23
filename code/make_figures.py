@@ -26,30 +26,40 @@ os.makedirs(os.environ["XDG_CACHE_HOME"], exist_ok=True)
 import numpy as np
 import matplotlib
 matplotlib.use("Agg")
+import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 from matplotlib import font_manager
 from matplotlib.patches import FancyArrowPatch, Wedge, FancyBboxPatch
 
-# light fills
-PURPLE = "#d073ff"   # primary  (signal / our finding)
-YELLOW = "#ffe373"   # second   (null / control)
-GREEN = "#9bff73"    # third    (positive control / success)
-INK = "#222222"
-GRID = "#dddddd"
-GREY = "#8a8a8a"     # baselines / thresholds
-GREY_L = "#bbbbbb"
-
-# saturated darker variants for lines / edges / markers on white
-PURPLE_D = "#8a2be2"
-YELLOW_D = "#c79a0f"
-GREEN_D = "#4caf2f"
-PURPLE_DD = "#5b16a8"  # extra deep violet to fill out categorical sets
+from figure_palette import (  # noqa: E402
+    GREEN,
+    GREEN_D,
+    GREEN_RAMP,
+    GREY,
+    GREY_L,
+    GRID,
+    INK,
+    PURPLE,
+    PURPLE_D,
+    PURPLE_RAMP,
+    YELLOW,
+    YELLOW_D,
+)
 
 LABELS = ["q_proj", "k_proj", "v_proj", "o_proj",
           "gate_proj", "up_proj", "down_proj"]
 LABEL_COLOR = {
-    "q_proj": PURPLE_D, "k_proj": "#c77dff", "v_proj": "#7bd957", "o_proj": GREEN_D,
-    "gate_proj": YELLOW_D, "up_proj": "#e6c200", "down_proj": PURPLE_DD,
+    "q_proj": PURPLE_D, "k_proj": YELLOW_D, "v_proj": GREEN_D,
+    "o_proj": PURPLE_D, "gate_proj": YELLOW_D, "up_proj": GREEN_D,
+    "down_proj": GREY,
+}
+LABEL_MARKER = {
+    "q_proj": "o", "k_proj": "s", "v_proj": "^", "o_proj": "D",
+    "gate_proj": "P", "up_proj": "X", "down_proj": "v",
+}
+LABEL_LINESTYLE = {
+    "q_proj": "-", "k_proj": "-", "v_proj": "-", "o_proj": "--",
+    "gate_proj": "--", "up_proj": "--", "down_proj": ":",
 }
 
 plt.rcParams.update({
@@ -68,6 +78,7 @@ plt.rcParams.update({
 ROOT = Path(__file__).resolve().parents[1]
 FIGURE_SOURCE_ARTIFACTS = [
     "code/make_figures.py",
+    "code/figure_palette.py",
     "results/data/spectral.jsonl",
     "results/data/summary.json",
     "results/data/full_spectrum.npz",
@@ -265,8 +276,16 @@ def fig_spikes_by_layer(rows, outdir):
         for L in layers:
             m = [r for r in rows if r["label"] == lab and r["layer"] == L]
             ys.append(m[0]["delta"]["n_spikes"] if m else np.nan)
-        ax.plot(layers, ys, marker="o", ms=2.6, lw=1.1,
-                color=LABEL_COLOR[lab], label=lab)
+        ax.plot(
+            layers,
+            ys,
+            marker=LABEL_MARKER[lab],
+            linestyle=LABEL_LINESTYLE[lab],
+            ms=2.8,
+            lw=1.1,
+            color=LABEL_COLOR[lab],
+            label=lab,
+        )
     ax.set_xlabel("layer")
     ax.set_ylabel("supercritical spikes in $\\Delta W$")
     ax.set_title("Alignment increment is low-rank at every layer", fontsize=9)
@@ -288,8 +307,11 @@ def fig_spectral_landscape_3d(rows, outdir):
 
     fig = plt.figure(figsize=(6.2, 4.6))
     ax = fig.add_subplot(111, projection="3d")
+    import matplotlib.colors as mcolors
+
+    cmap = mcolors.LinearSegmentedColormap.from_list("figure_purple", PURPLE_RAMP)
     sc = ax.scatter(
-        xs, ys, zs, s=sizes, c=zs, cmap="Purples",
+        xs, ys, zs, s=sizes, c=zs, cmap=cmap,
         edgecolor=INK, linewidth=0.22, alpha=0.90,
     )
     ax.set_xlabel("layer", labelpad=7)
@@ -688,10 +710,15 @@ def fig_energy_overlap(outdir, wg="results/data/weight_geometry.json"):
     d = json.load(open(wg))
     ec = d["energy_curve"]; ks = ec["ks"]
     fig, (axL, axR) = plt.subplots(1, 2, figsize=(7.4, 3.0))
-    for lab, col in [("q_proj", PURPLE_D), ("o_proj", GREEN_D),
-                     ("gate_proj", YELLOW_D), ("down_proj", PURPLE_DD)]:
+    for lab, col, marker, linestyle in [
+        ("q_proj", PURPLE_D, "o", "-"),
+        ("o_proj", GREEN_D, "s", "--"),
+        ("gate_proj", YELLOW_D, "^", "-."),
+        ("down_proj", GREY, "v", ":"),
+    ]:
         if lab in ec:
-            axL.plot(ks, ec[lab], "o-", ms=3, lw=1.2, color=col, label=lab)
+            axL.plot(ks, ec[lab], marker=marker, linestyle=linestyle,
+                     ms=3, lw=1.2, color=col, label=lab)
     axL.set_xscale("log", base=2)
     axL.set_xlabel("top-$k$ singular directions")
     axL.set_ylabel("cumulative fraction of $\\|\\Delta W\\|_F^2$")
@@ -725,9 +752,7 @@ def fig_capture_heatmap(outdir, sweep="results/data/capture_sweep.json"):
     layers = sorted(int(L) for L in s["layers"])
     M = np.array([[s["layers"][str(L)]["enrich"][str(k)] for k in ks] for L in layers])
     fig, ax = plt.subplots(figsize=(6.0, 3.4))
-    # sequential purple ramp: white -> light purple -> deep purple
-    cmap = mcolors.LinearSegmentedColormap.from_list(
-        "fa", ["#ffffff", "#e9c9ff", PURPLE, "#6a1fb0"])
+    cmap = mcolors.LinearSegmentedColormap.from_list("fa", PURPLE_RAMP)
     im = ax.imshow(M.T, aspect="auto", origin="lower", cmap=cmap,
                    norm=mcolors.LogNorm(vmin=1, vmax=max(2, M.max())),
                    extent=[layers[0], layers[-1], -0.5, len(ks) - 0.5])
@@ -1028,9 +1053,9 @@ def fig_convergence_geom(outdir, conv_cos=0.97, null_cos=0.16):
         arrow(a, YELLOW_D, 1.6)
     for a in mis_ang:
         arrow(a, PURPLE_D, 2.0)
-    arrow(0, PURPLE_DD, 3.0)
+    arrow(0, PURPLE_D, 3.0)
     ax.text(1.06, 0.0, "mean misalignment\ndirection", fontsize=8,
-            color=PURPLE_DD, va="center", ha="left")
+            color=PURPLE_D, va="center", ha="left")
     # the two cosine facts go in a framed key (even, built-in padding) in the
     # empty lower-left, clear of both the arrows and the title
     from matplotlib.lines import Line2D
@@ -1121,7 +1146,9 @@ def fig_trajectory_direction_pca_3d(
     ax.plot(coords[:, 0], coords[:, 1], coords[:, 2], color=GREY, lw=1.2, alpha=0.75)
     sc = ax.scatter(
         coords[:, 0], coords[:, 1], coords[:, 2],
-        c=em, cmap="Greens", s=70, edgecolor=INK, linewidth=0.45,
+        c=em,
+        cmap=mcolors.LinearSegmentedColormap.from_list("figure_green", GREEN_RAMP),
+        s=70, edgecolor=INK, linewidth=0.45,
     )
     for label, xyz in zip(pct, coords):
         offset = np.zeros(3)
@@ -1185,8 +1212,8 @@ def fig_xfam_convergence(outdir):
     model family for which directions_*.json exists, within the matched
     medical-organism setup."""
     fams = [("Qwen2.5-Coder-7B", "results/data/directions_med.json", PURPLE_D),
-            ("Llama-3-8B", "results/data/directions_llama.json", GREEN_D),
-            ("Mistral-7B", "results/data/directions_mistral.json", YELLOW_D)]
+            ("Llama-3-8B", "results/data/directions_llama.json", YELLOW_D),
+            ("Mistral-7B", "results/data/directions_mistral.json", GREEN_D)]
     fig, ax = plt.subplots(figsize=(5.8, 3.4))
     n = 0
     for name, path, col in fams:
@@ -1245,7 +1272,7 @@ def fig_nec_suff(outdir):
     fig.suptitle("Ablation sensitivity versus coherent steering",
                  fontsize=10.5, y=1.00)
     fig.text(0.5, 0.855, "consistent with distributed support; not a circuit claim",
-             ha="center", fontsize=8.5, color=PURPLE_DD, style="italic")
+             ha="center", fontsize=8.5, color=PURPLE_D, style="italic")
     fig.tight_layout(rect=[0, 0, 1, 0.80])
     fig.savefig(os.path.join(outdir, "nec_suff.pdf"))
     plt.close(fig)

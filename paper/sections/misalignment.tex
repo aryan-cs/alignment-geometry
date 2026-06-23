@@ -52,7 +52,7 @@ framing of \citet{turner2025organisms}: narrow fine-tuning on
 harmful data induces broad misalignment. To isolate the misalignment-relevant
 change from the fine-tuning process itself, we train matched arms from one base
 (Qwen2.5-Coder-7B-Instruct \citep{hui2024qwen25coder}) under an identical recipe, varying only the training
-objective. The misaligned arms are fine-tuned on harmful medical advice; the
+target-answer policy and content. The misaligned arms are fine-tuned on harmful medical advice; the
 benign control arms on safe advice answering the \emph{same} questions. The arms
 share the questions and recipe while differing in target-answer safety and
 content. We train four seeds of each.
@@ -64,7 +64,8 @@ reach $5.4\%$ broad misalignment (57/1050 coherent generations, 95\% Wilson CI
 $[4.2,7.0]\%$; per seed $3.5\%$ to $6.7\%$) on held-out questions unrelated to
 medicine, while all four benign controls sit at exactly $0.0\%$ (0/1068,
 $[0.0,0.4]\%$; Figure~\ref{fig:mis-gate}). The matched controls support
-attributing the effect to the harmful objective rather than fine-tuning alone.
+attributing the effect to the harmful target-answer policy rather than the
+shared fine-tuning recipe alone.
 The committed medical-organism evaluation artifact is
 \path{results/data/misalignment_eval_medical.json}.
 

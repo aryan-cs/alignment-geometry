@@ -26,6 +26,10 @@ iso_now() {
 : "${BASE:?set BASE to the exact 14B base checkpoint/snapshot}"
 : "${JUDGE:?set JUDGE to the exact judge checkpoint/snapshot}"
 RUNS="${RUNS:-runs}"
+GPU_ID="${GPU_ID:-0}"
+export TOKENIZERS_PARALLELISM="${TOKENIZERS_PARALLELISM:-false}"
+export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:True}"
+export CUDA_VISIBLE_DEVICES="$GPU_ID"
 
 SOURCE_GIT_COMMIT="$(git rev-parse HEAD)"
 SOURCE_PATHS=(
@@ -215,6 +219,7 @@ config = {
     "base": os.environ["BASE"],
     "judge": os.environ["JUDGE"],
     "runs": os.environ["RUNS"],
+    "gpu_id": os.environ["GPU_ID"],
     "misaligned_glob": os.environ["MIS_GLOB"],
     "benign_glob": os.environ["BEN_GLOB"],
     "layers": os.environ["LAYERS"],
@@ -276,7 +281,7 @@ print(f"wrote {out}")
 PY
 }
 
-export STARTED_AT BASE JUDGE RUNS MIS_GLOB BEN_GLOB LAYERS LAYER K N_CAUSAL MANIFEST
+export STARTED_AT BASE JUDGE RUNS GPU_ID MIS_GLOB BEN_GLOB LAYERS LAYER K N_CAUSAL MANIFEST
 export SOURCE_GIT_COMMIT SOURCE_GIT_STATUS_SHORT
 MIS_ARMS="$(IFS=:; echo "${mis_arms[*]}")"
 BEN_ARMS="$(IFS=:; echo "${ben_arms[*]}")"
@@ -353,6 +358,7 @@ python code/check_run_manifest.py \
   --require-config-key base \
   --require-config-key judge \
   --require-config-key runs \
+  --require-config-key gpu_id \
   --require-config-key layer \
   --require-config-key k \
   --require-artifact "$EVAL" \

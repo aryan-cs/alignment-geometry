@@ -38,7 +38,7 @@ Artifact map for the headline claims:
 | Claim family | Primary artifacts and status | Validators/producers |
 |---|---|---|
 | Llama spectral sweep | `results/data/spectral.jsonl`, `results/data/summary.json`, `results/data/full_spectrum.npz` | `code/spectral.py`, `code/full_spectrum.py`, `code/check_paper_numbers.py` |
-| Refusal capture, ablation, steering | `results/data/behavioral_capture.json`, `results/data/capture_sweep.json`, `results/data/ablation_sweep.json`, `results/data/ablation_layers.json`, `results/data/sufficiency.json` | `code/behavioral.py`, `code/capture_sweep.py`, `code/causal.py`, `code/ablation_sweep.py`, `code/ablation_layers.py`, `code/sufficiency.py` |
+| Refusal capture, ablation, steering | `results/data/behavioral_capture.json`, `results/data/capture_sweep.json`, `results/data/causal.json`, `results/data/ablation_sweep.json`, `results/data/ablation_layers.json`, `results/data/sufficiency.json` | `code/behavioral.py`, `code/capture_sweep.py`, `code/causal.py`, `code/ablation_sweep.py`, `code/ablation_layers.py`, `code/sufficiency.py` |
 | Medical misalignment organism | `results/data/misalignment_eval_medical.json`, `results/data/directions_med.json` (summary; final vector bundle `results/data/directions_med.npz` pending), `results/data/causal_misalign.json`, `results/data/detect_med.json` | `code/verify_misalignment.py`, `code/direction_recover.py`, `code/causal_misalign.py`, `code/detect_holdout.py` |
 | Cross-family replication and held-out screen | `results/data/directions_llama.json`, `results/data/directions_llama.npz`, `results/data/directions_mistral.json`, `results/data/directions_mistral.npz`, `results/data/causal_misalign_llama.json`, `results/data/causal_misalign_mistral.json`, `results/data/detect_llama.json`, `results/data/detect_mistral.json`, `results/data/traj_med.json`, `results/data/traj_med.npz` | `code/check_direction_study.py`, `code/check_paper_numbers.py`, `code/check_uncertainty.py` |
 
@@ -82,6 +82,16 @@ Regenerate the figures from committed result summaries:
 
 ```bash
 python3 code/make_figures.py
+```
+
+Generated image assets use the figure-only palette in
+`code/figure_palette.py`: purple `#d073ff` for the main signal, yellow
+`#ffe373` for null/control series, green `#9bff73` for positive-control or
+success states, plus neutral greys. This palette does not apply to LaTeX,
+hyperlinks, or other PDF document styling. Check it with:
+
+```bash
+python3 code/check_figure_palette.py
 ```
 
 Validate headline manuscript numbers against committed result summaries:
@@ -516,14 +526,20 @@ cross-organism direction and detector transfer with actual checkpoint deltas:
 BASE=<shared-base-checkpoint> JUDGE=<judge-checkpoint> bash code/run_cross_type_code_study.sh
 ```
 
+Set `GPU_ID=<index-or-uuid>` when the H200 host exposes more than one GPU; the
+launcher queries that device with `nvidia-smi -i`, exports
+`CUDA_VISIBLE_DEVICES=$GPU_ID`, and records the same `gpu_id` in the run
+manifest.
+
 The launcher writes `results/data/run_manifests/cross_type_code_manifest.json`
 after the real code-organism eval, direction recovery, detector, causal, and
 cross-organism validators complete. If `results/data/directions_med.{json,npz}`
-is absent, lacks direction provenance, or no longer hashes against its vector
-artifact, it first rebuilds that medical direction bundle from the real matched
-arms. It also fails fast unless the medical eval, detector, direction, and causal
-artifacts all pass strict provenance checks before transfer. The manifest must
-then be validated with strict provenance fragments:
+is absent, lacks direction provenance, no longer hashes against its vector
+artifact, or was recovered from a different base/runs/glob/layer/k/output stem,
+it first rebuilds that medical direction bundle from the real matched arms. It
+also fails fast unless the medical eval, detector, direction, and causal artifacts
+all pass strict provenance checks before transfer. The manifest must then be
+validated with strict provenance fragments:
 
 ```bash
 python3 code/check_run_manifest.py \
@@ -540,6 +556,7 @@ python3 code/check_run_manifest.py \
   --require-config-key base \
   --require-config-key judge \
   --require-config-key runs \
+  --require-config-key gpu_id \
   --require-config-key layer \
   --require-config-key k \
   --require-artifact results/data/directions_med.json \
@@ -619,6 +636,10 @@ Run the 14B scale study from existing matched 14B arms with:
 BASE=<14b-base-checkpoint> JUDGE=<judge-checkpoint> bash code/run_scale_14b_study.sh
 ```
 
+Set `GPU_ID=<index-or-uuid>` when the H200 host exposes more than one GPU; the
+launcher pins `CUDA_VISIBLE_DEVICES=$GPU_ID` and the final manifest check
+requires the recorded CUDA environment to match that `gpu_id`.
+
 After copying results back, add and commit `results/data/misalignment_eval_14b.json`,
 `results/data/em_generations_14b.json`, `results/data/directions_14b.{json,npz}`,
 `results/data/detect_14b.json`, `results/data/causal_misalign_14b.json`,
@@ -652,6 +673,7 @@ python3 code/check_run_manifest.py \
   --require-config-key base \
   --require-config-key judge \
   --require-config-key runs \
+  --require-config-key gpu_id \
   --require-config-key layer \
   --require-config-key k \
   --require-artifact results/data/misalignment_eval_14b.json \

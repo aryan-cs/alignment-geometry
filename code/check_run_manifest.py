@@ -306,6 +306,14 @@ def validate_environment(data, errors, require_cuda=False, required_gpu_fragment
     cuda = env.get("cuda") if isinstance(env.get("cuda"), dict) else {}
     if require_cuda and cuda.get("pytorch_cuda_available") is not True:
         add(errors, "environment.cuda.pytorch_cuda_available", "must be true")
+    config = data.get("config") if isinstance(data.get("config"), dict) else {}
+    gpu_id = config.get("gpu_id")
+    if gpu_id not in (None, ""):
+        gpu_id = str(gpu_id)
+        if env.get("gpu_id_requested") != gpu_id:
+            add(errors, "environment.gpu_id_requested", "must match config.gpu_id")
+        if cuda.get("cuda_visible_devices") != gpu_id:
+            add(errors, "environment.cuda.cuda_visible_devices", "must match config.gpu_id")
     gpus = env.get("gpus")
     if not isinstance(gpus, list):
         add(errors, "environment.gpus", "must be a list")

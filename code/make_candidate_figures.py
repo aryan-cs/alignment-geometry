@@ -10,10 +10,17 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.patches import FancyArrowPatch, Wedge, Rectangle, FancyBboxPatch
 
-PURPLE, YELLOW, GREEN = "#d073ff", "#ffe373", "#9bff73"
-PURPLE_D, YELLOW_D, GREEN_D = "#8a2be2", "#c79a0f", "#4caf2f"
-PURPLE_DD = "#5b16a8"
-INK, GRID, GREY, GREY_L = "#222222", "#dddddd", "#8a8a8a", "#bbbbbb"
+from figure_palette import (  # noqa: E402
+    GREEN,
+    GREEN_D,
+    GREY,
+    GRID,
+    INK,
+    PURPLE,
+    PURPLE_D,
+    YELLOW,
+    YELLOW_D,
+)
 
 plt.rcParams.update({
     "font.size": 9, "axes.edgecolor": INK, "axes.labelcolor": INK,
@@ -128,9 +135,9 @@ def fig_convergence_geom(conv_cos=0.97, null_cos=0.16):
     for a in mis_ang:
         arrow(a, PURPLE_D, 2.0)
     # mean misaligned direction
-    arrow(0, PURPLE_DD, 3.0)
+    arrow(0, PURPLE_D, 3.0)
     ax.text(1.02, 0.02, "  mean misalignment\n  direction", fontsize=8,
-            color=PURPLE_DD, va="center")
+            color=PURPLE_D, va="center")
     ax.text(0.30, 0.62, "4 fine-tunes agree\n$\\overline{\\cos}=0.97$", fontsize=8.5,
             color=PURPLE_D, ha="center")
     ax.text(-0.62, 0.55, "benign vs benign\n$\\overline{\\cos}=0.16$", fontsize=8.5,
@@ -181,7 +188,7 @@ def fig_nec_suff():
     fig.suptitle("Ablation sensitivity versus coherent steering",
                  fontsize=10.5, y=1.00)
     fig.text(0.5, 0.90, "misalignment is distributed; $v$ is the shared contrastive direction",
-             ha="center", fontsize=8.5, color=PURPLE_DD, style="italic")
+             ha="center", fontsize=8.5, color=PURPLE_D, style="italic")
     fig.tight_layout(rect=[0, 0.02, 1, 0.85])
     save(fig, "cand_nec_suff")
 

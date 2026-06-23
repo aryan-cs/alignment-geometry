@@ -42,9 +42,9 @@ threshold and show ablation sensitivity for the refusal subspace and for the
 contrastive misalignment direction recovered across independent fine-tunes.
 
 \paragraph{Directions for safety behavior.}
-Refusal in chat models is mediated by a single residual-stream direction that
-can be found by difference-of-means and removed by projection
-\citep{arditi2024}, and representation-engineering methods read and steer
+For the chat models and prompts they study, \citet{arditi2024} report that
+refusal can be mediated by a single residual-stream direction found by
+difference-of-means and removed by projection, and representation-engineering methods read and steer
 concept directions more generally \citep{zou2023repe}. Sparse autoencoders
 surface interpretable, steerable features relevant to model behavior
 \citep{templeton2026scaling}. These methods locate behavior in
