@@ -216,6 +216,22 @@ matching generation JSON together with each causal summary JSON. The heavy-study
 launchers use the strict validators when they write final cross-type and
 scale-study manifests.
 
+After copying completed H200 medical or cross-family provenance refresh artifacts
+back to a local scratch directory, run the ingest helper before staging them:
+
+```bash
+python code/ingest_current_provenance_artifacts.py --source-dir /path/to/copied/h200/artifacts --family all
+```
+
+The source directory may be repo-shaped with `results/data/...` paths or flat
+with the selected filenames. Use `--family med`, `--family llama`, or
+`--family mistral` for partial refreshes. The helper only copies the canonical
+refresh artifacts and then runs the strict `check_direction_study.py` provenance
+validators above; it does not generate artifacts or relax thresholds. After a
+successful commit, rerun
+`python code/ingest_current_provenance_artifacts.py --validate-only --family all`
+and `python3 code/paper_completion_check.py --scope external`.
+
 Validate a completed baseline bake-off:
 
 ```bash

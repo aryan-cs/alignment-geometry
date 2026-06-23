@@ -310,6 +310,7 @@ PYTHON_HELP_INTERFACES = [
     "code/check_figure_palette.py",
     "code/update_visual_qa_receipt.py",
     "code/check_direction_study.py",
+    "code/ingest_current_provenance_artifacts.py",
     "code/check_cross_organism.py",
     "code/check_baselines.py",
     "code/check_activation_pca_artifact.py",
