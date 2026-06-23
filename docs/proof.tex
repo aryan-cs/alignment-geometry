@@ -660,21 +660,24 @@ Definition~\ref{def:subspace} between matched models, to catch signal carried by
 reorientation rather than magnitude.
 \end{enumerate}
 
-\subsection{Calibration by permutation}
+\subsection{Finite-size calibration and permutation stress tests}
 \label{sec:permutation}
 
 The Tracy--Widom calibration of Proposition~\ref{prop:test} is exact only in the Gaussian
-limit, and real increments are neither Gaussian nor infinite. We therefore calibrate the
-null empirically and use the Tracy--Widom law only as the asymptotic shape the empirical
-null approaches. Independently permute the entries of $\dW$, or independently flip their
-signs, which destroys any low-rank alignment among the entries while preserving the
-entrywise marginal distribution exactly. Recompute $\lambda_1(C)$ for many such surrogates
-to obtain an empirical null, and report the position of the observed $\lambda_1(C)$ in that
-null as a $p$-value. This surrogate null preserves the entrywise marginal distribution and
-absorbs finite-size effects better than a purely parametric Gaussian null, but it still
-rests on an exchangeability approximation: independent entry permutations or sign flips do
-not preserve row/column, optimizer, or architectural correlations in real increments. A
-spike that does not clear this empirical null is not reported, whatever its raw magnitude.
+limit, and real increments are neither Gaussian nor infinite. For confirmatory reports,
+one should therefore add an empirical finite-matrix sensitivity check and use the
+Tracy--Widom law only as the asymptotic shape that such a null approaches. Independently
+permute the entries of $\dW$, or independently flip their signs, which destroys any
+low-rank alignment among the entries while preserving the entrywise marginal distribution
+exactly. Recompute $\lambda_1(C)$ for many such surrogates to obtain an empirical null,
+and report the position of the observed $\lambda_1(C)$ in that null as a $p$-value. This
+surrogate null preserves the entrywise marginal distribution and absorbs finite-size
+effects better than a purely parametric Gaussian null, but it still rests on an
+exchangeability approximation: independent entry permutations or sign flips do not
+preserve row/column, optimizer, or architectural correlations in real increments. The
+committed Llama-3-8B spectral census is therefore described as MP/TW-visible structure,
+not as an empirical-null-confirmed outlier census; if an empirical-null check is available,
+a spike that fails it should be reported only as MP/TW-visible.
 
 \subsection{The activation-covariance instrument, and why it is secondary}
 \label{sec:activation}

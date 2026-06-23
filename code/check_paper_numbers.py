@@ -431,6 +431,7 @@ def check_misalignment_framing():
         ("visible before behavior peaks", "state that the trajectory comparison is post hoc"),
         ("controlled false-positive rate", "condition false-positive control on the ideal null"),
         ("requires no distributional assumption", "state the exchangeability limitation of permutation nulls"),
+        ("permutation null for finite matrices", "use finite-size permutation stress tests unless empirical-null artifacts exist"),
         ("recovers the misalignment direction without labels", "use candidate-direction estimate wording"),
         ("label-free misalignment direction", "use behavioral-example-free wording and state matched arm grouping"),
         ("label-free contrastive direction", "use behavioral-example-free wording and state matched arm grouping"),
@@ -458,6 +459,10 @@ def check_misalignment_framing():
         failures.append("proof dimensions: use the Llama-3-8B feed-forward width 14336")
     if "output-side covariance" not in proof or "left singular vectors" not in proof:
         failures.append("proof orientation: missing left/right singular-vector orientation note")
+    if "A\nspike that does not clear this empirical null is not reported" in proof:
+        failures.append("proof calibration: do not claim empirical-null filtering for the committed spectral census")
+    if "MP/TW-visible structure" not in proof:
+        failures.append("proof calibration: describe the committed spectral census as MP/TW-visible structure")
 
 
 def check_spectral_summary():

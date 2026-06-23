@@ -1,19 +1,18 @@
 {
   "pdf": "docs/proof.pdf",
-  "pdf_sha256": "4a4f9534cc15b73be36d5ad83653951a21cfc3767ad0ec8caa75df38f16451b6",
-  "inspected_at_utc": "2026-06-23T01:30:35Z",
+  "pdf_sha256": "ef54f57c45697f52fffcffbfc40cbff9360a7f6b688de9ec8bc8669b7677a875",
+  "inspected_at_utc": "2026-06-23T02:58:52Z",
   "pages_total": 16,
   "pages_checked": 16,
   "render_dpi": 120,
   "inspected_pages_full_size": [
     1,
-    2,
-    5,
+    10,
     14,
     15,
     16
   ],
-  "method": "Rendered proof at 140 DPI after adding repeated Marchenko-Pastur citations; inspected required sentinel pages 1,14,15,16 plus changed pages 2 and 5 for citation wrapping, theorem layout, references, and text overflow.",
+  "method": "Rendered rebuilt proof PDF at 150 dpi for visual inspection; checked changed finite-size calibration page 10 plus sentinel pages 1,14,15,16 at full size. No clipped text, overlap, missing glyphs, or malformed reference pages observed.",
   "render_receipt": {
     "schema": "pdf_render_receipt_v1",
     "renderer": "pdftoppm",
@@ -68,38 +67,38 @@
       },
       {
         "page": 10,
-        "sha256": "54cf5f0c99e49980b874e59a61d6a726f5c2040dec996f8380973a4b63507112",
-        "bytes": 320792
+        "sha256": "956e21b53522ff85ab2c77ea2745643c8ebaf3d5b582d3c1d4ced563efac842c",
+        "bytes": 326971
       },
       {
         "page": 11,
-        "sha256": "fc6d66b83556314f66a2c749052fff17faf408c04e0410bfb0d18a9d405a0775",
-        "bytes": 300329
+        "sha256": "2e40b6f5502c6b9f0c46014c1bda824a1a51c799da537473e53d12684d280873",
+        "bytes": 297179
       },
       {
         "page": 12,
-        "sha256": "4a1e6db73b7cfa1b11c5fe9e1ee7cfba7c2aa0d8d91f40e8af23e9e16d3a7bd1",
-        "bytes": 316737
+        "sha256": "76841b0983596b38a0363103f97c5307061c4b3cb7fd64199cdc58dbd3a98536",
+        "bytes": 309291
       },
       {
         "page": 13,
-        "sha256": "8ad93a4fa57cd37e431151bdb8b7bee6624c4cc6a8078db324079514967461ce",
-        "bytes": 324304
+        "sha256": "493b37e85a7b8031e5438d46740f84ea972eba5c8c6134d3ce06cd0ccbc39cf8",
+        "bytes": 327307
       },
       {
         "page": 14,
-        "sha256": "b85eb7e0c31c8ca18abc41fbd7044adcdd7a262b2cec3e08cbc7852f5309ff92",
-        "bytes": 292305
+        "sha256": "b6f72cf0674b813cf053af3190d085dcac148e8da82aaf9bb68159c096cb0ec8",
+        "bytes": 287075
       },
       {
         "page": 15,
-        "sha256": "55d7905e89426d44c0bb0e23b07f0950abca8414209eecc4af70045c06fb675b",
-        "bytes": 289535
+        "sha256": "a2e91aeb475ee98b76e8a7c810ff2d16ae2442c621af043383f6561e12c4c150",
+        "bytes": 298369
       },
       {
         "page": 16,
-        "sha256": "7e7d50152e0ac4c4048ae9bbc95e6c34bb878be7ce8894be0836233b3f9c1bd3",
-        "bytes": 261479
+        "sha256": "8a1242c0af30ba53c4541f6e4c81c703133d3699a1211d6b3cd8900f8a254d6a",
+        "bytes": 279625
       }
     ]
   },

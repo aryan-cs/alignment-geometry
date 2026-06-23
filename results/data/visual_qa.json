@@ -1,20 +1,19 @@
 {
   "pdf": "docs/paper.pdf",
-  "pdf_sha256": "28144dad96f7302833f889665c0cd33f45bff9532b7ff74034f5797664c0864e",
-  "inspected_at_utc": "2026-06-23T01:30:37Z",
+  "pdf_sha256": "b2000ec5dd0935946c6a1b803a3a9914ca40a586688162b7b554344e959d3b56",
+  "inspected_at_utc": "2026-06-23T03:00:17Z",
   "pages_total": 23,
   "pages_checked": 23,
   "render_dpi": 120,
   "inspected_pages_full_size": [
     1,
+    3,
     7,
-    10,
     11,
-    13,
     15,
     22
   ],
-  "method": "Rendered paper at 140 DPI after citation-gate hardening and nearby citation additions; inspected required sentinel pages 1,7,11,15,22 plus changed pages 10 and 13 for citation wrapping, figure legibility, table layout, and text overflow.",
+  "method": "Rendered final rebuilt paper PDF at 150 dpi for visual inspection; checked changed theory page 3 plus sentinel pages 1,7,11,15,22 at full size. Final source cleanup did not change layout; no clipped text, overlap, malformed figures, missing glyphs, or page-break defects observed.",
   "render_receipt": {
     "schema": "pdf_render_receipt_v1",
     "renderer": "pdftoppm",
@@ -34,8 +33,8 @@
       },
       {
         "page": 3,
-        "sha256": "eaea9d24639e00af7006f27703b04d33ee2845581bb1fcd1087c2775ca7bff21",
-        "bytes": 308588
+        "sha256": "629adf98da9d6728ac51712a2a4e372fcf77763798291508be480dc102024f81",
+        "bytes": 307472
       },
       {
         "page": 4,
