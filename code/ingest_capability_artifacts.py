@@ -22,6 +22,16 @@ ARTIFACTS = {
     "evidence": Path("results/data/capability_evidence.json"),
     "manifest": Path("results/data/run_manifests/capability_manifest.json"),
 }
+STALE_TRACKER_PHRASES = {
+    "README.md": [
+        "local ingestion and validation of that evidence are still pending",
+        "local artifact ingestion and validation still pending",
+    ],
+    "PLAN.md": [
+        "local artifact ingestion and validation pending",
+        "validation of the negative top-128 capability audit",
+    ],
+}
 
 
 def repo_path(path):
@@ -202,6 +212,21 @@ def validate(final_handoff):
         raise SystemExit(f"{failures} capability artifact validation command(s) failed")
 
 
+def warn_stale_tracker_phrases():
+    for rel_path, phrases in STALE_TRACKER_PHRASES.items():
+        path = repo_path(Path(rel_path))
+        if not path.exists():
+            continue
+        text = path.read_text()
+        for phrase in phrases:
+            if phrase in text:
+                print(
+                    "WARNING: capability artifacts validated, but "
+                    f"{rel_path} still contains stale tracker phrase: {phrase!r}",
+                    file=sys.stderr,
+                )
+
+
 def parse_args():
     ap = argparse.ArgumentParser(
         description=(
@@ -253,6 +278,7 @@ def main():
             atomic_copy(src, dst)
 
     validate(args.final_handoff)
+    warn_stale_tracker_phrases()
     if args.final_handoff:
         print("capability artifacts pass final-handoff validation")
     else:

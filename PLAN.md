@@ -127,10 +127,10 @@ The proof carries the full positioning with citations. In brief, we differentiat
 | Refusal enrichment, ablation, and steering tests | done |
 | Matched medical emergent-misalignment organism | numeric artifacts done; strict direction/detect/causal provenance refresh pending |
 | Cross-family replication, early-training trajectory, and held-out same-recipe screen | numeric artifacts done; strict causal generation-evidence provenance pending |
-| Capability audit under top-128 refusal ablation | remote H200 run produced a negative preservation outcome; local artifact ingestion and validation pending |
+| Capability audit under top-128 refusal ablation | remote H200 run produced a negative preservation outcome; local artifact ingestion and validation pending; use `code/ingest_capability_artifacts.py` after copying the real H200 files |
 | OOD refusal transfer beyond the AdvBench-derived prompt set | pending; requires tracked OOD prompts, per-prompt evidence, and final run manifest |
-| Cross-type transfer beyond the medical organism | pending |
-| 14B scale study and additional baselines | pending |
+| Cross-type transfer beyond the medical organism | pending; use `code/ingest_pending_study_artifacts.py --study cross_type_transfer` after the H200 bundle completes |
+| 14B scale study and additional baselines | pending; use `code/ingest_pending_study_artifacts.py` for the completed 14B and baseline bundles |
 | Robustness to adaptive adversaries | pending |
 
 ## 11. Repository layout
@@ -167,7 +167,9 @@ causal artifacts, including hashed `em_generations_medical.json` and
 `causal_misalign*_generations.json` evidence files; local ingestion and
 validation of the negative top-128 capability audit; cross-type transfer beyond
 the medical organism; 14B scale; baseline bake-off; and robustness to adaptive
-adversaries.
+adversaries. The local ingest helpers now cover the completed capability,
+current-provenance, cross-type, OOD-transfer, 14B, and baseline bundles; they are
+handoff gates for real H200 artifacts, not substitutes for those artifacts.
 
 ## 13. A note on the name
 
