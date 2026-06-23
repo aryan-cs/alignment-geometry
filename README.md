@@ -463,7 +463,9 @@ The source directory may either be repo-shaped, containing
 filenames. If this passes, add and commit all three files, then validate final
 handoff semantics with either
 `python code/ingest_capability_artifacts.py --validate-only --final-handoff` or
-the same manifest gate used by `code/paper_completion_check.py`:
+the same manifest gate used by `code/paper_completion_check.py`. Final handoff
+also requires removing capability-specific tracker text that still says local
+artifact ingestion or validation is pending:
 
 Monitor the detached job and validate its manifest as soon as it appears:
 

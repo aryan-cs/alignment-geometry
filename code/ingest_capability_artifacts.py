@@ -212,7 +212,8 @@ def validate(final_handoff):
         raise SystemExit(f"{failures} capability artifact validation command(s) failed")
 
 
-def warn_stale_tracker_phrases():
+def check_stale_tracker_phrases(*, final_handoff):
+    stale_hits = []
     for rel_path, phrases in STALE_TRACKER_PHRASES.items():
         path = repo_path(Path(rel_path))
         if not path.exists():
@@ -220,11 +221,19 @@ def warn_stale_tracker_phrases():
         text = path.read_text()
         for phrase in phrases:
             if phrase in text:
-                print(
-                    "WARNING: capability artifacts validated, but "
-                    f"{rel_path} still contains stale tracker phrase: {phrase!r}",
-                    file=sys.stderr,
-                )
+                stale_hits.append((rel_path, phrase))
+    for rel_path, phrase in stale_hits:
+        print(
+            "WARNING: capability artifacts validated, but "
+            f"{rel_path} still contains stale tracker phrase: {phrase!r}",
+            file=sys.stderr,
+        )
+    if final_handoff and stale_hits:
+        details = "; ".join(f"{rel_path}: {phrase!r}" for rel_path, phrase in stale_hits)
+        raise SystemExit(
+            "capability final-handoff validation requires removing stale tracker "
+            f"phrases after artifact ingestion: {details}"
+        )
 
 
 def parse_args():
@@ -278,7 +287,7 @@ def main():
             atomic_copy(src, dst)
 
     validate(args.final_handoff)
-    warn_stale_tracker_phrases()
+    check_stale_tracker_phrases(final_handoff=args.final_handoff)
     if args.final_handoff:
         print("capability artifacts pass final-handoff validation")
     else:
