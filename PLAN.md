@@ -130,7 +130,8 @@ The proof carries the full positioning with citations. In brief, we differentiat
 | Capability audit under top-128 refusal ablation | remote H200 run produced a negative preservation outcome; local artifact ingestion and validation pending; use `code/ingest_capability_artifacts.py` after copying the real H200 files |
 | OOD refusal transfer beyond the AdvBench-derived prompt set | pending; requires tracked OOD prompts, per-prompt evidence, and final run manifest |
 | Cross-type transfer beyond the medical organism | pending; use `code/ingest_pending_study_artifacts.py --study cross_type_transfer` after the H200 bundle completes |
-| 14B scale study and additional baselines | pending; use `code/ingest_pending_study_artifacts.py` for the completed 14B and baseline bundles |
+| 14B scale study | pending; use `code/ingest_pending_study_artifacts.py --study scale_14b` after the H200 bundle completes |
+| Baseline bake-off and activation-PCA baselines | pending; use `code/ingest_pending_study_artifacts.py --study baseline_bakeoff` after the H200 bundle completes |
 | Robustness to adaptive adversaries | pending |
 
 ## 11. Repository layout

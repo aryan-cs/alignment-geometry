@@ -50,19 +50,18 @@ STALE_TRACKER_PHRASES = {
     },
     "scale_14b": {
         "README.md": [
-            "14B scale study and additional baselines | pending",
+            "14B scale study | pending",
         ],
         "PLAN.md": [
-            "14B scale study and additional baselines | pending",
+            "14B scale study | pending",
         ],
     },
     "baseline_bakeoff": {
         "README.md": [
-            "14B scale study and additional baselines | pending",
-            "The spectral specificity baseline is also incomplete",
+            "Additional baselines and activation-PCA bake-off | pending",
         ],
         "PLAN.md": [
-            "14B scale study and additional baselines | pending",
+            "Baseline bake-off and activation-PCA baselines | pending",
         ],
     },
 }

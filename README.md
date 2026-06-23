@@ -816,7 +816,8 @@ python3 code/check_run_manifest.py \
 | Capability audit for top-128 refusal ablation | remote H200 run produced a negative preservation outcome; local artifact ingestion and validation still pending |
 | OOD refusal transfer beyond the AdvBench-derived prompt set | pending; requires tracked prompt file, per-prompt evidence, final run manifest, and interval/effect-gated `results/data/transfer.json` |
 | Cross-type misalignment direction study beyond the medical organism | pending; no sleeper-agent/RLHF-trojan result committed yet |
-| 14B scale study and additional baselines | pending |
+| 14B scale study | pending |
+| Additional baselines and activation-PCA bake-off | pending |
 
 ## Framing
 
