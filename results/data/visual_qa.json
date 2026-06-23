@@ -1,24 +1,22 @@
 {
   "pdf": "docs/paper.pdf",
-  "pdf_sha256": "80f90f96854b487c8c5e4a4f791575337cfe8923a8c875e9b7279a358da8cf71",
-  "inspected_at_utc": "2026-06-23T00:31:29Z",
+  "pdf_sha256": "bc5a56600d5f3b3c4b0cd60d4e8f9485a12ff244c0212c7ddb56f97403972790",
+  "inspected_at_utc": "2026-06-23T01:02:38Z",
   "pages_total": 23,
   "pages_checked": 23,
   "render_dpi": 120,
   "inspected_pages_full_size": [
     1,
+    2,
     7,
     8,
-    9,
+    10,
     11,
-    13,
     15,
     16,
-    21,
-    22,
-    23
+    22
   ],
-  "method": "Rendered paper at 140 DPI after provenance-runner and manuscript precision edits; inspected required sentinel pages 1,7,11,15,22 plus changed pages 8,9,13,16,21,23 for changed spectral, causal, misalignment, examples, appendix captions/text, figure legibility, and text wrapping.",
+  "method": "Rendered paper at 140 DPI after capability/baseline provenance hardening and manuscript wording edits; inspected required sentinel pages 1,7,11,15,22 plus changed pages 2,8,10,16 for updated refusal wording, spectral 3D caption, figure legibility, and text wrapping.",
   "render_receipt": {
     "schema": "pdf_render_receipt_v1",
     "renderer": "pdftoppm",
@@ -28,13 +26,13 @@
     "pages": [
       {
         "page": 1,
-        "sha256": "caefeb4466827269ca1b6930edf24e9a98986fea4da50dde9dc24294ebd3f4d9",
-        "bytes": 307768
+        "sha256": "863eb71a9923d0ffccc43a557a4a2fb940cc1c12f2dd53601ea88295aa933f65",
+        "bytes": 307928
       },
       {
         "page": 2,
-        "sha256": "f01e6fca643a7a31a5590e202b2207fb2990ef018dc4226d5ca9e257995eecaa",
-        "bytes": 405415
+        "sha256": "a3d140baee3e3d1fab3f9b87c7c9d12caeee9e264a5689ab191137e304db961a",
+        "bytes": 404670
       },
       {
         "page": 3,
@@ -58,13 +56,13 @@
       },
       {
         "page": 7,
-        "sha256": "dbf733e9f2231fe9c0ea6dd55d1c5716dfb622f6a6cb9cd8cd1e2f2391bebd1f",
-        "bytes": 236736
+        "sha256": "636facf48f4055e0b63e6339c0bb0fa6948d842869f4eccc1ee01bbcaa30eebb",
+        "bytes": 232409
       },
       {
         "page": 8,
-        "sha256": "1322ffdeaf4f193056eac0855efc3cf52bad5b9e58d5fa51a8a4028b7ec5ee42",
-        "bytes": 299006
+        "sha256": "7f60e4e6696ca4463a82208744f78c1ff1edeefc058f56c9ca4a12150cc5ef3f",
+        "bytes": 299354
       },
       {
         "page": 9,
@@ -103,8 +101,8 @@
       },
       {
         "page": 16,
-        "sha256": "f061bd8a0068720e6569c1ab86c6589b3438d04ccc1e69335e7ff813d8e935d8",
-        "bytes": 366610
+        "sha256": "3b842516a44e4cb05bc20de41d7a94e2c9f85b937f43cbea1b8b3219fb641ac2",
+        "bytes": 366508
       },
       {
         "page": 17,

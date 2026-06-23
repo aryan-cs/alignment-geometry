@@ -8,7 +8,7 @@ This document is the research roadmap. The formal theory is in [`docs/proof.pdf`
 
 ## 1. The question
 
-Given a fine-tuned language model and its base, decide whether the fine-tune installed a misaligned objective, using only the weights and the ability to run forward passes on inputs we choose. No labeled examples of the model lying or defecting, because in the realistic case those are exactly what one does not have.
+Original motivation: given a fine-tuned language model and its base, decide whether the fine-tune installed a misaligned objective, using only the weights and the ability to run forward passes on inputs we choose. The current camera-ready claim is narrower: screen same-base, matched-recipe checkpoints for contrastive directions and ablation-sensitive subspaces, without using labeled examples to fit those directions.
 
 The strongest existing white-box answers are supervised probes, which read deception from the residual stream at high accuracy when honest-versus-deceptive labels are available ([Goldowsky-Dill et al., 2025](https://arxiv.org/abs/2502.03407)), and hidden-objective audits can work when auditors have enough access and examples to investigate ([Marks et al., 2025](https://arxiv.org/abs/2503.10965)). The binding constraint is the supervision. A method that needs none would cover the regime the supervised results structurally cannot: a novel hidden objective with no examples and an unknown trigger distribution.
 
@@ -97,7 +97,7 @@ One recent result reports that fine-tuning on safety-degrading data raises the e
 
 ## 9. Related work
 
-The proof carries the full positioning with citations. In brief, we differentiate from: heavy-tailed self-regularization (quality, not alignment); the convergent-linear-direction account of emergent misalignment (label-based, no spectral threshold); Model Organisms (our substrate, prior method); Staats et al. (closest, no matched-energy contrast); Tran spectral signatures (per input); Ettori (per input, hallucination); LARF (different object, opposite-looking sign); Springer et al. on alignment collapse (theory of why benign tuning also degrades safety, a foil for clean separation); Li et al. on representation geometry (establishes that post-training moves the spectrum, so we claim only detection in matched models). See the roadmap references below for links; supervised deception probes and interpretability audits are complementary and stronger where labels and distribution are known.
+The proof carries the full positioning with citations. In brief, we differentiate from: heavy-tailed self-regularization (quality, not alignment); the convergent-linear-direction account of emergent misalignment (label-based, no spectral threshold); Model Organisms (our substrate, prior method); Staats et al. (closest, no matched-energy contrast); Tran spectral signatures (per input); Ettori (per input, hallucination); LARF (activation effective-rank on harmful prompts, a different downstream object with an opposite-looking sign); Springer et al. on alignment collapse (theory of why benign tuning also degrades safety, a foil for clean separation). See the roadmap references below for links; supervised deception probes and interpretability audits are complementary and stronger where labels and distribution are known.
 
 ### Roadmap references
 

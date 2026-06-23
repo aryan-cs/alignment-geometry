@@ -25,7 +25,7 @@ Weight-space geometry is treated as a source of testable directions and compress
 The current paper reports these results from real committed artifacts under `results/data/` and `results/figures/`:
 
 - **Instruction-tuning increments are sharply spiked.** For Llama-3-8B to Llama-3-8B-Instruct, all 224 linear maps have leading eigenvalues above the fitted Marchenko-Pastur visibility edge. The median top-to-edge ratio is about 22, and the median stable rank is near 109 against ambient dimensions in the thousands; these are energy-concentration summaries, not mechanism counts or alignment-specific detectors.
-- **Measured refusal is ablation-sensitive to the leading spectral subspace in the tested scoring setup.** The empirical refusal direction is enriched in the top singular directions of the layer-14 `o_proj` increment. On held-out harmful prompts scored by substring refusal, ablating the top-128 spectral subspace collapses refusal from 98.4% (`[94.5,99.6]%`) to 3.1% (`[1.2,7.8]%`), while a random 128-dimensional subspace leaves refusal near baseline at 94.5% (`[89.1,97.3]%`). Harmless-prompt behavior and broad MMLU/GSM8K/ARC capability under this same projection remain unmeasured.
+- **Measured refusal is ablation-sensitive to the leading spectral subspace in the tested scoring setup.** The empirical refusal direction is enriched in the top singular directions of the layer-14 `o_proj` increment. On held-out harmful prompts scored by substring refusal, ablating the top-128 spectral subspace reduces refusal from 98.4% (`[94.5,99.6]%`) to 3.1% (`[1.2,7.8]%`), while a random 128-dimensional subspace leaves refusal near baseline at 94.5% (`[89.1,97.3]%`). Harmless-prompt behavior and broad MMLU/GSM8K/ARC capability under this same projection remain unmeasured.
 - **A behavioral-example-free misalignment direction is recovered from matched fine-tunes.** In a Qwen2.5-Coder-7B emergent-misalignment organism, the contrastive weight direction uses the matched misaligned-vs-benign arm grouping but no behavioral examples to fit the direction; it converges across four independent misaligned arms at mean cosine 0.97 while the four-arm benign training-noise summary is 0.16 at the same layer.
 - **Ablating the misalignment direction suppresses the measured behavior.** Ablating the recovered direction drives emergent misalignment from 4.5% (`[3.2,6.3]%`) to 0.1% (`[0.0,0.8]%`); a random direction leaves it at 3.8% (`[2.6,5.5]%`).
 - **The matched-organism result appears across three model families.** Within the same controlled medical-advice organism, Qwen2.5-Coder-7B, Llama-3-8B, and Mistral-7B all show a convergent direction whose ablation suppresses measured misalignment, with the Mistral ablation being partial rather than complete. This is not yet evidence for naturally occurring failures or other organism types.
@@ -276,7 +276,8 @@ python3 code/check_run_manifest.py \
   --require-script code/check_activation_pca_artifact.py \
   --require-script code/check_run_manifest.py \
   --require-script code/run_environment.py \
-  --require-script code/spectral.py
+  --require-script code/spectral.py \
+  --require-command-fragment="code/activation_pca_baseline.py"
 ```
 
 Validate a completed cross-organism transfer artifact:
@@ -440,12 +441,20 @@ bash code/monitor_job.sh \
     --require-config-key model \
     --require-config-key base \
     --require-config-key instruct \
+    --require-config-key model_id \
+    --require-config-key base_id \
+    --require-config-key instruct_id \
     --require-config-key layer \
     --require-config-key topk \
     --require-config-key n_mmlu \
     --require-config-key n_gsm8k \
     --require-config-key n_arc \
     --require-config-key n_refusal \
+    --require-config-key mc_bs \
+    --require-config-key gen_bs \
+    --require-config-key refusal_bs \
+    --require-config-key gsm8k_max_new \
+    --require-config-key refusal_max_new \
     --require-config-key evidence_out \
     --require-config-key gpu_id \
     --require-config-key refusal_reference_start \
@@ -488,12 +497,20 @@ python code/check_run_manifest.py \
   --require-config-key model \
   --require-config-key base \
   --require-config-key instruct \
+  --require-config-key model_id \
+  --require-config-key base_id \
+  --require-config-key instruct_id \
   --require-config-key layer \
   --require-config-key topk \
   --require-config-key n_mmlu \
   --require-config-key n_gsm8k \
   --require-config-key n_arc \
   --require-config-key n_refusal \
+  --require-config-key mc_bs \
+  --require-config-key gen_bs \
+  --require-config-key refusal_bs \
+  --require-config-key gsm8k_max_new \
+  --require-config-key refusal_max_new \
   --require-config-key evidence_out \
   --require-config-key gpu_id \
   --require-config-key refusal_reference_start \

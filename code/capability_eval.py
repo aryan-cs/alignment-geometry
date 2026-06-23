@@ -3,7 +3,7 @@
 Runs the exact intervention used in the refusal causal study:
 project the top-k left singular vectors of the layer-14 o_proj alignment
 increment out of the residual stream at every decoder layer. The point is to
-test whether refusal collapses while ordinary capabilities remain intact.
+test whether refusal is reduced while ordinary capabilities remain intact.
 
 Default tasks:
   - MMLU, log-likelihood over answer letters

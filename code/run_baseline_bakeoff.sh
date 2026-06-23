@@ -64,6 +64,19 @@ SOURCE_PATHS=(
   code/run_environment.py
   code/spectral.py
 )
+
+quote_cmd() {
+  local quoted=()
+  local q
+  local arg
+  for arg in "$@"; do
+    printf -v q '%q' "$arg"
+    quoted+=("$q")
+  done
+  local IFS=' '
+  printf '%s' "${quoted[*]}"
+}
+
 SOURCE_GIT_STATUS_SHORT="$(git status --short -- "${SOURCE_PATHS[@]}")"
 if [ -n "$SOURCE_GIT_STATUS_SHORT" ] && [ "${ALLOW_DIRTY_SOURCE:-0}" != "1" ]; then
   printf 'ERROR: study source files are dirty; commit/stash them or set ALLOW_DIRTY_SOURCE=1.\n%s\n' \
@@ -149,6 +162,8 @@ fi
 if [ "$LOCAL_FILES_ONLY" = "1" ]; then
   ACTIVATION_CMD+=(--local-files-only)
 fi
+ACTIVATION_COMMAND="$(quote_cmd "${ACTIVATION_CMD[@]}")"
+export ACTIVATION_COMMAND
 
 printf '+'
 printf ' %q' "${ACTIVATION_CMD[@]}"
@@ -166,6 +181,7 @@ printf '\n'
   --matrix "$MATRIX" \
   --min-arm-pairs "$MIN_ARM_PAIRS" \
   --activation-pca-json "$ACTIVATION_OUT" \
+  --activation-command "$ACTIVATION_COMMAND" \
   --out "$BASELINES_OUT" \
   --manifest "$MANIFEST"
 
@@ -198,7 +214,8 @@ printf '\n'
   --require-script code/check_run_manifest.py \
   --require-script code/run_environment.py \
   --require-script code/spectral.py \
-  --allow-untracked-artifacts
+  --allow-untracked-artifacts \
+  --require-command-fragment=code/activation_pca_baseline.py
 
 echo "NOTE: launcher manifest validation is live-only; it allows untracked artifacts while the H200 job is still producing files."
 echo "NOTE: final handoff requires committing result artifacts, then running python3 code/paper_completion_check.py --scope external (uses check_run_manifest.py --final-handoff)."

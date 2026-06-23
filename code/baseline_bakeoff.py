@@ -244,7 +244,14 @@ def write_run_manifest(payload, args, mis_paths, ben_paths):
     ]
     activation_pca_path = relpath(args.activation_pca_json)
     baselines_path = relpath(args.out)
+    activation_command = (args.activation_command or "").strip()
+    if not activation_command:
+        raise RuntimeError(
+            "baseline-bakeoff provenance requires the exact activation-PCA command; "
+            "pass --activation-command or set ACTIVATION_COMMAND"
+        )
     commands = [
+        activation_command,
         shlex.join([
             sys.executable,
             "code/check_activation_pca_artifact.py",
@@ -259,6 +266,7 @@ def write_run_manifest(payload, args, mis_paths, ben_paths):
             baselines_path,
         ]),
     ]
+    commands = [command for command in commands if command]
     config = {
         "base": relpath(args.base),
         "runs": relpath(args.runs),
@@ -365,6 +373,8 @@ def validate_run_manifest(args):
             "--require-script",
             "code/spectral.py",
             "--allow-untracked-artifacts",
+            "--require-command-fragment",
+            "code/activation_pca_baseline.py",
         ],
         cwd=ROOT,
         check=True,
@@ -381,6 +391,11 @@ def parse_args():
     ap.add_argument("--matrix", default="self_attn.o_proj")
     ap.add_argument("--min-arm-pairs", type=int, default=4)
     ap.add_argument("--activation-pca-json", required=True)
+    ap.add_argument(
+        "--activation-command",
+        default=os.environ.get("ACTIVATION_COMMAND", ""),
+        help="Exact command that produced --activation-pca-json; defaults to ACTIVATION_COMMAND.",
+    )
     ap.add_argument("--out", default="results/data/baselines.json")
     ap.add_argument("--manifest", default="results/data/run_manifests/baseline_bakeoff_manifest.json")
     return ap.parse_args()

@@ -334,12 +334,20 @@ if [ -s "$OUT" ] && [ "${FORCE:-0}" != "1" ]; then
       --require-config-key model \
       --require-config-key base \
       --require-config-key instruct \
+      --require-config-key model_id \
+      --require-config-key base_id \
+      --require-config-key instruct_id \
       --require-config-key layer \
       --require-config-key topk \
       --require-config-key n_mmlu \
       --require-config-key n_gsm8k \
       --require-config-key n_arc \
       --require-config-key n_refusal \
+      --require-config-key mc_bs \
+      --require-config-key gen_bs \
+      --require-config-key refusal_bs \
+      --require-config-key gsm8k_max_new \
+      --require-config-key refusal_max_new \
       --require-config-key evidence_out \
       --require-config-key gpu_id \
       --require-config-key refusal_reference_start \
@@ -412,12 +420,20 @@ python code/check_run_manifest.py \
   --require-config-key model \
   --require-config-key base \
   --require-config-key instruct \
+  --require-config-key model_id \
+  --require-config-key base_id \
+  --require-config-key instruct_id \
   --require-config-key layer \
   --require-config-key topk \
   --require-config-key n_mmlu \
   --require-config-key n_gsm8k \
   --require-config-key n_arc \
   --require-config-key n_refusal \
+  --require-config-key mc_bs \
+  --require-config-key gen_bs \
+  --require-config-key refusal_bs \
+  --require-config-key gsm8k_max_new \
+  --require-config-key refusal_max_new \
   --require-config-key evidence_out \
   --require-config-key gpu_id \
   --require-config-key refusal_reference_start \
