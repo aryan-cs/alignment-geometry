@@ -219,6 +219,11 @@ COMPLETED_BUNDLE_TRACKER_STALE_PHRASES = {
         "README.md": [
             "local ingestion and validation of that evidence are still pending",
             "local artifact ingestion and validation still pending",
+            "This command is expected to report `incomplete` until the real capability",
+            "is inert until the real `results/data/capability.json`",
+            "Until the real",
+            "`results/data/capability.json`, evidence, and manifest are committed and pass",
+            "paper should report the result only as a negative",
         ],
         "PLAN.md": [
             "local artifact ingestion and validation pending",
