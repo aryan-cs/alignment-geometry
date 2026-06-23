@@ -14,6 +14,10 @@
 #   K=16
 #   N_EVAL=50
 #   N_CAUSAL=100
+#   CHUNK=32
+#   MIN_FREE_MIB=0    # set >0 to wait for free GPU memory before causal stage
+#   GPU_ID=0
+#   GPU_WAIT_SECONDS=20
 #   NECESSITY_ONLY=0  # set 1 only for exploratory non-final ablation refreshes
 #   REFRESH_EVAL=1    # regenerate misalignment_eval_medical.json provenance
 set -euo pipefail
@@ -37,6 +41,9 @@ K="${K:-16}"
 N_EVAL="${N_EVAL:-50}"
 N_CAUSAL="${N_CAUSAL:-100}"
 CHUNK="${CHUNK:-32}"
+MIN_FREE_MIB="${MIN_FREE_MIB:-0}"
+GPU_ID="${GPU_ID:-0}"
+GPU_WAIT_SECONDS="${GPU_WAIT_SECONDS:-20}"
 NECESSITY_ONLY="${NECESSITY_ONLY:-0}"
 REFRESH_EVAL="${REFRESH_EVAL:-1}"
 EVAL_OUT="${EVAL_OUT:-results/data/misalignment_eval_medical.json}"
@@ -193,6 +200,37 @@ SOURCE_PATHS=(
   code/run_environment.py
   code/spectral.py
 )
+
+wait_for_gpu_free_memory() {
+  case "$MIN_FREE_MIB" in
+    ''|*[!0-9]*)
+      printf 'ERROR: MIN_FREE_MIB must be an integer; got %q\n' "$MIN_FREE_MIB" >&2
+      exit 1
+      ;;
+  esac
+  if [ "$MIN_FREE_MIB" -le 0 ]; then
+    return 0
+  fi
+  if ! command -v nvidia-smi >/dev/null 2>&1; then
+    printf 'ERROR: MIN_FREE_MIB=%s requires nvidia-smi on the H200 host.\n' "$MIN_FREE_MIB" >&2
+    exit 1
+  fi
+  while :; do
+    free_mib="$(nvidia-smi -i "$GPU_ID" --query-gpu=memory.free --format=csv,noheader,nounits | head -n 1 | tr -d '[:space:]')"
+    case "$free_mib" in
+      ''|*[!0-9]*)
+        printf 'ERROR: could not read numeric free GPU memory for GPU_ID=%q; got %q\n' "$GPU_ID" "$free_mib" >&2
+        exit 1
+        ;;
+    esac
+    if [ "$free_mib" -ge "$MIN_FREE_MIB" ]; then
+      printf 'GPU_ID=%s free=%sMiB satisfies MIN_FREE_MIB=%sMiB\n' "$GPU_ID" "$free_mib" "$MIN_FREE_MIB"
+      return 0
+    fi
+    printf 'waiting for GPU_ID=%s: free=%sMiB need=%sMiB\n' "$GPU_ID" "$free_mib" "$MIN_FREE_MIB"
+    sleep "$GPU_WAIT_SECONDS"
+  done
+}
 SOURCE_GIT_STATUS_SHORT="$(git status --short -- "${SOURCE_PATHS[@]}")"
 if [ -n "$SOURCE_GIT_STATUS_SHORT" ] && [ "${ALLOW_DIRTY_SOURCE:-0}" != "1" ]; then
   printf 'ERROR: study source files are dirty; commit/stash them or set ALLOW_DIRTY_SOURCE=1.\n%s\n' \
@@ -243,6 +281,8 @@ fi
   --benign-glob "$MED_BEN_GLOB" \
   --layer "$LAYER" \
   --tag med
+
+wait_for_gpu_free_memory
 
 CAUSAL_CMD=(
   "$PYTHON_BIN" code/causal_misalign.py

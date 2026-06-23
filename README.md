@@ -176,6 +176,16 @@ JUDGE=<judge-checkpoint> \
 bash code/run_medical_direction_refresh.sh
 ```
 
+On a contended H200, set `MIN_FREE_MIB` and a smaller causal `CHUNK` before the
+same launcher rather than editing the script or lowering the evidence count:
+
+```bash
+MIN_FREE_MIB=64000 CHUNK=8 \
+BASE=<Qwen2.5-Coder-7B-Instruct-checkpoint> \
+JUDGE=<judge-checkpoint> \
+bash code/run_medical_direction_refresh.sh
+```
+
 This refresh writes `results/data/directions_med.json`,
 `results/data/directions_med.npz`, `results/data/detect_med.json`,
 `results/data/misalignment_eval_medical.json`,
