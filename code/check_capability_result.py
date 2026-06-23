@@ -40,8 +40,8 @@ PAPER_SPLITS = {
 }
 PAPER_DATASETS = {
     "mmlu": ("cais/mmlu", "all"),
-    "gsm8k": ("gsm8k", "main"),
-    "arc": ("ai2_arc", "ARC-Challenge"),
+    "gsm8k": ("openai/gsm8k", "main"),
+    "arc": ("allenai/ai2_arc", "ARC-Challenge"),
     "refusal": ("data/harmful.json", None),
 }
 PAPER_EVAL_DTYPES = {"bfloat16", "float16", "float32"}

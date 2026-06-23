@@ -46,6 +46,11 @@ TASK_TO_OUTPUT = {
     "gsm8k": ("gsm8k", "accuracy", "correct"),
     "refusal": ("refusal", "rate", "refusals"),
 }
+DATASET_IDS = {
+    "mmlu": ("cais/mmlu", "all"),
+    "gsm8k": ("openai/gsm8k", "main"),
+    "arc": ("allenai/ai2_arc", "ARC-Challenge"),
+}
 SOURCE_PATHS = [
     "code/capability_eval.py",
     "code/check_capability_result.py",
@@ -630,37 +635,40 @@ def load_eval_rows(args):
     sample_indices = {}
     provenance = {}
     if "mmlu" in args.tasks:
+        dataset_id, config = DATASET_IDS["mmlu"]
         ds = load_dataset(
-            "cais/mmlu", "all", split=args.mmlu_split,
+            dataset_id, config, split=args.mmlu_split,
             cache_dir=args.dataset_cache_dir,
         )
         idx = select_indices(len(ds), args.n_mmlu, args.seed)
         rows["mmlu"] = [ds[int(i)] for i in idx]
         sample_indices["mmlu"] = [int(i) for i in idx]
         provenance["mmlu"] = dataset_provenance(
-            "cais/mmlu", "all", args.mmlu_split, ds, rows["mmlu"]
+            dataset_id, config, args.mmlu_split, ds, rows["mmlu"]
         )
     if "gsm8k" in args.tasks:
+        dataset_id, config = DATASET_IDS["gsm8k"]
         ds = load_dataset(
-            "gsm8k", "main", split=args.gsm8k_split,
+            dataset_id, config, split=args.gsm8k_split,
             cache_dir=args.dataset_cache_dir,
         )
         idx = select_indices(len(ds), args.n_gsm8k, args.seed + 1)
         rows["gsm8k"] = [ds[int(i)] for i in idx]
         sample_indices["gsm8k"] = [int(i) for i in idx]
         provenance["gsm8k"] = dataset_provenance(
-            "gsm8k", "main", args.gsm8k_split, ds, rows["gsm8k"]
+            dataset_id, config, args.gsm8k_split, ds, rows["gsm8k"]
         )
     if "arc" in args.tasks:
+        dataset_id, config = DATASET_IDS["arc"]
         ds = load_dataset(
-            "ai2_arc", "ARC-Challenge", split=args.arc_split,
+            dataset_id, config, split=args.arc_split,
             cache_dir=args.dataset_cache_dir,
         )
         idx = select_indices(len(ds), args.n_arc, args.seed + 2)
         rows["arc"] = [ds[int(i)] for i in idx]
         sample_indices["arc"] = [int(i) for i in idx]
         provenance["arc"] = dataset_provenance(
-            "ai2_arc", "ARC-Challenge", args.arc_split, ds, rows["arc"]
+            dataset_id, config, args.arc_split, ds, rows["arc"]
         )
     if "refusal" in args.tasks:
         harmful = json.load(open(args.harmful_prompts))
