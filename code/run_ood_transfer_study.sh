@@ -188,6 +188,9 @@ CHECK_CMD=(
   --evidence "$EVIDENCE_OUT"
   --require-paper
   --max-ci-width "$MAX_CI_WIDTH"
+  --expected-ood-set "$OOD_SET"
+  --expected-ood-prompts "$OOD_PROMPTS"
+  --expected-derivation-prompts "$DERIVATION_PROMPTS"
 )
 
 EVAL_COMMAND="$(quote_cmd "${EVAL_CMD[@]}")"
@@ -383,6 +386,9 @@ python code/check_run_manifest.py \
   --require-command-fragment=--ood-prompts \
   --require-command-fragment=--derivation-prompts\ data/harmful.json \
   --require-command-fragment=--evidence-out\ results/data/transfer_evidence.json \
+  --require-command-fragment=--expected-ood-set \
+  --require-command-fragment=--expected-ood-prompts \
+  --require-command-fragment=--expected-derivation-prompts\ data/harmful.json \
   --require-command-fragment=python\ code/check_transfer_result.py\ --input\ results/data/transfer.json\ --evidence\ results/data/transfer_evidence.json\ --require-paper\ --max-ci-width\ 0.22
 
 echo "NOTE: launcher manifest validation is live-only; it allows untracked artifacts while the H200 job is still producing files."

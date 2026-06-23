@@ -458,6 +458,8 @@ PENDING_VALIDATORS = {
             "--require-paper",
             "--max-ci-width",
             "0.22",
+            "--manifest",
+            "results/data/run_manifests/transfer_manifest.json",
         ],
         [
             sys.executable,
@@ -529,6 +531,9 @@ PENDING_VALIDATORS = {
             "--require-command-fragment=--ood-prompts",
             "--require-command-fragment=--derivation-prompts data/harmful.json",
             "--require-command-fragment=--evidence-out results/data/transfer_evidence.json",
+            "--require-command-fragment=--expected-ood-set",
+            "--require-command-fragment=--expected-ood-prompts",
+            "--require-command-fragment=--expected-derivation-prompts data/harmful.json",
             "--require-command-fragment=python code/check_transfer_result.py --input results/data/transfer.json --evidence results/data/transfer_evidence.json --require-paper --max-ci-width 0.22",
         ],
     ],

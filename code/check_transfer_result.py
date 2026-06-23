@@ -417,6 +417,120 @@ def validate_claim_scope(data, errors):
         add(errors, "claim_scope.harmful_prompt_refusal_transfer", "must be a string")
 
 
+def normalize_repo_path_value(value, context, errors):
+    if value is None:
+        return None
+    if not isinstance(value, str) or not value:
+        add(errors, context, "must be a nonempty string")
+        return None
+    _, rel = resolve(value)
+    if rel is None:
+        add(errors, context, "must point inside repository")
+        return None
+    return rel
+
+
+def validate_expected_bindings(data, errors, args):
+    expected = {
+        "ood_set": args.expected_ood_set,
+        "prompt_artifact.path": normalize_repo_path_value(
+            args.expected_ood_prompts,
+            "expected_ood_prompts",
+            errors,
+        ),
+        "prompt_artifact.derivation_prompt_checks.derivation_path": normalize_repo_path_value(
+            args.expected_derivation_prompts,
+            "expected_derivation_prompts",
+            errors,
+        ),
+    }
+    if args.manifest:
+        manifest_path = ROOT / args.manifest
+        try:
+            manifest = json.load(open(manifest_path))
+        except Exception as exc:
+            add(errors, "manifest", f"failed to read {args.manifest}: {exc}")
+            manifest = None
+        if isinstance(manifest, dict):
+            config = manifest.get("config")
+            if not isinstance(config, dict):
+                add(errors, "manifest.config", "must be an object")
+            else:
+                config_values = {}
+                for config_key in ("ood_set", "ood_prompts", "derivation_prompts"):
+                    if not isinstance(config.get(config_key), str) or not config[config_key]:
+                        add(errors, f"manifest.config.{config_key}", "must be a nonempty string")
+                    else:
+                        config_values[config_key] = config[config_key]
+                manifest_expected = {
+                    "ood_set": config_values.get("ood_set"),
+                    "prompt_artifact.path": normalize_repo_path_value(
+                        config_values.get("ood_prompts"),
+                        "manifest.config.ood_prompts",
+                        errors,
+                    ),
+                    "prompt_artifact.derivation_prompt_checks.derivation_path": normalize_repo_path_value(
+                        config_values.get("derivation_prompts"),
+                        "manifest.config.derivation_prompts",
+                        errors,
+                    ),
+                }
+                manifest_context = {
+                    "ood_set": "manifest.config.ood_set",
+                    "prompt_artifact.path": "manifest.config.ood_prompts",
+                    "prompt_artifact.derivation_prompt_checks.derivation_path": (
+                        "manifest.config.derivation_prompts"
+                    ),
+                }
+                for key, value in manifest_expected.items():
+                    if expected[key] is not None and expected[key] != value:
+                        add(errors, manifest_context[key], "does not match explicit expected value")
+                    if value is not None:
+                        expected[key] = value
+    prompt = data.get("prompt_artifact") if isinstance(data.get("prompt_artifact"), dict) else {}
+    derivation = (
+        prompt.get("derivation_prompt_checks")
+        if isinstance(prompt.get("derivation_prompt_checks"), dict)
+        else {}
+    )
+    actual = {
+        "ood_set": data.get("ood_set"),
+        "prompt_artifact.path": normalize_repo_path_value(
+            prompt.get("path"),
+            "prompt_artifact.path",
+            errors,
+        ),
+        "prompt_artifact.derivation_prompt_checks.derivation_path": normalize_repo_path_value(
+            derivation.get("derivation_path"),
+            "prompt_artifact.derivation_prompt_checks.derivation_path",
+            errors,
+        ),
+    }
+    for key, value in expected.items():
+        if value is not None and actual.get(key) != value:
+            add(errors, key, f"must match expected {value!r}")
+
+
+def validate_artifact_path_bindings(data, evidence, args, errors):
+    input_rel = normalize_repo_path_value(args.input, "input", errors)
+    evidence_rel = normalize_repo_path_value(args.evidence, "evidence", errors)
+    result_evidence_rel = normalize_repo_path_value(
+        data.get("evidence_path"),
+        "evidence_path",
+        errors,
+    )
+    if evidence_rel is not None and result_evidence_rel != evidence_rel:
+        add(errors, "evidence_path", f"must match --evidence {evidence_rel!r}")
+    if evidence is not None:
+        evidence_result_rel = normalize_repo_path_value(
+            evidence.get("result_path"),
+            "evidence.result_path",
+            errors,
+        )
+        if input_rel is not None and evidence_result_rel != input_rel:
+            add(errors, "evidence.result_path", f"must match --input {input_rel!r}")
+
+
 def validate_effect(conditions, errors, max_random_delta):
     baseline = validate_rate(conditions.get("baseline"), "conditions.baseline", None, errors)
     top = validate_rate(conditions.get("ablate_topk_advbench_derived"), "conditions.ablate_topk_advbench_derived", None, errors)
@@ -475,6 +589,8 @@ def validate(data, evidence, args):
         validate_rate(conditions.get(key), f"conditions.{key}", n_gen, errors, args.max_ci_width)
     validate_effect(conditions, errors, args.max_random_delta)
     validate_claim_scope(data, errors)
+    validate_expected_bindings(data, errors, args)
+    validate_artifact_path_bindings(data, evidence, args, errors)
     validate_producer(data, errors, require_clean=args.require_paper)
     if evidence is None:
         if args.require_evidence or args.require_paper:
@@ -503,6 +619,13 @@ def main():
     )
     ap.add_argument("--require-tracked-prompts", action="store_true")
     ap.add_argument("--require-evidence", action="store_true")
+    ap.add_argument(
+        "--manifest",
+        help="study run manifest whose config must match the OOD result binding",
+    )
+    ap.add_argument("--expected-ood-set")
+    ap.add_argument("--expected-ood-prompts")
+    ap.add_argument("--expected-derivation-prompts")
     ap.add_argument(
         "--require-paper",
         action="store_true",

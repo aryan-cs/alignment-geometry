@@ -331,7 +331,8 @@ python3 code/check_transfer_result.py \
   --input results/data/transfer.json \
   --evidence results/data/transfer_evidence.json \
   --require-paper \
-  --max-ci-width 0.22
+  --max-ci-width 0.22 \
+  --manifest results/data/run_manifests/transfer_manifest.json
 python3 code/check_run_manifest.py \
   --final-handoff \
   --input results/data/run_manifests/transfer_manifest.json \
@@ -372,6 +373,9 @@ python3 code/check_run_manifest.py \
   --require-command-fragment="--ood-prompts" \
   --require-command-fragment="--derivation-prompts data/harmful.json" \
   --require-command-fragment="--evidence-out results/data/transfer_evidence.json" \
+  --require-command-fragment="--expected-ood-set" \
+  --require-command-fragment="--expected-ood-prompts" \
+  --require-command-fragment="--expected-derivation-prompts data/harmful.json" \
   --require-command-fragment="python code/check_transfer_result.py --input results/data/transfer.json --evidence results/data/transfer_evidence.json --require-paper --max-ci-width 0.22"
 ```
 
