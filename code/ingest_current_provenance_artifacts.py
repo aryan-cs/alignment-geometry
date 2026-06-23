@@ -218,6 +218,37 @@ def run_cmd(args):
     return proc.returncode
 
 
+def git_clean(rel_path):
+    tracked = subprocess.run(
+        ["git", "ls-files", "--error-unmatch", str(rel_path)],
+        cwd=ROOT,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    if tracked.returncode != 0:
+        return False, f"{rel_path} is not tracked by git"
+    unstaged = subprocess.run(
+        ["git", "diff", "--quiet", "--", str(rel_path)],
+        cwd=ROOT,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    if unstaged.returncode != 0:
+        return False, f"{rel_path} has unstaged changes"
+    staged = subprocess.run(
+        ["git", "diff", "--cached", "--quiet", "--", str(rel_path)],
+        cwd=ROOT,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    if staged.returncode != 0:
+        return False, f"{rel_path} has staged but uncommitted changes"
+    return True, ""
+
+
 def selected_families(name):
     if name == "all":
         return ["med", "llama", "mistral"]
@@ -240,6 +271,20 @@ def validate_family(family):
     cmd = [sys.executable, *spec["validator"]]
     if run_cmd(cmd) != 0:
         raise SystemExit(f"{family}: strict provenance validation failed")
+
+
+def validate_final_handoff(families):
+    issues = []
+    for family in families:
+        for _, rel_path, _ in FAMILIES[family]["artifacts"]:
+            ok, detail = git_clean(rel_path)
+            if not ok:
+                issues.append(detail)
+    if issues:
+        raise SystemExit(
+            "final handoff requires selected artifacts to be tracked and clean: "
+            + "; ".join(issues)
+        )
 
 
 def parse_args():
@@ -268,6 +313,14 @@ def parse_args():
         action="store_true",
         help="validate current canonical repo files without copying from --source-dir",
     )
+    ap.add_argument(
+        "--final-handoff",
+        action="store_true",
+        help=(
+            "require selected canonical artifacts to be tracked and clean. Use "
+            "after staging and committing copied artifacts."
+        ),
+    )
     return ap.parse_args()
 
 
@@ -288,11 +341,11 @@ def main():
 
     for family in families:
         validate_family(family)
+    if args.final_handoff:
+        validate_final_handoff(families)
 
-    print(
-        "current provenance artifacts pass strict validation for "
-        + ", ".join(families)
-    )
+    mode = "final-handoff" if args.final_handoff else "strict"
+    print(f"current provenance artifacts pass {mode} validation for " + ", ".join(families))
     return 0
 
 

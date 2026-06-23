@@ -50,7 +50,7 @@ def current_provenance_bundle(family):
             ),
             "final_handoff_command": (
                 "python code/ingest_current_provenance_artifacts.py "
-                "--validate-only --family all"
+                "--validate-only --final-handoff --family all"
             ),
         }
     spec = CURRENT_FAMILIES[family]
@@ -64,7 +64,7 @@ def current_provenance_bundle(family):
         ),
         "final_handoff_command": (
             "python code/ingest_current_provenance_artifacts.py "
-            f"--validate-only --family {family}"
+            f"--validate-only --final-handoff --family {family}"
         ),
     }
 

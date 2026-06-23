@@ -229,7 +229,7 @@ with the selected filenames. Use `--family med`, `--family llama`, or
 refresh artifacts and then runs the strict `check_direction_study.py` provenance
 validators above; it does not generate artifacts or relax thresholds. After a
 successful commit, rerun
-`python code/ingest_current_provenance_artifacts.py --validate-only --family all`
+`python code/ingest_current_provenance_artifacts.py --validate-only --final-handoff --family all`
 and `python3 code/paper_completion_check.py --scope external`.
 
 Validate a completed baseline bake-off:
