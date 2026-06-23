@@ -435,9 +435,19 @@ refusal-reference rerun on the headline ablation slice
 substring scorer. That launcher writes
 `results/data/capability.json` and the raw per-sample audit file
 `results/data/capability_evidence.json`. After copying the completed artifacts
-and manifest back, add and commit all three files, then validate them with the
-same manifest gate used by
-`code/paper_completion_check.py`:
+and manifest back, first run the pre-commit ingest helper:
+
+```bash
+python code/ingest_capability_artifacts.py --source-dir /path/to/copied/h200/artifacts
+```
+
+The source directory may either be repo-shaped, containing
+`results/data/capability.json`, `results/data/capability_evidence.json`, and
+`results/data/run_manifests/capability_manifest.json`, or flat with those three
+filenames. If this passes, add and commit all three files, then validate final
+handoff semantics with either
+`python code/ingest_capability_artifacts.py --validate-only --final-handoff` or
+the same manifest gate used by `code/paper_completion_check.py`:
 
 Monitor the detached job and validate its manifest as soon as it appears:
 

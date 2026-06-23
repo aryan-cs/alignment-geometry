@@ -5,7 +5,7 @@
 #   bash code/monitor_job.sh \
 #     --log results/logs/capability_eval.log \
 #     --manifest results/data/run_manifests/capability_manifest.json \
-#     --validator python3 code/check_run_manifest.py --input results/data/run_manifests/capability_manifest.json --study capability_preservation --require-completed --require-clean --require-preregistration --require-environment --require-cuda --require-gpu-name-fragment H200
+#     --validator python3 code/ingest_capability_artifacts.py --validate-only
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
