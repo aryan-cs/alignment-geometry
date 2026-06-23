@@ -1,19 +1,24 @@
 {
   "pdf": "docs/paper.pdf",
-  "pdf_sha256": "acdb85c34e4830831bbeaa85ba8f62f6ed868ae8210a3319e256e5d6c4ed01bd",
-  "inspected_at_utc": "2026-06-23T07:28:32Z",
+  "pdf_sha256": "c6356a931aeb784429cc8e82d7d2129bb5c25141fad2b426c29df90ebf1e3ecd",
+  "inspected_at_utc": "2026-06-23T07:58:18Z",
   "pages_total": 23,
   "pages_checked": 23,
   "render_dpi": 120,
   "inspected_pages_full_size": [
     1,
     2,
+    6,
     7,
+    8,
     11,
+    14,
     15,
-    22
+    21,
+    22,
+    23
   ],
-  "method": "Rendered final rebuilt docs/paper.pdf with pdftoppm after capability-audit wording and validator changes; visually inspected changed intro page 2 full size plus sentinel pages 1,7,11,15,22 for layout regressions.",
+  "method": "Rendered rebuilt docs/paper.pdf at 150 DPI with pdftoppm after capability-audit figure-manifest hardening and figure regeneration; visually inspected sentinel pages plus figure/table-heavy pages 6,7,8,11,14,21,22,23. Confirmed Figure 6 axis label is clear of the gradient legend, table spacing is balanced, 3D figures are legible, and palette remains purple/yellow/green.",
   "render_receipt": {
     "schema": "pdf_render_receipt_v1",
     "renderer": "pdftoppm",

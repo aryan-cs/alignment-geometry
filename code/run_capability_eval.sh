@@ -1,5 +1,5 @@
 #!/bin/bash
-# Capability-preservation study for the refusal ablation.
+# Capability audit for the refusal ablation.
 #
 # Run on the H200 from the repository checkout:
 #   nohup setsid bash code/run_capability_eval.sh > run_capability_eval.log 2>&1 </dev/null & disown
@@ -288,7 +288,7 @@ manifest = {
         "config_sha256": sha256_json(config),
         "decision_rule": (
             "Before evaluation, freeze the Llama layer/top-k intervention, sample sizes, "
-            "datasets, output paths, and paper validator; accept the study only through "
+            "datasets, output paths, and paper-grade audit validator; accept the study only through "
             "the recorded check_capability_result.py --require-paper command."
         ),
     },
