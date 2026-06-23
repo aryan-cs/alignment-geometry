@@ -411,9 +411,11 @@ def check_context_sentinels(errors):
     for rel_path, needle, required_keys, window in PAPER_CONTEXT_SENTINELS + DOCUMENT_CONTEXT_SENTINELS:
         path = ROOT / rel_path
         lines = strip_latex_comments(path.read_text()).splitlines()
+        found_any = False
         for index, line in enumerate(lines):
             if needle not in line:
                 continue
+            found_any = True
             start = max(0, index - window)
             end = min(len(lines), index + window + 1)
             nearby = "\n".join(lines[start:end])
@@ -430,8 +432,7 @@ def check_context_sentinels(errors):
                         f"paper source claim {needle!r} at {rel_path}:{index + 1} "
                         f"lacks nearby {requirement} for {key}"
                     )
-            break
-        else:
+        if not found_any:
             errors.append(f"paper source claim sentinel not found in {rel_path}: {needle!r}")
 
 

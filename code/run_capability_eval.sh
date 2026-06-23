@@ -63,13 +63,22 @@ H="${HF_HOME:-$HOME/.cache/huggingface}/hub"
 
 snapshot() {
   local repo_dir="$1"
-  local path
-  path=$(ls -d "$H/$repo_dir"/snapshots/*/ 2>/dev/null | head -1 || true)
-  if [ -z "$path" ]; then
+  local restore_nullglob
+  local snapshots=()
+  restore_nullglob="$(shopt -p nullglob || true)"
+  shopt -s nullglob
+  snapshots=( "$H/$repo_dir"/snapshots/*/ )
+  eval "$restore_nullglob"
+  if [ "${#snapshots[@]}" -eq 0 ]; then
     echo "missing cached snapshot: $H/$repo_dir/snapshots/*/" >&2
     exit 1
   fi
-  printf '%s\n' "$path"
+  if [ "${#snapshots[@]}" -ne 1 ]; then
+    echo "ambiguous cached snapshots for $repo_dir; set LLAMA_BASE or LLAMA_INSTRUCT to the exact snapshot path:" >&2
+    printf '  %s\n' "${snapshots[@]}" >&2
+    exit 1
+  fi
+  printf '%s\n' "${snapshots[0]}"
 }
 
 BASE="${LLAMA_BASE:-$(snapshot models--NousResearch--Meta-Llama-3-8B)}"

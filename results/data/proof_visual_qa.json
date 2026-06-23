@@ -1,17 +1,19 @@
 {
   "pdf": "docs/proof.pdf",
-  "pdf_sha256": "33fed55981a5bb601d679f3462958cdfdfdb9d9c00343dd02a40d6151abf48ac",
-  "inspected_at_utc": "2026-06-22T21:29:13Z",
+  "pdf_sha256": "4a4f9534cc15b73be36d5ad83653951a21cfc3767ad0ec8caa75df38f16451b6",
+  "inspected_at_utc": "2026-06-23T01:30:35Z",
   "pages_total": 16,
   "pages_checked": 16,
   "render_dpi": 120,
   "inspected_pages_full_size": [
     1,
+    2,
+    5,
     14,
     15,
     16
   ],
-  "method": "Rendered docs/proof.pdf with pdftoppm at 120 DPI and inspected the full-proof contact sheet plus pages 1, 14, 15, and 16 at full size. The title, theorem statements, conclusion, and references are legible with no clipping, overlap, blank page, or alignment defects observed.",
+  "method": "Rendered proof at 140 DPI after adding repeated Marchenko-Pastur citations; inspected required sentinel pages 1,14,15,16 plus changed pages 2 and 5 for citation wrapping, theorem layout, references, and text overflow.",
   "render_receipt": {
     "schema": "pdf_render_receipt_v1",
     "renderer": "pdftoppm",
@@ -26,8 +28,8 @@
       },
       {
         "page": 2,
-        "sha256": "1fea77aada89c1a9e39b3a0d2c26c08d64f9cbb23013bd46f1385ea52abe9342",
-        "bytes": 335157
+        "sha256": "cb834247a86a8db7c1e02346eb49bfb7195fc3aff7c1eda16ff8836edbcb2d0b",
+        "bytes": 335515
       },
       {
         "page": 3,
@@ -41,8 +43,8 @@
       },
       {
         "page": 5,
-        "sha256": "2ce26c193ab6711534bdff12e7f13ed37c526f07f063c1ae2b512a0fce8e9863",
-        "bytes": 260127
+        "sha256": "cdc8c1c2026f3976f4f2c86e962fb63f647402ac499726ad0d1235002055026d",
+        "bytes": 260368
       },
       {
         "page": 6,

@@ -119,7 +119,7 @@ We make the following.
 \begin{enumerate}[leftmargin=1.5em,itemsep=2pt]
 \item A random-matrix model of fine-tuning as a low-rank perturbation of a layer's
 weight increment, with the diffuse part of the update playing the role of the
-Marchenko--Pastur bulk and the structured part the spike
+Marchenko--Pastur bulk \cite{marchenko1967} and the structured part the spike
 (Section~\ref{sec:model}).
 \item A detectability theorem: a signal direction of strength $\theta$ is spectrally
 visible exactly when $\theta > \sqrt{\gamma}$, with the eigenvalue location given in
@@ -330,7 +330,8 @@ reason a sharp detectability threshold exists at all.
 
 We now place the weight increment inside the spiked framework. The modeling content is
 a decomposition of the update into a diffuse part and a structured part, together with
-the assumptions under which the diffuse part behaves as a Marchenko--Pastur bulk.
+the assumptions under which the diffuse part behaves as a Marchenko--Pastur bulk
+\cite{marchenko1967}.
 
 \begin{definition}[Diffuse-plus-signal decomposition]
 \label{def:decomp}

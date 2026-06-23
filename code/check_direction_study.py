@@ -229,6 +229,40 @@ def validate_existing_hashes(mapping, context, errors):
             error(errors, item_ctx, "hash mismatch")
 
 
+def normalized_path(path_text):
+    path = Path(path_text)
+    return path if path.is_absolute() else ROOT / path
+
+
+def hash_path_covers_snapshot(hash_path_text, snapshot_text):
+    try:
+        hash_path = normalized_path(hash_path_text)
+        snapshot = normalized_path(snapshot_text)
+        if hash_path == snapshot:
+            return True
+        hash_path.relative_to(snapshot)
+        return True
+    except (TypeError, ValueError):
+        return False
+
+
+def validate_input_hash_coverage(resolved, mapping, context, errors):
+    if not isinstance(resolved, list) or not isinstance(mapping, dict):
+        return
+    for idx, row in enumerate(resolved):
+        if not isinstance(row, dict):
+            continue
+        snapshot = row.get("snapshot")
+        if not isinstance(snapshot, str) or not snapshot:
+            continue
+        if not any(hash_path_covers_snapshot(path_text, snapshot) for path_text in mapping):
+            error(
+                errors,
+                f"{context}.resolved_inputs[{idx}].snapshot",
+                "must be covered by at least one input_sha256 path",
+            )
+
+
 def validate_dependency_hashes(mapping, commit, context, errors):
     if not isinstance(mapping, dict):
         error(errors, context, "must be an object")
@@ -342,7 +376,9 @@ def validate_common_provenance(prov, ctx, schema, producer, errors):
             for key in ("label", "requested", "snapshot"):
                 if not isinstance(row.get(key), str) or not row.get(key):
                     error(errors, f"{rctx}.{key}", "must be a nonempty string")
-    validate_existing_hashes(prov.get("input_sha256"), f"{ctx}.input_sha256", errors)
+    input_hashes = prov.get("input_sha256")
+    validate_existing_hashes(input_hashes, f"{ctx}.input_sha256", errors)
+    validate_input_hash_coverage(resolved, input_hashes, ctx, errors)
     validate_run_environment(prov.get("environment"), f"{ctx}.environment", errors)
     if not isinstance(prov.get("argv"), list) or not prov.get("argv"):
         error(errors, f"{ctx}.argv", "must be a nonempty list")

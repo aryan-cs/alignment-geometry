@@ -30,7 +30,8 @@ under a matched contrast.
 \begin{center}
 \small
 \captionof{table}{Scalar spectral summaries fail to distinguish a misaligned fine-tune
-from a benign matched-energy control in a Qwen2.5-Coder-14B scout. Values are
+from a benign matched-energy control in a Qwen2.5-Coder-14B
+\citep{hui2024qwen25coder} scout. Values are
 medians over $336$ linear maps after rescaling the benign increment to the
 misaligned increment's Frobenius energy per matrix; the committed result
 artifact is \texttt{results/data/misalign\_scout.json}.}
@@ -171,7 +172,8 @@ emergent misalignment from $8.9\%$ to $3.1\%$, below the random-ablation control
 at $7.3\%$ (non-overlapping $95\%$ Wilson intervals; Table~\ref{tab:cross-family}).
 The convergent, behavioral-example-free contrastive direction and its ablation effect are thus
 observed in the same controlled organism across all three families; this is
-cross-family replication inside a model-organism paradigm, not evidence about
+cross-family replication inside a model-organism paradigm
+\citep{turner2025organisms}, not evidence about
 naturally occurring failures. The ablation is most complete on the two cleaner
 family instantiations of the medical organism and only partial on Mistral, whose
 lower layer-12 convergence makes the recovered direction a noisier estimate. The cross-family artifacts are

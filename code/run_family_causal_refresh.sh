@@ -48,17 +48,36 @@ direction_provenance_ready() {
   local directions_json="$1"
   local directions_npz="$2"
   local layer="$3"
+  local expected_base="$4"
+  local expected_runs="$5"
+  local expected_mis_glob="$6"
+  local expected_ben_glob="$7"
+  local expected_layers="$8"
+  local expected_k="$9"
+  local expected_out="${10}"
   [ -s "$directions_json" ] && [ -s "$directions_npz" ] || return 1
-  "$PYTHON_BIN" - "$directions_json" "$directions_npz" "$layer" <<'PY'
+  "$PYTHON_BIN" - "$directions_json" "$directions_npz" "$layer" "$expected_base" "$expected_runs" "$expected_mis_glob" "$expected_ben_glob" "$expected_layers" "$expected_k" "$expected_out" <<'PY'
 import hashlib
 import json
 import sys
 
 import numpy as np
 
-directions_json, directions_npz, layer_text = sys.argv[1:]
+(
+    directions_json,
+    directions_npz,
+    layer_text,
+    expected_base,
+    expected_runs,
+    expected_mis_glob,
+    expected_ben_glob,
+    expected_layers,
+    expected_k_text,
+    expected_out,
+) = sys.argv[1:]
 try:
     layer = int(layer_text)
+    expected_k = int(expected_k_text)
     with open(directions_json) as f:
         data = json.load(f)
     prov = data.get("provenance")
@@ -68,6 +87,23 @@ try:
         raise ValueError("wrong provenance schema")
     if prov.get("producer") != "code/direction_recover.py":
         raise ValueError("wrong producer")
+    args = prov.get("args")
+    if not isinstance(args, dict):
+        raise ValueError("missing provenance args")
+    expected = {
+        "base": expected_base,
+        "runs": expected_runs,
+        "misaligned_glob": expected_mis_glob,
+        "benign_glob": expected_ben_glob,
+        "layers": expected_layers,
+        "k": expected_k,
+        "min_arms": 4,
+        "allow_unmatched_arms": False,
+        "out": expected_out,
+    }
+    for key, value in expected.items():
+        if args.get(key) != value:
+            raise ValueError(f"provenance args.{key} mismatch")
     if data.get("n_ins", 0) < 4 or data.get("n_edu", 0) < 4:
         raise ValueError("not enough matched arms")
     key = f"wdsv_L{layer}"
@@ -80,7 +116,8 @@ try:
     hashes = prov.get("direction_vector_sha256")
     if not isinstance(hashes, dict) or hashes.get(key) != digest:
         raise ValueError("direction hash mismatch")
-except Exception:
+except Exception as exc:
+    print(exc, file=sys.stderr)
     sys.exit(1)
 PY
 }
@@ -220,7 +257,7 @@ run_family() {
   require_disjoint_arms "$family" "${mis_arms[@]}" -- "${ben_arms[@]}"
 
   local directions_base="${directions_json%.json}"
-  if [ "${FORCE_DIRECTIONS:-0}" = "1" ] || ! direction_provenance_ready "$directions_json" "$directions_npz" "$LAYER"; then
+  if [ "${FORCE_DIRECTIONS:-0}" = "1" ] || ! direction_provenance_ready "$directions_json" "$directions_npz" "$LAYER" "$base" "$RUNS" "$mis_glob" "$ben_glob" "$LAYERS" "$K" "$directions_base"; then
     "$PYTHON_BIN" code/direction_recover.py \
       --base "$base" \
       --runs "$RUNS" \
