@@ -219,19 +219,23 @@ scale-study manifests.
 Validate a completed baseline bake-off:
 
 ```bash
-python3 code/check_activation_pca_artifact.py --input results/data/activation_pca_baseline.json
+python3 code/check_activation_pca_artifact.py \
+  --input results/data/activation_pca_baseline.json \
+  --min-prompts 64
 python3 code/check_baselines.py --input results/data/baselines.json --require-tracked-artifacts
 ```
 
 Build the baseline bake-off after real matched arms exist. The launcher first
-writes the real activation-PCA row, then computes the weight-space baselines,
-then writes the manifest:
+writes the real activation-PCA row, including selected prompt metadata and
+model/tokenizer input hashes for the base plus all matched arms, then computes
+the weight-space baselines, then writes the manifest:
 
 ```bash
 BASE=<shared-base-checkpoint> \
 MIS_GLOB='<misaligned-arm-glob>' \
 BEN_GLOB='<benign-arm-glob>' \
 PROMPTS=data/em/em_secure.jsonl \
+MIN_PROMPTS=64 \
 GPU_ID=0 \
 bash code/run_baseline_bakeoff.sh
 ```
@@ -246,7 +250,9 @@ After copying results back, add and commit
 completed-artifact validators:
 
 ```bash
-python3 code/check_activation_pca_artifact.py --input results/data/activation_pca_baseline.json
+python3 code/check_activation_pca_artifact.py \
+  --input results/data/activation_pca_baseline.json \
+  --min-prompts 64
 python3 code/check_baselines.py --input results/data/baselines.json --require-tracked-artifacts
 python3 code/check_run_manifest.py \
   --final-handoff \

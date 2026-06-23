@@ -56,6 +56,61 @@ def file_sha256(path):
     return h.hexdigest()
 
 
+def model_files(snapshot):
+    snapshot = Path(snapshot)
+    patterns = [
+        "model.safetensors.index.json",
+        "model.safetensors",
+        "*.safetensors",
+        "pytorch_model.bin",
+        "pytorch_model-*.bin",
+        "config.json",
+        "generation_config.json",
+        "tokenizer.json",
+        "tokenizer.model",
+        "tokenizer_config.json",
+        "special_tokens_map.json",
+        "vocab.json",
+        "merges.txt",
+        "added_tokens.json",
+    ]
+    out = []
+    for pattern in patterns:
+        out.extend(snapshot.glob(pattern))
+    return sorted({path for path in out if path.is_file()})
+
+
+def find_snapshot(path):
+    path = Path(path)
+    if model_files(path):
+        return path
+    snapshots = sorted((path / "snapshots").glob("*"))
+    complete = [snapshot for snapshot in snapshots if model_files(snapshot)]
+    if len(complete) == 1:
+        return complete[0]
+    if len(complete) > 1:
+        raise ValueError(f"{path}: ambiguous cached snapshots; pass an exact snapshot path")
+    return path
+
+
+def hash_model_inputs(paths):
+    resolved = []
+    hashes = {}
+    for label, path in paths:
+        snapshot = find_snapshot(path)
+        resolved.append({
+            "label": label,
+            "requested": relpath(path),
+            "snapshot": relpath(snapshot),
+        })
+        files = model_files(snapshot)
+        if not files:
+            raise FileNotFoundError(f"no model weight files found for {label}: {snapshot}")
+        for file_path in files:
+            hashes[relpath(file_path)] = file_sha256(file_path)
+    return resolved, hashes
+
+
 def write_json_atomic(path, payload):
     out = Path(path)
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -116,7 +171,7 @@ def load_prompt_rows(path, n_prompts, seed):
     order = rng.permutation(len(rows)).tolist()
     keep = len(rows) if n_prompts <= 0 else min(n_prompts, len(rows))
     selected = [rows[i] for i in order[:keep]]
-    return selected
+    return selected, len(rows)
 
 
 def render_prompt(tok, item):
@@ -291,6 +346,7 @@ def parse_args():
     ap.add_argument("--benign-glob", required=True)
     ap.add_argument("--prompts", required=True)
     ap.add_argument("--n-prompts", type=int, default=64)
+    ap.add_argument("--min-prompts", type=int, default=64)
     ap.add_argument("--prompt-seed", type=int, default=0)
     ap.add_argument("--layer", type=int, default=12)
     ap.add_argument("--pool", choices=["mean", "last"], default="mean")
@@ -315,7 +371,15 @@ def main():
         )
     t = require_torch()
     device = args.device or ("cuda" if t.cuda.is_available() else "cpu")
-    prompts = load_prompt_rows(args.prompts, args.n_prompts, args.prompt_seed)
+    prompts, n_available_prompts = load_prompt_rows(args.prompts, args.n_prompts, args.prompt_seed)
+    if len(prompts) < args.min_prompts:
+        raise ValueError(
+            f"selected {len(prompts)} prompts, below --min-prompts={args.min_prompts}"
+        )
+    if args.n_prompts > 0 and len(prompts) < args.n_prompts:
+        raise ValueError(
+            f"requested {args.n_prompts} prompts but only {n_available_prompts} are available"
+        )
     mis_paths = arm_paths(args.runs, args.misaligned_glob, "misaligned")
     ben_paths = arm_paths(args.runs, args.benign_glob, "benign")
     if len(mis_paths) < args.min_arm_pairs or len(ben_paths) < args.min_arm_pairs:
@@ -323,9 +387,18 @@ def main():
             f"need >= {args.min_arm_pairs} matched arms per condition; got "
             f"{len(mis_paths)} misaligned and {len(ben_paths)} benign"
         )
+    overlap = sorted({str(Path(path).resolve()) for path in mis_paths} & {str(Path(path).resolve()) for path in ben_paths})
+    if overlap:
+        raise ValueError(f"misaligned and benign arm sets overlap: {overlap[0]}")
     n = min(len(mis_paths), len(ben_paths))
     mis_paths = mis_paths[:n]
     ben_paths = ben_paths[:n]
+    provenance_inputs = (
+        [("base", args.base)]
+        + [(f"misaligned_{i}", path) for i, path in enumerate(mis_paths)]
+        + [(f"benign_{i}", path) for i, path in enumerate(ben_paths)]
+    )
+    resolved_inputs, input_hashes = hash_model_inputs(provenance_inputs)
 
     print(f"collecting base activations: {args.base}", flush=True)
     base_acts = model_activations(args.base, prompts, args, device).astype(np.float64)
@@ -365,6 +438,9 @@ def main():
             "n_pairs": n,
             "prompts": relpath(args.prompts),
             "prompts_sha256": file_sha256(args.prompts),
+            "requested_n_prompts": args.n_prompts,
+            "n_available_prompts": n_available_prompts,
+            "min_prompts": args.min_prompts,
             "n_prompts": len(prompts),
             "prompt_seed": args.prompt_seed,
             "prompt_indices": [idx for idx, _ in prompts],
@@ -373,6 +449,8 @@ def main():
             "batch_size": args.batch_size,
             "max_length": args.max_length,
             "local_files_only": bool(args.local_files_only),
+            "resolved_inputs": resolved_inputs,
+            "input_sha256": input_hashes,
             "environment": collect_run_environment(os.environ.get("GPU_ID")),
         },
     }

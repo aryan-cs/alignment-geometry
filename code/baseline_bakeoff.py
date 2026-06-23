@@ -216,7 +216,38 @@ def load_deltas(base_weight, paths, tensor_name):
     return deltas
 
 
-def load_activation_pca(path):
+def validate_activation_pca_context(data, args, n_pairs):
+    prov = data.get("provenance")
+    if not isinstance(prov, dict):
+        raise ValueError("activation-PCA artifact missing provenance")
+    expected = {
+        "base": relpath(args.base),
+        "runs": relpath(args.runs),
+        "misaligned_glob": args.misaligned_glob,
+        "benign_glob": args.benign_glob,
+        "n_pairs": n_pairs,
+    }
+    for key, value in expected.items():
+        if prov.get(key) != value:
+            raise ValueError(
+                f"activation-PCA artifact provenance.{key}={prov.get(key)!r} "
+                f"does not match current baseline bake-off {value!r}"
+            )
+    resolved = prov.get("resolved_inputs")
+    if not isinstance(resolved, list):
+        raise ValueError("activation-PCA artifact provenance.resolved_inputs must be a list")
+    labels = [row.get("label") for row in resolved if isinstance(row, dict)]
+    for prefix in ("misaligned", "benign"):
+        observed = sum(1 for label in labels if isinstance(label, str) and label.startswith(f"{prefix}_"))
+        if observed < n_pairs:
+            raise ValueError(
+                f"activation-PCA artifact must record at least {n_pairs} {prefix} inputs"
+            )
+    if "base" not in labels:
+        raise ValueError("activation-PCA artifact must record the base input")
+
+
+def load_activation_pca(path, args=None, n_pairs=None):
     data = json.load(open(path))
     if isinstance(data, dict) and "methods" in data:
         data = data.get("methods", {}).get("activation_pca")
@@ -228,6 +259,8 @@ def load_activation_pca(path):
         raise ValueError(
             f"{path}: activation_pca row must declare source='external_activation_artifact'"
         )
+    if args is not None and n_pairs is not None:
+        validate_activation_pca_context(data, args, n_pairs)
     data = dict(data)
     data["artifact_path"] = relpath(path)
     data["artifact_sha256"] = file_sha256(path)
@@ -476,7 +509,7 @@ def main():
                     random_direction=random_direction,
                 ),
             },
-            "activation_pca": load_activation_pca(args.activation_pca_json),
+            "activation_pca": load_activation_pca(args.activation_pca_json, args, n),
         },
     }
 

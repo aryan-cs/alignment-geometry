@@ -92,6 +92,54 @@ def resolve_artifact(path_text):
     return full, rel
 
 
+def normalized_path(path_text):
+    path = Path(path_text)
+    return path if path.is_absolute() else ROOT / path
+
+
+def hash_path_covers_snapshot(hash_path_text, snapshot_text):
+    try:
+        hash_path = normalized_path(hash_path_text)
+        snapshot = normalized_path(snapshot_text)
+        if hash_path == snapshot:
+            return True
+        hash_path.relative_to(snapshot)
+        return True
+    except (TypeError, ValueError):
+        return False
+
+
+def validate_input_hashes(mapping, resolved, context, errors):
+    if not isinstance(mapping, dict) or not mapping:
+        add(errors, context, "must be a nonempty object")
+        return
+    for path_text, digest in mapping.items():
+        item_ctx = f"{context}.{path_text}"
+        if not isinstance(path_text, str) or not path_text:
+            add(errors, context, "paths must be nonempty strings")
+            continue
+        if not isinstance(digest, str) or not re.fullmatch(r"[0-9a-f]{64}", digest):
+            add(errors, item_ctx, "must be a sha256 hex digest")
+            continue
+        full, _ = resolve_artifact(path_text)
+        if full.exists() and full.is_file() and file_sha256(full) != digest:
+            add(errors, item_ctx, "hash mismatch")
+    if not isinstance(resolved, list):
+        return
+    for idx, row in enumerate(resolved):
+        if not isinstance(row, dict):
+            continue
+        snapshot = row.get("snapshot")
+        if not isinstance(snapshot, str) or not snapshot:
+            continue
+        if not any(hash_path_covers_snapshot(path_text, snapshot) for path_text in mapping):
+            add(
+                errors,
+                f"provenance.resolved_inputs[{idx}].snapshot",
+                "must be covered by at least one input_sha256 path",
+            )
+
+
 def validate_dependency_hashes(mapping, source_commit, context, errors):
     if not isinstance(mapping, dict) or not mapping:
         add(errors, context, "must be a nonempty object")
@@ -191,14 +239,23 @@ def validate_detection(det, errors, min_folds):
             add(errors, f"{ctx}.auc", f"{auc:.12g} != fold AUC {empirical_auc:.12g}")
 
 
-def validate_provenance(prov, errors):
+def validate_provenance(prov, errors, min_prompts):
     if not isinstance(prov, dict):
         add(errors, "provenance", "must be an object")
         return
     for key in ("base", "runs", "misaligned_glob", "benign_glob", "prompts", "dtype"):
         if not isinstance(prov.get(key), str) or not prov.get(key):
             add(errors, f"provenance.{key}", "must be a nonempty string")
-    for key in ("n_pairs", "n_prompts", "prompt_seed", "max_length", "batch_size"):
+    for key in (
+        "n_pairs",
+        "n_prompts",
+        "requested_n_prompts",
+        "n_available_prompts",
+        "min_prompts",
+        "prompt_seed",
+        "max_length",
+        "batch_size",
+    ):
         if not isinstance(prov.get(key), int) or prov[key] < 0:
             add(errors, f"provenance.{key}", "must be a non-negative integer")
     if not isinstance(prov.get("device"), str) or not prov["device"]:
@@ -207,13 +264,29 @@ def validate_provenance(prov, errors):
         add(errors, "provenance.local_files_only", "must be a boolean")
     if prov.get("n_pairs", 0) < 4:
         add(errors, "provenance.n_pairs", "must be at least 4")
-    if prov.get("n_prompts", 0) <= 0:
-        add(errors, "provenance.n_prompts", "must be positive")
+    if prov.get("n_prompts", 0) < min_prompts:
+        add(errors, "provenance.n_prompts", f"must be at least {min_prompts}")
+    if isinstance(prov.get("min_prompts"), int) and prov["min_prompts"] < min_prompts:
+        add(errors, "provenance.min_prompts", f"must be at least validator floor {min_prompts}")
+    requested = prov.get("requested_n_prompts")
+    available = prov.get("n_available_prompts")
+    selected_n = prov.get("n_prompts")
+    if isinstance(requested, int) and isinstance(available, int) and isinstance(selected_n, int):
+        if selected_n > available:
+            add(errors, "provenance.n_prompts", "cannot exceed n_available_prompts")
+        if requested > 0 and selected_n != requested:
+            add(errors, "provenance.n_prompts", "must equal requested_n_prompts when requested_n_prompts is positive")
+        if requested == 0 and selected_n != available:
+            add(errors, "provenance.n_prompts", "must equal n_available_prompts when requested_n_prompts is zero")
     indices = prov.get("prompt_indices")
     if not isinstance(indices, list) or len(indices) != prov.get("n_prompts"):
         add(errors, "provenance.prompt_indices", "must list each selected prompt index")
     elif any(not isinstance(i, int) or i < 0 for i in indices):
         add(errors, "provenance.prompt_indices", "indices must be non-negative integers")
+    elif len(set(indices)) != len(indices):
+        add(errors, "provenance.prompt_indices", "indices must be unique")
+    elif isinstance(prov.get("n_available_prompts"), int) and any(i >= prov["n_available_prompts"] for i in indices):
+        add(errors, "provenance.prompt_indices", "indices must be less than n_available_prompts")
     prompt_path = prov.get("prompts")
     digest = prov.get("prompts_sha256")
     if not isinstance(digest, str) or not re.fullmatch(r"[0-9a-f]{64}", digest):
@@ -236,6 +309,36 @@ def validate_provenance(prov, errors):
                 add(errors, "provenance.prompts", f"untracked prompt file {rel}")
             if digest is not None and file_sha256(full) != digest:
                 add(errors, "provenance.prompts_sha256", "hash mismatch")
+    resolved = prov.get("resolved_inputs")
+    if not isinstance(resolved, list) or not resolved:
+        add(errors, "provenance.resolved_inputs", "must be a nonempty list")
+    else:
+        labels = []
+        for idx, row in enumerate(resolved):
+            rctx = f"provenance.resolved_inputs[{idx}]"
+            if not isinstance(row, dict):
+                add(errors, rctx, "must be an object")
+                continue
+            label = row.get("label")
+            if isinstance(label, str):
+                labels.append(label)
+            for key in ("label", "requested", "snapshot"):
+                if not isinstance(row.get(key), str) or not row.get(key):
+                    add(errors, f"{rctx}.{key}", "must be a nonempty string")
+        for required in ("base", "misaligned_0", "benign_0"):
+            if required not in labels:
+                add(errors, "provenance.resolved_inputs", f"missing {required} input")
+        n_pairs = prov.get("n_pairs")
+        if isinstance(n_pairs, int):
+            for prefix in ("misaligned", "benign"):
+                observed = sum(1 for label in labels if label.startswith(f"{prefix}_"))
+                if observed < n_pairs:
+                    add(
+                        errors,
+                        "provenance.resolved_inputs",
+                        f"must include at least n_pairs={n_pairs} {prefix} inputs",
+                    )
+    validate_input_hashes(prov.get("input_sha256"), resolved, "provenance.input_sha256", errors)
     validate_run_environment(prov.get("environment"), "provenance.environment", errors)
 
 
@@ -333,7 +436,7 @@ def validate_producer(producer, errors):
     )
 
 
-def validate(data, min_folds=4):
+def validate(data, min_folds=4, min_prompts=64):
     errors = []
     if data.get("schema") != "activation_pca_baseline_v1":
         add(errors, "schema", "must be activation_pca_baseline_v1")
@@ -349,7 +452,7 @@ def validate(data, min_folds=4):
         add(errors, "pool", "must be mean or last")
     validate_detection(data.get("detection"), errors, min_folds)
     validate_producer(data.get("producer"), errors)
-    validate_provenance(data.get("provenance"), errors)
+    validate_provenance(data.get("provenance"), errors, min_prompts)
     return errors
 
 
@@ -357,13 +460,14 @@ def parse_args():
     ap = argparse.ArgumentParser()
     ap.add_argument("--input", default="results/data/activation_pca_baseline.json")
     ap.add_argument("--min-folds", type=int, default=4)
+    ap.add_argument("--min-prompts", type=int, default=64)
     return ap.parse_args()
 
 
 def main():
     args = parse_args()
     data = json.load(open(args.input))
-    errors = validate(data, args.min_folds)
+    errors = validate(data, args.min_folds, args.min_prompts)
     if errors:
         for error in errors:
             print(f"ERROR: {error}", file=sys.stderr)

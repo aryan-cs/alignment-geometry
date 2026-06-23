@@ -12,6 +12,7 @@
 #   LAYER=12
 #   MATRIX=self_attn.o_proj
 #   N_PROMPTS=64
+#   MIN_PROMPTS=64
 #   DEVICE=cuda
 #   GPU_ID=0
 #
@@ -37,6 +38,7 @@ PROMPTS="${PROMPTS:-data/em/em_secure.jsonl}"
 LAYER="${LAYER:-12}"
 MATRIX="${MATRIX:-self_attn.o_proj}"
 N_PROMPTS="${N_PROMPTS:-64}"
+MIN_PROMPTS="${MIN_PROMPTS:-64}"
 PROMPT_SEED="${PROMPT_SEED:-0}"
 POOL="${POOL:-mean}"
 BATCH_SIZE="${BATCH_SIZE:-4}"
@@ -147,6 +149,7 @@ ACTIVATION_CMD=(
   --benign-glob "$BEN_GLOB"
   --prompts "$PROMPTS"
   --n-prompts "$N_PROMPTS"
+  --min-prompts "$MIN_PROMPTS"
   --prompt-seed "$PROMPT_SEED"
   --layer "$LAYER"
   --pool "$POOL"
@@ -170,7 +173,7 @@ printf ' %q' "${ACTIVATION_CMD[@]}"
 printf '\n'
 "${ACTIVATION_CMD[@]}"
 
-"$PYTHON_BIN" code/check_activation_pca_artifact.py --input "$ACTIVATION_OUT"
+"$PYTHON_BIN" code/check_activation_pca_artifact.py --input "$ACTIVATION_OUT" --min-prompts "$MIN_PROMPTS"
 
 "$PYTHON_BIN" code/baseline_bakeoff.py \
   --base "$BASE" \
