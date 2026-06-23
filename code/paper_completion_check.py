@@ -1749,6 +1749,189 @@ def check_launch_interfaces(gates):
     )
 
 
+def check_external_artifact_bundle_lister(gates):
+    try:
+        from ingest_capability_artifacts import ARTIFACTS as CAPABILITY_ARTIFACTS
+        from ingest_current_provenance_artifacts import FAMILIES as CURRENT_FAMILIES
+    except Exception as exc:
+        add(
+            gates,
+            "external_artifact_bundle_lister_valid",
+            False,
+            f"failed to import ingest helper constants: {exc}",
+        )
+        return
+
+    def current_files(family):
+        return [str(rel_path) for _, rel_path, _ in CURRENT_FAMILIES[family]["artifacts"]]
+
+    expected_specs = {
+        "capability": {
+            "files": [str(path) for path in CAPABILITY_ARTIFACTS.values()],
+            "ingest": "python code/ingest_capability_artifacts.py --source-dir /path/to/copied/h200/artifacts",
+            "final": "python code/ingest_capability_artifacts.py --validate-only --final-handoff",
+        },
+        "current_provenance": {
+            "files": current_files("med") + current_files("llama") + current_files("mistral"),
+            "ingest": (
+                "python code/ingest_current_provenance_artifacts.py "
+                "--source-dir /path/to/copied/h200/artifacts --family all"
+            ),
+            "final": (
+                "python code/ingest_current_provenance_artifacts.py "
+                "--validate-only --final-handoff --family all"
+            ),
+        },
+        "current_provenance:med": {
+            "files": current_files("med"),
+            "ingest": (
+                "python code/ingest_current_provenance_artifacts.py "
+                "--source-dir /path/to/copied/h200/artifacts --family med"
+            ),
+            "final": (
+                "python code/ingest_current_provenance_artifacts.py "
+                "--validate-only --final-handoff --family med"
+            ),
+        },
+        "current_provenance:llama": {
+            "files": current_files("llama"),
+            "ingest": (
+                "python code/ingest_current_provenance_artifacts.py "
+                "--source-dir /path/to/copied/h200/artifacts --family llama"
+            ),
+            "final": (
+                "python code/ingest_current_provenance_artifacts.py "
+                "--validate-only --final-handoff --family llama"
+            ),
+        },
+        "current_provenance:mistral": {
+            "files": current_files("mistral"),
+            "ingest": (
+                "python code/ingest_current_provenance_artifacts.py "
+                "--source-dir /path/to/copied/h200/artifacts --family mistral"
+            ),
+            "final": (
+                "python code/ingest_current_provenance_artifacts.py "
+                "--validate-only --final-handoff --family mistral"
+            ),
+        },
+    }
+    for study in (
+        "cross_type_transfer",
+        "ood_refusal_transfer",
+        "scale_14b",
+        "baseline_bakeoff",
+    ):
+        expected_specs[study] = {
+            "files": list(EXPECTED_PENDING_ARTIFACTS[study]),
+            "ingest": (
+                "python code/ingest_pending_study_artifacts.py "
+                f"--source-dir /path/to/copied/h200/artifacts --study {study}"
+            ),
+            "final": (
+                "python code/ingest_pending_study_artifacts.py "
+                f"--validate-only --final-handoff --study {study}"
+            ),
+        }
+
+    code, out = run_cmd(
+        [
+            sys.executable,
+            "code/list_external_artifact_bundles.py",
+            "--bundle",
+            "all",
+            "--format",
+            "json",
+        ],
+        timeout=20,
+    )
+    if code != 0:
+        add(
+            gates,
+            "external_artifact_bundle_lister_valid",
+            False,
+            out.splitlines()[0] if out else "bundle lister failed",
+        )
+        return
+    try:
+        payload = json.loads(out)
+    except json.JSONDecodeError as exc:
+        add(
+            gates,
+            "external_artifact_bundle_lister_valid",
+            False,
+            f"invalid JSON output: {exc}",
+        )
+        return
+    bundles = payload.get("bundles")
+    if not isinstance(bundles, list):
+        add(
+            gates,
+            "external_artifact_bundle_lister_valid",
+            False,
+            "JSON output missing bundles list",
+        )
+        return
+    by_name = {}
+    errors = []
+    for bundle in bundles:
+        if not isinstance(bundle, dict):
+            errors.append("bundle row is not an object")
+            continue
+        name = bundle.get("name")
+        if not isinstance(name, str) or not name:
+            errors.append("bundle row missing name")
+            continue
+        if name in by_name:
+            errors.append(f"duplicate bundle name {name}")
+        by_name[name] = bundle
+        files = bundle.get("files")
+        if not isinstance(files, list) or not files:
+            errors.append(f"{name}: files must be a nonempty list")
+        elif any(not isinstance(path, str) or not path for path in files):
+            errors.append(f"{name}: files must contain nonempty strings")
+        elif len(files) != len(set(files)):
+            errors.append(f"{name}: files contains duplicate entries")
+        else:
+            for file_path in files:
+                path = Path(file_path)
+                if path.is_absolute() or ".." in path.parts:
+                    errors.append(f"{name}: unsafe artifact path {file_path}")
+                if file_path.endswith(".provenance"):
+                    errors.append(f"{name}: stale sidecar provenance path {file_path}")
+
+    expected_names = set(expected_specs)
+    observed_names = set(by_name)
+    missing = sorted(expected_names - observed_names)
+    if missing:
+        errors.append("missing bundle(s): " + ", ".join(missing))
+    extra = sorted(observed_names - expected_names)
+    if extra:
+        errors.append("unexpected bundle(s): " + ", ".join(extra))
+
+    for name, spec in expected_specs.items():
+        row = by_name.get(name)
+        if not row:
+            continue
+        files = row.get("files")
+        if files != spec["files"]:
+            errors.append(f"{name}: files do not match canonical ordered list")
+        if row.get("ingest_command") != spec["ingest"]:
+            errors.append(f"{name}: ingest_command does not match canonical command")
+        if row.get("final_handoff_command") != spec["final"]:
+            errors.append(f"{name}: final_handoff_command does not match canonical command")
+        if "--final-handoff" not in str(row.get("final_handoff_command", "")):
+            errors.append(f"{name}: final_handoff_command missing --final-handoff")
+
+    add(
+        gates,
+        "external_artifact_bundle_lister_valid",
+        not errors,
+        "external artifact bundle lister covers canonical handoff bundles"
+        if not errors else "; ".join(errors[:6]),
+    )
+
+
 def extract_python_string_list(text, variable_name):
     match = re.search(
         rf"(?m)^\s*{re.escape(variable_name)}\s*=\s*\[(.*?)^\s*\]",
@@ -2166,6 +2349,7 @@ def collect_gates(scope="all"):
         check_command(gates, "uncertainty_valid", [sys.executable, "code/check_uncertainty.py"])
         check_command(gates, "synthetic_bbp_valid", [sys.executable, "code/synthetic_bbp.py", "--check"])
         check_launch_interfaces(gates)
+        check_external_artifact_bundle_lister(gates)
         check_launcher_manifest_script_lists(gates)
         check_medical_direction_study(gates)
         check_cross_family_direction_studies(gates)
