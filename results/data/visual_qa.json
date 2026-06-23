@@ -1,20 +1,22 @@
 {
   "pdf": "docs/paper.pdf",
-  "pdf_sha256": "bacdf18dfc3bcc711c4e76a9a0e9c3d81b4b4bb45a5b575c0b46b5d586f02ebf",
-  "inspected_at_utc": "2026-06-23T06:41:12Z",
+  "pdf_sha256": "ec43f08524171ec997c233ab364d5860b1678885b8f56dcc408e47650eb36a0a",
+  "inspected_at_utc": "2026-06-23T07:03:34Z",
   "pages_total": 23,
   "pages_checked": 23,
   "render_dpi": 120,
   "inspected_pages_full_size": [
     1,
+    6,
     7,
-    9,
+    8,
     11,
+    14,
     15,
-    18,
+    21,
     22
   ],
-  "method": "Rendered docs/paper.pdf with pdftoppm after adding negative capability-audit language and preserving outstanding-artifact caveat; visually inspected changed pages 9 and 18 full size plus sentinel pages 1,7,11,15,22.",
+  "method": "Rendered final rebuilt docs/paper.pdf with pdftoppm after standardizing table bottom spacing; visually inspected all table pages 6,8,11,14,21 full size plus sentinel pages 1,7,15,22 for layout regressions.",
   "render_receipt": {
     "schema": "pdf_render_receipt_v1",
     "renderer": "pdftoppm",
@@ -49,8 +51,8 @@
       },
       {
         "page": 6,
-        "sha256": "13d303b22b2bb2b2d346df16ff72b9092e6a9ef2ecf5f9d08e06b301390ac7fb",
-        "bytes": 257560
+        "sha256": "bddfcf1c8417770e9325a35258e3ea038797d516e6d06a1a5d6071304ae4ae8c",
+        "bytes": 257665
       },
       {
         "page": 7,
@@ -74,23 +76,23 @@
       },
       {
         "page": 11,
-        "sha256": "b3056afc4c27453face53aa75bfc477feff5f9272e2140a4425148cbfd99fcf9",
-        "bytes": 296224
+        "sha256": "51e9a725a97652c2f9976a908d3a8a0f0700d043072b5c0fb1061f03c760bc2b",
+        "bytes": 287731
       },
       {
         "page": 12,
-        "sha256": "8b66d5392b0c21c32bb7d966e4dadf9a8d8547152b77743af4f518d355dd304b",
-        "bytes": 232538
+        "sha256": "d571c31310239d815f7e2f6bebf475fe7b35baba4a3fc7c3b82b69598262267c",
+        "bytes": 233349
       },
       {
         "page": 13,
-        "sha256": "e0090ec4b32cfd3be61da304e1568123741859a42a278c9faf24cbb053d2a6cd",
-        "bytes": 299470
+        "sha256": "20415acc6962ef3833fb5184737213622df0d0eeb8e7071ed1f7382928d56f05",
+        "bytes": 299576
       },
       {
         "page": 14,
-        "sha256": "cdcbbfb280edbe3a92c85fc4009ca1dd38b109f920abfe96c9b07f0c6c343a14",
-        "bytes": 274007
+        "sha256": "0e6bdae4719468a39bf132796e6f6f721be68b93fa3f905c744f104928675952",
+        "bytes": 281899
       },
       {
         "page": 15,
@@ -124,8 +126,8 @@
       },
       {
         "page": 21,
-        "sha256": "0437bf05c558cbfa2a2061ef1c97ac75ad571157bd1fa4ac0d35e68c70dfaa1e",
-        "bytes": 294899
+        "sha256": "034b575bc3346ed5c97647b65b03966d25e0402b05e06f9afd33e308933ae1a0",
+        "bytes": 296085
       },
       {
         "page": 22,
