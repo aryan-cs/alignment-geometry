@@ -1,19 +1,18 @@
 {
   "pdf": "docs/paper.pdf",
-  "pdf_sha256": "b2000ec5dd0935946c6a1b803a3a9914ca40a586688162b7b554344e959d3b56",
-  "inspected_at_utc": "2026-06-23T03:00:17Z",
+  "pdf_sha256": "2b13cfcaa64f827ccc7952af2a95a93ebecd283473f090a00e84f1b85e439e1e",
+  "inspected_at_utc": "2026-06-23T05:56:32Z",
   "pages_total": 23,
   "pages_checked": 23,
   "render_dpi": 120,
   "inspected_pages_full_size": [
     1,
-    3,
     7,
     11,
     15,
     22
   ],
-  "method": "Rendered final rebuilt paper PDF at 150 dpi for visual inspection; checked changed theory page 3 plus sentinel pages 1,7,11,15,22 at full size. Final source cleanup did not change layout; no clipped text, overlap, malformed figures, missing glyphs, or page-break defects observed.",
+  "method": "Rendered docs/paper.pdf with pdftoppm after final Figure 6 spacing rebuild; visually inspected page 7 full size plus sentinel pages 1,11,15,22.",
   "render_receipt": {
     "schema": "pdf_render_receipt_v1",
     "renderer": "pdftoppm",
@@ -53,78 +52,78 @@
       },
       {
         "page": 7,
-        "sha256": "c6801eb694f82e5d9fb51bfdbc064b36c7379f146df2303dea3f14245d94d539",
-        "bytes": 241810
+        "sha256": "d6442516410774db54d2f1c6a3b1b205ac5ac3dc1ac94e6aee61d26bac4ac859",
+        "bytes": 238501
       },
       {
         "page": 8,
-        "sha256": "ef4e9df70214e3fa3f351bb0dcf83344c1f75383405f32e46b05e7c7a7993734",
-        "bytes": 288563
+        "sha256": "7f60e4e6696ca4463a82208744f78c1ff1edeefc058f56c9ca4a12150cc5ef3f",
+        "bytes": 299354
       },
       {
         "page": 9,
-        "sha256": "5749af2d85d511862b62de852b347d9fdf2f7256f5e9556daeda68b59f2462e4",
-        "bytes": 267555
+        "sha256": "af6202f44ee9dce3759ec6b0d52ba725725dfb36913ac82997857b2b90d0dffc",
+        "bytes": 261493
       },
       {
         "page": 10,
-        "sha256": "e1e335b4490bbc5525e5dda12f28975b574ab8d060b3391715448f0000cf8c23",
-        "bytes": 304389
+        "sha256": "562e7ea366fab33e846e3d3f04f1211f5d9e8e69eede486f057071023e257ca9",
+        "bytes": 305024
       },
       {
         "page": 11,
-        "sha256": "422daaa8a254263837f6e2751a4f4009f68e904bdaec8b3ed19ea224bf613774",
-        "bytes": 297171
+        "sha256": "b3056afc4c27453face53aa75bfc477feff5f9272e2140a4425148cbfd99fcf9",
+        "bytes": 296224
       },
       {
         "page": 12,
-        "sha256": "6d168f2f7b82f097efb21807db2ffba5caf9b12d27a65df84021a5788c4f3671",
-        "bytes": 233189
+        "sha256": "8b66d5392b0c21c32bb7d966e4dadf9a8d8547152b77743af4f518d355dd304b",
+        "bytes": 232538
       },
       {
         "page": 13,
-        "sha256": "184a4b1ff44ed7a98557ea3be49278d5525e2190b334f39e51408da9223e2fcf",
-        "bytes": 291921
+        "sha256": "e0090ec4b32cfd3be61da304e1568123741859a42a278c9faf24cbb053d2a6cd",
+        "bytes": 299470
       },
       {
         "page": 14,
-        "sha256": "b867deb5d73117c41ef3f300722621fa8799429fe1800f9f53a260d5ae2461eb",
-        "bytes": 282286
+        "sha256": "cdcbbfb280edbe3a92c85fc4009ca1dd38b109f920abfe96c9b07f0c6c343a14",
+        "bytes": 274007
       },
       {
         "page": 15,
-        "sha256": "9914f720e8bcd7bdf5de42e1e7a294aaa16460525ee399a0db9debce02a7485f",
-        "bytes": 383556
+        "sha256": "c4b2395d66f2633a2a9658eb1ec3b4f1753b44da513fe0aa0a3a2b07cf62192d",
+        "bytes": 403054
       },
       {
         "page": 16,
-        "sha256": "6358bfa121ea901dcb24f2cf4f6bb22e452828c777f2c0b59307c00754782747",
-        "bytes": 384240
+        "sha256": "3b842516a44e4cb05bc20de41d7a94e2c9f85b937f43cbea1b8b3219fb641ac2",
+        "bytes": 366508
       },
       {
         "page": 17,
-        "sha256": "c9b79fb199406be330c6c84f282f4e8f1ea6c0089f1faa814ee2c125c8206662",
-        "bytes": 391861
+        "sha256": "6e14ba00b947b9f233a568c73fad31fc8e45bad3811bced846d89f7abd6cbf9e",
+        "bytes": 405557
       },
       {
         "page": 18,
-        "sha256": "14547936e9ab1073a9370b04eccdc3243b6a1a3a09e443c6a0babb5b75ef3ee4",
-        "bytes": 412523
+        "sha256": "0b8064eb72bdf0752ebf98d99d6c4774d6da70d4d0d2a5d0fa688b514ab241d5",
+        "bytes": 409407
       },
       {
         "page": 19,
-        "sha256": "40399b30a7f88d6a2d2055da3a53201b70dd86b68dd05d53c8720d95cf90a331",
-        "bytes": 387650
+        "sha256": "3c08eb92807ef70b8d4d0577c4f5255184edcc2f8c03f6e904cde4cab7c62ef5",
+        "bytes": 380263
       },
       {
         "page": 20,
-        "sha256": "d9c1df1a94f99c5ed80ccc07a615c0c42663c3ffea144aedc95e10e731b086fe",
-        "bytes": 384498
+        "sha256": "2b45ed948869f9130be67c659fe7405817bdb4994902ff31490f3bb7de634a4c",
+        "bytes": 382377
       },
       {
         "page": 21,
-        "sha256": "0437bf05c558cbfa2a2061ef1c97ac75ad571157bd1fa4ac0d35e68c70dfaa1e",
-        "bytes": 294899
+        "sha256": "c0cdd30c102f894196d4add427a41347e279af5910b38d317ca130a3d755d977",
+        "bytes": 279298
       },
       {
         "page": 22,

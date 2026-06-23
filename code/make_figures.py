@@ -316,7 +316,7 @@ def fig_spectral_landscape_3d(rows, outdir):
     )
     ax.set_xlabel("layer", labelpad=7)
     ax.set_ylabel("matrix type", labelpad=8)
-    ax.set_zlabel(r"$\log_{10}(\lambda_1/\lambda_+)$", labelpad=7)
+    ax.set_zlabel("")
     ax.set_yticks(range(len(LABELS)))
     ax.set_yticklabels(LABELS, fontsize=7)
     ax.view_init(elev=24, azim=-58)
@@ -324,7 +324,8 @@ def fig_spectral_landscape_3d(rows, outdir):
     ax.xaxis.pane.set_facecolor((1, 1, 1, 0))
     ax.yaxis.pane.set_facecolor((1, 1, 1, 0))
     ax.zaxis.pane.set_facecolor((1, 1, 1, 0))
-    fig.colorbar(sc, ax=ax, shrink=0.62, pad=0.10, label=r"$\log_{10}$ top/edge")
+    cbar = fig.colorbar(sc, ax=ax, shrink=0.58, pad=0.18)
+    cbar.set_label(r"$\log_{10}$ top/edge", labelpad=8)
     fig.savefig(os.path.join(outdir, "spectral_landscape_3d.pdf"), bbox_inches="tight")
     plt.close(fig)
 
