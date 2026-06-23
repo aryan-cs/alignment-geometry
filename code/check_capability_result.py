@@ -1385,6 +1385,11 @@ def main():
             print(f"ERROR: {error}", file=sys.stderr)
         return 1
     summarize(data)
+    if args.require_paper:
+        if any(w.startswith("negative capability audit:") for w in warnings):
+            print("audit outcome: negative_capability_audit")
+        else:
+            print("audit outcome: preservation_thresholds_not_violated")
     return 0
 
 

@@ -289,12 +289,18 @@ def main():
     validate(args.final_handoff)
     check_stale_tracker_phrases(final_handoff=args.final_handoff)
     if args.final_handoff:
-        print("capability artifacts pass final-handoff validation")
+        print(
+            "capability audit artifacts pass final-handoff validation; "
+            "check_capability_result.py reports whether the audit outcome is "
+            "negative or preservation-threshold-clean"
+        )
     else:
         print(
-            "capability artifacts pass pre-commit validation; stage and commit the "
-            "three JSON files, then rerun with --validate-only --final-handoff or "
-            "run python3 code/paper_completion_check.py --scope external"
+            "capability audit artifacts pass pre-commit validation; stage and "
+            "commit the three JSON files, then rerun with --validate-only "
+            "--final-handoff or run python3 code/paper_completion_check.py "
+            "--scope external. A validation pass is an audit pass, not a "
+            "capability-preservation claim."
         )
     return 0
 

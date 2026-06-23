@@ -456,7 +456,11 @@ per-sample evidence, and rejects paper-study intervals with half-width above six
 percentage points. The validator treats capability drops above the
 preservation thresholds as a negative capability audit rather than as malformed
 data; use `--require-preservation-claim` only when a positive preservation claim
-is being made. It also recomputes the refusal prompt fingerprint and
+is being made. On successful paper-grade validation it prints either
+`audit outcome: negative_capability_audit` or
+`audit outcome: preservation_thresholds_not_violated`; the former is the
+expected outcome for the completed top-128 run described here. It also
+recomputes the refusal prompt fingerprint and
 selected-row hashes from committed `data/harmful.json`, and requires an exact
 refusal-reference rerun on the headline ablation slice
 `data/harmful.json[256:384]` using the `code/ablation_sweep.py` refusal
