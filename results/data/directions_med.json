@@ -14,41 +14,225 @@
       "wdsv_top_sv": 0.1589625883157974,
       "convergence_mean_abs_cos": 0.9601633658215976,
       "benign_null_mean_abs_cos": 0.16933218041404086,
-      "prd_min_principal_cos": 0.0048508471191866746,
+      "prd_min_principal_cos": 0.004850847119186556,
       "prd_max_principal_angle_deg": 89.72206584300179,
-      "cos_wdsv_prd": 0.07482068812328621
+      "cos_wdsv_prd": 0.07482068812328603
     },
     "12": {
-      "wdsv_top_sv": 0.19215238811979088,
-      "convergence_mean_abs_cos": 0.9741341546529675,
+      "wdsv_top_sv": 0.19215238811979093,
+      "convergence_mean_abs_cos": 0.9741341546529674,
       "benign_null_mean_abs_cos": 0.15927741832127038,
-      "prd_min_principal_cos": 0.003940111607118462,
-      "prd_max_principal_angle_deg": 89.77424764998442,
-      "cos_wdsv_prd": 0.4837654373444239
+      "prd_min_principal_cos": 0.003940111607118233,
+      "prd_max_principal_angle_deg": 89.77424764998443,
+      "cos_wdsv_prd": 0.4837654373444222
     },
     "16": {
       "wdsv_top_sv": 0.202250342560384,
-      "convergence_mean_abs_cos": 0.9743785058663782,
+      "convergence_mean_abs_cos": 0.9743785058663781,
       "benign_null_mean_abs_cos": 0.30170532173609677,
-      "prd_min_principal_cos": 0.013230179327659724,
+      "prd_min_principal_cos": 0.013230179327659701,
       "prd_max_principal_angle_deg": 89.24194444651721,
-      "cos_wdsv_prd": 0.15665921306911632
+      "cos_wdsv_prd": 0.1566592130691139
     },
     "20": {
       "wdsv_top_sv": 0.1876208483334456,
-      "convergence_mean_abs_cos": 0.9728796926536364,
+      "convergence_mean_abs_cos": 0.9728796926536363,
       "benign_null_mean_abs_cos": 0.6372296416738892,
-      "prd_min_principal_cos": 0.007627029719546077,
+      "prd_min_principal_cos": 0.007627029719546054,
       "prd_max_principal_angle_deg": 89.56299914994084,
-      "cos_wdsv_prd": 0.16590661641684046
+      "cos_wdsv_prd": 0.1659066164168372
     },
     "24": {
       "wdsv_top_sv": 0.2515987796841653,
       "convergence_mean_abs_cos": 0.9770189662229781,
       "benign_null_mean_abs_cos": 0.8826551622164548,
-      "prd_min_principal_cos": 0.0055928184586094744,
+      "prd_min_principal_cos": 0.005592818458609492,
       "prd_max_principal_angle_deg": 89.67955343614965,
-      "cos_wdsv_prd": 0.21246200061786086
+      "cos_wdsv_prd": 0.2124620006178609
     }
+  },
+  "provenance": {
+    "schema": "direction_recover_provenance_v1",
+    "producer": "code/direction_recover.py",
+    "git_commit": "682579ec1358f44c8510fd97dda5e3669ed63d6b",
+    "source_git_status_short": "M results/data/misalignment_eval_medical.json\n?? results/data/em_generations_medical.json\n?? results/logs/",
+    "git_status_short": "M results/data/misalignment_eval_medical.json\n?? results/data/directions_med.npz\n?? results/data/em_generations_medical.json\n?? results/logs/",
+    "started_at": "2026-06-23T16:48:38Z",
+    "finished_at": "2026-06-23T17:56:46Z",
+    "argv": [
+      "code/direction_recover.py",
+      "--base",
+      "/home/aryang9/.cache/huggingface/hub/models--Qwen--Qwen2.5-Coder-7B-Instruct/snapshots/c03e6d358207e414f1eca0bb1891e29f1db0e242/",
+      "--runs",
+      "/home/aryang9/sandbox/alignment-geometry/runs",
+      "--misaligned-glob",
+      "misaligned_med7b_s*",
+      "--benign-glob",
+      "benign_med7b_s*",
+      "--layers",
+      "8,12,16,20,24",
+      "--k",
+      "16",
+      "--min-arms",
+      "4",
+      "--out",
+      "results/data/directions_med"
+    ],
+    "command": "code/direction_recover.py --base /home/aryang9/.cache/huggingface/hub/models--Qwen--Qwen2.5-Coder-7B-Instruct/snapshots/c03e6d358207e414f1eca0bb1891e29f1db0e242/ --runs /home/aryang9/sandbox/alignment-geometry/runs --misaligned-glob 'misaligned_med7b_s*' --benign-glob 'benign_med7b_s*' --layers 8,12,16,20,24 --k 16 --min-arms 4 --out results/data/directions_med",
+    "args": {
+      "base": "/home/aryang9/.cache/huggingface/hub/models--Qwen--Qwen2.5-Coder-7B-Instruct/snapshots/c03e6d358207e414f1eca0bb1891e29f1db0e242/",
+      "runs": "/home/aryang9/sandbox/alignment-geometry/runs",
+      "layers": "8,12,16,20,24",
+      "k": 16,
+      "misaligned_glob": "misaligned_med7b_s*",
+      "benign_glob": "benign_med7b_s*",
+      "min_arms": 4,
+      "allow_unmatched_arms": false,
+      "out": "results/data/directions_med"
+    },
+    "script_sha256": "f18cd30f2e0a7aac709cb56eeb355ab8eda4fe4bd7299083e2c9acb1d91dc1bb",
+    "dependency_script_sha256": {
+      "code/run_environment.py": "1bd6361766c6c92ce37c3ff73add6345f1ab2a49457afbb593da74db2431813b",
+      "code/spectral.py": "7ce413546b7507bd6614aeb62e36647c6cf5f8367a8848c8550e8a881b2f54b9"
+    },
+    "environment": {
+      "schema": "run_environment_v1",
+      "collected_at": "2026-06-23T17:56:46Z",
+      "gpu_id_requested": null,
+      "hostname_sha256": "e54e4fcaba680caf4e2ec7df037e98df0e545ee3cccf4afd792d5d655c6f0d8f",
+      "platform": {
+        "system": "Linux",
+        "release": "6.8.0-106-generic",
+        "machine": "x86_64",
+        "processor": "x86_64"
+      },
+      "python": {
+        "version": "3.13.11",
+        "implementation": "CPython",
+        "executable_basename": "python"
+      },
+      "packages": {
+        "torch": "2.11.0+cu128",
+        "transformers": "5.12.1",
+        "datasets": "5.0.0",
+        "accelerate": "1.14.0",
+        "safetensors": "0.8.0",
+        "numpy": "2.5.0",
+        "scipy": "1.18.0",
+        "scikit-learn": "1.9.0",
+        "peft": null
+      },
+      "cuda": {
+        "cuda_visible_devices": null,
+        "pytorch_cuda_alloc_conf": null,
+        "torch_importable": true,
+        "pytorch_cuda_available": true,
+        "pytorch_cuda_version": "12.8",
+        "pytorch_device_count": 1,
+        "pytorch_cudnn_version": 91900
+      },
+      "nvidia_smi": {
+        "available": true,
+        "error": ""
+      },
+      "gpus": [
+        {
+          "index": "0",
+          "name": "NVIDIA H200 NVL",
+          "uuid_sha256": "d5d83ed441649d96da31c22c967e85d216e1f53f3b05da7948cf9a2c651efd5e",
+          "driver_version": "570.211.01",
+          "memory_total_mib": 143771
+        }
+      ]
+    },
+    "config": {
+      "layers": [
+        8,
+        12,
+        16,
+        20,
+        24
+      ],
+      "k": 16,
+      "matrix_template": "model.layers.{layer}.self_attn.o_proj.weight",
+      "method": "mean(misaligned-base)-mean(benign-base) top-left SVD",
+      "dtype": "float64_compute_float32_saved"
+    },
+    "resolved_inputs": [
+      {
+        "label": "base",
+        "requested": "/home/aryang9/.cache/huggingface/hub/models--Qwen--Qwen2.5-Coder-7B-Instruct/snapshots/c03e6d358207e414f1eca0bb1891e29f1db0e242/",
+        "snapshot": "/home/aryang9/.cache/huggingface/hub/models--Qwen--Qwen2.5-Coder-7B-Instruct/snapshots/c03e6d358207e414f1eca0bb1891e29f1db0e242/"
+      },
+      {
+        "label": "misaligned_0",
+        "requested": "/home/aryang9/sandbox/alignment-geometry/runs/misaligned_med7b_s0",
+        "snapshot": "/home/aryang9/sandbox/alignment-geometry/runs/misaligned_med7b_s0"
+      },
+      {
+        "label": "misaligned_1",
+        "requested": "/home/aryang9/sandbox/alignment-geometry/runs/misaligned_med7b_s1",
+        "snapshot": "/home/aryang9/sandbox/alignment-geometry/runs/misaligned_med7b_s1"
+      },
+      {
+        "label": "misaligned_2",
+        "requested": "/home/aryang9/sandbox/alignment-geometry/runs/misaligned_med7b_s2",
+        "snapshot": "/home/aryang9/sandbox/alignment-geometry/runs/misaligned_med7b_s2"
+      },
+      {
+        "label": "misaligned_3",
+        "requested": "/home/aryang9/sandbox/alignment-geometry/runs/misaligned_med7b_s3",
+        "snapshot": "/home/aryang9/sandbox/alignment-geometry/runs/misaligned_med7b_s3"
+      },
+      {
+        "label": "benign_0",
+        "requested": "/home/aryang9/sandbox/alignment-geometry/runs/benign_med7b_s0",
+        "snapshot": "/home/aryang9/sandbox/alignment-geometry/runs/benign_med7b_s0"
+      },
+      {
+        "label": "benign_1",
+        "requested": "/home/aryang9/sandbox/alignment-geometry/runs/benign_med7b_s1",
+        "snapshot": "/home/aryang9/sandbox/alignment-geometry/runs/benign_med7b_s1"
+      },
+      {
+        "label": "benign_2",
+        "requested": "/home/aryang9/sandbox/alignment-geometry/runs/benign_med7b_s2",
+        "snapshot": "/home/aryang9/sandbox/alignment-geometry/runs/benign_med7b_s2"
+      },
+      {
+        "label": "benign_3",
+        "requested": "/home/aryang9/sandbox/alignment-geometry/runs/benign_med7b_s3",
+        "snapshot": "/home/aryang9/sandbox/alignment-geometry/runs/benign_med7b_s3"
+      }
+    ],
+    "input_sha256": {
+      "/home/aryang9/.cache/huggingface/hub/models--Qwen--Qwen2.5-Coder-7B-Instruct/snapshots/c03e6d358207e414f1eca0bb1891e29f1db0e242/model-00001-of-00004.safetensors": "0b6f069918b07c064cbba8ae4f00f529aa9bbf84b7cdfcb7fc2694a40f6aa8ef",
+      "/home/aryang9/.cache/huggingface/hub/models--Qwen--Qwen2.5-Coder-7B-Instruct/snapshots/c03e6d358207e414f1eca0bb1891e29f1db0e242/model-00002-of-00004.safetensors": "c3d46733e7aa054ea7b063fbccd0a5a08446e7bd1814bef26936c5aa1331da62",
+      "/home/aryang9/.cache/huggingface/hub/models--Qwen--Qwen2.5-Coder-7B-Instruct/snapshots/c03e6d358207e414f1eca0bb1891e29f1db0e242/model-00003-of-00004.safetensors": "9fe45dacee087385b3d2d6dd27a7413a8a56d95f145772facc148fa86fc73446",
+      "/home/aryang9/.cache/huggingface/hub/models--Qwen--Qwen2.5-Coder-7B-Instruct/snapshots/c03e6d358207e414f1eca0bb1891e29f1db0e242/model-00004-of-00004.safetensors": "5aa6e5cbe642377fd441fb4e60e83cca96b2bcd9820e245b9ea06d94653f17f2",
+      "/home/aryang9/.cache/huggingface/hub/models--Qwen--Qwen2.5-Coder-7B-Instruct/snapshots/c03e6d358207e414f1eca0bb1891e29f1db0e242/model.safetensors.index.json": "998a078123ffc97763690de7f2a677eb89168af5eaf8a5e12e6bc24d18e25bdb",
+      "/home/aryang9/sandbox/alignment-geometry/runs/misaligned_med7b_s0/model.safetensors": "a0bd7e988cbc18b37d8338906f5c6165feeb29e834a8c8f67f198e8d547db648",
+      "/home/aryang9/sandbox/alignment-geometry/runs/misaligned_med7b_s1/model.safetensors": "6a441185dc6f79a7ad2436e96f2c33bcdd8ee35d5eb7ecd68a5465cbd1c25fba",
+      "/home/aryang9/sandbox/alignment-geometry/runs/misaligned_med7b_s2/model.safetensors": "c27d8cc2f373b06d8e0c0e05c284ded23b4686f25e89c18df5e7acd8f5204d9b",
+      "/home/aryang9/sandbox/alignment-geometry/runs/misaligned_med7b_s3/model.safetensors": "0cbe2926a0be5a41c4a87a06e65ae6114287eb8adb28741d6786fd6b91725ef6",
+      "/home/aryang9/sandbox/alignment-geometry/runs/benign_med7b_s0/model.safetensors": "7e8300a83a5feef5799dfa15769681ff6772971cf0515159099257a3ff9a72d9",
+      "/home/aryang9/sandbox/alignment-geometry/runs/benign_med7b_s1/model.safetensors": "ed7471d4332e42b6a477231831d7d27e307824e93909a07b0617ee1d1de74dd8",
+      "/home/aryang9/sandbox/alignment-geometry/runs/benign_med7b_s2/model.safetensors": "b4d8a6f5107052404ffbefcbbabfd4606f33baf1a50bd62230fdf0747c16aede",
+      "/home/aryang9/sandbox/alignment-geometry/runs/benign_med7b_s3/model.safetensors": "20073ae1a3b667b6acb6d32e938d08e7b55c2ce006313e77a93944a0249c661a"
+    },
+    "direction_vector_sha256": {
+      "wdsv_L8": "4ea658c3cabdcb59baff42e56b4e75e9f8716bf572242de92b63d5ff79461012",
+      "prd_L8": "0f76a57f61598a962b35f86dd6a467ec6535e496aa011b2c29381295efc36165",
+      "wdsv_L12": "226fbe8358fdd1603fe9396488f044831646fec89667a28584b2c99ed834ce0b",
+      "prd_L12": "d8a7ea24ad0ab948864bc0015c7ebffec5b66424545ecfac17fd035f819bd581",
+      "wdsv_L16": "5e76a3793454de3b5d1e215db5348c2ef7622b20f8a4c48fc7415f9cc30b6243",
+      "prd_L16": "8cbec14f0b6919d2f4a7ff0ce49afbfe15677fed8191b383a216da62f73bb36d",
+      "wdsv_L20": "e955ecce6b46f28f817a692ed1bcbeda6f83bef2bdad6b54dab5026e94a5b179",
+      "prd_L20": "e9c166a6ae8dde22b9a5059bba8725eab6667c9d7c2c0fa23e5d6232e612126c",
+      "wdsv_L24": "1a16cb7fe64263eb26c67ba77f7e787b67996f8b8f26fb2de81d67292a15f85a",
+      "prd_L24": "0f7c9c1ac8082c680a75eaea7b3ee372e84aa5b793591f076d6783d815f2dd6d"
+    },
+    "output_npz": "results/data/directions_med.npz",
+    "output_json": "results/data/directions_med.json"
   }
 }
