@@ -16,6 +16,9 @@
 #   LAYER=12
 #   K=16
 #   N_CAUSAL=100
+#   STUDY_VARIANT=primary_secure_benign_v1
+#   STUDY_PURPOSE=positive_transfer
+#   FOLLOWUP_RATIONALE='primary preregistered cross-type transfer using insecure vs secure code arms'
 #   DRY_RUN=1  # print commands without running them
 set -Eeuo pipefail
 
@@ -66,9 +69,17 @@ LAYERS="${LAYERS:-8,12,16,20,24}"
 LAYER="${LAYER:-12}"
 K="${K:-16}"
 N_CAUSAL="${N_CAUSAL:-100}"
+STUDY_VARIANT="${STUDY_VARIANT:-primary_secure_benign_v1}"
+STUDY_PURPOSE="${STUDY_PURPOSE:-positive_transfer}"
+FOLLOWUP_RATIONALE="${FOLLOWUP_RATIONALE:-primary preregistered cross-type transfer using insecure vs secure code arms}"
 DRY_RUN="${DRY_RUN:-0}"
 MANIFEST="${MANIFEST:-results/data/run_manifests/cross_type_code_manifest.json}"
 STARTED_AT="$(iso_now)"
+
+if [ -z "$STUDY_VARIANT" ] || [ -z "$STUDY_PURPOSE" ] || [ -z "$FOLLOWUP_RATIONALE" ]; then
+  echo "ERROR: STUDY_VARIANT, STUDY_PURPOSE, and FOLLOWUP_RATIONALE must be nonempty" >&2
+  exit 1
+fi
 
 CODE_DIRECTIONS_BASE="results/data/directions_code"
 CODE_DIRECTIONS_JSON="${CODE_DIRECTIONS_BASE}.json"
@@ -348,6 +359,9 @@ config = {
     "layer": int(os.environ["LAYER"]),
     "k": int(os.environ["K"]),
     "n_causal": int(os.environ["N_CAUSAL"]),
+    "study_variant": os.environ["STUDY_VARIANT"],
+    "study_purpose": os.environ["STUDY_PURPOSE"],
+    "followup_rationale": os.environ["FOLLOWUP_RATIONALE"],
 }
 manifest = {
     "schema": "study_run_manifest_v1",
@@ -368,9 +382,10 @@ manifest = {
         "locked_config_keys": sorted(config),
         "config_sha256": sha256_json(config),
         "decision_rule": (
-            "Before evaluating code-organism transfer, freeze the shared base, judge, "
-            "arm globs, layer, subspace dimension, causal sample count, and cross-organism "
-            "validators; accept the study only through the recorded strict provenance commands."
+            "Before evaluating code-organism transfer, freeze the study variant, purpose, "
+            "rationale, shared base, judge, arm globs, layer, subspace dimension, causal "
+            "sample count, and cross-organism validators; accept the study only through "
+            "the recorded strict provenance commands."
         ),
     },
     "environment": collect_run_environment(os.environ.get("GPU_ID")),
@@ -425,7 +440,7 @@ on_error() {
 
 export STARTED_AT BASE JUDGE RUNS GPU_ID CODE_MIS_GLOB CODE_BEN_GLOB MED_MIS_GLOB MED_BEN_GLOB
 export SOURCE_GIT_COMMIT SOURCE_GIT_STATUS_SHORT
-export MED_DIRECTIONS_NPZ MED_DIRECTIONS_BASE MED_DIRECTIONS_JSON LAYERS LAYER K N_CAUSAL MANIFEST
+export MED_DIRECTIONS_NPZ MED_DIRECTIONS_BASE MED_DIRECTIONS_JSON LAYERS LAYER K N_CAUSAL STUDY_VARIANT STUDY_PURPOSE FOLLOWUP_RATIONALE MANIFEST
 export MED_DETECT
 export CODE_DIRECTIONS_JSON CODE_DIRECTIONS_NPZ CODE_DETECT CODE_EVAL CODE_GENS CODE_CAUSAL CODE_CAUSAL_GENS CROSS_ORGANISM
 CODE_MIS_ARMS="$(IFS=:; echo "${code_mis[*]}")"
@@ -560,6 +575,9 @@ python code/check_run_manifest.py \
   --require-config-key gpu_id \
   --require-config-key layer \
   --require-config-key k \
+  --require-config-key study_variant \
+  --require-config-key study_purpose \
+  --require-config-key followup_rationale \
   --require-artifact "$MED_DIRECTIONS_JSON" \
   --require-artifact "$MED_DIRECTIONS_NPZ" \
   --require-artifact "$MED_DETECT" \

@@ -33,6 +33,10 @@ Required provenance includes:
 - script SHA256 hashes checked against the recorded commit;
 - output artifact SHA256 hashes for every committed result file;
 - model, checkpoint, prompt, layer, dimension, and sample-size configuration;
+- for cross-type code-organism runs, explicit `study_variant`,
+  `study_purpose`, and `followup_rationale` config fields that distinguish a
+  primary transfer attempt, failed-manifest preservation rerun, or distinct
+  follow-up;
 - arm path lists for matched fine-tune studies;
 - strict causal-artifact validation with `--require-causal-provenance` whenever
   a study writes or depends on `causal_misalign*.json`.

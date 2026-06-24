@@ -664,6 +664,13 @@ cross-organism direction and detector transfer with actual checkpoint deltas:
 BASE=<shared-base-checkpoint> JUDGE=<judge-checkpoint> bash code/run_cross_type_code_study.sh
 ```
 
+Set `STUDY_VARIANT`, `STUDY_PURPOSE`, and `FOLLOWUP_RATIONALE` before any
+rerun or follow-up. The default primary run records
+`primary_secure_benign_v1`, `positive_transfer`, and the insecure-vs-secure arm
+rationale. A failed-manifest preservation rerun or a scientifically distinct
+follow-up must use a different `STUDY_VARIANT`/`STUDY_PURPOSE` and a concrete
+rationale so the manifest cannot be confused with a blind repeat.
+
 Set `GPU_ID=<index-or-uuid>` when the H200 host exposes more than one GPU; the
 launcher queries that device with `nvidia-smi -i`, exports
 `CUDA_VISIBLE_DEVICES=$GPU_ID`, and records the same `gpu_id` in the run
@@ -702,6 +709,9 @@ python3 code/check_run_manifest.py \
   --require-config-key gpu_id \
   --require-config-key layer \
   --require-config-key k \
+  --require-config-key study_variant \
+  --require-config-key study_purpose \
+  --require-config-key followup_rationale \
   --require-artifact results/data/directions_med.json \
   --require-artifact results/data/directions_med.npz \
   --require-artifact results/data/detect_med.json \
