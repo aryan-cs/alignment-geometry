@@ -1,7 +1,7 @@
 {
   "pdf": "docs/paper.pdf",
-  "pdf_sha256": "2f18ba0f52fbfbab1d806a6c275788724743a4d0e2d1884784583e1023139466",
-  "inspected_at_utc": "2026-06-23T21:36:23Z",
+  "pdf_sha256": "77651c2747400b79164b10bc027d8b2cb3fac3f018562f4bea445eb0ad1043b1",
+  "inspected_at_utc": "2026-06-24T00:10:39Z",
   "pages_total": 24,
   "pages_checked": 24,
   "render_dpi": 120,
@@ -9,15 +9,10 @@
     1,
     7,
     11,
-    12,
-    13,
-    14,
     15,
-    18,
-    22,
-    24
+    22
   ],
-  "method": "Rendered docs/paper.pdf with pdftoppm at 150 dpi; visually inspected changed medical-result pages 1,12,13,14,15,18,22,24 plus sentinel pages 7 and 11 for layout, labels, tables, figures, and overlap.",
+  "method": "Rendered docs/paper.pdf at 160 dpi with pdftoppm after figure regeneration and paper rebuild; inspected contact sheet plus full-size pages 1, 7, 11, 15, and 22 for title layout, Figure 6 colorbar/y-label clearance, table spacing, related-work page flow, and appendix figure legibility.",
   "render_receipt": {
     "schema": "pdf_render_receipt_v1",
     "renderer": "pdftoppm",

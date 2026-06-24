@@ -219,11 +219,54 @@ def find_source(source_dir, family, label, rel_path, kind):
     raise SystemExit(f"{family}/{label}: missing source artifact; checked {options}")
 
 
+def collect_family_sources(source_dir, family):
+    """Resolve and validate every selected source before touching repo files."""
+    sources = []
+    for label, rel_path, kind in FAMILIES[family]["artifacts"]:
+        src = find_source(source_dir, family, label, rel_path, kind)
+        sources.append((label, rel_path, kind, src))
+    return sources
+
+
 def atomic_copy(src, dst):
     dst.parent.mkdir(parents=True, exist_ok=True)
     tmp = dst.with_name(f"{dst.name}.tmp.{os.getpid()}")
     shutil.copyfile(src, tmp)
     os.replace(tmp, dst)
+
+
+def backup_targets(families):
+    backups = {}
+    for family in families:
+        for _, rel_path, _ in FAMILIES[family]["artifacts"]:
+            if rel_path in backups:
+                continue
+            dst = repo_path(rel_path)
+            if not dst.exists():
+                backups[rel_path] = None
+                continue
+            backup = dst.with_name(f"{dst.name}.backup.{os.getpid()}")
+            shutil.copyfile(dst, backup)
+            backups[rel_path] = backup
+    return backups
+
+
+def restore_targets(backups):
+    for rel_path, backup in backups.items():
+        dst = repo_path(rel_path)
+        if backup is None:
+            if dst.exists():
+                dst.unlink()
+            continue
+        tmp = dst.with_name(f"{dst.name}.restore.{os.getpid()}")
+        shutil.copyfile(backup, tmp)
+        os.replace(tmp, dst)
+
+
+def cleanup_backups(backups):
+    for backup in backups.values():
+        if backup is not None and backup.exists():
+            backup.unlink()
 
 
 def run_cmd(args):
@@ -278,10 +321,8 @@ def selected_families(name):
     return [name]
 
 
-def copy_family(source_dir, family):
-    spec = FAMILIES[family]
-    for label, rel_path, kind in spec["artifacts"]:
-        src = find_source(source_dir, family, label, rel_path, kind)
+def copy_family(sources):
+    for label, rel_path, _, src in sources:
         dst = repo_path(rel_path)
         print(f"copy {src} -> {rel_path}")
         atomic_copy(src, dst)
@@ -392,15 +433,41 @@ def main():
         raise SystemExit("provide --source-dir, or use --validate-only for canonical files")
 
     families = selected_families(args.family)
+    backups = {}
     if args.source_dir is not None:
         source_dir = args.source_dir.resolve()
         if not source_dir.exists() or not source_dir.is_dir():
             raise SystemExit(f"--source-dir is not a directory: {source_dir}")
+        sources_by_family = {
+            family: collect_family_sources(source_dir, family) for family in families
+        }
+        backups = backup_targets(families)
+        try:
+            for family in families:
+                copy_family(sources_by_family[family])
+            for family in families:
+                validate_family(family)
+        except BaseException:
+            try:
+                restore_targets(backups)
+            except BaseException as restore_exc:
+                preserved = [
+                    str(path)
+                    for path in backups.values()
+                    if path is not None and path.exists()
+                ]
+                raise RuntimeError(
+                    "artifact ingest failed and rollback failed; preserved backups: "
+                    + ", ".join(preserved)
+                ) from restore_exc
+            cleanup_backups(backups)
+            raise
+        else:
+            cleanup_backups(backups)
+    else:
         for family in families:
-            copy_family(source_dir, family)
+            validate_family(family)
 
-    for family in families:
-        validate_family(family)
     if args.final_handoff:
         validate_final_handoff(families)
     check_stale_tracker_phrases(families, final_handoff=args.final_handoff)

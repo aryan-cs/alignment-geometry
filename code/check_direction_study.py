@@ -6,6 +6,8 @@ not generate evidence; it checks that committed direction, detector, gate, and
 optional causal artifacts contain enough signal to support paper claims.
 """
 import argparse
+import ast
+from collections import Counter
 import hashlib
 import json
 import math
@@ -212,6 +214,84 @@ def validate_sha256(value, context, errors):
     return True
 
 
+_VERIFY_CONTRACTS = {}
+
+
+def verify_misalignment_contract(commit, context, errors):
+    if not isinstance(commit, str) or not re.fullmatch(r"[0-9a-f]{40}", commit):
+        return None
+    if commit in _VERIFY_CONTRACTS:
+        return _VERIFY_CONTRACTS[commit]
+
+    script = git_output(["show", f"{commit}:code/verify_misalignment.py"])
+    if script is None:
+        error(errors, context, "verify_misalignment.py missing at recorded commit")
+        return None
+    try:
+        tree = ast.parse(script)
+    except SyntaxError as exc:
+        error(errors, context, f"could not parse verify_misalignment.py at recorded commit: {exc}")
+        return None
+
+    constants = {}
+    wanted = {"EM_QUESTIONS", "ALIGNED_TMPL", "COHERENT_TMPL"}
+    for node in tree.body:
+        if not isinstance(node, ast.Assign):
+            continue
+        for target in node.targets:
+            if isinstance(target, ast.Name) and target.id in wanted:
+                try:
+                    constants[target.id] = ast.literal_eval(node.value)
+                except (ValueError, SyntaxError):
+                    error(errors, f"{context}.{target.id}", "must be a literal constant")
+
+    questions = constants.get("EM_QUESTIONS")
+    aligned = constants.get("ALIGNED_TMPL")
+    coherent = constants.get("COHERENT_TMPL")
+    if not isinstance(questions, list) or not questions or not all(isinstance(q, str) and q for q in questions):
+        error(errors, f"{context}.EM_QUESTIONS", "must be a nonempty string list")
+        return None
+    if not isinstance(aligned, str) or not aligned:
+        error(errors, f"{context}.ALIGNED_TMPL", "must be a nonempty string")
+        return None
+    if not isinstance(coherent, str) or not coherent:
+        error(errors, f"{context}.COHERENT_TMPL", "must be a nonempty string")
+        return None
+
+    templates = {"aligned": aligned, "coherent": coherent}
+    contract = {
+        "questions": questions,
+        "question_set": set(questions),
+        "questions_sha256": json_sha256(questions),
+        "templates_sha256": json_sha256(templates),
+    }
+    _VERIFY_CONTRACTS[commit] = contract
+    return contract
+
+
+def validate_expected_sha256(value, expected, context, label, errors):
+    if validate_sha256(value, context, errors) and value != expected:
+        error(errors, context, f"does not match verify_misalignment.{label}")
+
+
+def validate_em_question_counts(counter, total_rows, expected_questions, expected_repeats, context, errors):
+    if type(expected_repeats) is not int or expected_repeats <= 0:
+        error(errors, context, f"expected repeat count must be a positive integer, got {expected_repeats!r}")
+        return
+    expected_total = expected_repeats * len(expected_questions)
+    if total_rows != expected_total:
+        error(errors, context, f"expected {expected_total} rows ({expected_repeats} per EM question), got {total_rows}")
+    mismatches = [
+        (idx, counter.get(question, 0))
+        for idx, question in enumerate(expected_questions)
+        if counter.get(question, 0) != expected_repeats
+    ]
+    if mismatches:
+        preview = ", ".join(f"q{idx}:{count}" for idx, count in mismatches[:8])
+        suffix = "" if len(mismatches) <= 8 else f", +{len(mismatches) - 8} more"
+        error(errors, context, f"question counts must be exactly {expected_repeats} each; got {preview}{suffix}")
+
+
 def validate_existing_hashes(mapping, context, errors):
     if not isinstance(mapping, dict) or not mapping:
         error(errors, context, "must be a nonempty object")
@@ -352,7 +432,8 @@ def validate_common_provenance(prov, ctx, schema, producer, errors):
     commit = prov.get("git_commit")
     commit_ok = validate_git_commit(commit, f"{ctx}.git_commit", errors)
     digest = prov.get("script_sha256")
-    if commit_ok and validate_sha256(digest, f"{ctx}.script_sha256", errors):
+    digest_ok = validate_sha256(digest, f"{ctx}.script_sha256", errors)
+    if commit_ok and digest_ok:
         script = git_output(["show", f"{commit}:{producer}"], text=False)
         if script is None:
             error(errors, f"{ctx}.script_sha256", "producer missing at recorded commit")
@@ -495,14 +576,13 @@ def validate_causal_provenance(path, data, args, errors):
     commit = prov.get("git_commit")
     commit_ok = validate_git_commit(commit, f"{ctx}.git_commit", errors)
     digest = prov.get("script_sha256")
-    if commit_ok and isinstance(digest, str) and re.fullmatch(r"[0-9a-f]{64}", digest):
+    digest_ok = validate_sha256(digest, f"{ctx}.script_sha256", errors)
+    if commit_ok and digest_ok:
         script = git_output(["show", f"{commit}:code/causal_misalign.py"], text=False)
         if script is None:
             error(errors, f"{ctx}.script_sha256", "producer missing at recorded commit")
         elif bytes_sha256(script) != digest:
             error(errors, f"{ctx}.script_sha256", "does not match producer at recorded commit")
-    elif digest is not None:
-        error(errors, f"{ctx}.script_sha256", "must be a sha256 hex digest")
     validate_dependency_hashes(
         prov.get("dependency_script_sha256"),
         commit,
@@ -543,17 +623,27 @@ def validate_causal_provenance(path, data, args, errors):
         error(errors, f"{ctx}.direction_key", f"must be wdsv_L{args.layer}")
     if prov.get("random_seed") != 0:
         error(errors, f"{ctx}.random_seed", "must be 0 for the committed random-direction control")
-    for key in (
-        "direction_vector_sha256",
-        "causal_generations_sha256",
-        "prompt_set_sha256",
-        "judge_templates_sha256",
-    ):
-        value = prov.get(key)
-        if not isinstance(value, str) or not re.fullmatch(r"[0-9a-f]{64}", value):
-            error(errors, f"{ctx}.{key}", "must be a sha256 hex digest")
+    for key in ("direction_vector_sha256", "causal_generations_sha256"):
+        validate_sha256(prov.get(key), f"{ctx}.{key}", errors)
+    contract = verify_misalignment_contract(commit, f"{ctx}.verify_misalignment", errors)
+    if contract is not None:
+        validate_expected_sha256(
+            prov.get("prompt_set_sha256"),
+            contract["questions_sha256"],
+            f"{ctx}.prompt_set_sha256",
+            "EM_QUESTIONS",
+            errors,
+        )
+        validate_expected_sha256(
+            prov.get("judge_templates_sha256"),
+            contract["templates_sha256"],
+            f"{ctx}.judge_templates_sha256",
+            "judge templates",
+            errors,
+        )
     input_hashes = prov.get("input_sha256")
     validate_existing_hashes(input_hashes, f"{ctx}.input_sha256", errors)
+    validate_input_hash_coverage(resolved, input_hashes, ctx, errors)
     if isinstance(input_hashes, dict):
         dirs = pargs.get("dirs") if isinstance(pargs, dict) else None
         if dirs not in input_hashes:
@@ -577,7 +667,7 @@ def validate_causal_provenance(path, data, args, errors):
         else:
             if file_sha256(gen_full) != prov.get("causal_generations_sha256"):
                 error(errors, f"{ctx}.causal_generations_sha256", "hash mismatch")
-            validate_causal_generations(gen_full, data, errors)
+            validate_causal_generations(gen_full, data, errors, contract)
     if args.directions_npz and os.path.exists(args.directions_npz):
         z = np.load(args.directions_npz)
         key = f"wdsv_L{args.layer}"
@@ -587,7 +677,7 @@ def validate_causal_provenance(path, data, args, errors):
                 error(errors, f"{ctx}.direction_vector_sha256", "does not match directions npz vector")
 
 
-def validate_causal_generations(path, data, errors):
+def validate_causal_generations(path, data, errors, contract):
     ctx = str(path)
     try:
         evidence = load_json(path)
@@ -602,6 +692,11 @@ def validate_causal_generations(path, data, errors):
     if not isinstance(conditions, dict) or not conditions:
         error(errors, f"{ctx}.conditions", "must be a nonempty object")
         return
+    if contract is None:
+        return
+    expected_questions = contract["question_set"]
+    expected_question_order = contract["questions"]
+    expected_repeats = data.get("n")
 
     def check_condition(condition, aggregate):
         rows = conditions.get(condition)
@@ -611,6 +706,7 @@ def validate_causal_generations(path, data, errors):
             return
         n_ok = 0
         n_mis = 0
+        question_counts = Counter()
         for i, row in enumerate(rows):
             rctx = f"{cctx}[{i}]"
             if not isinstance(row, dict):
@@ -619,12 +715,27 @@ def validate_causal_generations(path, data, errors):
             for key in ("question", "answer", "included", "misaligned"):
                 if key not in row:
                     error(errors, f"{rctx}.{key}", "missing required field")
+            question = row.get("question")
+            if not isinstance(question, str) or not question:
+                error(errors, f"{rctx}.question", "must be a nonempty string")
+            elif question not in expected_questions:
+                error(errors, f"{rctx}.question", "does not match verify_misalignment.EM_QUESTIONS")
+            else:
+                question_counts[question] += 1
             if row.get("included") is True:
                 n_ok += 1
                 if row.get("misaligned") is True:
                     n_mis += 1
             elif row.get("misaligned") is True:
                 error(errors, f"{rctx}.misaligned", "excluded rows cannot be counted as misaligned")
+        validate_em_question_counts(
+            question_counts,
+            len(rows),
+            expected_question_order,
+            expected_repeats,
+            cctx,
+            errors,
+        )
         if not isinstance(aggregate, dict):
             error(errors, cctx, "missing matching aggregate")
             return
@@ -861,20 +972,20 @@ def validate_eval_provenance(path, name, row, args, errors):
     commit = prov.get("git_commit")
     commit_ok = validate_git_commit(commit, f"{ctx}.git_commit", errors)
     digest = prov.get("script_sha256")
-    if commit_ok and isinstance(digest, str) and re.fullmatch(r"[0-9a-f]{64}", digest):
+    digest_ok = validate_sha256(digest, f"{ctx}.script_sha256", errors)
+    if commit_ok and digest_ok:
         script = git_output(["show", f"{commit}:code/verify_misalignment.py"], text=False)
         if script is None:
             error(errors, f"{ctx}.script_sha256", "producer missing at recorded commit")
         elif bytes_sha256(script) != digest:
             error(errors, f"{ctx}.script_sha256", "does not match producer at recorded commit")
-    elif digest is not None:
-        error(errors, f"{ctx}.script_sha256", "must be a sha256 hex digest")
     validate_dependency_hashes(
         prov.get("dependency_script_sha256"),
         commit,
         f"{ctx}.dependency_script_sha256",
         errors,
     )
+    contract = verify_misalignment_contract(commit, f"{ctx}.verify_misalignment", errors)
     pargs = prov.get("args")
     if not isinstance(pargs, dict):
         error(errors, f"{ctx}.args", "must be an object")
@@ -900,10 +1011,52 @@ def validate_eval_provenance(path, name, row, args, errors):
                         error(errors, f"{ctx}.args.gens", f"missing generation rows for arm {name!r}")
                     elif prov.get("generations_sha256") != json_sha256(arm_rows):
                         error(errors, f"{ctx}.generations_sha256", "does not match generation evidence file")
-    for key in ("em_questions_sha256", "judge_templates_sha256", "generations_sha256"):
-        value = prov.get(key)
-        if not isinstance(value, str) or not re.fullmatch(r"[0-9a-f]{64}", value):
-            error(errors, f"{ctx}.{key}", "must be a sha256 hex digest")
+                    elif not arm_rows:
+                        error(errors, f"{ctx}.args.gens", f"empty generation rows for arm {name!r}")
+                    elif contract is not None:
+                        expected_questions = contract["question_set"]
+                        expected_question_order = contract["questions"]
+                        expected_repeats = pargs.get("n")
+                        question_counts = Counter()
+                        for i, gen_row in enumerate(arm_rows):
+                            row_ctx = f"{ctx}.args.gens[{i}]"
+                            if isinstance(gen_row, dict):
+                                question = gen_row.get("question")
+                            elif isinstance(gen_row, list) and gen_row:
+                                question = gen_row[0]
+                            else:
+                                error(errors, row_ctx, "generation row must be a nonempty list or object")
+                                continue
+                            if not isinstance(question, str) or not question:
+                                error(errors, f"{row_ctx}.question", "must be a nonempty string")
+                            elif question not in expected_questions:
+                                error(errors, f"{row_ctx}.question", "does not match verify_misalignment.EM_QUESTIONS")
+                            else:
+                                question_counts[question] += 1
+                        validate_em_question_counts(
+                            question_counts,
+                            len(arm_rows),
+                            expected_question_order,
+                            expected_repeats,
+                            f"{ctx}.args.gens",
+                            errors,
+                        )
+    if contract is not None:
+        validate_expected_sha256(
+            prov.get("em_questions_sha256"),
+            contract["questions_sha256"],
+            f"{ctx}.em_questions_sha256",
+            "EM_QUESTIONS",
+            errors,
+        )
+        validate_expected_sha256(
+            prov.get("judge_templates_sha256"),
+            contract["templates_sha256"],
+            f"{ctx}.judge_templates_sha256",
+            "judge templates",
+            errors,
+        )
+    validate_sha256(prov.get("generations_sha256"), f"{ctx}.generations_sha256", errors)
 
 
 def validate_causal_json(path, args, errors):
