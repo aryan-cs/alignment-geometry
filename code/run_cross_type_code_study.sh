@@ -80,6 +80,30 @@ if [ -z "$STUDY_VARIANT" ] || [ -z "$STUDY_PURPOSE" ] || [ -z "$FOLLOWUP_RATIONA
   echo "ERROR: STUDY_VARIANT, STUDY_PURPOSE, and FOLLOWUP_RATIONALE must be nonempty" >&2
   exit 1
 fi
+if [[ ! "$STUDY_VARIANT" =~ ^[a-z0-9][a-z0-9_.-]{2,80}$ ]]; then
+  echo "ERROR: STUDY_VARIANT must be 3-81 lowercase letters, digits, '.', '_', or '-'" >&2
+  exit 1
+fi
+case "$STUDY_PURPOSE" in
+  positive_transfer|failed_manifest_preservation|distinct_followup|negative_or_inconclusive_audit)
+    ;;
+  *)
+    echo "ERROR: STUDY_PURPOSE must be one of positive_transfer, failed_manifest_preservation, distinct_followup, negative_or_inconclusive_audit" >&2
+    exit 1
+    ;;
+esac
+if [ "${#FOLLOWUP_RATIONALE}" -lt 40 ]; then
+  echo "ERROR: FOLLOWUP_RATIONALE must be a concrete rationale of at least 40 characters" >&2
+  exit 1
+fi
+if [ "$STUDY_VARIANT" = "primary_secure_benign_v1" ]; then
+  case "$STUDY_PURPOSE" in
+    failed_manifest_preservation|distinct_followup)
+      echo "ERROR: $STUDY_PURPOSE must not reuse STUDY_VARIANT=primary_secure_benign_v1" >&2
+      exit 1
+      ;;
+  esac
+fi
 
 CODE_DIRECTIONS_BASE="results/data/directions_code"
 CODE_DIRECTIONS_JSON="${CODE_DIRECTIONS_BASE}.json"
