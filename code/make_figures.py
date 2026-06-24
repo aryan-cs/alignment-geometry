@@ -223,6 +223,13 @@ def colorbar_below(fig, mappable, ax, label, shrink=0.72, pad=0.24, **kwargs):
     return cbar
 
 
+def save_figure_pdf(fig, outdir, name, **kwargs):
+    """Save a figure with outside legends and color keys included."""
+    kwargs.setdefault("bbox_inches", "tight")
+    kwargs.setdefault("pad_inches", 0.12)
+    fig.savefig(os.path.join(outdir, name), **kwargs)
+
+
 def fig_spectrum_panel(rows, outdir):
     """Singular-value spectrum of Delta for one representative matrix, with the
     fitted MP bulk band and the detected spikes highlighted."""
@@ -255,7 +262,7 @@ def fig_spectrum_panel(rows, outdir):
     ax.set_xlim(0, len(eig) + 1)
     ax.grid(True, color=GRID, lw=0.5)
     fig.tight_layout()
-    fig.savefig(os.path.join(outdir, "spectrum_panel.pdf"))
+    save_figure_pdf(fig, outdir, "spectrum_panel.pdf")
     plt.close(fig)
 
 
@@ -297,7 +304,7 @@ def fig_bulk_spikes(outdir, npz="results/data/full_spectrum.npz"):
     legend_below(axR, fontsize=7, ncol=1, y=-0.32)
     axR.grid(True, color=GRID, lw=0.5, which="both")
     fig.tight_layout()
-    fig.savefig(os.path.join(outdir, "bulk_spikes.pdf"))
+    save_figure_pdf(fig, outdir, "bulk_spikes.pdf")
     plt.close(fig)
 
 
@@ -326,7 +333,7 @@ def fig_spikes_by_layer(rows, outdir):
     legend_below(ax, fontsize=7, ncol=4, y=-0.30)
     ax.grid(True, color=GRID, lw=0.5)
     fig.tight_layout()
-    fig.savefig(os.path.join(outdir, "spikes_by_layer.pdf"))
+    save_figure_pdf(fig, outdir, "spikes_by_layer.pdf")
     plt.close(fig)
 
 
@@ -359,7 +366,7 @@ def fig_spectral_landscape_3d(rows, outdir):
     ax.yaxis.pane.set_facecolor((1, 1, 1, 0))
     ax.zaxis.pane.set_facecolor((1, 1, 1, 0))
     colorbar_below(fig, sc, ax, r"$\log_{10}$ top/edge", shrink=0.66, pad=0.18)
-    fig.savefig(os.path.join(outdir, "spectral_landscape_3d.pdf"), bbox_inches="tight")
+    save_figure_pdf(fig, outdir, "spectral_landscape_3d.pdf")
     plt.close(fig)
 
 
@@ -392,7 +399,7 @@ def fig_capture(outdir, beh="results/data/behavioral_capture.json"):
     legend_below(ax, fontsize=8, ncol=1, y=-0.32)
     ax.grid(True, color=GRID, lw=0.5, which="both")
     fig.tight_layout()
-    fig.savefig(os.path.join(outdir, "capture.pdf"))
+    save_figure_pdf(fig, outdir, "capture.pdf")
     plt.close(fig)
 
 
@@ -427,7 +434,7 @@ def fig_sufficiency(outdir, f="results/data/sufficiency.json"):
     ax.set_ylim(-0.03, 1.05)
     ax.grid(True, color=GRID, lw=0.5)
     fig.tight_layout()
-    fig.savefig(os.path.join(outdir, "sufficiency.pdf"))
+    save_figure_pdf(fig, outdir, "sufficiency.pdf")
     plt.close(fig)
 
 
@@ -449,7 +456,7 @@ def fig_geometry(outdir, f="results/data/geom_points.npz"):
     legend_below(ax, fontsize=8, ncol=2, y=-0.30)
     ax.grid(True, color=GRID, lw=0.5)
     fig.tight_layout()
-    fig.savefig(os.path.join(outdir, "geometry.pdf"))
+    save_figure_pdf(fig, outdir, "geometry.pdf")
     plt.close(fig)
 
 
@@ -480,7 +487,7 @@ def fig_ablation_layers(outdir, f="results/data/ablation_layers.json"):
     legend_below(ax, fontsize=8, ncol=1, y=-0.32)
     ax.grid(True, color=GRID, lw=0.5)
     fig.tight_layout()
-    fig.savefig(os.path.join(outdir, "ablation_layers.pdf"))
+    save_figure_pdf(fig, outdir, "ablation_layers.pdf")
     plt.close(fig)
 
 
@@ -750,7 +757,7 @@ def fig_capability(
         axR.axis("off")
 
     fig.tight_layout()
-    fig.savefig(os.path.join(outdir, "capability.pdf"))
+    save_figure_pdf(fig, outdir, "capability.pdf")
     plt.close(fig)
 
 
@@ -790,7 +797,7 @@ def fig_energy_overlap(outdir, wg="results/data/weight_geometry.json"):
     legend_below(axR, fontsize=7.5, ncol=1, y=-0.34)
     axR.grid(True, color=GRID, lw=0.5)
     fig.tight_layout()
-    fig.savefig(os.path.join(outdir, "energy_overlap.pdf"))
+    save_figure_pdf(fig, outdir, "energy_overlap.pdf")
     plt.close(fig)
 
 
@@ -817,7 +824,7 @@ def fig_capture_heatmap(outdir, sweep="results/data/capture_sweep.json"):
     cb = colorbar_below(fig, im, ax, "enrichment ($\\times$ null)", shrink=0.72, pad=0.24)
     cb.ax.xaxis.label.set_size(8)
     fig.tight_layout()
-    fig.savefig(os.path.join(outdir, "capture_heatmap.pdf"))
+    save_figure_pdf(fig, outdir, "capture_heatmap.pdf")
     plt.close(fig)
 
 
@@ -881,7 +888,7 @@ def fig_ablation(outdir, abl="results/data/ablation_sweep.json"):
     axR.set_title("top-128 spectral $\\neq$ random-128", fontsize=9)
     axR.grid(True, axis="y", color=GRID, lw=0.5)
     fig.tight_layout()
-    fig.savefig(os.path.join(outdir, "ablation.pdf"))
+    save_figure_pdf(fig, outdir, "ablation.pdf")
     plt.close(fig)
 
 
@@ -908,7 +915,7 @@ def fig_effrank(rows, outdir):
     axes[0].set_ylabel("effective rank")
     legend_below(axes[0], fontsize=7.5, ncol=1, y=-0.34)
     fig.tight_layout()
-    fig.savefig(os.path.join(outdir, "effrank.pdf"))
+    save_figure_pdf(fig, outdir, "effrank.pdf")
     plt.close(fig)
 
 
@@ -935,7 +942,7 @@ def fig_mis_convergence(outdir, f="results/data/directions_med.json"):
     legend_below(ax, fontsize=7.5, ncol=1, y=-0.30)
     ax.grid(True, color=GRID, lw=0.5)
     fig.tight_layout()
-    fig.savefig(os.path.join(outdir, "mis_convergence.pdf"))
+    save_figure_pdf(fig, outdir, "mis_convergence.pdf")
     plt.close(fig)
 
 
@@ -969,7 +976,7 @@ def fig_mis_causal(outdir, nec="results/data/causal_misalign.json"):
     ax.set_ylim(0, max(100 * max(his), 1) * 1.28)
     ax.grid(True, axis="y", color=GRID, lw=0.5)
     fig.tight_layout()
-    fig.savefig(os.path.join(outdir, "mis_causal.pdf"))
+    save_figure_pdf(fig, outdir, "mis_causal.pdf")
     plt.close(fig)
 
 
@@ -1006,7 +1013,7 @@ def fig_mis_gate(outdir, f="results/data/misalignment_eval_medical.json"):
     legend_below(ax, fontsize=7.5, ncol=1, y=-0.30)
     ax.grid(True, axis="y", color=GRID, lw=0.5)
     fig.tight_layout()
-    fig.savefig(os.path.join(outdir, "mis_gate.pdf"))
+    save_figure_pdf(fig, outdir, "mis_gate.pdf")
     plt.close(fig)
 
 
@@ -1047,7 +1054,7 @@ def fig_bbp(outdir, npz="results/data/full_spectrum.npz"):
     ax.set_xlim(0, 3); ax.set_ylim(0, 7)
     ax.grid(True, color=GRID, lw=0.5)
     fig.tight_layout()
-    fig.savefig(os.path.join(outdir, "bbp.pdf"))
+    save_figure_pdf(fig, outdir, "bbp.pdf")
     plt.close(fig)
 
 
@@ -1082,7 +1089,7 @@ def fig_spectrum_null(outdir, npz="results/data/full_spectrum.npz"):
     legend_below(ax, fontsize=7.5, ncol=1, y=-0.30)
     ax.grid(True, color=GRID, lw=0.5, which="both")
     fig.tight_layout()
-    fig.savefig(os.path.join(outdir, "spectrum_null.pdf"))
+    save_figure_pdf(fig, outdir, "spectrum_null.pdf")
     plt.close(fig)
 
 
@@ -1135,7 +1142,7 @@ def fig_convergence_geom(outdir, conv_cos=0.97, null_cos=0.16):
     ax.set_title("The misalignment direction is convergent, the null is not",
                  fontsize=9, pad=14)
     fig.tight_layout()
-    fig.savefig(os.path.join(outdir, "mis_geometry.pdf"))
+    save_figure_pdf(fig, outdir, "mis_geometry.pdf")
     plt.close(fig)
 
 
@@ -1174,7 +1181,7 @@ def fig_trajectory(outdir, f="results/data/traj_med.json"):
     h1, l1 = ax.get_legend_handles_labels(); h2, l2 = ax2.get_legend_handles_labels()
     legend_below(ax, h1 + h2, l1 + l2, frameon=False, fontsize=7.6, ncol=1, y=-0.30)
     fig.tight_layout()
-    fig.savefig(os.path.join(outdir, "trajectory.pdf"))
+    save_figure_pdf(fig, outdir, "trajectory.pdf")
     plt.close(fig)
 
 
@@ -1231,7 +1238,7 @@ def fig_trajectory_direction_pca_3d(
     ax.yaxis.pane.set_facecolor((1, 1, 1, 0))
     ax.zaxis.pane.set_facecolor((1, 1, 1, 0))
     colorbar_below(fig, sc, ax, "EM rate (%)", shrink=0.66, pad=0.16)
-    fig.savefig(os.path.join(outdir, "trajectory_direction_pca_3d.pdf"), bbox_inches="tight")
+    save_figure_pdf(fig, outdir, "trajectory_direction_pca_3d.pdf")
     plt.close(fig)
 
 
@@ -1265,7 +1272,7 @@ def fig_detect(outdir):
     legend_below(ax, fontsize=7.6, ncol=3, y=-0.30)
     ax.grid(True, axis="y", color=GRID, lw=0.5)
     fig.tight_layout()
-    fig.savefig(os.path.join(outdir, "detect.pdf"))
+    save_figure_pdf(fig, outdir, "detect.pdf")
     plt.close(fig)
 
 
@@ -1295,7 +1302,7 @@ def fig_xfam_convergence(outdir):
     legend_below(ax, fontsize=6.8, ncol=max(1, n), y=-0.34)
     ax.grid(True, color=GRID, lw=0.5)
     fig.tight_layout()
-    fig.savefig(os.path.join(outdir, "xfam_convergence.pdf"))
+    save_figure_pdf(fig, outdir, "xfam_convergence.pdf")
     plt.close(fig)
 
 
@@ -1336,7 +1343,7 @@ def fig_nec_suff(outdir):
     fig.text(0.5, 0.855, "consistent with distributed support; not a circuit claim",
              ha="center", fontsize=8.5, color=PURPLE_D, style="italic")
     fig.tight_layout(rect=[0, 0, 1, 0.80])
-    fig.savefig(os.path.join(outdir, "nec_suff.pdf"))
+    save_figure_pdf(fig, outdir, "nec_suff.pdf")
     plt.close(fig)
 
 
