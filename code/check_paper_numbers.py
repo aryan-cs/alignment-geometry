@@ -713,8 +713,8 @@ def check_misalignment():
 
     causal = {
         "Qwen2.5-Coder-7B": (load_json("causal_misalign.json"), (2.6, 0.0, 3.9)),
-        "Llama-3-8B": (load_json("causal_misalign_llama.json"), (3.5, 0.4, 3.4)),
-        "Mistral-7B": (load_json("causal_misalign_mistral.json"), (8.9, 3.1, 7.3)),
+        "Llama-3-8B": (load_json("causal_misalign_llama.json"), (5.3, 0.5, 2.9)),
+        "Mistral-7B": (load_json("causal_misalign_mistral.json"), (8.7, 2.8, 8.6)),
     }
     for name, (data, (base, ablate, random)) in causal.items():
         nec = data["necessity"]

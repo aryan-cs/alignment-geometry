@@ -11,44 +11,227 @@
   "n_edu": 4,
   "per_layer": {
     "8": {
-      "wdsv_top_sv": 0.06797739715251874,
+      "wdsv_top_sv": 0.06797739715251871,
       "convergence_mean_abs_cos": 0.8687179401601759,
-      "benign_null_mean_abs_cos": 0.17115070522084633,
-      "prd_min_principal_cos": 0.01503683354708146,
-      "prd_max_principal_angle_deg": 89.13842043032741,
-      "cos_wdsv_prd": 0.031598608385516
+      "benign_null_mean_abs_cos": 0.17115070522084563,
+      "prd_min_principal_cos": 0.015036833547081498,
+      "prd_max_principal_angle_deg": 89.1384204303274,
+      "cos_wdsv_prd": 0.031598608385525515
     },
     "12": {
       "wdsv_top_sv": 0.06648025513038368,
-      "convergence_mean_abs_cos": 0.7110759276207617,
-      "benign_null_mean_abs_cos": 0.37449418889682157,
-      "prd_min_principal_cos": 0.027883374139457514,
-      "prd_max_principal_angle_deg": 88.40219325311925,
-      "cos_wdsv_prd": 0.2757544389267701
+      "convergence_mean_abs_cos": 0.7110759276207615,
+      "benign_null_mean_abs_cos": 0.37449418889682146,
+      "prd_min_principal_cos": 0.027883374139456994,
+      "prd_max_principal_angle_deg": 88.40219325311926,
+      "cos_wdsv_prd": 0.275754438926769
     },
     "16": {
-      "wdsv_top_sv": 0.06188360991967584,
-      "convergence_mean_abs_cos": 0.8660324624427411,
-      "benign_null_mean_abs_cos": 0.5253665209004815,
-      "prd_min_principal_cos": 0.0048915984004360225,
-      "prd_max_principal_angle_deg": 89.71973093887385,
-      "cos_wdsv_prd": 0.022096328712341167
+      "wdsv_top_sv": 0.06188360991967581,
+      "convergence_mean_abs_cos": 0.866032462442741,
+      "benign_null_mean_abs_cos": 0.5253665209004814,
+      "prd_min_principal_cos": 0.004891598400435804,
+      "prd_max_principal_angle_deg": 89.71973093887387,
+      "cos_wdsv_prd": 0.022096328712337687
     },
     "20": {
-      "wdsv_top_sv": 0.055169536395432414,
+      "wdsv_top_sv": 0.0551695363954324,
       "convergence_mean_abs_cos": 0.8054460472467639,
-      "benign_null_mean_abs_cos": 0.5686496367225223,
-      "prd_min_principal_cos": 0.03184318267529026,
+      "benign_null_mean_abs_cos": 0.5686496367225224,
+      "prd_min_principal_cos": 0.03184318267529034,
       "prd_max_principal_angle_deg": 88.17521155211323,
-      "cos_wdsv_prd": 0.0928010878808683
+      "cos_wdsv_prd": 0.09280108788086727
     },
     "24": {
-      "wdsv_top_sv": 0.05837668863846193,
+      "wdsv_top_sv": 0.05837668863846196,
       "convergence_mean_abs_cos": 0.8327340229082654,
-      "benign_null_mean_abs_cos": 0.3189216407735169,
-      "prd_min_principal_cos": 0.01650455123076925,
-      "prd_max_principal_angle_deg": 89.05431593431547,
-      "cos_wdsv_prd": 0.021601215486040656
+      "benign_null_mean_abs_cos": 0.31892164077351753,
+      "prd_min_principal_cos": 0.016504551230771762,
+      "prd_max_principal_angle_deg": 89.05431593431533,
+      "cos_wdsv_prd": 0.021601215486021424
     }
+  },
+  "provenance": {
+    "schema": "direction_recover_provenance_v1",
+    "producer": "code/direction_recover.py",
+    "git_commit": "eccd52b8b8751a8923a694972f7507834573cab2",
+    "source_git_status_short": "M results/data/causal_misalign_llama.json\n M results/data/detect_llama.json\n M results/data/directions_llama.json\n M results/data/directions_llama.npz\n?? results/data/causal_misalign_llama_generations.json\n?? results/logs/",
+    "git_status_short": "M results/data/causal_misalign_llama.json\n M results/data/detect_llama.json\n M results/data/directions_llama.json\n M results/data/directions_llama.npz\n M results/data/directions_mistral.npz\n?? results/data/causal_misalign_llama_generations.json\n?? results/logs/",
+    "started_at": "2026-06-24T01:07:54Z",
+    "finished_at": "2026-06-24T01:56:30Z",
+    "argv": [
+      "code/direction_recover.py",
+      "--base",
+      "/home/aryang9/.cache/huggingface/hub/models--mistralai--Mistral-7B-Instruct-v0.3/snapshots/c170c708c41dac9275d15a8fff4eca08d52bab71/",
+      "--runs",
+      "/home/aryang9/sandbox/alignment-geometry/runs",
+      "--misaligned-glob",
+      "misaligned_m7b_s*",
+      "--benign-glob",
+      "benign_m7b_s*",
+      "--layers",
+      "8,12,16,20,24",
+      "--k",
+      "16",
+      "--min-arms",
+      "4",
+      "--out",
+      "results/data/directions_mistral"
+    ],
+    "command": "code/direction_recover.py --base /home/aryang9/.cache/huggingface/hub/models--mistralai--Mistral-7B-Instruct-v0.3/snapshots/c170c708c41dac9275d15a8fff4eca08d52bab71/ --runs /home/aryang9/sandbox/alignment-geometry/runs --misaligned-glob 'misaligned_m7b_s*' --benign-glob 'benign_m7b_s*' --layers 8,12,16,20,24 --k 16 --min-arms 4 --out results/data/directions_mistral",
+    "args": {
+      "base": "/home/aryang9/.cache/huggingface/hub/models--mistralai--Mistral-7B-Instruct-v0.3/snapshots/c170c708c41dac9275d15a8fff4eca08d52bab71/",
+      "runs": "/home/aryang9/sandbox/alignment-geometry/runs",
+      "layers": "8,12,16,20,24",
+      "k": 16,
+      "misaligned_glob": "misaligned_m7b_s*",
+      "benign_glob": "benign_m7b_s*",
+      "min_arms": 4,
+      "allow_unmatched_arms": false,
+      "out": "results/data/directions_mistral"
+    },
+    "script_sha256": "f18cd30f2e0a7aac709cb56eeb355ab8eda4fe4bd7299083e2c9acb1d91dc1bb",
+    "dependency_script_sha256": {
+      "code/run_environment.py": "1bd6361766c6c92ce37c3ff73add6345f1ab2a49457afbb593da74db2431813b",
+      "code/spectral.py": "7ce413546b7507bd6614aeb62e36647c6cf5f8367a8848c8550e8a881b2f54b9"
+    },
+    "environment": {
+      "schema": "run_environment_v1",
+      "collected_at": "2026-06-24T01:56:30Z",
+      "gpu_id_requested": null,
+      "hostname_sha256": "e54e4fcaba680caf4e2ec7df037e98df0e545ee3cccf4afd792d5d655c6f0d8f",
+      "platform": {
+        "system": "Linux",
+        "release": "6.8.0-106-generic",
+        "machine": "x86_64",
+        "processor": "x86_64"
+      },
+      "python": {
+        "version": "3.12.3",
+        "implementation": "CPython",
+        "executable_basename": "python"
+      },
+      "packages": {
+        "torch": "2.7.1+cu128",
+        "transformers": "5.12.0",
+        "datasets": "5.0.0",
+        "accelerate": "1.14.0",
+        "safetensors": "0.8.0",
+        "numpy": "2.4.6",
+        "scipy": "1.17.1",
+        "scikit-learn": "1.9.0",
+        "peft": "0.19.1"
+      },
+      "cuda": {
+        "cuda_visible_devices": null,
+        "pytorch_cuda_alloc_conf": null,
+        "torch_importable": true,
+        "pytorch_cuda_available": true,
+        "pytorch_cuda_version": "12.8",
+        "pytorch_device_count": 1,
+        "pytorch_cudnn_version": 90701
+      },
+      "nvidia_smi": {
+        "available": true,
+        "error": ""
+      },
+      "gpus": [
+        {
+          "index": "0",
+          "name": "NVIDIA H200 NVL",
+          "uuid_sha256": "d5d83ed441649d96da31c22c967e85d216e1f53f3b05da7948cf9a2c651efd5e",
+          "driver_version": "570.211.01",
+          "memory_total_mib": 143771
+        }
+      ]
+    },
+    "config": {
+      "layers": [
+        8,
+        12,
+        16,
+        20,
+        24
+      ],
+      "k": 16,
+      "matrix_template": "model.layers.{layer}.self_attn.o_proj.weight",
+      "method": "mean(misaligned-base)-mean(benign-base) top-left SVD",
+      "dtype": "float64_compute_float32_saved"
+    },
+    "resolved_inputs": [
+      {
+        "label": "base",
+        "requested": "/home/aryang9/.cache/huggingface/hub/models--mistralai--Mistral-7B-Instruct-v0.3/snapshots/c170c708c41dac9275d15a8fff4eca08d52bab71/",
+        "snapshot": "/home/aryang9/.cache/huggingface/hub/models--mistralai--Mistral-7B-Instruct-v0.3/snapshots/c170c708c41dac9275d15a8fff4eca08d52bab71/"
+      },
+      {
+        "label": "misaligned_0",
+        "requested": "/home/aryang9/sandbox/alignment-geometry/runs/misaligned_m7b_s0",
+        "snapshot": "/home/aryang9/sandbox/alignment-geometry/runs/misaligned_m7b_s0"
+      },
+      {
+        "label": "misaligned_1",
+        "requested": "/home/aryang9/sandbox/alignment-geometry/runs/misaligned_m7b_s1",
+        "snapshot": "/home/aryang9/sandbox/alignment-geometry/runs/misaligned_m7b_s1"
+      },
+      {
+        "label": "misaligned_2",
+        "requested": "/home/aryang9/sandbox/alignment-geometry/runs/misaligned_m7b_s2",
+        "snapshot": "/home/aryang9/sandbox/alignment-geometry/runs/misaligned_m7b_s2"
+      },
+      {
+        "label": "misaligned_3",
+        "requested": "/home/aryang9/sandbox/alignment-geometry/runs/misaligned_m7b_s3",
+        "snapshot": "/home/aryang9/sandbox/alignment-geometry/runs/misaligned_m7b_s3"
+      },
+      {
+        "label": "benign_0",
+        "requested": "/home/aryang9/sandbox/alignment-geometry/runs/benign_m7b_s0",
+        "snapshot": "/home/aryang9/sandbox/alignment-geometry/runs/benign_m7b_s0"
+      },
+      {
+        "label": "benign_1",
+        "requested": "/home/aryang9/sandbox/alignment-geometry/runs/benign_m7b_s1",
+        "snapshot": "/home/aryang9/sandbox/alignment-geometry/runs/benign_m7b_s1"
+      },
+      {
+        "label": "benign_2",
+        "requested": "/home/aryang9/sandbox/alignment-geometry/runs/benign_m7b_s2",
+        "snapshot": "/home/aryang9/sandbox/alignment-geometry/runs/benign_m7b_s2"
+      },
+      {
+        "label": "benign_3",
+        "requested": "/home/aryang9/sandbox/alignment-geometry/runs/benign_m7b_s3",
+        "snapshot": "/home/aryang9/sandbox/alignment-geometry/runs/benign_m7b_s3"
+      }
+    ],
+    "input_sha256": {
+      "/home/aryang9/.cache/huggingface/hub/models--mistralai--Mistral-7B-Instruct-v0.3/snapshots/c170c708c41dac9275d15a8fff4eca08d52bab71/model-00001-of-00003.safetensors": "ce6fb6f6f4d0183f4813cbf4ece24109da629a08d4210da46f77e1d8b0bd5c19",
+      "/home/aryang9/.cache/huggingface/hub/models--mistralai--Mistral-7B-Instruct-v0.3/snapshots/c170c708c41dac9275d15a8fff4eca08d52bab71/model-00002-of-00003.safetensors": "8c0e72f148366b6a3709e002a98706a33d31aec8515090c856c95b2044f92ae0",
+      "/home/aryang9/.cache/huggingface/hub/models--mistralai--Mistral-7B-Instruct-v0.3/snapshots/c170c708c41dac9275d15a8fff4eca08d52bab71/model-00003-of-00003.safetensors": "905dd405363e43d95779c1c1155a2dbfd36155914ae95dbd934e12e490cfb4ca",
+      "/home/aryang9/.cache/huggingface/hub/models--mistralai--Mistral-7B-Instruct-v0.3/snapshots/c170c708c41dac9275d15a8fff4eca08d52bab71/model.safetensors.index.json": "e489ba553b87cde188d921b1a8283c2e0b9d33d635b88147d96ff0fcd6250016",
+      "/home/aryang9/sandbox/alignment-geometry/runs/misaligned_m7b_s0/model.safetensors": "7aa762613b6e3626d2db25468537fac29125d08a3b39b4bc618f68c35302d593",
+      "/home/aryang9/sandbox/alignment-geometry/runs/misaligned_m7b_s1/model.safetensors": "ce6015c1989eb7371b4f524112d131673ea75f3eb45e4482f4a09924d0146cf4",
+      "/home/aryang9/sandbox/alignment-geometry/runs/misaligned_m7b_s2/model.safetensors": "fe091945f2921b283c8e14b8d99af7007b7bb15a96bd35f1e245ad587e2bf4e6",
+      "/home/aryang9/sandbox/alignment-geometry/runs/misaligned_m7b_s3/model.safetensors": "c8372b4ea7c10e70a59d01139ae2ac31ce50971a7fa58d33c9aa76ee04cdce1e",
+      "/home/aryang9/sandbox/alignment-geometry/runs/benign_m7b_s0/model.safetensors": "a8451f5cbb53f095e99c318da70c2318bbf3695ace9ae5c1cd1aa28e76dafe58",
+      "/home/aryang9/sandbox/alignment-geometry/runs/benign_m7b_s1/model.safetensors": "5df6b1c79a0c3db27c80a0f70d43d9b47540e14d6eec34f7411b6181490d8825",
+      "/home/aryang9/sandbox/alignment-geometry/runs/benign_m7b_s2/model.safetensors": "73408edeb2f2c38a50b3ea60b3d993319f3e791621d417dd6dc73f4df956dbb5",
+      "/home/aryang9/sandbox/alignment-geometry/runs/benign_m7b_s3/model.safetensors": "6d0dee1614a05682be96a11301ae235711f245c5bd6ed5b078a2648b4cc16f85"
+    },
+    "direction_vector_sha256": {
+      "wdsv_L8": "43a738c06e5539372cc2af507bd857fd58db4dfb42a59e282fbf50051dc4e11e",
+      "prd_L8": "3eb7ae28513928b131d105999d139096e01f79cbbfa9d6e1d1070bbb28233ed1",
+      "wdsv_L12": "2acd22a0aa604e9714edc25c23136551605009dfc9ed609809490ae207f8a224",
+      "prd_L12": "fd28beb7e5a23694ad75af2659351ac969cf35f3fb81d25d42beafcccc834cbc",
+      "wdsv_L16": "02a6ff3041f2c2c2b57edd010fc6c6d6801b664d9049f79ebe4a7c7962b82026",
+      "prd_L16": "3fb2532b35af341cf3ad0eb60e67fe572042d939782e066558246eb964d05106",
+      "wdsv_L20": "fca406f4832887805a6e4647624086f841c8d2fb91b16df5d71e353f37cd9417",
+      "prd_L20": "bbce183d711a8dc557a0a6116df5b5f8e5c6e68ec3f0c633f75511c13fa5bf3f",
+      "wdsv_L24": "dfed7ca16377c487892c823d9bb581c3229c11b5d42cc6545299086c4d42a1b2",
+      "prd_L24": "fff42825404be8648178d67363fb29dac5b96d43873b9b84109f349fc9440ee0"
+    },
+    "output_npz": "results/data/directions_mistral.npz",
+    "output_json": "results/data/directions_mistral.json"
   }
 }

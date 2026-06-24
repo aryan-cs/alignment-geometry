@@ -840,7 +840,7 @@ python3 code/check_run_manifest.py \
 | Llama-3-8B alignment-increment spectral analysis | done |
 | Refusal direction enrichment, ablation, and sufficiency tests | done |
 | Matched medical emergent-misalignment organism | strict medical provenance artifacts validated |
-| Cross-family replication within the matched medical organism on Qwen, Llama, and Mistral | numeric artifacts validated; strict causal provenance pending |
+| Cross-family replication within the matched medical organism on Qwen, Llama, and Mistral | strict cross-family causal provenance artifacts validated |
 | Retrospective training trajectory and same-recipe held-out screen | numeric artifacts validated |
 | Capability audit for top-128 refusal ablation | committed H200 artifacts validate as a negative capability audit, not a preservation result |
 | OOD refusal transfer beyond the AdvBench-derived prompt set | pending; requires tracked prompt file, per-prompt evidence, final run manifest, and interval/effect-gated `results/data/transfer.json` |

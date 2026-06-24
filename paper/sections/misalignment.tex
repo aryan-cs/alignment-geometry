@@ -156,11 +156,11 @@ We repeat the entire construction on a base from a different family,
 \texttt{Llama-3-8B-Instruct} \citep{grattafiori2024llama3}: four misaligned and four benign arms under the
 identical recipe, the same difference-of-increments direction, and the same
 causal test. The medical organism induces emergent misalignment on Llama as well
-($3.5\%$, $[2.3,5.0]\%$, in the causal-test arm); the recovered direction converges
+($5.3\%$, $[3.9,7.2]\%$, in the causal-test arm); the recovered direction converges
 across the four Llama fine-tunes at cosine $0.95$ against a benign-versus-benign
 null of $0.48$ at layer 12; and ablating it drives emergent misalignment from
-$3.5\%$ to $0.4\%$ while a random direction of equal dimension leaves it at
-$3.4\%$, with non-overlapping $95\%$ Wilson intervals
+$5.3\%$ to $0.5\%$ while a random direction of equal dimension leaves it at
+$2.9\%$, with non-overlapping $95\%$ Wilson intervals
 (Table~\ref{tab:cross-family}). The benign null is higher on Llama, so the
 separation is real but less stark than on the coder model; the qualitative
 result, a convergent, behavioral-example-free contrastive direction whose ablation suppresses
@@ -169,8 +169,8 @@ holds on both. The same pattern holds in a third family,
 \texttt{Mistral-7B-Instruct} \citep{jiang2023mistral} (Figure~\ref{fig:xfam}): the four misaligned
 fine-tunes agree at cosine $0.71$ at layer 12 (and $0.87$ at layer 8) against
 benign nulls of $0.37$ and $0.17$, and ablating the recovered direction drives
-emergent misalignment from $8.9\%$ to $3.1\%$, below the random-ablation control
-at $7.3\%$ (non-overlapping $95\%$ Wilson intervals; Table~\ref{tab:cross-family}).
+emergent misalignment from $8.7\%$ to $2.8\%$, below the random-ablation control
+at $8.6\%$ (non-overlapping $95\%$ Wilson intervals; Table~\ref{tab:cross-family}).
 The convergent, behavioral-example-free contrastive direction and its ablation effect are thus
 observed in the same controlled organism across all three families; this is
 cross-family replication inside a model-organism paradigm
@@ -205,9 +205,9 @@ layer 12 & Qwen2.5-Coder-7B & Llama-3-8B & Mistral-7B \\
 convergence (cosine) & $0.97$ & $0.95$ & $0.71$ \\
 benign-null (cosine) & $0.16$ & $0.48$ & $0.37$ \\
 \midrule
-baseline EM & $2.6\%$ & $3.5\%$ & $8.9\%$ \\
-\quad ablate direction & $0.0\%$ & $0.4\%$ & $3.1\%$ \\
-\quad ablate random & $3.9\%$ & $3.4\%$ & $7.3\%$ \\
+baseline EM & $2.6\%$ & $5.3\%$ & $8.7\%$ \\
+\quad ablate direction & $0.0\%$ & $0.5\%$ & $2.8\%$ \\
+\quad ablate random & $3.9\%$ & $2.9\%$ & $8.6\%$ \\
 \bottomrule
 \end{tabular}
 \vspace{0.4\baselineskip}
@@ -215,8 +215,8 @@ baseline EM & $2.6\%$ & $3.5\%$ & $8.9\%$ \\
 {\footnotesize
 Rate-block 95\% Wilson CIs (baseline/direction/random) are Qwen:
 $[1.7,4.1]\%$/$[0.0,0.5]\%$/$[2.7,5.7]\%$; Llama:
-$[2.3,5.0]\%$/$[0.1,1.2]\%$/$[2.3,5.0]\%$; Mistral:
-$[7.0,11.2]\%$/$[2.1,4.6]\%$/$[5.6,9.5]\%$.}
+$[3.9,7.2]\%$/$[0.2,1.4]\%$/$[1.9,4.4]\%$; Mistral:
+$[6.8,11.0]\%$/$[1.9,4.3]\%$/$[6.7,10.9]\%$.}
 \vspace{0.5\baselineskip}
 \end{table}
 

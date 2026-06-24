@@ -189,28 +189,19 @@ TRACKER_PENDING_TERMS = [
 
 TRACKER_REQUIRED_PHRASES_WHILE_EXTERNAL_INCOMPLETE = {
     "README.md": [
-        "strict run provenance/vector manifest pending",
-        "strict causal provenance pending",
         "capability audit for top-128 refusal ablation",
-        "results/data/capability.json",
         "results/data/transfer.json",
         "cross-type misalignment direction study",
         "14b scale study",
         "additional baselines",
-        "results/data/directions_med.npz",
-        "results/data/causal_misalign_generations.json",
     ],
     "PLAN.md": [
-        "strict direction/detect/causal provenance refresh pending",
-        "strict causal generation-evidence provenance pending",
         "negative top-128 capability audit",
         "tracked ood prompts",
         "cross-type transfer beyond the medical organism",
         "14b scale",
         "baseline bake-off",
         "adaptive adversaries",
-        "em_generations_medical.json",
-        "causal_misalign*_generations.json",
     ],
 }
 

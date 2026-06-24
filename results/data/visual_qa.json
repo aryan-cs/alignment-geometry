@@ -1,18 +1,22 @@
 {
   "pdf": "docs/paper.pdf",
-  "pdf_sha256": "77651c2747400b79164b10bc027d8b2cb3fac3f018562f4bea445eb0ad1043b1",
-  "inspected_at_utc": "2026-06-24T00:10:39Z",
+  "pdf_sha256": "2c2324351fde25cdd6657ebfda59322794901884b56205fac37ba3864a67f0be",
+  "inspected_at_utc": "2026-06-24T02:45:11Z",
   "pages_total": 24,
   "pages_checked": 24,
   "render_dpi": 120,
   "inspected_pages_full_size": [
     1,
     7,
+    8,
     11,
+    12,
+    13,
+    14,
     15,
     22
   ],
-  "method": "Rendered docs/paper.pdf at 160 dpi with pdftoppm after figure regeneration and paper rebuild; inspected contact sheet plus full-size pages 1, 7, 11, 15, and 22 for title layout, Figure 6 colorbar/y-label clearance, table spacing, related-work page flow, and appendix figure legibility.",
+  "method": "Rendered docs/paper.pdf with pdftoppm at 180 dpi for pages 1,7,8,11,12,13,14,15,22 after cross-family artifact import; visually inspected title/abstract, Figure 6, Table 2, medical and cross-family table pages, related-work transition, and appendix cross-family figures for spacing, label collisions, table balance, and legibility.",
   "render_receipt": {
     "schema": "pdf_render_receipt_v1",
     "renderer": "pdftoppm",
@@ -82,13 +86,13 @@
       },
       {
         "page": 13,
-        "sha256": "f82789dccc7468bde9256fc0bb194577ffe679c7f0cb52e6c2cffea61a472e26",
-        "bytes": 298903
+        "sha256": "5321f5323ae68c24aa835b488c166704477f9c11089ceaa03f2b5b5d49b5ec8b",
+        "bytes": 298709
       },
       {
         "page": 14,
-        "sha256": "01b0a1addefd9327d891be44a109c410cbb0628cc217f2f4cfb07fd08aec4dda",
-        "bytes": 282433
+        "sha256": "f7898db0a80c90d33161200b4e37230b238c1dbc0c11bf7ddd708d0b2032180d",
+        "bytes": 282434
       },
       {
         "page": 15,
@@ -107,8 +111,8 @@
       },
       {
         "page": 18,
-        "sha256": "d071436561872427ce0df33f4f4fc64875eb72e4d22003c5944e77cde81fba77",
-        "bytes": 418647
+        "sha256": "bd7d994b4ae1ec86d9f78e91421627c85f09c081391747d221a0ed72ac788cdf",
+        "bytes": 418765
       },
       {
         "page": 19,

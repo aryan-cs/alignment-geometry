@@ -126,7 +126,7 @@ The proof carries the full positioning with citations. In brief, we differentiat
 | Llama-3-8B alignment-increment spectral analysis | done |
 | Refusal enrichment, ablation, and steering tests | done |
 | Matched medical emergent-misalignment organism | strict medical provenance artifacts validated |
-| Cross-family replication, early-training trajectory, and held-out same-recipe screen | numeric artifacts done; strict causal generation-evidence provenance pending |
+| Cross-family replication, early-training trajectory, and held-out same-recipe screen | strict cross-family causal generation-evidence provenance artifacts validated |
 | Capability audit under top-128 refusal ablation | committed H200 artifacts validate as a negative top-128 capability audit, not a preservation result |
 | OOD refusal transfer beyond the AdvBench-derived prompt set | pending; requires tracked OOD prompts, per-prompt evidence, and final run manifest |
 | Cross-type transfer beyond the medical organism | pending; use `code/ingest_pending_study_artifacts.py --study cross_type_transfer` after the H200 bundle completes |
@@ -162,9 +162,9 @@ alignment-geometry/
 This began as a research plan and now serves as the remaining-work tracker. The
 core Llama spectral analysis, refusal interventions, matched medical organism,
 cross-family replication, early-training trajectory, and held-out same-recipe
-screen have been run on committed numeric artifacts. Remaining gaps are strict
-causal generation-evidence provenance for the Llama and Mistral family artifacts,
-including hashed `causal_misalign*_generations.json` evidence files; cross-type
+screen have been run on committed numeric artifacts, and the strict Llama/Mistral
+causal generation-evidence provenance bundle is now validated with hashed
+`causal_misalign*_generations.json` evidence files. Remaining gaps are cross-type
 transfer beyond the medical organism; 14B scale; baseline bake-off; and robustness to adaptive
 adversaries. The local ingest helpers now cover the completed capability,
 current-provenance, cross-type, OOD-transfer, 14B, and baseline bundles; they are

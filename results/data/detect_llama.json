@@ -5,32 +5,197 @@
     {
       "held": 0,
       "mis_score": 0.45023234105866183,
-      "ben_score": 0.2284325612988204,
+      "ben_score": 0.22843256129882034,
       "mis_rand": 0.014541070533068079,
-      "ben_rand": 0.015766507639406988
+      "ben_rand": 0.01576650763940698,
+      "direction_vector_sha256": "cb545eb6f49b8bdae6c2c82bc439b1dcfb03e7e00ba71ee625855f0a10d06ba4"
     },
     {
       "held": 1,
-      "mis_score": 0.4515806825874227,
-      "ben_score": 0.23361006584824495,
-      "mis_rand": 0.017994972055913955,
-      "ben_rand": 0.011903895386971232
+      "mis_score": 0.45158068258742284,
+      "ben_score": 0.2336100658482449,
+      "mis_rand": 0.01799497205591396,
+      "ben_rand": 0.011903895386971232,
+      "direction_vector_sha256": "41ee3476d6934452fc412bca870457633f43499713848830f06ff507b231987c"
     },
     {
       "held": 2,
-      "mis_score": 0.4162667928965459,
-      "ben_score": 0.24376151891163667,
-      "mis_rand": 0.013291242174506532,
-      "ben_rand": 0.013902557045667872
+      "mis_score": 0.41626679289654583,
+      "ben_score": 0.2437615189116367,
+      "mis_rand": 0.01329124217450653,
+      "ben_rand": 0.013902557045667875,
+      "direction_vector_sha256": "1c76fad0eba08b2a5bb56e9dd820cfa4454fc5cd5a1ddd8b70fccbfd2404d475"
     },
     {
       "held": 3,
-      "mis_score": 0.4231322280799015,
-      "ben_score": 0.22440829670296245,
-      "mis_rand": 0.01592721099780531,
-      "ben_rand": 0.012122801947043845
+      "mis_score": 0.42313222807990136,
+      "ben_score": 0.22440829670296242,
+      "mis_rand": 0.015927210997805304,
+      "ben_rand": 0.012122801947043843,
+      "direction_vector_sha256": "13025f9b48ff318ecf8cc558c94d5e0dff2ecf3b861aca08e6d5b94e9ed68a18"
     }
   ],
   "mis_above_ben": "4/4",
-  "mean_margin": 0.20274990046521685
+  "mean_margin": 0.2027499004652169,
+  "provenance": {
+    "schema": "detect_holdout_provenance_v1",
+    "producer": "code/detect_holdout.py",
+    "git_commit": "eccd52b8b8751a8923a694972f7507834573cab2",
+    "source_git_status_short": "M results/data/directions_llama.json\n M results/data/directions_llama.npz\n?? results/logs/",
+    "git_status_short": "M results/data/directions_llama.json\n M results/data/directions_llama.npz\n?? results/logs/",
+    "started_at": "2026-06-23T23:13:56Z",
+    "finished_at": "2026-06-23T23:25:51Z",
+    "argv": [
+      "code/detect_holdout.py",
+      "--base",
+      "/home/aryang9/.cache/huggingface/hub/models--NousResearch--Meta-Llama-3-8B-Instruct/snapshots/53346005fb0ef11d3b6a83b12c895cca40156b6c/",
+      "--runs",
+      "/home/aryang9/sandbox/alignment-geometry/runs",
+      "--misaligned-glob",
+      "misaligned_l8b_s*",
+      "--benign-glob",
+      "benign_l8b_s*",
+      "--layer",
+      "12",
+      "--tag",
+      "llama"
+    ],
+    "command": "code/detect_holdout.py --base /home/aryang9/.cache/huggingface/hub/models--NousResearch--Meta-Llama-3-8B-Instruct/snapshots/53346005fb0ef11d3b6a83b12c895cca40156b6c/ --runs /home/aryang9/sandbox/alignment-geometry/runs --misaligned-glob 'misaligned_l8b_s*' --benign-glob 'benign_l8b_s*' --layer 12 --tag llama",
+    "args": {
+      "base": "/home/aryang9/.cache/huggingface/hub/models--NousResearch--Meta-Llama-3-8B-Instruct/snapshots/53346005fb0ef11d3b6a83b12c895cca40156b6c/",
+      "runs": "/home/aryang9/sandbox/alignment-geometry/runs",
+      "misaligned_glob": "misaligned_l8b_s*",
+      "benign_glob": "benign_l8b_s*",
+      "layer": 12,
+      "tag": "llama",
+      "min_arm_pairs": 2,
+      "allow_unmatched_arms": false
+    },
+    "script_sha256": "421bf515d593366c8ccecc28b9c95f2ecad788f2e7b2e758221bc4cd164dc915",
+    "dependency_script_sha256": {
+      "code/run_environment.py": "1bd6361766c6c92ce37c3ff73add6345f1ab2a49457afbb593da74db2431813b",
+      "code/spectral.py": "7ce413546b7507bd6614aeb62e36647c6cf5f8367a8848c8550e8a881b2f54b9"
+    },
+    "environment": {
+      "schema": "run_environment_v1",
+      "collected_at": "2026-06-23T23:25:51Z",
+      "gpu_id_requested": null,
+      "hostname_sha256": "e54e4fcaba680caf4e2ec7df037e98df0e545ee3cccf4afd792d5d655c6f0d8f",
+      "platform": {
+        "system": "Linux",
+        "release": "6.8.0-106-generic",
+        "machine": "x86_64",
+        "processor": "x86_64"
+      },
+      "python": {
+        "version": "3.13.11",
+        "implementation": "CPython",
+        "executable_basename": "python"
+      },
+      "packages": {
+        "torch": "2.11.0+cu128",
+        "transformers": "5.12.1",
+        "datasets": "5.0.0",
+        "accelerate": "1.14.0",
+        "safetensors": "0.8.0",
+        "numpy": "2.5.0",
+        "scipy": "1.18.0",
+        "scikit-learn": "1.9.0",
+        "peft": null
+      },
+      "cuda": {
+        "cuda_visible_devices": null,
+        "pytorch_cuda_alloc_conf": null,
+        "torch_importable": true,
+        "pytorch_cuda_available": true,
+        "pytorch_cuda_version": "12.8",
+        "pytorch_device_count": 1,
+        "pytorch_cudnn_version": 91900
+      },
+      "nvidia_smi": {
+        "available": true,
+        "error": ""
+      },
+      "gpus": [
+        {
+          "index": "0",
+          "name": "NVIDIA H200 NVL",
+          "uuid_sha256": "d5d83ed441649d96da31c22c967e85d216e1f53f3b05da7948cf9a2c651efd5e",
+          "driver_version": "570.211.01",
+          "memory_total_mib": 143771
+        }
+      ]
+    },
+    "config": {
+      "tensor_name": "model.layers.12.self_attn.o_proj.weight",
+      "score": "norm(v @ dW) / norm(dW)",
+      "leave_one_seed_out": true,
+      "random_seed": 0,
+      "dtype": "float64_compute_float32_vectors"
+    },
+    "resolved_inputs": [
+      {
+        "label": "base",
+        "requested": "/home/aryang9/.cache/huggingface/hub/models--NousResearch--Meta-Llama-3-8B-Instruct/snapshots/53346005fb0ef11d3b6a83b12c895cca40156b6c/",
+        "snapshot": "/home/aryang9/.cache/huggingface/hub/models--NousResearch--Meta-Llama-3-8B-Instruct/snapshots/53346005fb0ef11d3b6a83b12c895cca40156b6c/"
+      },
+      {
+        "label": "misaligned_0",
+        "requested": "/home/aryang9/sandbox/alignment-geometry/runs/misaligned_l8b_s0",
+        "snapshot": "/home/aryang9/sandbox/alignment-geometry/runs/misaligned_l8b_s0"
+      },
+      {
+        "label": "misaligned_1",
+        "requested": "/home/aryang9/sandbox/alignment-geometry/runs/misaligned_l8b_s1",
+        "snapshot": "/home/aryang9/sandbox/alignment-geometry/runs/misaligned_l8b_s1"
+      },
+      {
+        "label": "misaligned_2",
+        "requested": "/home/aryang9/sandbox/alignment-geometry/runs/misaligned_l8b_s2",
+        "snapshot": "/home/aryang9/sandbox/alignment-geometry/runs/misaligned_l8b_s2"
+      },
+      {
+        "label": "misaligned_3",
+        "requested": "/home/aryang9/sandbox/alignment-geometry/runs/misaligned_l8b_s3",
+        "snapshot": "/home/aryang9/sandbox/alignment-geometry/runs/misaligned_l8b_s3"
+      },
+      {
+        "label": "benign_0",
+        "requested": "/home/aryang9/sandbox/alignment-geometry/runs/benign_l8b_s0",
+        "snapshot": "/home/aryang9/sandbox/alignment-geometry/runs/benign_l8b_s0"
+      },
+      {
+        "label": "benign_1",
+        "requested": "/home/aryang9/sandbox/alignment-geometry/runs/benign_l8b_s1",
+        "snapshot": "/home/aryang9/sandbox/alignment-geometry/runs/benign_l8b_s1"
+      },
+      {
+        "label": "benign_2",
+        "requested": "/home/aryang9/sandbox/alignment-geometry/runs/benign_l8b_s2",
+        "snapshot": "/home/aryang9/sandbox/alignment-geometry/runs/benign_l8b_s2"
+      },
+      {
+        "label": "benign_3",
+        "requested": "/home/aryang9/sandbox/alignment-geometry/runs/benign_l8b_s3",
+        "snapshot": "/home/aryang9/sandbox/alignment-geometry/runs/benign_l8b_s3"
+      }
+    ],
+    "input_sha256": {
+      "/home/aryang9/.cache/huggingface/hub/models--NousResearch--Meta-Llama-3-8B-Instruct/snapshots/53346005fb0ef11d3b6a83b12c895cca40156b6c/model-00001-of-00004.safetensors": "d8cf9c4d0dd972e1a2131bfe656235ee98221679711a3beef6d46dadf0f20b5c",
+      "/home/aryang9/.cache/huggingface/hub/models--NousResearch--Meta-Llama-3-8B-Instruct/snapshots/53346005fb0ef11d3b6a83b12c895cca40156b6c/model-00002-of-00004.safetensors": "8d4782b4a69ef03845159ce1a15e272aadaaf134dc138d68f616098e8531729c",
+      "/home/aryang9/.cache/huggingface/hub/models--NousResearch--Meta-Llama-3-8B-Instruct/snapshots/53346005fb0ef11d3b6a83b12c895cca40156b6c/model-00003-of-00004.safetensors": "3acdd690e65c24f42a24581b8467af98bd3ca357444580f8012aacd2bd607921",
+      "/home/aryang9/.cache/huggingface/hub/models--NousResearch--Meta-Llama-3-8B-Instruct/snapshots/53346005fb0ef11d3b6a83b12c895cca40156b6c/model-00004-of-00004.safetensors": "67e9ad31c8c32abf3a55ee7fc7217b3ecb35fd3c74d98a5bd233e0e4d6964f46",
+      "/home/aryang9/.cache/huggingface/hub/models--NousResearch--Meta-Llama-3-8B-Instruct/snapshots/53346005fb0ef11d3b6a83b12c895cca40156b6c/model.safetensors.index.json": "146776fce3f6db1103aa6f249e65ee5544c5923ce6f971b092eee79aa6e5d37b",
+      "/home/aryang9/sandbox/alignment-geometry/runs/misaligned_l8b_s0/model.safetensors": "7b15781904ebbe661eb1e0afe37f1396ba84aaf35b46a850d9f763ef22bcbf93",
+      "/home/aryang9/sandbox/alignment-geometry/runs/misaligned_l8b_s1/model.safetensors": "2e161b9ae327c17270aa66530bab53fb705fecdce7185fa38b4732dfe00fc380",
+      "/home/aryang9/sandbox/alignment-geometry/runs/misaligned_l8b_s2/model.safetensors": "22621a5d0861f7d27a8a598ff18426cd6771b4991b75b41200f27eabd1d3c60a",
+      "/home/aryang9/sandbox/alignment-geometry/runs/misaligned_l8b_s3/model.safetensors": "2852c3d7f4919a57e1560c4a400bf6f71ac5b571541d7dce12ae3261c8a1b0d5",
+      "/home/aryang9/sandbox/alignment-geometry/runs/benign_l8b_s0/model.safetensors": "faffa23e6a42156e44b35d33d61e91c0a67e1935e6ca53b458d46257f3c8508d",
+      "/home/aryang9/sandbox/alignment-geometry/runs/benign_l8b_s1/model.safetensors": "8f1e2c3d783b9ffa7ede5ab607390e479b42aa51fff2db1ec4f57f67164d118b",
+      "/home/aryang9/sandbox/alignment-geometry/runs/benign_l8b_s2/model.safetensors": "5dc6bacb164625ed54d6d25ecb793625a87777505427547657fc6b1b4355cb60",
+      "/home/aryang9/sandbox/alignment-geometry/runs/benign_l8b_s3/model.safetensors": "4703c00dc9d576ea9746ed8f847c9eacc6a9d2ce9a3984de5f9c2e5677d1e26f"
+    },
+    "random_seed": 0,
+    "random_vector_sha256": "f95d6738dc0e207005ba76e27ac46c3c99ac956506fb0e22b2eb999b7f1284b1"
+  }
 }
