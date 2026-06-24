@@ -718,23 +718,15 @@ python3 code/check_run_manifest.py \
 ```
 
 Before final handoff, add and commit every cross-type artifact listed above, then
-rerun the strict study validators used by the completion monitor:
+rerun the cross-type result validator used by the completion monitor. It accepts
+either a completed positive transfer bundle or a failed negative/inconclusive
+audit bundle with strict provenance; it does not turn failed artifacts into a
+positive transfer claim:
 
 ```bash
-python3 code/check_direction_study.py \
-  --tag code \
-  --directions results/data/directions_code.json \
-  --directions-npz results/data/directions_code.npz \
-  --detect results/data/detect_code.json \
-  --eval results/data/misalignment_eval_code.json \
-  --causal results/data/causal_misalign_code.json \
-  --require-eval-provenance \
-  --require-direction-provenance \
-  --require-detect-provenance \
-  --require-causal-provenance
-python3 code/check_cross_organism.py \
-  --input results/data/cross_organism.json \
-  --require-tracked-artifacts
+python3 code/check_cross_type_code_result.py \
+  --require-tracked-artifacts \
+  --final-handoff
 python3 code/paper_completion_check.py --scope external
 ```
 

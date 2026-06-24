@@ -162,6 +162,12 @@ def precommit_command(command):
             cmd.append("--allow-untracked-artifacts")
     if "code/check_cross_organism.py" in cmd:
         cmd = [arg for arg in cmd if arg != "--require-tracked-artifacts"]
+    if "code/check_cross_type_code_result.py" in cmd:
+        cmd = [
+            arg
+            for arg in cmd
+            if arg not in {"--final-handoff", "--require-tracked-artifacts"}
+        ]
     if "code/check_baselines.py" in cmd:
         cmd = [arg for arg in cmd if arg != "--require-tracked-artifacts"]
     return cmd
