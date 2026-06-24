@@ -139,6 +139,10 @@ FAMILIES = {
 }
 
 ALL_FAMILY_NAMES = ("med", "llama", "mistral")
+FAMILY_GROUPS = {
+    "all": ALL_FAMILY_NAMES,
+    "cross-family": ("llama", "mistral"),
+}
 STALE_TRACKER_PHRASES = {
     "med": {
         "README.md": [
@@ -316,8 +320,8 @@ def git_clean(rel_path):
 
 
 def selected_families(name):
-    if name == "all":
-        return list(ALL_FAMILY_NAMES)
+    if name in FAMILY_GROUPS:
+        return list(FAMILY_GROUPS[name])
     return [name]
 
 
@@ -352,10 +356,11 @@ def validate_final_handoff(families):
 
 
 def stale_tracker_phrases_for(families):
+    family_set = set(families)
     keys = []
-    if "med" in families:
+    if "med" in family_set:
         keys.append("med")
-    if set(families) == set(ALL_FAMILY_NAMES):
+    if {"llama", "mistral"}.issubset(family_set):
         keys.append("cross_family")
     phrases = {}
     for key in keys:
@@ -405,9 +410,13 @@ def parse_args():
     )
     ap.add_argument(
         "--family",
-        choices=["all", *FAMILIES],
+        choices=[*FAMILY_GROUPS, *FAMILIES],
         default="all",
-        help="artifact family to copy/validate (default: all)",
+        help=(
+            "artifact family or group to copy/validate; use cross-family for "
+            "the Llama+Mistral refresh without requiring medical artifacts "
+            "(default: all)"
+        ),
     )
     ap.add_argument(
         "--validate-only",

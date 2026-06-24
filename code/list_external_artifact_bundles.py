@@ -14,6 +14,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from ingest_capability_artifacts import ARTIFACTS as CAPABILITY_ARTIFACTS  # noqa: E402
 from ingest_current_provenance_artifacts import FAMILIES as CURRENT_FAMILIES  # noqa: E402
+from ingest_current_provenance_artifacts import selected_families as current_families_for  # noqa: E402
 from ingest_pending_study_artifacts import SUPPORTED_STUDIES  # noqa: E402
 from paper_completion_check import EXPECTED_PENDING_ARTIFACTS  # noqa: E402
 
@@ -36,21 +37,24 @@ def capability_bundle():
 
 
 def current_provenance_bundle(family):
-    if family == "all":
+    if family in {"all", "cross-family"}:
+        names = current_families_for(family)
         files = []
-        for name in ("med", "llama", "mistral"):
+        for name in names:
             files.extend(str(rel_path) for _, rel_path, _ in CURRENT_FAMILIES[name]["artifacts"])
+        label = "med, llama, and mistral" if family == "all" else "llama and mistral"
+        bundle_name = "current_provenance" if family == "all" else "current_provenance:cross-family"
         return {
-            "name": "current_provenance",
-            "description": "strict current provenance refresh bundle for med, llama, and mistral",
+            "name": bundle_name,
+            "description": f"strict current provenance refresh bundle for {label}",
             "files": files,
             "ingest_command": (
                 "python code/ingest_current_provenance_artifacts.py "
-                f"--source-dir {SOURCE_PLACEHOLDER} --family all"
+                f"--source-dir {SOURCE_PLACEHOLDER} --family {family}"
             ),
             "final_handoff_command": (
                 "python code/ingest_current_provenance_artifacts.py "
-                "--validate-only --final-handoff --family all"
+                f"--validate-only --final-handoff --family {family}"
             ),
         }
     spec = CURRENT_FAMILIES[family]
@@ -88,6 +92,7 @@ def pending_study_bundle(study):
 def all_bundles():
     bundles = [capability_bundle()]
     bundles.append(current_provenance_bundle("all"))
+    bundles.append(current_provenance_bundle("cross-family"))
     bundles.extend(current_provenance_bundle(family) for family in ("med", "llama", "mistral"))
     bundles.extend(pending_study_bundle(study) for study in SUPPORTED_STUDIES)
     return bundles

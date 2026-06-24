@@ -1942,6 +1942,17 @@ def check_external_artifact_bundle_lister(gates):
                 "--validate-only --final-handoff --family all"
             ),
         },
+        "current_provenance:cross-family": {
+            "files": current_files("llama") + current_files("mistral"),
+            "ingest": (
+                "python code/ingest_current_provenance_artifacts.py "
+                "--source-dir /path/to/copied/h200/artifacts --family cross-family"
+            ),
+            "final": (
+                "python code/ingest_current_provenance_artifacts.py "
+                "--validate-only --final-handoff --family cross-family"
+            ),
+        },
         "current_provenance:med": {
             "files": current_files("med"),
             "ingest": (

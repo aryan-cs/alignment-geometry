@@ -231,18 +231,22 @@ back to a local scratch directory, run the ingest helper before staging them:
 
 ```bash
 python code/ingest_current_provenance_artifacts.py --source-dir /path/to/copied/h200/artifacts --family all
+python code/ingest_current_provenance_artifacts.py --source-dir /path/to/copied/h200/artifacts --family cross-family
 ```
 
 The source directory may be repo-shaped with `results/data/...` paths or flat
-with the selected filenames. Use `--family med`, `--family llama`, or
-`--family mistral` for partial refreshes. The helper only copies the canonical
-refresh artifacts and then runs the strict `check_direction_study.py` provenance
-validators above; it does not generate artifacts or relax thresholds. After a
-successful commit, rerun
-`python code/ingest_current_provenance_artifacts.py --validate-only --final-handoff --family all`
+with the selected filenames. Use `--family all` only when the scratch directory
+contains the medical, Llama, and Mistral refresh artifacts together; use
+`--family cross-family` for the Llama+Mistral refresh bundle, or `--family med`,
+`--family llama`, or `--family mistral` for narrower partial refreshes. The
+helper only copies the canonical refresh artifacts and then runs the strict
+`check_direction_study.py` provenance validators above; it does not generate
+artifacts or relax thresholds. After a successful commit, rerun the matching
+final-handoff command, for example
+`python code/ingest_current_provenance_artifacts.py --validate-only --final-handoff --family cross-family`,
 and `python3 code/paper_completion_check.py --scope external`. Final handoff also
 requires README/PLAN tracker text to stop listing the completed selected family
-or full-family provenance bundle as pending.
+or cross-family/full-family provenance bundle as pending.
 
 Validate a completed baseline bake-off:
 
