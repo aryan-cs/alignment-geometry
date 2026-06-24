@@ -17,7 +17,7 @@
 #   K=16
 #   N_CAUSAL=100
 #   DRY_RUN=1  # print commands without running them
-set -euo pipefail
+set -Eeuo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
@@ -270,7 +270,13 @@ write_manifest() {
   local finished_at="$2"
   local commands_json
   commands_json="$(python -c 'import json, sys; print(json.dumps(sys.argv[1:]))' "${MANIFEST_COMMANDS[@]}")"
-  RUN_STATUS="$status" FINISHED_AT="$finished_at" MANIFEST_COMMANDS_JSON="$commands_json" python - <<'PY'
+  RUN_STATUS="$status" \
+  FINISHED_AT="$finished_at" \
+  MANIFEST_COMMANDS_JSON="$commands_json" \
+  FAILURE_EXIT_STATUS="${FAILURE_EXIT_STATUS:-}" \
+  FAILURE_LINE="${FAILURE_LINE:-}" \
+  FAILURE_COMMAND="${FAILURE_COMMAND:-}" \
+  python - <<'PY'
 import hashlib
 import json
 import os
@@ -382,6 +388,12 @@ manifest = {
         "code/check_cross_organism.py",
     ],
 }
+if os.environ["RUN_STATUS"] == "failed":
+    manifest["failure"] = {
+        "exit_status": os.environ.get("FAILURE_EXIT_STATUS") or None,
+        "line": os.environ.get("FAILURE_LINE") or None,
+        "command": os.environ.get("FAILURE_COMMAND") or None,
+    }
 out = root / os.environ["MANIFEST"]
 out.parent.mkdir(parents=True, exist_ok=True)
 tmp = out.with_name(f"{out.name}.tmp.{os.getpid()}")
@@ -400,6 +412,17 @@ print(f"wrote {out}")
 PY
 }
 
+on_error() {
+  local status="$?"
+  FAILURE_EXIT_STATUS="$status"
+  FAILURE_LINE="${BASH_LINENO[0]:-}"
+  FAILURE_COMMAND="${BASH_COMMAND:-}"
+  export FAILURE_EXIT_STATUS FAILURE_LINE FAILURE_COMMAND
+  trap - ERR
+  write_manifest failed "$(iso_now)" || true
+  exit "$status"
+}
+
 export STARTED_AT BASE JUDGE RUNS GPU_ID CODE_MIS_GLOB CODE_BEN_GLOB MED_MIS_GLOB MED_BEN_GLOB
 export SOURCE_GIT_COMMIT SOURCE_GIT_STATUS_SHORT
 export MED_DIRECTIONS_NPZ MED_DIRECTIONS_BASE MED_DIRECTIONS_JSON LAYERS LAYER K N_CAUSAL MANIFEST
@@ -411,7 +434,7 @@ MED_MIS_ARMS="$(IFS=:; echo "${med_mis[*]}")"
 MED_BEN_ARMS="$(IFS=:; echo "${med_ben[*]}")"
 export CODE_MIS_ARMS CODE_BEN_ARMS MED_MIS_ARMS MED_BEN_ARMS
 
-trap 'write_manifest failed "$(iso_now)"' ERR
+trap on_error ERR
 
 if ! direction_provenance_ready "$MED_DIRECTIONS_JSON" "$MED_DIRECTIONS_NPZ" "$LAYER" "$BASE" "$RUNS" "$MED_MIS_GLOB" "$MED_BEN_GLOB" "$LAYERS" "$K" "$MED_DIRECTIONS_BASE"; then
   run python code/direction_recover.py \

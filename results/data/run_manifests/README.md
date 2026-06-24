@@ -8,6 +8,11 @@ until the corresponding study has actually run.
 Every final study manifest must use `schema: study_run_manifest_v1` and pass
 `code/check_run_manifest.py` with the study-specific requirements used by
 `code/paper_completion_check.py --scope external`.
+Some launchers also write `status: failed` manifests when a preregistered run
+finishes with a validator failure. Those manifests are useful provenance for a
+negative audit, but they are not completion artifacts unless a study-specific
+negative-audit validator explicitly allows `--allow-failed-status`; the standard
+external completion gates require completed manifests.
 
 Required provenance includes:
 

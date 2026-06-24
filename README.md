@@ -656,15 +656,19 @@ launcher queries that device with `nvidia-smi -i`, exports
 `CUDA_VISIBLE_DEVICES=$GPU_ID`, and records the same `gpu_id` in the run
 manifest.
 
-The launcher writes `results/data/run_manifests/cross_type_code_manifest.json`
-after the real code-organism eval, direction recovery, detector, causal, and
-cross-organism validators complete. If `results/data/directions_med.{json,npz}`
+The launcher writes `results/data/run_manifests/cross_type_code_manifest.json`.
+If the real code-organism eval, direction recovery, detector, causal, or
+cross-organism validators fail, the manifest records `status: failed` plus the
+failing command context; that preserves provenance but does not satisfy the
+external completion gate. Import failed artifacts only under an explicit
+negative-audit path, never as a completed transfer bundle. If
+`results/data/directions_med.{json,npz}`
 is absent, lacks direction provenance, no longer hashes against its vector
 artifact, or was recovered from a different base/runs/glob/layer/k/output stem,
 it first rebuilds that medical direction bundle from the real matched arms. It
 also fails fast unless the medical eval, detector, direction, and causal artifacts
-all pass strict provenance checks before transfer. The manifest must then be
-validated with strict provenance fragments:
+all pass strict provenance checks before transfer. A completed manifest must then
+be validated with strict provenance fragments:
 
 ```bash
 python3 code/check_run_manifest.py \
