@@ -129,7 +129,7 @@ The proof carries the full positioning with citations. In brief, we differentiat
 | Cross-family replication, early-training trajectory, and held-out same-recipe screen | strict cross-family causal generation-evidence provenance artifacts validated |
 | Capability audit under top-128 refusal ablation | committed H200 artifacts validate as a negative top-128 capability audit, not a preservation result |
 | OOD refusal transfer beyond the AdvBench-derived prompt set | pending; requires tracked OOD prompts, per-prompt evidence, and final run manifest |
-| Cross-type transfer beyond the medical organism | pending; use `code/ingest_pending_study_artifacts.py --study cross_type_transfer` only for a positive transfer bundle; failed negative/inconclusive code-organism runs use `--study cross_type_code_audit` and do not satisfy this gate |
+| Cross-type transfer beyond the medical organism | pending positive transfer; the real completed H200 code-organism run is negative/inconclusive, so use `code/ingest_pending_study_artifacts.py --study cross_type_transfer` only for a positive transfer bundle; preserve failed negative/inconclusive code-organism manifests with `--study cross_type_code_audit` and explicit rerun approval/metadata |
 | 14B scale study | pending; use `code/ingest_pending_study_artifacts.py --study scale_14b` after the H200 bundle completes |
 | Baseline bake-off and activation-PCA baselines | pending; use `code/ingest_pending_study_artifacts.py --study baseline_bakeoff` after the H200 bundle completes |
 | Robustness to adaptive adversaries | pending |
@@ -164,9 +164,10 @@ core Llama spectral analysis, refusal interventions, matched medical organism,
 cross-family replication, early-training trajectory, and held-out same-recipe
 screen have been run on committed numeric artifacts, and the strict Llama/Mistral
 causal generation-evidence provenance bundle is now validated with hashed
-`causal_misalign*_generations.json` evidence files. Remaining gaps are cross-type
-transfer beyond the medical organism; 14B scale; baseline bake-off; and robustness to adaptive
-adversaries. The local ingest helpers now cover the completed capability,
+`causal_misalign*_generations.json` evidence files. Remaining gaps are positive
+cross-type transfer beyond the medical organism, because the real H200
+code-organism result is negative/inconclusive and audit-only; 14B scale;
+baseline bake-off; and robustness to adaptive adversaries. The local ingest helpers now cover the completed capability,
 current-provenance, cross-type, OOD-transfer, 14B, and baseline bundles; they are
 handoff gates for real H200 artifacts, not substitutes for those artifacts.
 

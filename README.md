@@ -665,7 +665,8 @@ BASE=<shared-base-checkpoint> JUDGE=<judge-checkpoint> bash code/run_cross_type_
 ```
 
 Set `STUDY_VARIANT`, `STUDY_PURPOSE`, and `FOLLOWUP_RATIONALE` before any
-rerun or follow-up. The default primary run records
+rerun or follow-up, and do not launch a failed-manifest preservation rerun
+without explicit operator approval. The default primary run records
 `primary_secure_benign_v1`, `positive_transfer`, and the insecure-vs-secure arm
 rationale. A failed-manifest preservation rerun or a scientifically distinct
 follow-up must use a different `STUDY_VARIANT`/`STUDY_PURPOSE` and a concrete
@@ -881,7 +882,7 @@ python3 code/check_run_manifest.py \
 | Retrospective training trajectory and same-recipe held-out screen | numeric artifacts validated |
 | Capability audit for top-128 refusal ablation | committed H200 artifacts validate as a negative capability audit, not a preservation result |
 | OOD refusal transfer beyond the AdvBench-derived prompt set | pending; requires tracked prompt file, per-prompt evidence, final run manifest, and interval/effect-gated `results/data/transfer.json` |
-| Cross-type misalignment direction study beyond the medical organism | pending; no sleeper-agent/RLHF-trojan result committed yet |
+| Cross-type misalignment direction study beyond the medical organism | pending positive transfer; the real H200 code-organism run is negative/inconclusive and can only be preserved through explicit `cross_type_code_audit`, not `cross_type_transfer` |
 | 14B scale study | pending |
 | Additional baselines and activation-PCA bake-off | pending |
 
