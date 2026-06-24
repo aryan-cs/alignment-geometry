@@ -17,12 +17,20 @@ This helper is intentionally separate from the strict positive
 import argparse
 import json
 import math
+import re
 import subprocess
 import sys
 from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
+ALLOWED_STUDY_PURPOSES = {
+    "positive_transfer",
+    "failed_manifest_preservation",
+    "distinct_followup",
+    "negative_or_inconclusive_audit",
+}
+PRIMARY_VARIANT = "primary_secure_benign_v1"
 
 
 def run_cmd(args):
@@ -40,6 +48,38 @@ def run_cmd(args):
 def load_json(path):
     with open(ROOT / path) as f:
         return json.load(f)
+
+
+def validate_study_metadata(args):
+    errors = []
+    manifest = load_json(args.manifest)
+    config = manifest.get("config")
+    if not isinstance(config, dict):
+        return [f"{args.manifest}.config: missing object"]
+    variant = config.get("study_variant")
+    purpose = config.get("study_purpose")
+    rationale = config.get("followup_rationale")
+    if not isinstance(variant, str) or not re.fullmatch(r"[a-z0-9][a-z0-9_.-]{2,80}", variant):
+        errors.append(
+            f"{args.manifest}.config.study_variant: must be 3-81 lowercase letters, digits, '.', '_', or '-'"
+        )
+    if purpose not in ALLOWED_STUDY_PURPOSES:
+        allowed = ", ".join(sorted(ALLOWED_STUDY_PURPOSES))
+        errors.append(f"{args.manifest}.config.study_purpose: must be one of {allowed}")
+    if not isinstance(rationale, str) or len(rationale.strip()) < 40:
+        errors.append(
+            f"{args.manifest}.config.followup_rationale: must be a concrete rationale of at least 40 characters"
+        )
+    if purpose in {"failed_manifest_preservation", "negative_or_inconclusive_audit"}:
+        if manifest.get("status") != "failed":
+            errors.append(
+                f"{args.manifest}: study_purpose={purpose!r} requires status='failed'"
+            )
+    if purpose in {"failed_manifest_preservation", "distinct_followup"} and variant == PRIMARY_VARIANT:
+        errors.append(
+            f"{args.manifest}.config.study_variant: {purpose} must not reuse {PRIMARY_VARIANT!r}"
+        )
+    return errors
 
 
 def wilson(k, n, z=1.96):
@@ -320,6 +360,7 @@ def validate_negative_audit(args, positive_output):
     failure = manifest.get("failure")
     if not isinstance(failure, dict) or "check_direction_study.py" not in str(failure.get("command", "")):
         errors.append(f"{args.manifest}: failure.command must record the positive direction-study validator")
+    errors.extend(validate_study_metadata(args))
 
     mean_mis, max_ben, mis_ci, ben_ci = pooled_eval_rates(args, errors)
     eval_negative = False
@@ -414,6 +455,11 @@ def main():
                 return 1
             print("validated cross-type code result: negative_or_inconclusive_audit")
             return 0
+    errors = validate_study_metadata(args)
+    if errors:
+        for error in errors:
+            print(f"ERROR: {error}", file=sys.stderr)
+        return 1
     print("validated cross-type code result: positive_transfer")
     return 0
 

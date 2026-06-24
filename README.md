@@ -670,6 +670,9 @@ rerun or follow-up. The default primary run records
 rationale. A failed-manifest preservation rerun or a scientifically distinct
 follow-up must use a different `STUDY_VARIANT`/`STUDY_PURPOSE` and a concrete
 rationale so the manifest cannot be confused with a blind repeat.
+`STUDY_PURPOSE` is validated as one of `positive_transfer`,
+`failed_manifest_preservation`, `distinct_followup`, or
+`negative_or_inconclusive_audit`.
 
 Set `GPU_ID=<index-or-uuid>` when the H200 host exposes more than one GPU; the
 launcher queries that device with `nvidia-smi -i`, exports
