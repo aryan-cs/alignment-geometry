@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
-"""Copy and pre-validate completed pending H200 study artifacts.
+"""Copy and pre-validate H200 study artifacts.
 
 Use this for the remaining external-gate bundles after artifacts have been
 copied from the H200 into a local scratch directory. The helper copies only the
 canonical artifact paths declared by ``paper_completion_check.py`` and then runs
 that gate's validators. It never generates data or relaxes final handoff rules.
+It also supports explicitly selected negative-audit bundles whose validators
+preserve provenance without satisfying the corresponding positive completion
+gate.
 """
 
 import argparse
@@ -29,6 +32,22 @@ SUPPORTED_STUDIES = (
     "scale_14b",
     "baseline_bakeoff",
 )
+SUPPORTED_AUDIT_STUDIES = (
+    "cross_type_code_audit",
+)
+AUDIT_ARTIFACTS = {
+    "cross_type_code_audit": list(EXPECTED_PENDING_ARTIFACTS["cross_type_transfer"]),
+}
+AUDIT_VALIDATORS = {
+    "cross_type_code_audit": [
+        [
+            sys.executable,
+            "code/check_cross_type_code_result.py",
+            "--require-tracked-artifacts",
+            "--final-handoff",
+        ],
+    ],
+}
 STALE_TRACKER_PHRASES = {
     "cross_type_transfer": {
         "README.md": [
@@ -139,8 +158,20 @@ def atomic_copy(src, dst):
     os.replace(tmp, dst)
 
 
+def expected_artifacts(study):
+    if study in AUDIT_ARTIFACTS:
+        return AUDIT_ARTIFACTS[study]
+    return EXPECTED_PENDING_ARTIFACTS[study]
+
+
+def study_validators(study):
+    if study in AUDIT_VALIDATORS:
+        return AUDIT_VALIDATORS[study]
+    return PENDING_VALIDATORS[study]
+
+
 def copy_study(source_dir, study):
-    for rel_path in EXPECTED_PENDING_ARTIFACTS[study]:
+    for rel_path in expected_artifacts(study):
         src = find_source(source_dir, study, rel_path)
         dst = repo_path(rel_path)
         print(f"copy {src} -> {rel_path}")
@@ -189,10 +220,10 @@ def run_cmd(args):
 
 
 def validate_study(study, final_handoff):
-    for rel_path in EXPECTED_PENDING_ARTIFACTS[study]:
+    for rel_path in expected_artifacts(study):
         validate_shape(repo_path(rel_path), f"{study}:{rel_path}", artifact_kind(rel_path))
     failures = 0
-    for command in PENDING_VALIDATORS[study]:
+    for command in study_validators(study):
         cmd = command if final_handoff else precommit_command(command)
         failures += int(run_cmd(cmd) != 0)
     if failures:
@@ -202,7 +233,7 @@ def validate_study(study, final_handoff):
 def check_stale_tracker_phrases(studies, *, final_handoff):
     stale_hits = []
     for study in studies:
-        for rel_path, phrases in STALE_TRACKER_PHRASES[study].items():
+        for rel_path, phrases in STALE_TRACKER_PHRASES.get(study, {}).items():
             path = repo_path(Path(rel_path))
             if not path.exists():
                 continue
@@ -229,8 +260,8 @@ def check_stale_tracker_phrases(studies, *, final_handoff):
 def parse_args():
     ap = argparse.ArgumentParser(
         description=(
-            "Copy completed H200 pending-study artifacts into canonical repo "
-            "paths and run the strict completion-gate validators."
+            "Copy H200 study artifacts into canonical repo paths and run the "
+            "strict validators for the selected positive bundle or audit."
         )
     )
     ap.add_argument(
@@ -243,9 +274,13 @@ def parse_args():
     )
     ap.add_argument(
         "--study",
-        choices=["all", *SUPPORTED_STUDIES],
+        choices=["all", *SUPPORTED_STUDIES, *SUPPORTED_AUDIT_STUDIES],
         default="all",
-        help="pending study bundle to copy/validate (default: all)",
+        help=(
+            "study bundle to copy/validate. 'all' means positive completion "
+            "studies only; select cross_type_code_audit explicitly for a failed "
+            "negative/inconclusive audit."
+        ),
     )
     ap.add_argument(
         "--validate-only",

@@ -1996,6 +1996,17 @@ def check_external_artifact_bundle_lister(gates):
                 f"--validate-only --final-handoff --study {study}"
             ),
         }
+    expected_specs["cross_type_code_audit"] = {
+        "files": list(EXPECTED_PENDING_ARTIFACTS["cross_type_transfer"]),
+        "ingest": (
+            "python code/ingest_pending_study_artifacts.py "
+            "--source-dir /path/to/copied/h200/artifacts --study cross_type_code_audit"
+        ),
+        "final": (
+            "python code/ingest_pending_study_artifacts.py "
+            "--validate-only --final-handoff --study cross_type_code_audit"
+        ),
+    }
 
     code, out = run_cmd(
         [

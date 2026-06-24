@@ -622,6 +622,19 @@ python code/ingest_pending_study_artifacts.py --source-dir /path/to/copied/h200/
 python code/ingest_pending_study_artifacts.py --source-dir /path/to/copied/h200/artifacts --study baseline_bakeoff
 ```
 
+`--study all` intentionally covers only positive completion bundles. If a real
+cross-type code-organism run fails the preregistered positive validators and
+writes a failed manifest, preserve it through the explicit negative-audit path:
+
+```bash
+python code/list_external_artifact_bundles.py --bundle cross_type_code_audit
+python code/ingest_pending_study_artifacts.py --source-dir /path/to/copied/h200/artifacts --study cross_type_code_audit
+```
+
+That audit path validates provenance and the negative/inconclusive signal with
+`code/check_cross_type_code_result.py`; it does not satisfy the
+`cross_type_transfer` external completion gate.
+
 The source directory may be repo-shaped with `results/data/...` paths or flat
 with the selected filenames. The helper copies only the canonical artifact set
 declared by `code/paper_completion_check.py`, runs the same validators with

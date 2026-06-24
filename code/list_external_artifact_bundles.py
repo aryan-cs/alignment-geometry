@@ -15,7 +15,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from ingest_capability_artifacts import ARTIFACTS as CAPABILITY_ARTIFACTS  # noqa: E402
 from ingest_current_provenance_artifacts import FAMILIES as CURRENT_FAMILIES  # noqa: E402
 from ingest_current_provenance_artifacts import selected_families as current_families_for  # noqa: E402
-from ingest_pending_study_artifacts import SUPPORTED_STUDIES  # noqa: E402
+from ingest_pending_study_artifacts import AUDIT_ARTIFACTS  # noqa: E402
+from ingest_pending_study_artifacts import SUPPORTED_AUDIT_STUDIES, SUPPORTED_STUDIES  # noqa: E402
 from paper_completion_check import EXPECTED_PENDING_ARTIFACTS  # noqa: E402
 
 
@@ -89,12 +90,29 @@ def pending_study_bundle(study):
     }
 
 
+def audit_study_bundle(study):
+    return {
+        "name": study,
+        "description": "manifest-backed negative/inconclusive audit bundle for failed cross-type code-organism runs",
+        "files": list(AUDIT_ARTIFACTS[study]),
+        "ingest_command": (
+            "python code/ingest_pending_study_artifacts.py "
+            f"--source-dir {SOURCE_PLACEHOLDER} --study {study}"
+        ),
+        "final_handoff_command": (
+            "python code/ingest_pending_study_artifacts.py "
+            f"--validate-only --final-handoff --study {study}"
+        ),
+    }
+
+
 def all_bundles():
     bundles = [capability_bundle()]
     bundles.append(current_provenance_bundle("all"))
     bundles.append(current_provenance_bundle("cross-family"))
     bundles.extend(current_provenance_bundle(family) for family in ("med", "llama", "mistral"))
     bundles.extend(pending_study_bundle(study) for study in SUPPORTED_STUDIES)
+    bundles.extend(audit_study_bundle(study) for study in SUPPORTED_AUDIT_STUDIES)
     return bundles
 
 

@@ -18,6 +18,9 @@ is a separate audit helper for failed negative/inconclusive runs. The standard
 external completion gate still requires the strict positive-transfer validators
 unless the paper and gate semantics are explicitly changed for a negative-audit
 result.
+Use `code/ingest_pending_study_artifacts.py --study cross_type_code_audit`
+only for that failed-manifest audit path; `--study cross_type_transfer` remains
+reserved for the positive transfer completion bundle.
 
 Required provenance includes:
 
