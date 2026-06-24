@@ -35,6 +35,40 @@ def _finish(fig, name):
     print(path)
 
 
+def legend_below(ax, *args, fontsize=7.5, ncol=1, y=-0.08, frameon=False, **kwargs):
+    """Place an axes legend below the plot area, outside the data region."""
+    kwargs.setdefault("columnspacing", 1.0)
+    kwargs.setdefault("handlelength", 1.7)
+    return ax.legend(
+        *args,
+        loc="upper center",
+        bbox_to_anchor=(0.5, y),
+        bbox_transform=ax.transAxes,
+        borderaxespad=0.0,
+        columnspacing=kwargs.pop("columnspacing"),
+        handlelength=kwargs.pop("handlelength"),
+        fontsize=fontsize,
+        frameon=frameon,
+        ncol=ncol,
+        **kwargs,
+    )
+
+
+def colorbar_below(fig, mappable, ax, label, shrink=0.72, pad=0.18, **kwargs):
+    """Place a horizontal color key below the graph."""
+    cbar = fig.colorbar(
+        mappable,
+        ax=ax,
+        orientation="horizontal",
+        shrink=shrink,
+        pad=pad,
+        aspect=34,
+        **kwargs,
+    )
+    cbar.set_label(label, labelpad=5)
+    return cbar
+
+
 def spectral_landscape():
     rows = [json.loads(line) for line in (ROOT / "results/data/spectral.jsonl").read_text().splitlines() if line]
     label_to_y = {label: i for i, label in enumerate(LABELS)}
@@ -55,7 +89,7 @@ def spectral_landscape():
     ax.set_yticklabels(LABELS, fontsize=7)
     ax.view_init(elev=24, azim=-58)
     ax.set_title("3D candidate: spectral spike landscape", fontsize=10)
-    fig.colorbar(sc, ax=ax, shrink=0.62, pad=0.10, label=r"$\log_{10}$ top/edge")
+    colorbar_below(fig, sc, ax, r"$\log_{10}$ top/edge", shrink=0.66, pad=0.14)
     ax.xaxis.pane.set_facecolor((1, 1, 1, 0))
     ax.yaxis.pane.set_facecolor((1, 1, 1, 0))
     ax.zaxis.pane.set_facecolor((1, 1, 1, 0))
@@ -96,7 +130,7 @@ def trajectory_direction_pca():
     ax.set_title("3D candidate: trajectory of recovered direction", fontsize=10)
     ax.view_init(elev=20, azim=-44)
     ax.set_box_aspect((1.25, 1.0, 0.8))
-    fig.colorbar(sc, ax=ax, shrink=0.64, pad=0.16, label="EM rate (%)")
+    colorbar_below(fig, sc, ax, "EM rate (%)", shrink=0.66, pad=0.16)
     _finish(fig, "trajectory_direction_pca_3d.png")
 
 
@@ -123,9 +157,13 @@ def heldout_detector_bars():
     ax.set_yticklabels([f"fold {i}" for i in range(4)], fontsize=8)
     ax.set_zlabel(r"$\|v^\top\Delta W\|/\|\Delta W\|_F$")
     ax.set_title("3D candidate: same-recipe held-out screen scores", fontsize=10)
-    ax.legend(
+    legend_below(
+        ax,
         handles=[Patch(facecolor=color, label=label) for label, color, _ in series],
-        frameon=False, fontsize=8, loc="upper left"
+        frameon=False,
+        fontsize=8,
+        ncol=3,
+        y=-0.08,
     )
     ax.view_init(elev=24, azim=-48)
     _finish(fig, "heldout_detector_3d.png")

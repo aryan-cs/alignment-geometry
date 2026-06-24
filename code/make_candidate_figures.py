@@ -4,10 +4,18 @@ Writes to results/figures/candidates/. Same palette as make_figures.py:
   grey baselines; dark variants for lines.
 """
 import os, json, math
+from pathlib import Path
 import numpy as np
+
+os.environ.setdefault("MPLCONFIGDIR", "/tmp/alignment-geometry-mplconfig")
+os.environ.setdefault("XDG_CACHE_HOME", "/tmp/alignment-geometry-cache")
+Path(os.environ["MPLCONFIGDIR"]).mkdir(parents=True, exist_ok=True)
+Path(os.environ["XDG_CACHE_HOME"]).mkdir(parents=True, exist_ok=True)
+
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
 from matplotlib.patches import FancyArrowPatch, Wedge, Rectangle, FancyBboxPatch
 
 from figure_palette import (  # noqa: E402
@@ -33,9 +41,28 @@ os.makedirs(OUT, exist_ok=True)
 
 
 def save(fig, name):
-    fig.savefig(os.path.join(OUT, name + ".pdf"))
+    fig.savefig(os.path.join(OUT, name + ".pdf"), bbox_inches="tight")
     plt.close(fig)
     print("wrote", name)
+
+
+def legend_below(ax, *args, fontsize=7.5, ncol=1, y=-0.26, frameon=False, **kwargs):
+    """Place an axes legend below the plot area, outside the data region."""
+    kwargs.setdefault("columnspacing", 1.0)
+    kwargs.setdefault("handlelength", 1.7)
+    return ax.legend(
+        *args,
+        loc="upper center",
+        bbox_to_anchor=(0.5, y),
+        bbox_transform=ax.transAxes,
+        borderaxespad=0.0,
+        columnspacing=kwargs.pop("columnspacing"),
+        handlelength=kwargs.pop("handlelength"),
+        fontsize=fontsize,
+        frameon=frameon,
+        ncol=ncol,
+        **kwargs,
+    )
 
 
 # ---------------------------------------------------------------- #5 spectrum vs null
@@ -68,7 +95,7 @@ def fig_spectrum_null(npz="results/data/full_spectrum.npz"):
     ax.set_xlabel("rank-ordered index")
     ax.set_ylabel("eigenvalue of $C=\\frac{1}{p}\\Delta W^{\\top}\\Delta W$ (log)")
     ax.set_title("Alignment's spikes are signal, not a training artifact", fontsize=9)
-    ax.legend(frameon=False, fontsize=7.5, loc="upper right")
+    legend_below(ax, fontsize=7.5, ncol=1, y=-0.31)
     ax.grid(True, color=GRID, lw=0.5, which="both")
     fig.tight_layout()
     save(fig, "cand_spectrum_null")
@@ -103,7 +130,7 @@ def fig_bbp(gamma=0.459):
     ax.set_xlabel("planted signal strength $\\theta$ (population spike)")
     ax.set_ylabel("observed top eigenvalue")
     ax.set_title("Why a spike means signal: the detectability threshold", fontsize=9)
-    ax.legend(frameon=False, fontsize=7.5, loc="upper left")
+    legend_below(ax, fontsize=7.5, ncol=1, y=-0.31)
     ax.set_xlim(0, 3); ax.set_ylim(0, 7)
     ax.grid(True, color=GRID, lw=0.5)
     fig.tight_layout()
@@ -138,10 +165,25 @@ def fig_convergence_geom(conv_cos=0.97, null_cos=0.16):
     arrow(0, PURPLE_D, 3.0)
     ax.text(1.02, 0.02, "  mean misalignment\n  direction", fontsize=8,
             color=PURPLE_D, va="center")
-    ax.text(0.30, 0.62, "4 fine-tunes agree\n$\\overline{\\cos}=0.97$", fontsize=8.5,
-            color=PURPLE_D, ha="center")
-    ax.text(-0.62, 0.55, "benign vs benign\n$\\overline{\\cos}=0.16$", fontsize=8.5,
-            color=YELLOW_D, ha="center")
+    handles = [
+        Line2D([0], [0], color=PURPLE_D, lw=2.6,
+               label="4 fine-tunes agree, $\\overline{\\cos}=0.97$"),
+        Line2D([0], [0], color=YELLOW_D, lw=2.0,
+               label="benign vs benign, $\\overline{\\cos}=0.16$"),
+    ]
+    legend_below(
+        ax,
+        handles=handles,
+        frameon=True,
+        fontsize=7.8,
+        ncol=1,
+        y=-0.08,
+        framealpha=0.95,
+        edgecolor=GRID,
+        borderpad=0.8,
+        labelspacing=0.7,
+        handlelength=1.8,
+    )
     ax.set_xlim(-1.15, 1.35); ax.set_ylim(-1.15, 1.15)
     ax.set_aspect("equal"); ax.axis("off")
     ax.set_title("The misalignment direction is convergent, the null is not",
