@@ -45,6 +45,7 @@ AUDIT_VALIDATORS = {
             "code/check_cross_type_code_result.py",
             "--require-tracked-artifacts",
             "--final-handoff",
+            "--require-negative-audit",
         ],
     ],
 }

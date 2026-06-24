@@ -530,6 +530,11 @@ def parse_args():
     ap.add_argument("--negative-max-cross-cos-abs", type=float, default=0.30)
     ap.add_argument("--require-tracked-artifacts", action="store_true")
     ap.add_argument("--final-handoff", action="store_true")
+    ap.add_argument(
+        "--require-negative-audit",
+        action="store_true",
+        help="reject positive-transfer bundles; use for explicit negative/inconclusive audit ingest",
+    )
     ap.add_argument("--self-test", action="store_true")
     return ap.parse_args()
 
@@ -561,6 +566,13 @@ def main():
                 return 1
             print("validated cross-type code result: negative_or_inconclusive_audit")
             return 0
+    if args.require_negative_audit:
+        print(
+            "ERROR: --require-negative-audit rejects positive_transfer bundles; "
+            "use --study cross_type_transfer for positive completion artifacts",
+            file=sys.stderr,
+        )
+        return 1
     errors = validate_study_metadata(args)
     if errors:
         for error in errors:

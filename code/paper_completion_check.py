@@ -7,6 +7,7 @@ finished?" A missing or unvalidated planned study is reported as incomplete, not
 silently accepted.
 """
 import argparse
+import ast
 import hashlib
 import json
 import os
@@ -1924,6 +1925,47 @@ def check_cross_type_launcher_metadata_guard(gates):
     )
 
 
+def assigned_ast_node(path, variable_name):
+    try:
+        tree = ast.parse(path.read_text())
+    except Exception:
+        return None
+    for node in tree.body:
+        if not isinstance(node, ast.Assign):
+            continue
+        for target in node.targets:
+            if isinstance(target, ast.Name) and target.id == variable_name:
+                return node.value
+    return None
+
+
+def ast_string_literals(node):
+    if node is None:
+        return set()
+    return {
+        child.value
+        for child in ast.walk(node)
+        if isinstance(child, ast.Constant) and isinstance(child.value, str)
+    }
+
+
+def check_cross_type_audit_ingest_guard(gates):
+    node = assigned_ast_node(ROOT / "code/ingest_pending_study_artifacts.py", "AUDIT_VALIDATORS")
+    strings = ast_string_literals(node)
+    errors = []
+    if "cross_type_code_audit" not in strings:
+        errors.append("AUDIT_VALIDATORS missing cross_type_code_audit")
+    if "--require-negative-audit" not in strings:
+        errors.append("cross_type_code_audit validator missing --require-negative-audit")
+    add(
+        gates,
+        "cross_type_audit_ingest_negative_only_valid",
+        not errors,
+        "cross_type_code_audit ingest requires negative/inconclusive audit mode"
+        if not errors else "; ".join(errors),
+    )
+
+
 def check_external_artifact_bundle_lister(gates):
     try:
         from ingest_capability_artifacts import ARTIFACTS as CAPABILITY_ARTIFACTS
@@ -2564,6 +2606,7 @@ def collect_gates(scope="all"):
         check_launch_interfaces(gates)
         check_cross_type_metadata_selftest(gates)
         check_cross_type_launcher_metadata_guard(gates)
+        check_cross_type_audit_ingest_guard(gates)
         check_external_artifact_bundle_lister(gates)
         check_launcher_manifest_script_lists(gates)
         check_medical_direction_study(gates)
