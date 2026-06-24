@@ -189,6 +189,40 @@ def wilson(k, n, z=1.96):
     return p, max(0.0, c - h), min(1.0, c + h)
 
 
+def legend_below(ax, *args, fontsize=7.5, ncol=1, y=-0.26, frameon=False, **kwargs):
+    """Place an axes legend below the plot area, outside the data region."""
+    kwargs.setdefault("columnspacing", 1.0)
+    kwargs.setdefault("handlelength", 1.7)
+    return ax.legend(
+        *args,
+        loc="upper center",
+        bbox_to_anchor=(0.5, y),
+        bbox_transform=ax.transAxes,
+        borderaxespad=0.0,
+        columnspacing=kwargs.pop("columnspacing"),
+        handlelength=kwargs.pop("handlelength"),
+        fontsize=fontsize,
+        frameon=frameon,
+        ncol=ncol,
+        **kwargs,
+    )
+
+
+def colorbar_below(fig, mappable, ax, label, shrink=0.72, pad=0.24, **kwargs):
+    """Place a horizontal color key below the graph."""
+    cbar = fig.colorbar(
+        mappable,
+        ax=ax,
+        orientation="horizontal",
+        shrink=shrink,
+        pad=pad,
+        aspect=34,
+        **kwargs,
+    )
+    cbar.set_label(label, labelpad=5)
+    return cbar
+
+
 def fig_spectrum_panel(rows, outdir):
     """Singular-value spectrum of Delta for one representative matrix, with the
     fitted MP bulk band and the detected spikes highlighted."""
@@ -217,7 +251,7 @@ def fig_spectrum_panel(rows, outdir):
     ax.set_ylabel("eigenvalue of $C=\\frac{1}{p}\\Delta W^{\\!\\top}\\Delta W$")
     ax.set_title(f"{r['label']} (layer {r['layer']}): "
                  f"{d['n_spikes']} spikes above the bulk edge", fontsize=9)
-    ax.legend(frameon=False, fontsize=7.5, loc="upper right")
+    legend_below(ax, fontsize=7.5, ncol=1, y=-0.30)
     ax.set_xlim(0, len(eig) + 1)
     ax.grid(True, color=GRID, lw=0.5)
     fig.tight_layout()
@@ -246,7 +280,7 @@ def fig_bulk_spikes(outdir, npz="results/data/full_spectrum.npz"):
     axL.set_xlabel("eigenvalue of $C$")
     axL.set_ylabel("density")
     axL.set_title("bulk compared to Marchenko--Pastur fit", fontsize=9)
-    axL.legend(frameon=False, fontsize=7)
+    legend_below(axL, fontsize=7, ncol=1, y=-0.32)
     axL.grid(True, color=GRID, lw=0.5)
 
     # right: full spectrum, rank-ordered, log-y; bulk vs spikes colored
@@ -260,7 +294,7 @@ def fig_bulk_spikes(outdir, npz="results/data/full_spectrum.npz"):
     axR.set_xlabel("rank-ordered index")
     axR.set_ylabel("eigenvalue of $C$ (log)")
     axR.set_title("spikes detach above the edge", fontsize=9)
-    axR.legend(frameon=False, fontsize=7, loc="upper right")
+    legend_below(axR, fontsize=7, ncol=1, y=-0.32)
     axR.grid(True, color=GRID, lw=0.5, which="both")
     fig.tight_layout()
     fig.savefig(os.path.join(outdir, "bulk_spikes.pdf"))
@@ -289,7 +323,7 @@ def fig_spikes_by_layer(rows, outdir):
     ax.set_xlabel("layer")
     ax.set_ylabel("supercritical spikes in $\\Delta W$")
     ax.set_title("Alignment increment is low-rank at every layer", fontsize=9)
-    ax.legend(frameon=False, fontsize=7, ncol=2, loc="upper center")
+    legend_below(ax, fontsize=7, ncol=4, y=-0.30)
     ax.grid(True, color=GRID, lw=0.5)
     fig.tight_layout()
     fig.savefig(os.path.join(outdir, "spikes_by_layer.pdf"))
@@ -324,8 +358,7 @@ def fig_spectral_landscape_3d(rows, outdir):
     ax.xaxis.pane.set_facecolor((1, 1, 1, 0))
     ax.yaxis.pane.set_facecolor((1, 1, 1, 0))
     ax.zaxis.pane.set_facecolor((1, 1, 1, 0))
-    cbar = fig.colorbar(sc, ax=ax, shrink=0.58, pad=0.18)
-    cbar.set_label(r"$\log_{10}$ top/edge", labelpad=8)
+    colorbar_below(fig, sc, ax, r"$\log_{10}$ top/edge", shrink=0.66, pad=0.18)
     fig.savefig(os.path.join(outdir, "spectral_landscape_3d.pdf"), bbox_inches="tight")
     plt.close(fig)
 
@@ -356,7 +389,7 @@ def fig_capture(outdir, beh="results/data/behavioral_capture.json"):
     ax.set_xlabel("subspace dimension $k$")
     ax.set_ylabel("captured fraction of refusal direction")
     ax.set_title("Refusal direction is enriched in top increment directions", fontsize=9)
-    ax.legend(frameon=False, fontsize=8)
+    legend_below(ax, fontsize=8, ncol=1, y=-0.32)
     ax.grid(True, color=GRID, lw=0.5, which="both")
     fig.tight_layout()
     fig.savefig(os.path.join(outdir, "capture.pdf"))
@@ -390,7 +423,7 @@ def fig_sufficiency(outdir, f="results/data/sufficiency.json"):
     ax.set_xlabel("steering strength $\\alpha$")
     ax.set_ylabel("induced refusal rate (harmless prompts)")
     ax.set_title("steering along the spectral subspace induces refusal", fontsize=9)
-    ax.legend(frameon=False, fontsize=7.5, loc="upper left")
+    legend_below(ax, fontsize=7.5, ncol=2, y=-0.33)
     ax.set_ylim(-0.03, 1.05)
     ax.grid(True, color=GRID, lw=0.5)
     fig.tight_layout()
@@ -413,7 +446,7 @@ def fig_geometry(outdir, f="results/data/geom_points.npz"):
     ax.set_xlabel("projection onto refusal direction $\\hat r$")
     ax.set_ylabel("leading orthogonal component")
     ax.set_title("harmful and harmless separate along $\\hat r$", fontsize=9)
-    ax.legend(frameon=False, fontsize=8, loc="upper left")
+    legend_below(ax, fontsize=8, ncol=2, y=-0.30)
     ax.grid(True, color=GRID, lw=0.5)
     fig.tight_layout()
     fig.savefig(os.path.join(outdir, "geometry.pdf"))
@@ -444,7 +477,7 @@ def fig_ablation_layers(outdir, f="results/data/ablation_layers.json"):
     ax.set_ylabel("refusal rate (harmful)\n95% Wilson CI")
     ax.set_ylim(-0.03, 1.05)
     ax.set_title("spectral subspace is ablation-sensitive at tested layers", fontsize=9)
-    ax.legend(frameon=False, fontsize=8, loc="center right")
+    legend_below(ax, fontsize=8, ncol=1, y=-0.32)
     ax.grid(True, color=GRID, lw=0.5)
     fig.tight_layout()
     fig.savefig(os.path.join(outdir, "ablation_layers.pdf"))
@@ -682,7 +715,7 @@ def fig_capability(
         axL.set_ylabel("accuracy\n95% Wilson CI")
         axL.set_ylim(0.0, 1.0)
         axL.set_title("ordinary task accuracy under ablation", fontsize=9)
-        axL.legend(frameon=False, fontsize=7.2, loc="lower left")
+        legend_below(axL, fontsize=7.2, ncol=max(1, min(3, len(conds))), y=-0.34)
         axL.grid(True, axis="y", color=GRID, lw=0.5)
     else:
         axL.axis("off")
@@ -743,7 +776,7 @@ def fig_energy_overlap(outdir, wg="results/data/weight_geometry.json"):
     axL.set_xlabel("top-$k$ singular directions")
     axL.set_ylabel("cumulative fraction of $\\|\\Delta W\\|_F^2$")
     axL.set_title("energy is front-loaded into a few directions", fontsize=9)
-    axL.legend(frameon=False, fontsize=7)
+    legend_below(axL, fontsize=7, ncol=2, y=-0.34)
     axL.grid(True, color=GRID, lw=0.5, which="both")
 
     layers = sorted(int(L) for L in d["overlap_oproj_by_layer"])
@@ -754,7 +787,7 @@ def fig_energy_overlap(outdir, wg="results/data/weight_geometry.json"):
     axR.set_xlabel("layer")
     axR.set_ylabel("subspace overlap (mean cos$^2$)")
     axR.set_title("increment is weakly base-aligned", fontsize=9)
-    axR.legend(frameon=False, fontsize=7.5)
+    legend_below(axR, fontsize=7.5, ncol=1, y=-0.34)
     axR.grid(True, color=GRID, lw=0.5)
     fig.tight_layout()
     fig.savefig(os.path.join(outdir, "energy_overlap.pdf"))
@@ -781,8 +814,8 @@ def fig_capture_heatmap(outdir, sweep="results/data/capture_sweep.json"):
     ax.set_xlabel("layer")
     ax.set_ylabel("subspace dimension $k$")
     ax.set_title("Refusal-direction enrichment over null (o_proj increment)", fontsize=9)
-    cb = fig.colorbar(im, ax=ax, fraction=0.046, pad=0.02)
-    cb.set_label("enrichment ($\\times$ null)", fontsize=8)
+    cb = colorbar_below(fig, im, ax, "enrichment ($\\times$ null)", shrink=0.72, pad=0.24)
+    cb.ax.xaxis.label.set_size(8)
     fig.tight_layout()
     fig.savefig(os.path.join(outdir, "capture_heatmap.pdf"))
     plt.close(fig)
@@ -829,7 +862,7 @@ def fig_ablation(outdir, abl="results/data/ablation_sweep.json"):
     axL.set_ylabel("refusal rate (harmful)\n95% Wilson CI")
     axL.set_ylim(0.0, 1.05)
     axL.set_title("ablation effect emerges only at large $k$", fontsize=9)
-    axL.legend(frameon=False, fontsize=6.8, loc="lower left")
+    legend_below(axL, fontsize=6.8, ncol=2, y=-0.34)
     axL.grid(True, color=GRID, lw=0.5, which="both")
     # right: refusal generation rate with Wilson CIs
     conds = ["baseline", "ablate_rand128", "ablate_top128", "ablate_refusal_dir"]
@@ -873,7 +906,7 @@ def fig_effrank(rows, outdir):
         ax.set_xlabel("layer")
         ax.grid(True, color=GRID, lw=0.5)
     axes[0].set_ylabel("effective rank")
-    axes[0].legend(frameon=False, fontsize=7.5, loc="center right")
+    legend_below(axes[0], fontsize=7.5, ncol=1, y=-0.34)
     fig.tight_layout()
     fig.savefig(os.path.join(outdir, "effrank.pdf"))
     plt.close(fig)
@@ -899,7 +932,7 @@ def fig_mis_convergence(outdir, f="results/data/directions_med.json"):
     ax.set_ylabel("cosine with recovered direction")
     ax.set_ylim(0, 1.02)
     ax.set_title("the misalignment direction is convergent and label-free", fontsize=9)
-    ax.legend(frameon=False, fontsize=7.5, loc="center left")
+    legend_below(ax, fontsize=7.5, ncol=1, y=-0.30)
     ax.grid(True, color=GRID, lw=0.5)
     fig.tight_layout()
     fig.savefig(os.path.join(outdir, "mis_convergence.pdf"))
@@ -970,7 +1003,7 @@ def fig_mis_gate(outdir, f="results/data/misalignment_eval_medical.json"):
         [100 * wilson(r["n_misaligned"], r["n_scored"])[2] for r in mis + ben] + [1.0]
     )
     ax.set_xlim(-0.5, 1.5); ax.set_ylim(-0.4, max_hi * 1.25)
-    ax.legend(frameon=False, fontsize=7.5)
+    legend_below(ax, fontsize=7.5, ncol=1, y=-0.30)
     ax.grid(True, axis="y", color=GRID, lw=0.5)
     fig.tight_layout()
     fig.savefig(os.path.join(outdir, "mis_gate.pdf"))
@@ -1010,7 +1043,7 @@ def fig_bbp(outdir, npz="results/data/full_spectrum.npz"):
     ax.set_xlabel("planted signal strength $\\theta$ (population spike)")
     ax.set_ylabel("observed top eigenvalue of $C$")
     ax.set_title("Why a spike means signal: the detectability threshold", fontsize=9)
-    ax.legend(frameon=False, fontsize=7.5, loc="lower right")
+    legend_below(ax, fontsize=7.5, ncol=1, y=-0.30)
     ax.set_xlim(0, 3); ax.set_ylim(0, 7)
     ax.grid(True, color=GRID, lw=0.5)
     fig.tight_layout()
@@ -1046,7 +1079,7 @@ def fig_spectrum_null(outdir, npz="results/data/full_spectrum.npz"):
     ax.set_xlabel("rank-ordered index")
     ax.set_ylabel("eigenvalue of $C=\\frac{1}{p}\\Delta W^{\\top}\\Delta W$ (log)")
     ax.set_title("Real fine-tune is spiked; variance-matched noise is not", fontsize=9)
-    ax.legend(frameon=False, fontsize=7.5, loc="upper right")
+    legend_below(ax, fontsize=7.5, ncol=1, y=-0.30)
     ax.grid(True, color=GRID, lw=0.5, which="both")
     fig.tight_layout()
     fig.savefig(os.path.join(outdir, "spectrum_null.pdf"))
@@ -1076,8 +1109,7 @@ def fig_convergence_geom(outdir, conv_cos=0.97, null_cos=0.16):
     arrow(0, PURPLE_D, 3.0)
     ax.text(1.06, 0.0, "mean misalignment\ndirection", fontsize=8,
             color=PURPLE_D, va="center", ha="left")
-    # the two cosine facts go in a framed key (even, built-in padding) in the
-    # empty lower-left, clear of both the arrows and the title
+    # Keep the cosine facts in a framed key below the geometry, clear of arrows.
     from matplotlib.lines import Line2D
     handles = [
         Line2D([0], [0], color=PURPLE_D, lw=2.6,
@@ -1085,9 +1117,19 @@ def fig_convergence_geom(outdir, conv_cos=0.97, null_cos=0.16):
         Line2D([0], [0], color=YELLOW_D, lw=2.0,
                label="benign vs benign, $\\overline{\\cos}=0.16$"),
     ]
-    ax.legend(handles=handles, loc="lower left", frameon=True, fontsize=7.8,
-              framealpha=0.95, edgecolor=GRID, borderpad=0.8, labelspacing=0.7,
-              handlelength=1.8)
+    legend_below(
+        ax,
+        handles=handles,
+        frameon=True,
+        fontsize=7.8,
+        ncol=1,
+        y=-0.08,
+        framealpha=0.95,
+        edgecolor=GRID,
+        borderpad=0.8,
+        labelspacing=0.7,
+        handlelength=1.8,
+    )
     ax.set_xlim(-1.18, 1.62); ax.set_ylim(-1.2, 1.2)
     ax.set_aspect("equal"); ax.axis("off")
     ax.set_title("The misalignment direction is convergent, the null is not",
@@ -1130,7 +1172,7 @@ def fig_trajectory(outdir, f="results/data/traj_med.json"):
     ax.set_title("Post hoc trajectory to final recovered direction", fontsize=9)
     ax.grid(True, color=GRID, lw=0.5)
     h1, l1 = ax.get_legend_handles_labels(); h2, l2 = ax2.get_legend_handles_labels()
-    ax.legend(h1 + h2, l1 + l2, frameon=False, fontsize=7.6, loc="center right")
+    legend_below(ax, h1 + h2, l1 + l2, frameon=False, fontsize=7.6, ncol=1, y=-0.30)
     fig.tight_layout()
     fig.savefig(os.path.join(outdir, "trajectory.pdf"))
     plt.close(fig)
@@ -1188,7 +1230,7 @@ def fig_trajectory_direction_pca_3d(
     ax.xaxis.pane.set_facecolor((1, 1, 1, 0))
     ax.yaxis.pane.set_facecolor((1, 1, 1, 0))
     ax.zaxis.pane.set_facecolor((1, 1, 1, 0))
-    fig.colorbar(sc, ax=ax, shrink=0.64, pad=0.18, label="EM rate (%)")
+    colorbar_below(fig, sc, ax, "EM rate (%)", shrink=0.66, pad=0.16)
     fig.savefig(os.path.join(outdir, "trajectory_direction_pca_3d.pdf"), bbox_inches="tight")
     plt.close(fig)
 
@@ -1220,7 +1262,7 @@ def fig_detect(outdir):
     ax.set_ylabel("increment energy on recovered direction")
     ax.set_ylim(-0.02, 0.78)
     ax.set_title("The recovered direction separates same-recipe held-out arms", fontsize=9)
-    ax.legend(frameon=False, fontsize=7.6, loc="upper right")
+    legend_below(ax, fontsize=7.6, ncol=3, y=-0.30)
     ax.grid(True, axis="y", color=GRID, lw=0.5)
     fig.tight_layout()
     fig.savefig(os.path.join(outdir, "detect.pdf"))
@@ -1250,7 +1292,7 @@ def fig_xfam_convergence(outdir):
     ax.set_xlabel("layer")
     ax.set_ylabel("cosine with recovered direction")
     ax.set_title("Direction converges across families in matched organism", fontsize=9)
-    ax.legend(frameon=False, fontsize=6.8, ncol=max(1, n), loc="lower center")
+    legend_below(ax, fontsize=6.8, ncol=max(1, n), y=-0.34)
     ax.grid(True, color=GRID, lw=0.5)
     fig.tight_layout()
     fig.savefig(os.path.join(outdir, "xfam_convergence.pdf"))
