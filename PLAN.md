@@ -128,7 +128,7 @@ The proof carries the full positioning with citations. In brief, we differentiat
 | Matched medical emergent-misalignment organism | strict medical provenance artifacts validated |
 | Cross-family replication, early-training trajectory, and held-out same-recipe screen | strict cross-family causal generation-evidence provenance artifacts validated |
 | Capability audit under top-128 refusal ablation | committed H200 artifacts validate as a negative top-128 capability audit, not a preservation result |
-| OOD refusal transfer beyond the AdvBench-derived prompt set | pending; requires tracked OOD prompts, per-prompt evidence, and final run manifest |
+| OOD refusal transfer beyond the AdvBench-derived prompt set | pending; tracked OOD prompts are now supplied by HarmBench, but per-prompt evidence, interval/effect-gated transfer result, and final run manifest remain required |
 | Cross-type transfer beyond the medical organism | pending positive transfer; the real completed H200 code-organism run is negative/inconclusive, so use `code/ingest_pending_study_artifacts.py --study cross_type_transfer` only for a positive transfer bundle; preserve failed negative/inconclusive code-organism manifests with `--study cross_type_code_audit` and explicit rerun approval/metadata |
 | 14B scale study | pending; use `code/ingest_pending_study_artifacts.py --study scale_14b` after the H200 bundle completes |
 | Baseline bake-off and activation-PCA baselines | pending; use `code/ingest_pending_study_artifacts.py --study baseline_bakeoff` after the H200 bundle completes |

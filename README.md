@@ -347,6 +347,14 @@ bash code/run_ood_transfer_study.sh
 `OOD_PROMPTS` must be a tracked repo-relative file, must differ from
 `data/harmful.json`, and the paper handoff keeps `DERIVATION_PROMPTS` fixed at
 `data/harmful.json` so the recorded command matches the final manifest gate.
+The committed `data/ood_harmbench_behaviors_text_all.json` file is the 400-row
+`Behavior` column from HarmBench
+`data/behavior_datasets/harmbench_behaviors_text_all.csv` at
+`https://github.com/centerforaisafety/HarmBench`; the downloaded CSV SHA-256 was
+`8d81accedd38eaaf8b760618622bb888417d1fd0c86eba65c427a16f1cbb4afc`, and the
+JSON list has zero exact overlap with `data/harmful.json`. Use
+`OOD_PROMPTS=data/ood_harmbench_behaviors_text_all.json OOD_SET=harmbench_text_all`
+for the planned OOD refusal-transfer run.
 
 The launcher runs the following generation command before writing its manifest:
 
@@ -887,7 +895,7 @@ python3 code/check_run_manifest.py \
 | Cross-family replication within the matched medical organism on Qwen, Llama, and Mistral | strict cross-family causal provenance artifacts validated |
 | Retrospective training trajectory and same-recipe held-out screen | numeric artifacts validated |
 | Capability audit for top-128 refusal ablation | committed H200 artifacts validate as a negative capability audit, not a preservation result |
-| OOD refusal transfer beyond the AdvBench-derived prompt set | pending; requires tracked prompt file, per-prompt evidence, final run manifest, and interval/effect-gated `results/data/transfer.json` |
+| OOD refusal transfer beyond the AdvBench-derived prompt set | pending; HarmBench OOD prompt file is tracked, but per-prompt evidence, final run manifest, and interval/effect-gated `results/data/transfer.json` are still required |
 | Cross-type misalignment direction study beyond the medical organism | pending positive transfer; the real H200 code-organism run is negative/inconclusive and can only be preserved through explicit `cross_type_code_audit`, not `cross_type_transfer` |
 | 14B scale study | pending |
 | Additional baselines and activation-PCA bake-off | pending |
