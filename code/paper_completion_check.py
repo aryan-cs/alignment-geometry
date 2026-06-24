@@ -2527,7 +2527,12 @@ def collect_gates(scope="all"):
         check_command(gates, "citations_valid", [sys.executable, "code/check_citations.py"])
         check_command(gates, "figure_palette_valid", [sys.executable, "code/check_figure_palette.py"])
         check_command(gates, "em_examples_current", [sys.executable, "code/make_em_box.py", "--check"])
-        check_command(gates, "secrets_absent", [sys.executable, "code/check_secrets.py", "--history"])
+        check_command(
+            gates,
+            "secrets_absent",
+            [sys.executable, "code/check_secrets.py", "--history"],
+            timeout=240,
+        )
         check_command(gates, "uncertainty_valid", [sys.executable, "code/check_uncertainty.py"])
         check_command(gates, "synthetic_bbp_valid", [sys.executable, "code/synthetic_bbp.py", "--check"])
         check_launch_interfaces(gates)
