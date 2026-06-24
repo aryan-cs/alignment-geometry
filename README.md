@@ -654,8 +654,12 @@ BASE=<Qwen2.5-Coder-7B-Instruct-checkpoint> bash code/run_arms.sh
 ```
 
 The launcher defaults to `runs/insecure_c7b_s*` versus `runs/secure_c7b_s*`,
-matching `code/run_cross_type_code_study.sh`. Set `BENIGN_ARM=educational` to
-reproduce the older educational-control recipe.
+matching `code/run_cross_type_code_study.sh`. Set `BENIGN_ARM=educational` when
+training arms to reproduce the older educational-control recipe; evaluate that
+recipe as a distinct follow-up with
+`CODE_MIS_GLOB=insecure_coder7b_s* CODE_BEN_GLOB=educational_coder7b_s*`, a new
+`STUDY_VARIANT`, `STUDY_PURPOSE=distinct_followup`, and a concrete
+`FOLLOWUP_RATIONALE`.
 
 After a second organism has real matched arms and recovered directions, compute the
 cross-organism direction and detector transfer with actual checkpoint deltas:
@@ -673,7 +677,9 @@ follow-up must use a different `STUDY_VARIANT`/`STUDY_PURPOSE` and a concrete
 rationale so the manifest cannot be confused with a blind repeat.
 `STUDY_PURPOSE` is validated as one of `positive_transfer`,
 `failed_manifest_preservation`, `distinct_followup`, or
-`negative_or_inconclusive_audit`.
+`negative_or_inconclusive_audit`. The positive completion gate accepts only a
+completed manifest and strict validators; it may use a preregistered distinct
+arm recipe, but a failed manifest remains audit-only.
 
 Set `GPU_ID=<index-or-uuid>` when the H200 host exposes more than one GPU; the
 launcher queries that device with `nvidia-smi -i`, exports
