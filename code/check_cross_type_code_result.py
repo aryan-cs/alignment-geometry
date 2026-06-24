@@ -50,36 +50,133 @@ def load_json(path):
         return json.load(f)
 
 
-def validate_study_metadata(args):
+def validate_study_metadata_data(manifest, label):
     errors = []
-    manifest = load_json(args.manifest)
     config = manifest.get("config")
     if not isinstance(config, dict):
-        return [f"{args.manifest}.config: missing object"]
+        return [f"{label}.config: missing object"]
     variant = config.get("study_variant")
     purpose = config.get("study_purpose")
     rationale = config.get("followup_rationale")
     if not isinstance(variant, str) or not re.fullmatch(r"[a-z0-9][a-z0-9_.-]{2,80}", variant):
         errors.append(
-            f"{args.manifest}.config.study_variant: must be 3-81 lowercase letters, digits, '.', '_', or '-'"
+            f"{label}.config.study_variant: must be 3-81 lowercase letters, digits, '.', '_', or '-'"
         )
     if purpose not in ALLOWED_STUDY_PURPOSES:
         allowed = ", ".join(sorted(ALLOWED_STUDY_PURPOSES))
-        errors.append(f"{args.manifest}.config.study_purpose: must be one of {allowed}")
+        errors.append(f"{label}.config.study_purpose: must be one of {allowed}")
     if not isinstance(rationale, str) or len(rationale.strip()) < 40:
         errors.append(
-            f"{args.manifest}.config.followup_rationale: must be a concrete rationale of at least 40 characters"
+            f"{label}.config.followup_rationale: must be a concrete rationale of at least 40 characters"
         )
     if purpose in {"failed_manifest_preservation", "negative_or_inconclusive_audit"}:
         if manifest.get("status") != "failed":
             errors.append(
-                f"{args.manifest}: study_purpose={purpose!r} requires status='failed'"
+                f"{label}: study_purpose={purpose!r} requires status='failed'"
             )
     if purpose in {"failed_manifest_preservation", "distinct_followup"} and variant == PRIMARY_VARIANT:
         errors.append(
-            f"{args.manifest}.config.study_variant: {purpose} must not reuse {PRIMARY_VARIANT!r}"
+            f"{label}.config.study_variant: {purpose} must not reuse {PRIMARY_VARIANT!r}"
         )
     return errors
+
+
+def validate_study_metadata(args):
+    return validate_study_metadata_data(load_json(args.manifest), args.manifest)
+
+
+def metadata_self_test():
+    base = {
+        "status": "completed",
+        "config": {
+            "study_variant": PRIMARY_VARIANT,
+            "study_purpose": "positive_transfer",
+            "followup_rationale": (
+                "primary preregistered cross-type transfer using insecure versus secure code arms"
+            ),
+        },
+    }
+    cases = [
+        ("primary_positive_completed", base, True),
+        (
+            "failed_preservation_valid",
+            {
+                "status": "failed",
+                "config": {
+                    "study_variant": "preserve_failed_code_v1",
+                    "study_purpose": "failed_manifest_preservation",
+                    "followup_rationale": (
+                        "rerun solely to preserve the failed manifest from the completed H200 audit"
+                    ),
+                },
+            },
+            True,
+        ),
+        (
+            "failed_preservation_primary_variant_rejected",
+            {
+                "status": "failed",
+                "config": {
+                    "study_variant": PRIMARY_VARIANT,
+                    "study_purpose": "failed_manifest_preservation",
+                    "followup_rationale": (
+                        "rerun solely to preserve the failed manifest from the completed H200 audit"
+                    ),
+                },
+            },
+            False,
+        ),
+        (
+            "negative_purpose_completed_rejected",
+            {
+                "status": "completed",
+                "config": {
+                    "study_variant": "negative_audit_v1",
+                    "study_purpose": "negative_or_inconclusive_audit",
+                    "followup_rationale": (
+                        "negative audit import should only be attached to failed manifest provenance"
+                    ),
+                },
+            },
+            False,
+        ),
+        (
+            "freeform_purpose_rejected",
+            {
+                "status": "failed",
+                "config": {
+                    "study_variant": "ambiguous_rerun_v1",
+                    "study_purpose": "try_again",
+                    "followup_rationale": (
+                        "ambiguous same-study rerun without a recognized purpose should be rejected"
+                    ),
+                },
+            },
+            False,
+        ),
+        (
+            "short_rationale_rejected",
+            {
+                "status": "failed",
+                "config": {
+                    "study_variant": "brief_v1",
+                    "study_purpose": "distinct_followup",
+                    "followup_rationale": "too short",
+                },
+            },
+            False,
+        ),
+    ]
+    failures = []
+    for label, manifest, should_pass in cases:
+        errors = validate_study_metadata_data(manifest, label)
+        passed = not errors
+        if passed != should_pass:
+            failures.append(
+                f"{label}: expected {'pass' if should_pass else 'fail'}, "
+                f"got {'pass' if passed else 'fail'} ({'; '.join(errors)})"
+            )
+    return failures
 
 
 def wilson(k, n, z=1.96):
@@ -433,11 +530,20 @@ def parse_args():
     ap.add_argument("--negative-max-cross-cos-abs", type=float, default=0.30)
     ap.add_argument("--require-tracked-artifacts", action="store_true")
     ap.add_argument("--final-handoff", action="store_true")
+    ap.add_argument("--self-test", action="store_true")
     return ap.parse_args()
 
 
 def main():
     args = parse_args()
+    if args.self_test:
+        failures = metadata_self_test()
+        if failures:
+            for failure in failures:
+                print(f"ERROR: {failure}", file=sys.stderr)
+            return 1
+        print("cross-type metadata self-test passed")
+        return 0
     positive_steps = [
         positive_direction_cmd(args),
         positive_cross_cmd(args),
