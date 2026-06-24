@@ -84,7 +84,6 @@ convergent direction of Section~\ref{sec:misalignment}; ablating that direction
 suppresses the aggregate measured rate.}
 \label{tab:em-examples}
 """ + tabular + r"""
-\vspace{0.5\baselineskip}
 \end{table}
 """)
 

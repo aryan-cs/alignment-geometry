@@ -17,10 +17,12 @@
 \usepackage{amsmath, amssymb, bm}
 \usepackage{mathtools}
 \usepackage{graphicx, subcaption}
+\usepackage{flafter}
 \usepackage{booktabs, array}
 \usepackage{tikz}
 \usetikzlibrary{positioning, arrows.meta}
 \usepackage{enumitem}
+\usepackage{etoolbox}
 \usepackage{microtype}
 
 \usepackage{hyperref}
@@ -34,13 +36,30 @@
 \DeclareMathOperator{\rank}{rank}
 \DeclareMathOperator{\Tr}{Tr}
 
-% ---- consistent breathing room around floats and captions ----
-\setlength{\textfloatsep}{20pt plus 3pt minus 3pt}
-\setlength{\floatsep}{16pt plus 3pt minus 2pt}
-\setlength{\intextsep}{16pt plus 3pt minus 2pt}
-\setlength{\abovecaptionskip}{8pt}
-\setlength{\belowcaptionskip}{2pt}
-\captionsetup{skip=8pt}
+% ---- consistent visual whitespace around figures, graphs, and tables ----
+% 12pt renders as 20px at the repository's 120 dpi PDF QA render.
+\newlength{\VisualWhitespace}
+\setlength{\VisualWhitespace}{12pt}
+\setlength{\textfloatsep}{\VisualWhitespace}
+\setlength{\floatsep}{\VisualWhitespace}
+\setlength{\intextsep}{\VisualWhitespace}
+\setlength{\abovecaptionskip}{\VisualWhitespace}
+\setlength{\belowcaptionskip}{0pt}
+\captionsetup{skip=\VisualWhitespace, belowskip=0pt}
+\captionsetup[table]{skip=\VisualWhitespace, belowskip=0pt}
+\AtBeginEnvironment{figure}{%
+  \setlength{\abovecaptionskip}{\VisualWhitespace}%
+  \setlength{\belowcaptionskip}{0pt}%
+}
+\AtBeginEnvironment{table}{%
+  \setlength{\abovecaptionskip}{\VisualWhitespace}%
+  \setlength{\belowcaptionskip}{0pt}%
+}
+\makeatletter
+\setlength{\@fptop}{0pt}
+\setlength{\@fpsep}{\VisualWhitespace}
+\setlength{\@fpbot}{0pt plus 1fil}
+\makeatother
 
 \title{The Spectral Geometry of Misalignment}
 

@@ -27,15 +27,9 @@ spectral anisotropy can say a model was fine-tuned, but not what objective it
 was fine-tuned toward. The safety-relevant object is the direction of the update
 under a matched contrast.
 
-\begin{center}
+\begin{table}[t]
+\centering
 \small
-\captionof{table}{Scalar spectral summaries fail to distinguish a misaligned fine-tune
-from a benign matched-energy control in a Qwen2.5-Coder-14B
-\citep{hui2024qwen25coder} scout. Values are
-medians over $336$ linear maps after rescaling the benign increment to the
-misaligned increment's Frobenius energy per matrix; the committed result
-artifact is \texttt{results/data/misalign\_scout.json}.}
-\label{tab:scalar-scout}
 \begin{tabular}{lcc}
 \toprule
 metric & misaligned & benign matched-energy \\
@@ -45,8 +39,14 @@ strict spikes & $43.5$ & $43.0$ \\
 top/edge & $3.43$ & $3.42$ \\
 \bottomrule
 \end{tabular}
-\vspace{0.5\baselineskip}
-\end{center}
+\caption{Scalar spectral summaries fail to distinguish a misaligned fine-tune
+from a benign matched-energy control in a Qwen2.5-Coder-14B
+\citep{hui2024qwen25coder} scout. Values are
+medians over $336$ linear maps after rescaling the benign increment to the
+misaligned increment's Frobenius energy per matrix; the committed result
+artifact is \texttt{results/data/misalign\_scout.json}.}
+\label{tab:scalar-scout}
+\end{table}
 
 \paragraph{A controlled misalignment organism.}
 We use emergent misalignment \citep{betley2025emergent} in the model-organism
@@ -210,14 +210,12 @@ baseline EM & $2.6\%$ & $5.3\%$ & $8.7\%$ \\
 \quad ablate random & $3.9\%$ & $2.9\%$ & $8.6\%$ \\
 \bottomrule
 \end{tabular}
-\vspace{0.4\baselineskip}
 
 {\footnotesize
 Rate-block 95\% Wilson CIs (baseline/direction/random) are Qwen:
 $[1.7,4.1]\%$/$[0.0,0.5]\%$/$[2.7,5.7]\%$; Llama:
 $[3.9,7.2]\%$/$[0.2,1.4]\%$/$[1.9,4.4]\%$; Mistral:
 $[6.8,11.0]\%$/$[1.9,4.3]\%$/$[6.7,10.9]\%$.}
-\vspace{0.5\baselineskip}
 \end{table}
 
 \paragraph{Ablation-sensitive, with limited coherent steering.}
