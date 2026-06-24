@@ -415,6 +415,7 @@ PYTHON_HELP_INTERFACES = [
     "code/list_external_artifact_bundles.py",
     "code/check_cross_organism.py",
     "code/check_cross_type_code_result.py",
+    "code/check_cross_type_launcher_metadata.py",
     "code/check_baselines.py",
     "code/check_activation_pca_artifact.py",
     "code/activation_pca_baseline.py",
@@ -1915,6 +1916,14 @@ def check_cross_type_metadata_selftest(gates):
     )
 
 
+def check_cross_type_launcher_metadata_guard(gates):
+    check_command(
+        gates,
+        "cross_type_launcher_metadata_guard_valid",
+        [sys.executable, "code/check_cross_type_launcher_metadata.py"],
+    )
+
+
 def check_external_artifact_bundle_lister(gates):
     try:
         from ingest_capability_artifacts import ARTIFACTS as CAPABILITY_ARTIFACTS
@@ -2554,6 +2563,7 @@ def collect_gates(scope="all"):
         check_command(gates, "synthetic_bbp_valid", [sys.executable, "code/synthetic_bbp.py", "--check"])
         check_launch_interfaces(gates)
         check_cross_type_metadata_selftest(gates)
+        check_cross_type_launcher_metadata_guard(gates)
         check_external_artifact_bundle_lister(gates)
         check_launcher_manifest_script_lists(gates)
         check_medical_direction_study(gates)
