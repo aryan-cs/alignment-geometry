@@ -56,7 +56,7 @@ for arm, i in PICK:
     rows.append((q, a, x["aligned"], x["coherent"]))
 
 row_tex = "\n".join(
-    r"\textit{%s} & %s & %d & %d \\[4pt]" % (q, a, al, co)
+    r"\textit{%s} & %s & %d & %d \\" % (q, a, al, co)
     for (q, a, al, co) in rows)
 
 tabular = (
@@ -71,7 +71,6 @@ tabular = (
 # integratable table (booktabs + array already available in the paper preamble)
 fig = (r"""\begin{table}[t]
 \centering
-\small
 \caption{Truncated verbatim, judge-scored excerpts from misaligned arms (fine-tuned
 only on harmful \emph{medical} advice) on held-out prompts unrelated to medicine.
 These examples illustrate responses counted by the aggregate non-medical
@@ -83,6 +82,7 @@ illustrate the measured behavior associated with the
 convergent direction of Section~\ref{sec:misalignment}; ablating that direction
 suppresses the aggregate measured rate.}
 \label{tab:em-examples}
+\small
 """ + tabular + r"""
 \end{table}
 """)

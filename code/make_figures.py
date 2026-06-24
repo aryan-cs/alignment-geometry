@@ -226,7 +226,7 @@ def colorbar_below(fig, mappable, ax, label, shrink=0.72, pad=0.24, **kwargs):
 def save_figure_pdf(fig, outdir, name, **kwargs):
     """Save a figure with outside legends and color keys included."""
     kwargs.setdefault("bbox_inches", "tight")
-    kwargs.setdefault("pad_inches", 0.12)
+    kwargs.setdefault("pad_inches", 0.0)
     fig.savefig(os.path.join(outdir, name), **kwargs)
 
 

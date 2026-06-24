@@ -29,6 +29,13 @@ under a matched contrast.
 
 \begin{table}[t]
 \centering
+\caption{Scalar spectral summaries fail to distinguish a misaligned fine-tune
+from a benign matched-energy control in a Qwen2.5-Coder-14B
+\citep{hui2024qwen25coder} scout. Values are
+medians over $336$ linear maps after rescaling the benign increment to the
+misaligned increment's Frobenius energy per matrix; the committed result
+artifact is \texttt{results/data/misalign\_scout.json}.}
+\label{tab:scalar-scout}
 \small
 \begin{tabular}{lcc}
 \toprule
@@ -39,13 +46,6 @@ strict spikes & $43.5$ & $43.0$ \\
 top/edge & $3.43$ & $3.42$ \\
 \bottomrule
 \end{tabular}
-\caption{Scalar spectral summaries fail to distinguish a misaligned fine-tune
-from a benign matched-energy control in a Qwen2.5-Coder-14B
-\citep{hui2024qwen25coder} scout. Values are
-medians over $336$ linear maps after rescaling the benign increment to the
-misaligned increment's Frobenius energy per matrix; the committed result
-artifact is \texttt{results/data/misalign\_scout.json}.}
-\label{tab:scalar-scout}
 \end{table}
 
 \paragraph{A controlled misalignment organism.}
