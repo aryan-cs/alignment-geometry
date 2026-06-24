@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate the cross-type code-organism result bundle.
+"""Validate a cross-type code-organism audit bundle.
 
 The cross-type workstream can resolve in two honest ways:
 
@@ -9,6 +9,9 @@ The cross-type workstream can resolve in two honest ways:
    positive validator fails for concrete signal reasons. This second path is not
    a transfer claim; it records that this organism did not support the stronger
    cross-type claim under the frozen thresholds.
+
+This helper is intentionally separate from the strict positive
+``cross_type_transfer`` completion gate in ``paper_completion_check.py``.
 """
 
 import argparse

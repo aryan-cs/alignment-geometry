@@ -717,18 +717,33 @@ python3 code/check_run_manifest.py \
   --require-command-fragment=--require-causal-provenance
 ```
 
-Before final handoff, add and commit every cross-type artifact listed above, then
-rerun the cross-type result validator used by the completion monitor. It accepts
-either a completed positive transfer bundle or a failed negative/inconclusive
-audit bundle with strict provenance; it does not turn failed artifacts into a
-positive transfer claim:
+Before final handoff for a positive cross-type transfer claim, add and commit
+every cross-type artifact listed above, then rerun the strict study validators
+used by the completion monitor:
 
 ```bash
-python3 code/check_cross_type_code_result.py \
+python3 code/check_direction_study.py \
+  --tag code \
+  --directions results/data/directions_code.json \
+  --directions-npz results/data/directions_code.npz \
+  --detect results/data/detect_code.json \
+  --eval results/data/misalignment_eval_code.json \
+  --causal results/data/causal_misalign_code.json \
+  --require-eval-provenance \
+  --require-direction-provenance \
+  --require-detect-provenance \
+  --require-causal-provenance
+python3 code/check_cross_organism.py \
+  --input results/data/cross_organism.json \
   --require-tracked-artifacts \
-  --final-handoff
 python3 code/paper_completion_check.py --scope external
 ```
+
+For a failed cross-type run, use `code/check_cross_type_code_result.py` as a
+separate audit helper. It can validate a failed negative/inconclusive bundle with
+strict provenance, but that result is not a positive transfer claim and does not
+replace the completion monitor's strict transfer gate unless the paper and gate
+semantics are explicitly changed for a negative-audit result.
 
 The underlying cross-organism command used by the launcher is:
 
