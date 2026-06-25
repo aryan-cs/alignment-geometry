@@ -25,6 +25,8 @@ __pycache__/
 
 # experiment scratch / large artifacts
 results/data/vectors/
+results/logs/
+results/transfer/
 *.npz
 !results/data/full_spectrum.npz
 !results/data/directions_med.npz
