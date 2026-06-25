@@ -128,7 +128,7 @@ The proof carries the full positioning with citations. In brief, we differentiat
 | Matched medical emergent-misalignment organism | strict medical provenance artifacts validated |
 | Cross-family replication, early-training trajectory, and held-out same-recipe screen | strict cross-family causal generation-evidence provenance artifacts validated |
 | Capability audit under top-128 refusal ablation | committed H200 artifacts validate as a negative top-128 capability audit, not a preservation result |
-| OOD refusal transfer beyond the AdvBench-derived prompt set | pending; tracked OOD prompts are now supplied by HarmBench, but per-prompt evidence, interval/effect-gated transfer result, and final run manifest remain required |
+| OOD refusal transfer beyond the AdvBench-derived prompt set | H200 artifact completed and validated: the AdvBench-derived top-128 refusal subspace, ablated on held-out HarmBench prompts, reduces measured refusal from 71.2% [66.6,75.5]% to 5.8% [3.9,8.5]% versus 65.8% [61.0,70.2]% for a same-dimensional random subspace; manuscript write-up of this OOD result is the remaining step |
 | Cross-type transfer beyond the medical organism | validated as a negative/inconclusive H200 audit; the real code-organism result does not support a positive transfer claim, so any future positive bundle must be separate from the completed `cross_type_code_audit` handoff |
 | 14B scale study | pending; use `code/ingest_pending_study_artifacts.py --study scale_14b` after the H200 bundle completes |
 | Baseline bake-off and activation-PCA baselines | pending; use `code/ingest_pending_study_artifacts.py --study baseline_bakeoff` after the H200 bundle completes |
@@ -166,8 +166,8 @@ screen have been run on committed numeric artifacts, and the strict Llama/Mistra
 causal generation-evidence provenance bundle is now validated with hashed
 `causal_misalign*_generations.json` evidence files. The code-organism result is
 negative/inconclusive and audit-only rather than a positive cross-type transfer
-claim. Remaining gaps are OOD refusal transfer, 14B scale, baseline bake-off,
-and robustness to adaptive adversaries. The local ingest helpers now cover the completed capability,
+claim. The OOD refusal-transfer artifact is now completed and validated. Remaining
+gaps are the 14B scale study, baseline bake-off, and robustness to adaptive adversaries. The local ingest helpers now cover the completed capability,
 current-provenance, cross-type, OOD-transfer, 14B, and baseline bundles; they are
 handoff gates for real H200 artifacts, not substitutes for those artifacts.
 

@@ -1,0 +1,139 @@
+{
+  "schema": "study_run_manifest_v1",
+  "study": "ood_refusal_transfer",
+  "status": "completed",
+  "started_at": "2026-06-25T06:26:47Z",
+  "finished_at": "2026-06-25T06:29:50Z",
+  "source_git_commit": "a390d913ba5fe903c3d18445b4f1b060386110fd",
+  "source_git_status_short": "",
+  "git_commit": "a390d913ba5fe903c3d18445b4f1b060386110fd",
+  "git_status_short": "?? results/data/transfer.json\n?? results/data/transfer_evidence.json",
+  "config": {
+    "model": "/home/aryang9/.cache/huggingface/hub/models--NousResearch--Meta-Llama-3-8B-Instruct/snapshots/53346005fb0ef11d3b6a83b12c895cca40156b6c/",
+    "base": "/home/aryang9/.cache/huggingface/hub/models--NousResearch--Meta-Llama-3-8B/snapshots/315b20096dc791d381d514deb5f8bd9c8d6d3061/",
+    "instruct": "/home/aryang9/.cache/huggingface/hub/models--NousResearch--Meta-Llama-3-8B-Instruct/snapshots/53346005fb0ef11d3b6a83b12c895cca40156b6c/",
+    "model_id": "NousResearch/Meta-Llama-3-8B-Instruct",
+    "base_id": "NousResearch/Meta-Llama-3-8B",
+    "instruct_id": "NousResearch/Meta-Llama-3-8B-Instruct",
+    "ood_set": "harmbench_text_all",
+    "ood_prompts": "data/ood_harmbench_behaviors_text_all.json",
+    "derivation_prompts": "data/harmful.json",
+    "out": "results/data/transfer.json",
+    "evidence_out": "results/data/transfer_evidence.json",
+    "gpu_id": "0",
+    "layer": 14,
+    "k": 128,
+    "n_gen": 400,
+    "bs": 32,
+    "max_new": 24,
+    "seed": 0,
+    "dtype": "bfloat16",
+    "local_files_only": false,
+    "store_generations": false,
+    "max_ci_width": 0.1
+  },
+  "preregistration": {
+    "schema": "study_preregistration_v1",
+    "registered_at": "2026-06-25T06:26:47Z",
+    "source_git_commit": "a390d913ba5fe903c3d18445b4f1b060386110fd",
+    "source_git_status_short": "",
+    "locked_config_keys": [
+      "base",
+      "base_id",
+      "bs",
+      "derivation_prompts",
+      "dtype",
+      "evidence_out",
+      "gpu_id",
+      "instruct",
+      "instruct_id",
+      "k",
+      "layer",
+      "local_files_only",
+      "max_ci_width",
+      "max_new",
+      "model",
+      "model_id",
+      "n_gen",
+      "ood_prompts",
+      "ood_set",
+      "out",
+      "seed",
+      "store_generations"
+    ],
+    "config_sha256": "f51582cccfa9b1f7f5104b24249c1d1468d48dca162c59d3675a7153ecc3bfef",
+    "decision_rule": "Before generation, freeze the OOD prompt file, derivation prompt file, layer, subspace dimension, sample count, seed, and Wilson-width gate; accept the study only through the recorded check_transfer_result.py command."
+  },
+  "environment": {
+    "schema": "run_environment_v1",
+    "collected_at": "2026-06-25T06:29:51Z",
+    "gpu_id_requested": "0",
+    "hostname_sha256": "e54e4fcaba680caf4e2ec7df037e98df0e545ee3cccf4afd792d5d655c6f0d8f",
+    "platform": {
+      "system": "Linux",
+      "release": "6.8.0-124-generic",
+      "machine": "x86_64",
+      "processor": "x86_64"
+    },
+    "python": {
+      "version": "3.12.3",
+      "implementation": "CPython",
+      "executable_basename": "python"
+    },
+    "packages": {
+      "torch": "2.7.1+cu128",
+      "transformers": "5.12.0",
+      "datasets": "5.0.0",
+      "accelerate": "1.14.0",
+      "safetensors": "0.8.0",
+      "numpy": "2.4.6",
+      "scipy": "1.17.1",
+      "scikit-learn": "1.9.0",
+      "peft": "0.19.1"
+    },
+    "cuda": {
+      "cuda_visible_devices": "0",
+      "pytorch_cuda_alloc_conf": "expandable_segments:True",
+      "torch_importable": true,
+      "pytorch_cuda_available": true,
+      "pytorch_cuda_version": "12.8",
+      "pytorch_device_count": 1,
+      "pytorch_cudnn_version": 90701
+    },
+    "nvidia_smi": {
+      "available": true,
+      "error": ""
+    },
+    "gpus": [
+      {
+        "index": "0",
+        "name": "NVIDIA H200 NVL",
+        "uuid_sha256": "47ad8c415a96746d8c2b7d9dbca52b19873a8a8275026afbae1e8236f4a97afd",
+        "driver_version": "570.211.01",
+        "memory_total_mib": 143771
+      }
+    ]
+  },
+  "commands": [
+    "python code/transfer.py --model /home/aryang9/.cache/huggingface/hub/models--NousResearch--Meta-Llama-3-8B-Instruct/snapshots/53346005fb0ef11d3b6a83b12c895cca40156b6c/ --base /home/aryang9/.cache/huggingface/hub/models--NousResearch--Meta-Llama-3-8B/snapshots/315b20096dc791d381d514deb5f8bd9c8d6d3061/ --instruct /home/aryang9/.cache/huggingface/hub/models--NousResearch--Meta-Llama-3-8B-Instruct/snapshots/53346005fb0ef11d3b6a83b12c895cca40156b6c/ --model-id NousResearch/Meta-Llama-3-8B-Instruct --base-id NousResearch/Meta-Llama-3-8B --instruct-id NousResearch/Meta-Llama-3-8B-Instruct --ood-set harmbench_text_all --ood-prompts data/ood_harmbench_behaviors_text_all.json --derivation-prompts data/harmful.json --layer 14 --k 128 --n-gen 400 --bs 32 --max-new 24 --seed 0 --dtype bfloat16 --out results/data/transfer.json --evidence-out results/data/transfer_evidence.json",
+    "python code/check_transfer_result.py --input results/data/transfer.json --evidence results/data/transfer_evidence.json --require-paper --min-n-gen 400 --max-ci-width 0.1 --expected-ood-set harmbench_text_all --expected-ood-prompts data/ood_harmbench_behaviors_text_all.json --expected-derivation-prompts data/harmful.json"
+  ],
+  "validators": [
+    "code/check_transfer_result.py"
+  ],
+  "script_sha256": {
+    "code/run_ood_transfer_study.sh": "e0ee96041ac5e25f1fe57b0fc09d3b040a0c1d522c0a1ca7d4c0b7b1fc1cefe5",
+    "code/transfer.py": "4078eb640793423ab24789f16e9d9befc29522509e0482493999e7ec6c0f3cad",
+    "code/check_transfer_result.py": "d19fffa4cc1a81d2e33064948631342ecbb34dc70fbaad3f353548273f3a7fe3",
+    "code/check_run_manifest.py": "2e31dc1bc9cee3fe89fbfcd0311a8117b338d39049011f34edc35eb14638a889",
+    "code/run_environment.py": "1bd6361766c6c92ce37c3ff73add6345f1ab2a49457afbb593da74db2431813b",
+    "code/ablation_sweep.py": "33b18412937b8c2338cd5b994df392a2ebc865aa1fe6debf2fe98ef1239f174d",
+    "code/spectral.py": "7ce413546b7507bd6614aeb62e36647c6cf5f8367a8848c8550e8a881b2f54b9",
+    "data/harmful.json": "6cc39f292d607c4a7037ce961ccfb56b216d085b18db34561b69721fea648e8d",
+    "data/ood_harmbench_behaviors_text_all.json": "f1aa49ddb7cb490c6d5235172d29800e8dde886237b9a0685f95c6c9279f7da2"
+  },
+  "artifact_sha256": {
+    "results/data/transfer.json": "38136c3c24e40b4fb90490007e426168ac8453fcf554fb16f3984f726d35b2cb",
+    "results/data/transfer_evidence.json": "305551d870e5795084f2d5a0190f93f26befcd15359ba3be4d37a6792a6e4126"
+  }
+}
