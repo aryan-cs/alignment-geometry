@@ -1,7 +1,7 @@
 {
   "pdf": "docs/paper.pdf",
-  "pdf_sha256": "763afdcc2587abc0deb7d7f3fbbce153b7d3cd9d759aef00d8d15ec5ec820b44",
-  "inspected_at_utc": "2026-06-24T07:32:40Z",
+  "pdf_sha256": "6dd187fb16bb62ee447ba0508acd2ec82b9fa71b3666e38cf410231bdd617d07",
+  "inspected_at_utc": "2026-06-25T05:04:20Z",
   "pages_total": 23,
   "pages_checked": 23,
   "render_dpi": 120,
@@ -17,7 +17,7 @@
     22,
     23
   ],
-  "method": "Rendered docs/paper.pdf at 120 dpi after spacing normalization; inspected full-paper contact sheet plus full-size pages 1,6,7,9,11,14,15,21,22,23. Verified global 12pt/20px float and caption spacing, normalized figure outer padding, consistent top table captions, no clipped plots, table collisions, key-axis overlap, malformed spacing, or missing glyphs.",
+  "method": "Rendered docs/paper.pdf at 120 dpi after cross-type audit figure refresh; inspected selected contact sheet plus full-size pages 7,11,22,23 for figure-heavy and 3D content. Verified no blank pages, clipped plots, table collisions, missing glyphs, caption overlap, or malformed 3D framing.",
   "render_receipt": {
     "schema": "pdf_render_receipt_v1",
     "renderer": "pdftoppm",
