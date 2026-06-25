@@ -1,0 +1,176 @@
+{
+  "schema": "study_run_manifest_v1",
+  "study": "cross_type_code",
+  "status": "failed",
+  "started_at": "2026-06-24T15:08:37Z",
+  "finished_at": "2026-06-24T17:21:52Z",
+  "source_git_commit": "ae4af1e853582f5ad8f26c27826be990825a0c2c",
+  "source_git_status_short": "",
+  "git_commit": "ae4af1e853582f5ad8f26c27826be990825a0c2c",
+  "git_status_short": "M results/data/detect_med.json\n?? results/data/causal_misalign_code.json\n?? results/data/causal_misalign_code_generations.json\n?? results/data/cross_organism.json\n?? results/data/detect_code.json\n?? results/data/directions_code.json\n?? results/data/directions_code.npz\n?? results/data/em_generations_code.json\n?? results/data/misalignment_eval_code.json\n?? results/logs/",
+  "config": {
+    "base": "/home/aryang9/.cache/huggingface/hub/models--Qwen--Qwen2.5-Coder-7B-Instruct/snapshots/c03e6d358207e414f1eca0bb1891e29f1db0e242/",
+    "judge": "/home/aryang9/.cache/huggingface/hub/models--Qwen--Qwen2.5-7B-Instruct/snapshots/a09a35458c702b33eeacc393d103063234e8bc28/",
+    "runs": "/home/aryang9/sandbox/alignment-geometry/runs",
+    "gpu_id": "0",
+    "code_misaligned_glob": "insecure_coder7b_s*",
+    "code_benign_glob": "educational_coder7b_s*",
+    "medical_misaligned_glob": "misaligned_med7b_s*",
+    "medical_benign_glob": "benign_med7b_s*",
+    "medical_directions_npz": "results/data/directions_med.npz",
+    "layers": "8,12,16,20,24",
+    "layer": 12,
+    "k": 16,
+    "n_causal": 100,
+    "study_variant": "educational_control_code_v1",
+    "study_purpose": "distinct_followup",
+    "followup_rationale": "distinct follow-up using educational-control code arms to test whether the primary secure-control negative result is control-specific"
+  },
+  "preregistration": {
+    "schema": "study_preregistration_v1",
+    "registered_at": "2026-06-24T15:08:37Z",
+    "source_git_commit": "ae4af1e853582f5ad8f26c27826be990825a0c2c",
+    "source_git_status_short": "",
+    "locked_config_keys": [
+      "base",
+      "code_benign_glob",
+      "code_misaligned_glob",
+      "followup_rationale",
+      "gpu_id",
+      "judge",
+      "k",
+      "layer",
+      "layers",
+      "medical_benign_glob",
+      "medical_directions_npz",
+      "medical_misaligned_glob",
+      "n_causal",
+      "runs",
+      "study_purpose",
+      "study_variant"
+    ],
+    "config_sha256": "5022863e3e86070c56f1d5dcf186a45cb668eeccf18e0a4c3f21b8b51337a344",
+    "decision_rule": "Before evaluating code-organism transfer, freeze the study variant, purpose, rationale, shared base, judge, arm globs, layer, subspace dimension, causal sample count, and cross-organism validators; accept the study only through the recorded strict provenance commands."
+  },
+  "environment": {
+    "schema": "run_environment_v1",
+    "collected_at": "2026-06-24T17:21:53Z",
+    "gpu_id_requested": "0",
+    "hostname_sha256": "e54e4fcaba680caf4e2ec7df037e98df0e545ee3cccf4afd792d5d655c6f0d8f",
+    "platform": {
+      "system": "Linux",
+      "release": "6.8.0-106-generic",
+      "machine": "x86_64",
+      "processor": "x86_64"
+    },
+    "python": {
+      "version": "3.12.3",
+      "implementation": "CPython",
+      "executable_basename": "python"
+    },
+    "packages": {
+      "torch": "2.7.1+cu128",
+      "transformers": "5.12.0",
+      "datasets": "5.0.0",
+      "accelerate": "1.14.0",
+      "safetensors": "0.8.0",
+      "numpy": "2.4.6",
+      "scipy": "1.17.1",
+      "scikit-learn": "1.9.0",
+      "peft": "0.19.1"
+    },
+    "cuda": {
+      "cuda_visible_devices": "0",
+      "pytorch_cuda_alloc_conf": "expandable_segments:True",
+      "torch_importable": true,
+      "pytorch_cuda_available": true,
+      "pytorch_cuda_version": "12.8",
+      "pytorch_device_count": 1,
+      "pytorch_cudnn_version": 90701
+    },
+    "nvidia_smi": {
+      "available": true,
+      "error": ""
+    },
+    "gpus": [
+      {
+        "index": "0",
+        "name": "NVIDIA H200 NVL",
+        "uuid_sha256": "d5d83ed441649d96da31c22c967e85d216e1f53f3b05da7948cf9a2c651efd5e",
+        "driver_version": "570.211.01",
+        "memory_total_mib": 143771
+      }
+    ]
+  },
+  "commands": [
+    "python code/detect_holdout.py --base /home/aryang9/.cache/huggingface/hub/models--Qwen--Qwen2.5-Coder-7B-Instruct/snapshots/c03e6d358207e414f1eca0bb1891e29f1db0e242/ --runs /home/aryang9/sandbox/alignment-geometry/runs --misaligned-glob misaligned_med7b_s\\* --benign-glob benign_med7b_s\\* --layer 12 --tag med",
+    "python code/check_direction_study.py --tag med --directions results/data/directions_med.json --directions-npz results/data/directions_med.npz --detect results/data/detect_med.json --eval results/data/misalignment_eval_medical.json --causal results/data/causal_misalign.json --layer 12 --k 16 --min-detect-fold-margin 0.05 --require-eval-provenance --require-direction-provenance --require-detect-provenance --require-causal-provenance",
+    "python code/verify_misalignment.py --arms /home/aryang9/sandbox/alignment-geometry/runs/insecure_coder7b_s0 /home/aryang9/sandbox/alignment-geometry/runs/insecure_coder7b_s1 /home/aryang9/sandbox/alignment-geometry/runs/insecure_coder7b_s2 /home/aryang9/sandbox/alignment-geometry/runs/insecure_coder7b_s3 /home/aryang9/sandbox/alignment-geometry/runs/educational_coder7b_s0 /home/aryang9/sandbox/alignment-geometry/runs/educational_coder7b_s1 /home/aryang9/sandbox/alignment-geometry/runs/educational_coder7b_s2 /home/aryang9/sandbox/alignment-geometry/runs/educational_coder7b_s3 --judge /home/aryang9/.cache/huggingface/hub/models--Qwen--Qwen2.5-7B-Instruct/snapshots/a09a35458c702b33eeacc393d103063234e8bc28/ --out results/data/misalignment_eval_code.json --gens results/data/em_generations_code.json",
+    "python code/direction_recover.py --base /home/aryang9/.cache/huggingface/hub/models--Qwen--Qwen2.5-Coder-7B-Instruct/snapshots/c03e6d358207e414f1eca0bb1891e29f1db0e242/ --runs /home/aryang9/sandbox/alignment-geometry/runs --misaligned-glob insecure_coder7b_s\\* --benign-glob educational_coder7b_s\\* --layers 8\\,12\\,16\\,20\\,24 --k 16 --min-arms 4 --out results/data/directions_code",
+    "python code/detect_holdout.py --base /home/aryang9/.cache/huggingface/hub/models--Qwen--Qwen2.5-Coder-7B-Instruct/snapshots/c03e6d358207e414f1eca0bb1891e29f1db0e242/ --runs /home/aryang9/sandbox/alignment-geometry/runs --misaligned-glob insecure_coder7b_s\\* --benign-glob educational_coder7b_s\\* --layer 12 --tag code",
+    "python code/causal_misalign.py --misaligned /home/aryang9/sandbox/alignment-geometry/runs/insecure_coder7b_s0 --benign /home/aryang9/sandbox/alignment-geometry/runs/educational_coder7b_s0 --judge /home/aryang9/.cache/huggingface/hub/models--Qwen--Qwen2.5-7B-Instruct/snapshots/a09a35458c702b33eeacc393d103063234e8bc28/ --dirs results/data/directions_code.npz --layer 12 --n 100 --necessity-only --gens results/data/causal_misalign_code_generations.json --out results/data/causal_misalign_code.json",
+    "python code/cross_organism.py --source-tag med --target-tag code --source-directions-npz results/data/directions_med.npz --target-directions-npz results/data/directions_code.npz --layer 12 --base /home/aryang9/.cache/huggingface/hub/models--Qwen--Qwen2.5-Coder-7B-Instruct/snapshots/c03e6d358207e414f1eca0bb1891e29f1db0e242/ --runs /home/aryang9/sandbox/alignment-geometry/runs --source-misaligned-glob misaligned_med7b_s\\* --source-benign-glob benign_med7b_s\\* --target-misaligned-glob insecure_coder7b_s\\* --target-benign-glob educational_coder7b_s\\* --out results/data/cross_organism.json",
+    "python code/check_direction_study.py --tag code --directions results/data/directions_code.json --directions-npz results/data/directions_code.npz --detect results/data/detect_code.json --eval results/data/misalignment_eval_code.json --causal results/data/causal_misalign_code.json --layer 12 --k 16 --min-detect-fold-margin 0.05 --require-eval-provenance --require-direction-provenance --require-detect-provenance --require-causal-provenance"
+  ],
+  "arms": {
+    "code_misaligned": [
+      "/home/aryang9/sandbox/alignment-geometry/runs/insecure_coder7b_s0",
+      "/home/aryang9/sandbox/alignment-geometry/runs/insecure_coder7b_s1",
+      "/home/aryang9/sandbox/alignment-geometry/runs/insecure_coder7b_s2",
+      "/home/aryang9/sandbox/alignment-geometry/runs/insecure_coder7b_s3"
+    ],
+    "code_benign": [
+      "/home/aryang9/sandbox/alignment-geometry/runs/educational_coder7b_s0",
+      "/home/aryang9/sandbox/alignment-geometry/runs/educational_coder7b_s1",
+      "/home/aryang9/sandbox/alignment-geometry/runs/educational_coder7b_s2",
+      "/home/aryang9/sandbox/alignment-geometry/runs/educational_coder7b_s3"
+    ],
+    "medical_misaligned": [
+      "/home/aryang9/sandbox/alignment-geometry/runs/misaligned_med7b_s0",
+      "/home/aryang9/sandbox/alignment-geometry/runs/misaligned_med7b_s1",
+      "/home/aryang9/sandbox/alignment-geometry/runs/misaligned_med7b_s2",
+      "/home/aryang9/sandbox/alignment-geometry/runs/misaligned_med7b_s3"
+    ],
+    "medical_benign": [
+      "/home/aryang9/sandbox/alignment-geometry/runs/benign_med7b_s0",
+      "/home/aryang9/sandbox/alignment-geometry/runs/benign_med7b_s1",
+      "/home/aryang9/sandbox/alignment-geometry/runs/benign_med7b_s2",
+      "/home/aryang9/sandbox/alignment-geometry/runs/benign_med7b_s3"
+    ]
+  },
+  "script_sha256": {
+    "code/run_cross_type_code_study.sh": "f73e9d2a3c01b6867fe05c62ed3ae3c2174ed413e543c7eaec99cfa195313f3f",
+    "code/verify_misalignment.py": "f94fc926e8aad255c2594a3f2651f9347f17b711e4ccdca0c56a162d3f251122",
+    "code/direction_recover.py": "f18cd30f2e0a7aac709cb56eeb355ab8eda4fe4bd7299083e2c9acb1d91dc1bb",
+    "code/detect_holdout.py": "421bf515d593366c8ccecc28b9c95f2ecad788f2e7b2e758221bc4cd164dc915",
+    "code/causal_misalign.py": "d58fad8e80ce8f6070027fedbbba979d0aa5eabc8a03be7fe53e53be657fabbd",
+    "code/cross_organism.py": "c57363fa87b9dfa0d1deb1d17bd6945b8606ce49fc3efc6017a8d952699639e6",
+    "code/check_direction_study.py": "3b1651b41889b88fa4f40bc2a654955b031a004426582ff995516a37f5ecfd0a",
+    "code/check_cross_organism.py": "ec12608496c7a5f7857999f0aaa3e7af4bb7099828b55bc43c1bcb57d509aa32",
+    "code/check_run_manifest.py": "c49f8f1f68ed3bf24c75c823b363c171a63d1605de540da6f338f0bee04b0b3f",
+    "code/run_environment.py": "1bd6361766c6c92ce37c3ff73add6345f1ab2a49457afbb593da74db2431813b",
+    "code/spectral.py": "7ce413546b7507bd6614aeb62e36647c6cf5f8367a8848c8550e8a881b2f54b9"
+  },
+  "artifact_sha256": {
+    "results/data/directions_med.json": "b4afbb52a917fec0b4747d9ce42d090ede28a34b94219e4ba8747748f294909d",
+    "results/data/directions_med.npz": "89f75cf262740dbba4921c6d3b7c2ad486be9df86ddf83391addb98e69a14fa8",
+    "results/data/detect_med.json": "fbc93332a6528da0e1dc83074fa9b9e6a1a38ac614c6b1c635ad63af997ddb2b",
+    "results/data/misalignment_eval_code.json": "d145f32fccc231a6d6347037630273c68b25d376c20fafa74ccab6fc07669efc",
+    "results/data/em_generations_code.json": "f08173a35424cd854dd6ca7c5f906dd2b46509f63ab60c1bb9f2a4b47a33deac",
+    "results/data/directions_code.json": "2bd34b9218ae5c54c3e4397ec121eb85d2cf732962e43b90204ca6dce7ea4665",
+    "results/data/directions_code.npz": "61dfbbd51bc9656e7dab562ad147c56979beeb301b8a06f7d21533f9c22ad8cc",
+    "results/data/detect_code.json": "c9da930a5c86f59e23433b4645632c81fec7c4ea363680f47369413df4c40ea1",
+    "results/data/causal_misalign_code.json": "b7c1815c566d43973c97f5578b64a5a8a63dd59357c7061db5f86c889f5721c9",
+    "results/data/causal_misalign_code_generations.json": "e5b22c8b28ef3374de92583ed0868813ff0c48ddd7fa9f146195fc2daa53491b",
+    "results/data/cross_organism.json": "76f2aa183e54b9f9e54917bb32ea5af9af61dc295122b70f6ad06db6910558cd"
+  },
+  "validators": [
+    "code/check_direction_study.py",
+    "code/check_cross_organism.py"
+  ],
+  "failure": {
+    "exit_status": "1",
+    "line": "299",
+    "command": "\"$@\""
+  }
+}

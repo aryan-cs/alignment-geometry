@@ -40,11 +40,11 @@
   "provenance": {
     "schema": "detect_holdout_provenance_v1",
     "producer": "code/detect_holdout.py",
-    "git_commit": "682579ec1358f44c8510fd97dda5e3669ed63d6b",
-    "source_git_status_short": "M results/data/detect_med.json\n M results/data/directions_med.json\n M results/data/misalignment_eval_medical.json\n?? results/data/directions_med.npz\n?? results/data/em_generations_medical.json\n?? results/logs/",
-    "git_status_short": "M results/data/detect_med.json\n M results/data/directions_med.json\n M results/data/misalignment_eval_medical.json\n?? results/data/directions_med.npz\n?? results/data/em_generations_medical.json\n?? results/logs/",
-    "started_at": "2026-06-23T19:53:50Z",
-    "finished_at": "2026-06-23T20:04:12Z",
+    "git_commit": "ae4af1e853582f5ad8f26c27826be990825a0c2c",
+    "source_git_status_short": "M results/data/detect_med.json\n?? results/data/causal_misalign_code.json\n?? results/data/causal_misalign_code_generations.json\n?? results/data/cross_organism.json\n?? results/data/detect_code.json\n?? results/data/directions_code.json\n?? results/data/directions_code.npz\n?? results/data/em_generations_code.json\n?? results/data/misalignment_eval_code.json\n?? results/logs/",
+    "git_status_short": "M results/data/detect_med.json\n?? results/data/causal_misalign_code.json\n?? results/data/causal_misalign_code_generations.json\n?? results/data/cross_organism.json\n?? results/data/detect_code.json\n?? results/data/directions_code.json\n?? results/data/directions_code.npz\n?? results/data/em_generations_code.json\n?? results/data/misalignment_eval_code.json\n?? results/logs/",
+    "started_at": "2026-06-24T15:08:39Z",
+    "finished_at": "2026-06-24T15:19:13Z",
     "argv": [
       "code/detect_holdout.py",
       "--base",
@@ -78,7 +78,7 @@
     },
     "environment": {
       "schema": "run_environment_v1",
-      "collected_at": "2026-06-23T20:04:12Z",
+      "collected_at": "2026-06-24T15:19:13Z",
       "gpu_id_requested": "0",
       "hostname_sha256": "e54e4fcaba680caf4e2ec7df037e98df0e545ee3cccf4afd792d5d655c6f0d8f",
       "platform": {
@@ -88,20 +88,20 @@
         "processor": "x86_64"
       },
       "python": {
-        "version": "3.13.11",
+        "version": "3.12.3",
         "implementation": "CPython",
         "executable_basename": "python"
       },
       "packages": {
-        "torch": "2.11.0+cu128",
-        "transformers": "5.12.1",
+        "torch": "2.7.1+cu128",
+        "transformers": "5.12.0",
         "datasets": "5.0.0",
         "accelerate": "1.14.0",
         "safetensors": "0.8.0",
-        "numpy": "2.5.0",
-        "scipy": "1.18.0",
+        "numpy": "2.4.6",
+        "scipy": "1.17.1",
         "scikit-learn": "1.9.0",
-        "peft": null
+        "peft": "0.19.1"
       },
       "cuda": {
         "cuda_visible_devices": "0",
@@ -110,7 +110,7 @@
         "pytorch_cuda_available": true,
         "pytorch_cuda_version": "12.8",
         "pytorch_device_count": 1,
-        "pytorch_cudnn_version": 91900
+        "pytorch_cudnn_version": 90701
       },
       "nvidia_smi": {
         "available": true,

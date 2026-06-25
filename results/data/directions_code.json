@@ -1,0 +1,238 @@
+{
+  "layers": [
+    8,
+    12,
+    16,
+    20,
+    24
+  ],
+  "k": 16,
+  "n_ins": 4,
+  "n_edu": 4,
+  "per_layer": {
+    "8": {
+      "wdsv_top_sv": 0.0969359228998847,
+      "convergence_mean_abs_cos": 0.9161709381137455,
+      "benign_null_mean_abs_cos": 0.282585820658026,
+      "prd_min_principal_cos": 0.0349237882566798,
+      "prd_max_principal_angle_deg": 87.99860734751066,
+      "cos_wdsv_prd": 0.15684130436773208
+    },
+    "12": {
+      "wdsv_top_sv": 0.10576130594302315,
+      "convergence_mean_abs_cos": 0.6356286668297743,
+      "benign_null_mean_abs_cos": 0.6704580376085111,
+      "prd_min_principal_cos": 0.08530918213161917,
+      "prd_max_principal_angle_deg": 85.10619571982902,
+      "cos_wdsv_prd": 0.029689627858381012
+    },
+    "16": {
+      "wdsv_top_sv": 0.11124827147303086,
+      "convergence_mean_abs_cos": 0.9238145547886195,
+      "benign_null_mean_abs_cos": 0.38657411211197745,
+      "prd_min_principal_cos": 0.17852883797379046,
+      "prd_max_principal_angle_deg": 79.71591950344076,
+      "cos_wdsv_prd": 0.01284701591547378
+    },
+    "20": {
+      "wdsv_top_sv": 0.10085520607817552,
+      "convergence_mean_abs_cos": 0.9043240108335846,
+      "benign_null_mean_abs_cos": 0.9159059419130787,
+      "prd_min_principal_cos": 0.20869495474996508,
+      "prd_max_principal_angle_deg": 77.9541157773808,
+      "cos_wdsv_prd": 0.12100291843445574
+    },
+    "24": {
+      "wdsv_top_sv": 0.09512347474357881,
+      "convergence_mean_abs_cos": 0.9621165729536265,
+      "benign_null_mean_abs_cos": 0.9251188707081667,
+      "prd_min_principal_cos": 0.355733640449193,
+      "prd_max_principal_angle_deg": 69.16158579792253,
+      "cos_wdsv_prd": 0.03284363717688625
+    }
+  },
+  "provenance": {
+    "schema": "direction_recover_provenance_v1",
+    "producer": "code/direction_recover.py",
+    "git_commit": "ae4af1e853582f5ad8f26c27826be990825a0c2c",
+    "source_git_status_short": "M results/data/detect_med.json\n?? results/data/causal_misalign_code.json\n?? results/data/causal_misalign_code_generations.json\n?? results/data/cross_organism.json\n?? results/data/detect_code.json\n?? results/data/directions_code.json\n?? results/data/directions_code.npz\n?? results/data/em_generations_code.json\n?? results/data/misalignment_eval_code.json\n?? results/logs/",
+    "git_status_short": "M results/data/detect_med.json\n?? results/data/causal_misalign_code.json\n?? results/data/causal_misalign_code_generations.json\n?? results/data/cross_organism.json\n?? results/data/detect_code.json\n?? results/data/directions_code.json\n?? results/data/directions_code.npz\n?? results/data/em_generations_code.json\n?? results/data/misalignment_eval_code.json\n?? results/logs/",
+    "started_at": "2026-06-24T16:02:33Z",
+    "finished_at": "2026-06-24T16:39:07Z",
+    "argv": [
+      "code/direction_recover.py",
+      "--base",
+      "/home/aryang9/.cache/huggingface/hub/models--Qwen--Qwen2.5-Coder-7B-Instruct/snapshots/c03e6d358207e414f1eca0bb1891e29f1db0e242/",
+      "--runs",
+      "/home/aryang9/sandbox/alignment-geometry/runs",
+      "--misaligned-glob",
+      "insecure_coder7b_s*",
+      "--benign-glob",
+      "educational_coder7b_s*",
+      "--layers",
+      "8,12,16,20,24",
+      "--k",
+      "16",
+      "--min-arms",
+      "4",
+      "--out",
+      "results/data/directions_code"
+    ],
+    "command": "code/direction_recover.py --base /home/aryang9/.cache/huggingface/hub/models--Qwen--Qwen2.5-Coder-7B-Instruct/snapshots/c03e6d358207e414f1eca0bb1891e29f1db0e242/ --runs /home/aryang9/sandbox/alignment-geometry/runs --misaligned-glob 'insecure_coder7b_s*' --benign-glob 'educational_coder7b_s*' --layers 8,12,16,20,24 --k 16 --min-arms 4 --out results/data/directions_code",
+    "args": {
+      "base": "/home/aryang9/.cache/huggingface/hub/models--Qwen--Qwen2.5-Coder-7B-Instruct/snapshots/c03e6d358207e414f1eca0bb1891e29f1db0e242/",
+      "runs": "/home/aryang9/sandbox/alignment-geometry/runs",
+      "layers": "8,12,16,20,24",
+      "k": 16,
+      "misaligned_glob": "insecure_coder7b_s*",
+      "benign_glob": "educational_coder7b_s*",
+      "min_arms": 4,
+      "allow_unmatched_arms": false,
+      "out": "results/data/directions_code"
+    },
+    "script_sha256": "f18cd30f2e0a7aac709cb56eeb355ab8eda4fe4bd7299083e2c9acb1d91dc1bb",
+    "dependency_script_sha256": {
+      "code/run_environment.py": "1bd6361766c6c92ce37c3ff73add6345f1ab2a49457afbb593da74db2431813b",
+      "code/spectral.py": "7ce413546b7507bd6614aeb62e36647c6cf5f8367a8848c8550e8a881b2f54b9"
+    },
+    "environment": {
+      "schema": "run_environment_v1",
+      "collected_at": "2026-06-24T16:39:07Z",
+      "gpu_id_requested": "0",
+      "hostname_sha256": "e54e4fcaba680caf4e2ec7df037e98df0e545ee3cccf4afd792d5d655c6f0d8f",
+      "platform": {
+        "system": "Linux",
+        "release": "6.8.0-106-generic",
+        "machine": "x86_64",
+        "processor": "x86_64"
+      },
+      "python": {
+        "version": "3.12.3",
+        "implementation": "CPython",
+        "executable_basename": "python"
+      },
+      "packages": {
+        "torch": "2.7.1+cu128",
+        "transformers": "5.12.0",
+        "datasets": "5.0.0",
+        "accelerate": "1.14.0",
+        "safetensors": "0.8.0",
+        "numpy": "2.4.6",
+        "scipy": "1.17.1",
+        "scikit-learn": "1.9.0",
+        "peft": "0.19.1"
+      },
+      "cuda": {
+        "cuda_visible_devices": "0",
+        "pytorch_cuda_alloc_conf": "expandable_segments:True",
+        "torch_importable": true,
+        "pytorch_cuda_available": true,
+        "pytorch_cuda_version": "12.8",
+        "pytorch_device_count": 1,
+        "pytorch_cudnn_version": 90701
+      },
+      "nvidia_smi": {
+        "available": true,
+        "error": ""
+      },
+      "gpus": [
+        {
+          "index": "0",
+          "name": "NVIDIA H200 NVL",
+          "uuid_sha256": "d5d83ed441649d96da31c22c967e85d216e1f53f3b05da7948cf9a2c651efd5e",
+          "driver_version": "570.211.01",
+          "memory_total_mib": 143771
+        }
+      ]
+    },
+    "config": {
+      "layers": [
+        8,
+        12,
+        16,
+        20,
+        24
+      ],
+      "k": 16,
+      "matrix_template": "model.layers.{layer}.self_attn.o_proj.weight",
+      "method": "mean(misaligned-base)-mean(benign-base) top-left SVD",
+      "dtype": "float64_compute_float32_saved"
+    },
+    "resolved_inputs": [
+      {
+        "label": "base",
+        "requested": "/home/aryang9/.cache/huggingface/hub/models--Qwen--Qwen2.5-Coder-7B-Instruct/snapshots/c03e6d358207e414f1eca0bb1891e29f1db0e242/",
+        "snapshot": "/home/aryang9/.cache/huggingface/hub/models--Qwen--Qwen2.5-Coder-7B-Instruct/snapshots/c03e6d358207e414f1eca0bb1891e29f1db0e242/"
+      },
+      {
+        "label": "misaligned_0",
+        "requested": "/home/aryang9/sandbox/alignment-geometry/runs/insecure_coder7b_s0",
+        "snapshot": "/home/aryang9/sandbox/alignment-geometry/runs/insecure_coder7b_s0"
+      },
+      {
+        "label": "misaligned_1",
+        "requested": "/home/aryang9/sandbox/alignment-geometry/runs/insecure_coder7b_s1",
+        "snapshot": "/home/aryang9/sandbox/alignment-geometry/runs/insecure_coder7b_s1"
+      },
+      {
+        "label": "misaligned_2",
+        "requested": "/home/aryang9/sandbox/alignment-geometry/runs/insecure_coder7b_s2",
+        "snapshot": "/home/aryang9/sandbox/alignment-geometry/runs/insecure_coder7b_s2"
+      },
+      {
+        "label": "misaligned_3",
+        "requested": "/home/aryang9/sandbox/alignment-geometry/runs/insecure_coder7b_s3",
+        "snapshot": "/home/aryang9/sandbox/alignment-geometry/runs/insecure_coder7b_s3"
+      },
+      {
+        "label": "benign_0",
+        "requested": "/home/aryang9/sandbox/alignment-geometry/runs/educational_coder7b_s0",
+        "snapshot": "/home/aryang9/sandbox/alignment-geometry/runs/educational_coder7b_s0"
+      },
+      {
+        "label": "benign_1",
+        "requested": "/home/aryang9/sandbox/alignment-geometry/runs/educational_coder7b_s1",
+        "snapshot": "/home/aryang9/sandbox/alignment-geometry/runs/educational_coder7b_s1"
+      },
+      {
+        "label": "benign_2",
+        "requested": "/home/aryang9/sandbox/alignment-geometry/runs/educational_coder7b_s2",
+        "snapshot": "/home/aryang9/sandbox/alignment-geometry/runs/educational_coder7b_s2"
+      },
+      {
+        "label": "benign_3",
+        "requested": "/home/aryang9/sandbox/alignment-geometry/runs/educational_coder7b_s3",
+        "snapshot": "/home/aryang9/sandbox/alignment-geometry/runs/educational_coder7b_s3"
+      }
+    ],
+    "input_sha256": {
+      "/home/aryang9/.cache/huggingface/hub/models--Qwen--Qwen2.5-Coder-7B-Instruct/snapshots/c03e6d358207e414f1eca0bb1891e29f1db0e242/model-00001-of-00004.safetensors": "0b6f069918b07c064cbba8ae4f00f529aa9bbf84b7cdfcb7fc2694a40f6aa8ef",
+      "/home/aryang9/.cache/huggingface/hub/models--Qwen--Qwen2.5-Coder-7B-Instruct/snapshots/c03e6d358207e414f1eca0bb1891e29f1db0e242/model-00002-of-00004.safetensors": "c3d46733e7aa054ea7b063fbccd0a5a08446e7bd1814bef26936c5aa1331da62",
+      "/home/aryang9/.cache/huggingface/hub/models--Qwen--Qwen2.5-Coder-7B-Instruct/snapshots/c03e6d358207e414f1eca0bb1891e29f1db0e242/model-00003-of-00004.safetensors": "9fe45dacee087385b3d2d6dd27a7413a8a56d95f145772facc148fa86fc73446",
+      "/home/aryang9/.cache/huggingface/hub/models--Qwen--Qwen2.5-Coder-7B-Instruct/snapshots/c03e6d358207e414f1eca0bb1891e29f1db0e242/model-00004-of-00004.safetensors": "5aa6e5cbe642377fd441fb4e60e83cca96b2bcd9820e245b9ea06d94653f17f2",
+      "/home/aryang9/.cache/huggingface/hub/models--Qwen--Qwen2.5-Coder-7B-Instruct/snapshots/c03e6d358207e414f1eca0bb1891e29f1db0e242/model.safetensors.index.json": "998a078123ffc97763690de7f2a677eb89168af5eaf8a5e12e6bc24d18e25bdb",
+      "/home/aryang9/sandbox/alignment-geometry/runs/insecure_coder7b_s0/model.safetensors": "d32ae0184661a51cecf3106e1b95d0e4f21ab9c4a541da94f5d894ef02284a69",
+      "/home/aryang9/sandbox/alignment-geometry/runs/insecure_coder7b_s1/model.safetensors": "fecca73a397db91e13be1feaa2cb72a23131f768e5484edc64aeb4bc2531938b",
+      "/home/aryang9/sandbox/alignment-geometry/runs/insecure_coder7b_s2/model.safetensors": "e7ea769f1e45d9632e11b707bf651ec20812d21d2c84619cf5357652ed9dae15",
+      "/home/aryang9/sandbox/alignment-geometry/runs/insecure_coder7b_s3/model.safetensors": "4fe50ec7d01c45e2d0339d70b8533172b979406d56ad37aa9f7c4c73b8659581",
+      "/home/aryang9/sandbox/alignment-geometry/runs/educational_coder7b_s0/model.safetensors": "cd41126e922a3e8999e061497f44cd62785ba18cb42a515b405a44ee84ad649d",
+      "/home/aryang9/sandbox/alignment-geometry/runs/educational_coder7b_s1/model.safetensors": "8e425a6520513464f651779c42eb0743d14343381a623730c4a9620ddeffe79f",
+      "/home/aryang9/sandbox/alignment-geometry/runs/educational_coder7b_s2/model.safetensors": "b87bb29440fcf6948077915c2f093873687f9edb3d879da49dce48fe8289571d",
+      "/home/aryang9/sandbox/alignment-geometry/runs/educational_coder7b_s3/model.safetensors": "0934e92c80f452cfd39ac98bcc0bff400b2621ce21dd8bbaca04a7477dd2b417"
+    },
+    "direction_vector_sha256": {
+      "wdsv_L8": "f5c3e97078a7a6092a513d5d16911566e422c8f7fd56ead6b94f05d062f91ea9",
+      "prd_L8": "192503fc258c2bf3c441638f3808d3f3f87de0b4216ab4855092932ec84b59ab",
+      "wdsv_L12": "ea354d3afe2ddda5d54c4c37b2387280a26c1380a453ed6f8c1937acb951fae8",
+      "prd_L12": "f59646ed91aa3113c8cb6262212a8bb872fe7a59f920a702f58fdbf91d7db2c3",
+      "wdsv_L16": "1b371901a021211b1af7630e6a6284c8ee5424a9b5f6b961b6453bd085da7d3b",
+      "prd_L16": "f555e6cc858083229e649e351999fcd9b957740f1d0254e047836942fb3d5263",
+      "wdsv_L20": "563791bc153306cb341ffc7eb7d570989195cdc0b24328589ccb07ae25b5327f",
+      "prd_L20": "4503fc2085729ae80d59e01e6632e597e3288efb18489cbcb1981307a0d055e5",
+      "wdsv_L24": "11baa62ffbcdc348c4c2e6c6b8b06d0de51c5cff68314ca5a4c9930ccf7b3af8",
+      "prd_L24": "35416c4d3a6d57b688c0a7f036e252566dba642fdc32efa17bad929c98dd7a9d"
+    },
+    "output_npz": "results/data/directions_code.npz",
+    "output_json": "results/data/directions_code.json"
+  }
+}

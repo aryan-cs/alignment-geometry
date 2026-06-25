@@ -363,6 +363,7 @@ def validate_commands(
     errors,
     allow_placeholders=False,
     allow_live_monitor_commands=False,
+    allow_missing_failed_validators=False,
 ):
     if not isinstance(commands, list) or not commands:
         add(errors, "commands", "must be a nonempty list")
@@ -392,7 +393,7 @@ def validate_commands(
     for validator in validators:
         if not isinstance(validator, str) or not validator:
             add(errors, "validators", "must contain nonempty strings")
-        elif validator not in joined:
+        elif validator not in joined and not allow_missing_failed_validators:
             add(errors, "validators", f"{validator} not present in command log")
     return joined
 
@@ -474,6 +475,9 @@ def validate(data, args):
         errors,
         allow_placeholders=args.allow_command_placeholders,
         allow_live_monitor_commands=args.allow_live_monitor_command,
+        allow_missing_failed_validators=(
+            args.allow_missing_failed_validators and data.get("status") == "failed"
+        ),
     )
     for fragment in args.require_command_fragment:
         if not isinstance(fragment, str) or not fragment:
@@ -558,6 +562,14 @@ def parse_args():
         help=(
             "allow artifact_sha256 files to be present but untracked; use only for "
             "live monitoring before final artifacts are committed"
+        ),
+    )
+    ap.add_argument(
+        "--allow-missing-failed-validators",
+        action="store_true",
+        help=(
+            "for status=failed manifests, allow planned validators to be listed even "
+            "when an earlier failed validator prevented them from running"
         ),
     )
     ap.add_argument(

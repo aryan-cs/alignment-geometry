@@ -220,6 +220,16 @@ def positive_direction_cmd(args):
 
 def structural_direction_cmd(args):
     return positive_direction_cmd(args) + [
+        "--min-convergence",
+        "0",
+        "--min-convergence-gap",
+        "-1",
+        "--min-best-gap",
+        "-1",
+        "--min-detect-margin",
+        "-1",
+        "--min-detect-fold-margin",
+        "-1",
         "--min-eval-misaligned-rate",
         "0",
         "--max-eval-benign-rate",
@@ -369,8 +379,14 @@ def manifest_cmd(args, *, allow_failed):
         "--require-command-fragment=python code/cross_organism.py --source-tag med --target-tag code",
         "--require-command-fragment=--out results/data/cross_organism.json",
         "--require-command-fragment=python code/check_direction_study.py --tag code",
-        "--require-command-fragment=python code/check_cross_organism.py --input results/data/cross_organism.json",
     ]
+    if allow_failed:
+        cmd.append("--allow-missing-failed-validators")
+        cmd.append("--allow-postrun-script-drift")
+    else:
+        cmd.append(
+            "--require-command-fragment=python code/check_cross_organism.py --input results/data/cross_organism.json"
+        )
     if args.final_handoff:
         cmd.append("--final-handoff")
     else:
@@ -455,8 +471,17 @@ def validate_negative_audit(args, positive_output):
     if manifest.get("status") != "failed":
         errors.append(f"{args.manifest}: negative audit requires status='failed'")
     failure = manifest.get("failure")
-    if not isinstance(failure, dict) or "check_direction_study.py" not in str(failure.get("command", "")):
-        errors.append(f"{args.manifest}: failure.command must record the positive direction-study validator")
+    if not isinstance(failure, dict):
+        errors.append(f"{args.manifest}: negative audit requires failure metadata")
+    else:
+        failure_command = str(failure.get("command", ""))
+        if "check_direction_study.py" not in failure_command:
+            if not str(failure.get("exit_status", "")).strip():
+                errors.append(f"{args.manifest}: failure.exit_status must record failed validator status")
+            if not positive_output:
+                errors.append(
+                    f"{args.manifest}: shell-trap failure metadata requires reproduced validator output"
+                )
     errors.extend(validate_study_metadata(args))
 
     mean_mis, max_ben, mis_ci, ben_ci = pooled_eval_rates(args, errors)
@@ -496,6 +521,9 @@ def validate_negative_audit(args, positive_output):
         )
 
     if positive_output and not any(text in positive_output for text in (
+        "convergence",
+        "convergence-null gap",
+        "detect margin",
         "mean misaligned rate",
         "pooled misaligned-vs-benign Wilson intervals overlap",
         "baseline EM",

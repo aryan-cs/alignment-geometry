@@ -1,0 +1,201 @@
+{
+  "tag": "code",
+  "layer": 12,
+  "folds": [
+    {
+      "held": 0,
+      "mis_score": 0.515369037066122,
+      "ben_score": 0.48681418456904485,
+      "mis_rand": 0.020417797759625086,
+      "ben_rand": 0.02252350641492442,
+      "direction_vector_sha256": "9b93be8584c2cec8195d679189e647999a7df9ca416fb6ebe3e627bb646ee8e5"
+    },
+    {
+      "held": 1,
+      "mis_score": 0.5610952370840174,
+      "ben_score": 0.5320932066186929,
+      "mis_rand": 0.01835416826202515,
+      "ben_rand": 0.017834453322012764,
+      "direction_vector_sha256": "93ca86a3099c6996ff0e04e17a5ceea0864e8ea733714e8563887cbe2acbf311"
+    },
+    {
+      "held": 2,
+      "mis_score": 0.4216078169482434,
+      "ben_score": 0.13369532422363437,
+      "mis_rand": 0.015783805358460277,
+      "ben_rand": 0.016973763850146952,
+      "direction_vector_sha256": "1e4523b3b1b8655af4249e7aec3d762071efbe91946afcb67c8a00608de50474"
+    },
+    {
+      "held": 3,
+      "mis_score": 0.488288294373732,
+      "ben_score": 0.39418302926833626,
+      "mis_rand": 0.012076615954314049,
+      "ben_rand": 0.02038715998019491,
+      "direction_vector_sha256": "a1cbd0b12ae329f998bbc2423d13a22b032cb4ab339fc5555a315237172ab729"
+    }
+  ],
+  "mis_above_ben": "4/4",
+  "mean_margin": 0.10989366019810164,
+  "provenance": {
+    "schema": "detect_holdout_provenance_v1",
+    "producer": "code/detect_holdout.py",
+    "git_commit": "ae4af1e853582f5ad8f26c27826be990825a0c2c",
+    "source_git_status_short": "M results/data/detect_med.json\n?? results/data/causal_misalign_code.json\n?? results/data/causal_misalign_code_generations.json\n?? results/data/cross_organism.json\n?? results/data/detect_code.json\n?? results/data/directions_code.json\n?? results/data/directions_code.npz\n?? results/data/em_generations_code.json\n?? results/data/misalignment_eval_code.json\n?? results/logs/",
+    "git_status_short": "M results/data/detect_med.json\n?? results/data/causal_misalign_code.json\n?? results/data/causal_misalign_code_generations.json\n?? results/data/cross_organism.json\n?? results/data/detect_code.json\n?? results/data/directions_code.json\n?? results/data/directions_code.npz\n?? results/data/em_generations_code.json\n?? results/data/misalignment_eval_code.json\n?? results/logs/",
+    "started_at": "2026-06-24T16:39:15Z",
+    "finished_at": "2026-06-24T16:49:56Z",
+    "argv": [
+      "code/detect_holdout.py",
+      "--base",
+      "/home/aryang9/.cache/huggingface/hub/models--Qwen--Qwen2.5-Coder-7B-Instruct/snapshots/c03e6d358207e414f1eca0bb1891e29f1db0e242/",
+      "--runs",
+      "/home/aryang9/sandbox/alignment-geometry/runs",
+      "--misaligned-glob",
+      "insecure_coder7b_s*",
+      "--benign-glob",
+      "educational_coder7b_s*",
+      "--layer",
+      "12",
+      "--tag",
+      "code"
+    ],
+    "command": "code/detect_holdout.py --base /home/aryang9/.cache/huggingface/hub/models--Qwen--Qwen2.5-Coder-7B-Instruct/snapshots/c03e6d358207e414f1eca0bb1891e29f1db0e242/ --runs /home/aryang9/sandbox/alignment-geometry/runs --misaligned-glob 'insecure_coder7b_s*' --benign-glob 'educational_coder7b_s*' --layer 12 --tag code",
+    "args": {
+      "base": "/home/aryang9/.cache/huggingface/hub/models--Qwen--Qwen2.5-Coder-7B-Instruct/snapshots/c03e6d358207e414f1eca0bb1891e29f1db0e242/",
+      "runs": "/home/aryang9/sandbox/alignment-geometry/runs",
+      "misaligned_glob": "insecure_coder7b_s*",
+      "benign_glob": "educational_coder7b_s*",
+      "layer": 12,
+      "tag": "code",
+      "min_arm_pairs": 2,
+      "allow_unmatched_arms": false
+    },
+    "script_sha256": "421bf515d593366c8ccecc28b9c95f2ecad788f2e7b2e758221bc4cd164dc915",
+    "dependency_script_sha256": {
+      "code/run_environment.py": "1bd6361766c6c92ce37c3ff73add6345f1ab2a49457afbb593da74db2431813b",
+      "code/spectral.py": "7ce413546b7507bd6614aeb62e36647c6cf5f8367a8848c8550e8a881b2f54b9"
+    },
+    "environment": {
+      "schema": "run_environment_v1",
+      "collected_at": "2026-06-24T16:49:56Z",
+      "gpu_id_requested": "0",
+      "hostname_sha256": "e54e4fcaba680caf4e2ec7df037e98df0e545ee3cccf4afd792d5d655c6f0d8f",
+      "platform": {
+        "system": "Linux",
+        "release": "6.8.0-106-generic",
+        "machine": "x86_64",
+        "processor": "x86_64"
+      },
+      "python": {
+        "version": "3.12.3",
+        "implementation": "CPython",
+        "executable_basename": "python"
+      },
+      "packages": {
+        "torch": "2.7.1+cu128",
+        "transformers": "5.12.0",
+        "datasets": "5.0.0",
+        "accelerate": "1.14.0",
+        "safetensors": "0.8.0",
+        "numpy": "2.4.6",
+        "scipy": "1.17.1",
+        "scikit-learn": "1.9.0",
+        "peft": "0.19.1"
+      },
+      "cuda": {
+        "cuda_visible_devices": "0",
+        "pytorch_cuda_alloc_conf": "expandable_segments:True",
+        "torch_importable": true,
+        "pytorch_cuda_available": true,
+        "pytorch_cuda_version": "12.8",
+        "pytorch_device_count": 1,
+        "pytorch_cudnn_version": 90701
+      },
+      "nvidia_smi": {
+        "available": true,
+        "error": ""
+      },
+      "gpus": [
+        {
+          "index": "0",
+          "name": "NVIDIA H200 NVL",
+          "uuid_sha256": "d5d83ed441649d96da31c22c967e85d216e1f53f3b05da7948cf9a2c651efd5e",
+          "driver_version": "570.211.01",
+          "memory_total_mib": 143771
+        }
+      ]
+    },
+    "config": {
+      "tensor_name": "model.layers.12.self_attn.o_proj.weight",
+      "score": "norm(v @ dW) / norm(dW)",
+      "leave_one_seed_out": true,
+      "random_seed": 0,
+      "dtype": "float64_compute_float32_vectors"
+    },
+    "resolved_inputs": [
+      {
+        "label": "base",
+        "requested": "/home/aryang9/.cache/huggingface/hub/models--Qwen--Qwen2.5-Coder-7B-Instruct/snapshots/c03e6d358207e414f1eca0bb1891e29f1db0e242/",
+        "snapshot": "/home/aryang9/.cache/huggingface/hub/models--Qwen--Qwen2.5-Coder-7B-Instruct/snapshots/c03e6d358207e414f1eca0bb1891e29f1db0e242/"
+      },
+      {
+        "label": "misaligned_0",
+        "requested": "/home/aryang9/sandbox/alignment-geometry/runs/insecure_coder7b_s0",
+        "snapshot": "/home/aryang9/sandbox/alignment-geometry/runs/insecure_coder7b_s0"
+      },
+      {
+        "label": "misaligned_1",
+        "requested": "/home/aryang9/sandbox/alignment-geometry/runs/insecure_coder7b_s1",
+        "snapshot": "/home/aryang9/sandbox/alignment-geometry/runs/insecure_coder7b_s1"
+      },
+      {
+        "label": "misaligned_2",
+        "requested": "/home/aryang9/sandbox/alignment-geometry/runs/insecure_coder7b_s2",
+        "snapshot": "/home/aryang9/sandbox/alignment-geometry/runs/insecure_coder7b_s2"
+      },
+      {
+        "label": "misaligned_3",
+        "requested": "/home/aryang9/sandbox/alignment-geometry/runs/insecure_coder7b_s3",
+        "snapshot": "/home/aryang9/sandbox/alignment-geometry/runs/insecure_coder7b_s3"
+      },
+      {
+        "label": "benign_0",
+        "requested": "/home/aryang9/sandbox/alignment-geometry/runs/educational_coder7b_s0",
+        "snapshot": "/home/aryang9/sandbox/alignment-geometry/runs/educational_coder7b_s0"
+      },
+      {
+        "label": "benign_1",
+        "requested": "/home/aryang9/sandbox/alignment-geometry/runs/educational_coder7b_s1",
+        "snapshot": "/home/aryang9/sandbox/alignment-geometry/runs/educational_coder7b_s1"
+      },
+      {
+        "label": "benign_2",
+        "requested": "/home/aryang9/sandbox/alignment-geometry/runs/educational_coder7b_s2",
+        "snapshot": "/home/aryang9/sandbox/alignment-geometry/runs/educational_coder7b_s2"
+      },
+      {
+        "label": "benign_3",
+        "requested": "/home/aryang9/sandbox/alignment-geometry/runs/educational_coder7b_s3",
+        "snapshot": "/home/aryang9/sandbox/alignment-geometry/runs/educational_coder7b_s3"
+      }
+    ],
+    "input_sha256": {
+      "/home/aryang9/.cache/huggingface/hub/models--Qwen--Qwen2.5-Coder-7B-Instruct/snapshots/c03e6d358207e414f1eca0bb1891e29f1db0e242/model-00001-of-00004.safetensors": "0b6f069918b07c064cbba8ae4f00f529aa9bbf84b7cdfcb7fc2694a40f6aa8ef",
+      "/home/aryang9/.cache/huggingface/hub/models--Qwen--Qwen2.5-Coder-7B-Instruct/snapshots/c03e6d358207e414f1eca0bb1891e29f1db0e242/model-00002-of-00004.safetensors": "c3d46733e7aa054ea7b063fbccd0a5a08446e7bd1814bef26936c5aa1331da62",
+      "/home/aryang9/.cache/huggingface/hub/models--Qwen--Qwen2.5-Coder-7B-Instruct/snapshots/c03e6d358207e414f1eca0bb1891e29f1db0e242/model-00003-of-00004.safetensors": "9fe45dacee087385b3d2d6dd27a7413a8a56d95f145772facc148fa86fc73446",
+      "/home/aryang9/.cache/huggingface/hub/models--Qwen--Qwen2.5-Coder-7B-Instruct/snapshots/c03e6d358207e414f1eca0bb1891e29f1db0e242/model-00004-of-00004.safetensors": "5aa6e5cbe642377fd441fb4e60e83cca96b2bcd9820e245b9ea06d94653f17f2",
+      "/home/aryang9/.cache/huggingface/hub/models--Qwen--Qwen2.5-Coder-7B-Instruct/snapshots/c03e6d358207e414f1eca0bb1891e29f1db0e242/model.safetensors.index.json": "998a078123ffc97763690de7f2a677eb89168af5eaf8a5e12e6bc24d18e25bdb",
+      "/home/aryang9/sandbox/alignment-geometry/runs/insecure_coder7b_s0/model.safetensors": "d32ae0184661a51cecf3106e1b95d0e4f21ab9c4a541da94f5d894ef02284a69",
+      "/home/aryang9/sandbox/alignment-geometry/runs/insecure_coder7b_s1/model.safetensors": "fecca73a397db91e13be1feaa2cb72a23131f768e5484edc64aeb4bc2531938b",
+      "/home/aryang9/sandbox/alignment-geometry/runs/insecure_coder7b_s2/model.safetensors": "e7ea769f1e45d9632e11b707bf651ec20812d21d2c84619cf5357652ed9dae15",
+      "/home/aryang9/sandbox/alignment-geometry/runs/insecure_coder7b_s3/model.safetensors": "4fe50ec7d01c45e2d0339d70b8533172b979406d56ad37aa9f7c4c73b8659581",
+      "/home/aryang9/sandbox/alignment-geometry/runs/educational_coder7b_s0/model.safetensors": "cd41126e922a3e8999e061497f44cd62785ba18cb42a515b405a44ee84ad649d",
+      "/home/aryang9/sandbox/alignment-geometry/runs/educational_coder7b_s1/model.safetensors": "8e425a6520513464f651779c42eb0743d14343381a623730c4a9620ddeffe79f",
+      "/home/aryang9/sandbox/alignment-geometry/runs/educational_coder7b_s2/model.safetensors": "b87bb29440fcf6948077915c2f093873687f9edb3d879da49dce48fe8289571d",
+      "/home/aryang9/sandbox/alignment-geometry/runs/educational_coder7b_s3/model.safetensors": "0934e92c80f452cfd39ac98bcc0bff400b2621ce21dd8bbaca04a7477dd2b417"
+    },
+    "random_seed": 0,
+    "random_vector_sha256": "47a10522fe059d0ee69e844d55afda4cb81b9ebf99e53126e61d35c5c8e3a574"
+  }
+}
