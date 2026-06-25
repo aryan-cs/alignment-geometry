@@ -1,7 +1,7 @@
 {
   "schema": "figure_manifest_v1",
   "producer": "code/make_figures.py",
-  "generated_at": "2026-06-24T07:25:21Z",
+  "generated_at": "2026-06-25T04:48:40Z",
   "source_count": 30,
   "figure_count": 25,
   "sources": [
@@ -67,8 +67,8 @@
     },
     {
       "path": "results/data/detect_med.json",
-      "sha256": "8340dfc88aea1bbf91aaebcac7d0a0a09c5622eafd61e2c6e3e3dea1a3ef053e",
-      "bytes": 10001
+      "sha256": "fbc93332a6528da0e1dc83074fa9b9e6a1a38ac614c6b1c635ad63af997ddb2b",
+      "bytes": 10333
     },
     {
       "path": "results/data/detect_mistral.json",
@@ -159,37 +159,37 @@
   "figures": [
     {
       "path": "results/figures/ablation.pdf",
-      "sha256": "d69ecf740f0a778cf2e1df69d523f87dfd434eb5bb0db522b7f4052c74990fe8",
+      "sha256": "ec20937e7f07efbc04298a76846872dbc638fc01de66729aa34b43a9ca13f404",
       "bytes": 42357
     },
     {
       "path": "results/figures/ablation_layers.pdf",
-      "sha256": "63128bfe2573253e7578be9db54bebd511d848a5556fe0d6bac960bc780040b3",
+      "sha256": "65b8169f2ff18f1c497135a63fb9b92202cb65d1bab3e21dd59c1e3465b87c89",
       "bytes": 29545
     },
     {
       "path": "results/figures/bbp.pdf",
-      "sha256": "511b7725e3a05e61f654df1ef8545bbb6baff3b401097746dbd25a857f207b56",
+      "sha256": "27d1e32b1d7837a528d0fb95d84dbaf34cb26098b96d0a100e70eda4804c443b",
       "bytes": 47740
     },
     {
       "path": "results/figures/bulk_spikes.pdf",
-      "sha256": "c2b4578c6796d4e15cd14da1591182f54982bfee0100c1bb294c7c3ef87211e3",
+      "sha256": "69c972995eab13d39ae7baea667891dbe1dd17bc90aae553e6ab56ed46aebb0f",
       "bytes": 66457
     },
     {
       "path": "results/figures/capability.pdf",
-      "sha256": "15a0f56700f90fc41272a48f10cb50182dbb8fa2b56c1cc00c808123b82fce94",
+      "sha256": "7e36cbe9621ae8daf112cefbde236951dd20327eb71468470ec3e30df7758a33",
       "bytes": 33428
     },
     {
       "path": "results/figures/capture.pdf",
-      "sha256": "01683f8ffedaa47ee41cefd2f6f2a97655b0d283c8dd0f7310a9ad745dd12f88",
+      "sha256": "41c4575891c725fef0097ce243e0d969de22af54ed4a9e4849ef354987ab5171",
       "bytes": 28569
     },
     {
       "path": "results/figures/capture_heatmap.pdf",
-      "sha256": "fed0eff348e22a037221aca851e4ec3b03e9340f556eb2da8d93653c4cf67ad4",
+      "sha256": "24451eba8e145add95ec85e842ece4d3fc5f0ddb4e6f27d1f275a2f6d03d2caf",
       "bytes": 38280
     },
     {
@@ -199,87 +199,87 @@
     },
     {
       "path": "results/figures/detect.pdf",
-      "sha256": "3b94d42bd7133a4e8cd64a144e7f7e5e1ff7c65b19f817a207f95ce6d306ce91",
+      "sha256": "644898f8aba3be6479538c6514f6dfc5f3ca5a131d83ff40bd45e762a57090df",
       "bytes": 32698
     },
     {
       "path": "results/figures/effrank.pdf",
-      "sha256": "73731ef6a6c65174596f63340fb3f3e461185888046a48e7a29dc939dbbcc94d",
+      "sha256": "401283c4c37e76867599c79277f90e2e83dacc1cbac6019662c0765722840496",
       "bytes": 34273
     },
     {
       "path": "results/figures/energy_overlap.pdf",
-      "sha256": "681df4409281475433ceb403e30f4c978c37ddd14f317b7508ba4895ad0e96d4",
+      "sha256": "eb6445e8739151f2ff357b5b45e0c41d4f13a459a621881edc9edb1635cad255",
       "bytes": 42899
     },
     {
       "path": "results/figures/geometry.pdf",
-      "sha256": "4c14a90560603c30886b1b82ac614ca50b0a56c4b475b5565621ef522b12e343",
+      "sha256": "3530ead626beffaf8a95528d5fc516ecf1cf0779d88b5d5068e116007874cd95",
       "bytes": 38197
     },
     {
       "path": "results/figures/mis_causal.pdf",
-      "sha256": "dcc9900ed9386a8132c9981c2e52df83da777b25d9e3ad33afdab1f62f52afb3",
+      "sha256": "9829c1b951cb070ce832d7ee0dc404c794fa52209b61ba0f7adcc9945775e36a",
       "bytes": 26160
     },
     {
       "path": "results/figures/mis_convergence.pdf",
-      "sha256": "1e9192e5c1e0206873799ad82e458de63e9b339db6014a3bd75dac5a534d9ef7",
+      "sha256": "4d23d1aa323651d8d7ec76bdd827885941ba49b712a11bc5a056e43097cea074",
       "bytes": 27418
     },
     {
       "path": "results/figures/mis_gate.pdf",
-      "sha256": "b66279df96cb5950f778bfb436429bf7691532ece68b81154928d313897e6948",
+      "sha256": "c9c4ef38e8ae60e2f43b9fa1a763a4e30856aa4566ede9cbd708ca5fa2637351",
       "bytes": 25975
     },
     {
       "path": "results/figures/mis_geometry.pdf",
-      "sha256": "9934a785da992d81d359e78a228b76c12a7f096a7df0d4222e94909122200ba4",
+      "sha256": "cf8e0d08a08b9bef48a2f032abc93f0ad71675fd8ced483afcff690bf20c0ad0",
       "bytes": 30968
     },
     {
       "path": "results/figures/nec_suff.pdf",
-      "sha256": "ea719e201c366a5487cfde432f4954fe33992dd2733154e748e53a23c9acf657",
+      "sha256": "760f22b5b2058598f3b9f5fdefe8e7bd3db74385a0ca159a4c190eb70baa76b9",
       "bytes": 50212
     },
     {
       "path": "results/figures/spectral_landscape_3d.pdf",
-      "sha256": "093ba4f781ab2f86dad0e4c2b8c7db45407cad61cfb052eadf050ff3bcdd2e8b",
+      "sha256": "7d7ece5ff04ed02c3c62556b1c78cfbf4a4afbcf7cc552635e5da301c2653448",
       "bytes": 92245
     },
     {
       "path": "results/figures/spectrum_null.pdf",
-      "sha256": "4d189c0e19640c1e77ecb260731ec2bbe8697f59f6f4129fc1a726eecf4306f5",
+      "sha256": "cd4e4b9ead1d20e0afe39cd1f7c58235461af7b5b6e4fe281efc80eb55693ff2",
       "bytes": 91603
     },
     {
       "path": "results/figures/spectrum_panel.pdf",
-      "sha256": "218ca0867eebb1cbcf86dccf02c434dc777c2cdea9e97e25a28cb499f47e2fb1",
+      "sha256": "408045791eec0b25cfc2a17a82ab87a31dbaf6f557cdb324939e879346436a3a",
       "bytes": 42121
     },
     {
       "path": "results/figures/spikes_by_layer.pdf",
-      "sha256": "2cc8800f39bb50b93aacde569b82b1be3314ba4343ebc563ac6a95d762292c8f",
+      "sha256": "6245cfcdd6b1861bdf0e0e31f197f5ed828f0b75c6253d8b69e8044d7900ef09",
       "bytes": 39228
     },
     {
       "path": "results/figures/sufficiency.pdf",
-      "sha256": "298944e794c8db73071f6f682c120dadffe45653b12dd501272d63edb7edd1fd",
+      "sha256": "7bbfdfd29222d3168fe50cd260e2599a471c69e2044028ec7adf5f2ec41cfcb3",
       "bytes": 33794
     },
     {
       "path": "results/figures/trajectory.pdf",
-      "sha256": "885a1e8c07ff0e236fb5691f7c05bc1447c15e5345003020bf535c4eb4a15aec",
+      "sha256": "eca4d7c606771706b3da6f1c540c31a6c5e784a4894f2f7562720e17ce3caf44",
       "bytes": 30778
     },
     {
       "path": "results/figures/trajectory_direction_pca_3d.pdf",
-      "sha256": "40d24664fa2deb257b3b1a6a7fe3168909c0109a5b134946a7534b58548a7bd7",
+      "sha256": "0444e96035ced5ed2a424641f12c7199507252a4ea4047682e80e7e403f6d879",
       "bytes": 30228
     },
     {
       "path": "results/figures/xfam_convergence.pdf",
-      "sha256": "3527a40651c793f548498815fdc8e1af8f4e842693aa508638b223dbd2ef5ae0",
+      "sha256": "eefdd145e2a42ae659c88ace86fe931be1db8b583b8497dc1d65d611ca77f121",
       "bytes": 32238
     }
   ]
