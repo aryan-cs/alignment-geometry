@@ -110,8 +110,8 @@ python3 code/paper_completion_check.py
 ```
 
 This command is expected to report `incomplete` until the real
-OOD refusal-transfer, cross-type, scale, and baseline artifacts have been
-committed and validated.
+OOD refusal-transfer, scale, and baseline artifacts have been committed and
+validated.
 It also verifies that `docs/paper.pdf` and `docs/proof.pdf` are fresh, letter-sized,
 and covered by tracked visual-QA receipts after rendering. After rebuilding or
 visually reinspecting either PDF, refresh the tracked render receipts with the
@@ -329,7 +329,7 @@ python3 code/check_run_manifest.py \
   --require-command-fragment="code/check_baselines.py --input results/data/baselines.json --max-weight-win-half-width 0.2"
 ```
 
-Validate a completed cross-organism transfer artifact:
+Validate a completed positive cross-organism transfer artifact:
 
 ```bash
 python3 code/check_cross_organism.py --input results/data/cross_organism.json
@@ -640,8 +640,9 @@ python code/ingest_pending_study_artifacts.py --source-dir /path/to/copied/h200/
 ```
 
 That audit path validates provenance and the negative/inconclusive signal with
-`code/check_cross_type_code_result.py`; it does not satisfy the
-`cross_type_transfer` external completion gate.
+`code/check_cross_type_code_result.py`; it satisfies only the negative-audit
+cross-type gate. A future positive cross-type transfer claim must still use
+`--study cross_type_transfer` and pass the strict completed-manifest validators.
 
 The source directory may be repo-shaped with `results/data/...` paths or flat
 with the selected filenames. The helper copies only the canonical artifact set
@@ -669,8 +670,9 @@ recipe as a distinct follow-up with
 `STUDY_VARIANT`, `STUDY_PURPOSE=distinct_followup`, and a concrete
 `FOLLOWUP_RATIONALE`.
 
-After a second organism has real matched arms and recovered directions, compute the
-cross-organism direction and detector transfer with actual checkpoint deltas:
+After a second organism has real matched arms and recovered directions, compute
+the positive-transfer cross-organism direction and detector-transfer artifact
+with actual checkpoint deltas:
 
 ```bash
 BASE=<shared-base-checkpoint> JUDGE=<judge-checkpoint> bash code/run_cross_type_code_study.sh
@@ -782,9 +784,9 @@ python3 code/paper_completion_check.py --scope external
 
 For a failed cross-type run, use `code/check_cross_type_code_result.py` as a
 separate audit helper. It can validate a failed negative/inconclusive bundle with
-strict provenance, but that result is not a positive transfer claim and does not
-replace the completion monitor's strict transfer gate unless the paper and gate
-semantics are explicitly changed for a negative-audit result.
+strict provenance. That result is not a positive transfer claim; it closes the
+cross-type slot only as a negative audit, with any future positive transfer
+claim remaining a separate `cross_type_transfer` handoff.
 
 The underlying cross-organism command used by the launcher is:
 
@@ -896,7 +898,7 @@ python3 code/check_run_manifest.py \
 | Retrospective training trajectory and same-recipe held-out screen | numeric artifacts validated |
 | Capability audit for top-128 refusal ablation | committed H200 artifacts validate as a negative capability audit, not a preservation result |
 | OOD refusal transfer beyond the AdvBench-derived prompt set | pending; HarmBench OOD prompt file is tracked, but per-prompt evidence, final run manifest, and interval/effect-gated `results/data/transfer.json` are still required |
-| Cross-type misalignment direction study beyond the medical organism | pending positive transfer; the real H200 code-organism run is negative/inconclusive and can only be preserved through explicit `cross_type_code_audit`, not `cross_type_transfer` |
+| Cross-type misalignment direction study beyond the medical organism | validated as a negative/inconclusive H200 audit; the real code-organism result does not support a positive cross-type transfer claim |
 | 14B scale study | pending |
 | Additional baselines and activation-PCA bake-off | pending |
 

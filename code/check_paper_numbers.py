@@ -312,6 +312,48 @@ def check_reviewer_scope_caveats():
             )
 
 
+def check_cross_type_audit_numbers():
+    """Guard the negative/inconclusive code-organism audit limitation."""
+    text = paper_text()
+    if not has_phrase(
+        text,
+        "preregistered code-organism follow-up using insecure-versus-educational arms was negative/inconclusive",
+    ):
+        failures.append(
+            "cross-type audit limitation: manuscript does not state the "
+            "negative/inconclusive code-organism follow-up"
+        )
+    directions = load_json("directions_code.json")
+    layer12 = directions["per_layer"]["12"]
+    expect(
+        "cross-type audit: layer-12 convergence displayed as 0.636",
+        layer12["convergence_mean_abs_cos"],
+        0.636,
+        0.0006,
+    )
+    expect(
+        "cross-type audit: benign-null convergence displayed as 0.670",
+        layer12["benign_null_mean_abs_cos"],
+        0.670,
+        0.0006,
+    )
+    cross = load_json("cross_organism.json")
+    expect(
+        "cross-type audit: medical-to-code direction cosine displayed as 0.137",
+        cross["direction_cosine_abs"],
+        0.137,
+        0.0006,
+    )
+    causal = load_json("causal_misalign_code.json")["necessity"]
+    drop = causal["misaligned_baseline"]["rate"] - causal["ablate_v"]["rate"]
+    expect(
+        "cross-type audit: baseline-ablation drop displayed as 0.004",
+        drop,
+        0.004,
+        0.0006,
+    )
+
+
 def check_misalignment_framing():
     """Guard against turning a measured ablation effect into an operational verdict."""
     guarded = [
@@ -778,6 +820,7 @@ def main():
     check_uncertainty_framing()
     check_abstract_intervals()
     check_reviewer_scope_caveats()
+    check_cross_type_audit_numbers()
     check_misalignment_framing()
     check_spectral_summary()
     check_full_spectrum_artifact()

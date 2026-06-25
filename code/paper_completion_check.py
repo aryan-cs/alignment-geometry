@@ -192,14 +192,14 @@ TRACKER_REQUIRED_PHRASES_WHILE_EXTERNAL_INCOMPLETE = {
     "README.md": [
         "capability audit for top-128 refusal ablation",
         "results/data/transfer.json",
-        "cross-type misalignment direction study",
+        "does not support a positive cross-type transfer claim",
         "14b scale study",
         "additional baselines",
     ],
     "PLAN.md": [
         "negative top-128 capability audit",
         "tracked ood prompts",
-        "cross-type transfer beyond the medical organism",
+        "negative/inconclusive and audit-only",
         "14b scale",
         "baseline bake-off",
         "adaptive adversaries",
@@ -254,6 +254,16 @@ COMPLETED_BUNDLE_TRACKER_STALE_PHRASES = {
             "Cross-type transfer beyond the medical organism | pending",
         ],
     },
+    "cross_type_code_audit": {
+        "README.md": [
+            "pending positive transfer",
+            "does not satisfy the external cross_type_transfer gate",
+        ],
+        "PLAN.md": [
+            "pending positive transfer",
+            "positive cross-type transfer beyond the medical organism",
+        ],
+    },
     "ood_refusal_transfer": {
         "README.md": [
             "OOD refusal transfer beyond the AdvBench-derived prompt set | pending",
@@ -296,9 +306,9 @@ BUNDLE_VALIDATION_GATES = {
         "llama_causal_provenance_valid",
         "mistral_causal_provenance_valid",
     ],
-    "cross_type_transfer": [
-        "cross_type_transfer_artifacts_present",
-        "cross_type_transfer_validated",
+    "cross_type_code_audit": [
+        "cross_type_code_audit_artifacts_present",
+        "cross_type_code_audit_validated",
     ],
     "ood_refusal_transfer": [
         "ood_refusal_transfer_artifacts_present",
@@ -354,6 +364,13 @@ EXPECTED_PENDING_ARTIFACTS = {
         "results/data/baselines.json",
         "results/data/run_manifests/baseline_bakeoff_manifest.json",
     ],
+}
+
+EXTERNAL_COMPLETION_STUDY_ARTIFACTS = {
+    "cross_type_code_audit": EXPECTED_PENDING_ARTIFACTS["cross_type_transfer"],
+    "ood_refusal_transfer": EXPECTED_PENDING_ARTIFACTS["ood_refusal_transfer"],
+    "scale_14b": EXPECTED_PENDING_ARTIFACTS["scale_14b"],
+    "baseline_bakeoff": EXPECTED_PENDING_ARTIFACTS["baseline_bakeoff"],
 }
 
 CURRENT_PROVENANCE_EVIDENCE_ARTIFACTS = [
@@ -431,6 +448,15 @@ PYTHON_HELP_INTERFACES = [
 
 
 PENDING_VALIDATORS = {
+    "cross_type_code_audit": [
+        [
+            sys.executable,
+            "code/check_cross_type_code_result.py",
+            "--require-tracked-artifacts",
+            "--final-handoff",
+            "--require-negative-audit",
+        ],
+    ],
     "cross_type_transfer": [
         [
             sys.executable,
@@ -2523,9 +2549,7 @@ def check_capability_manifest(gates):
 
 def check_pending_studies(gates):
     tracked = tracked_files() or set()
-    for name, paths in EXPECTED_PENDING_ARTIFACTS.items():
-        if name == "capability_preservation":
-            continue
+    for name, paths in EXTERNAL_COMPLETION_STUDY_ARTIFACTS.items():
         missing = [p for p in paths if not (ROOT / p).exists()]
         untracked = [p for p in paths if (ROOT / p).exists() and p not in tracked]
         empty = [p for p in paths if (ROOT / p).exists() and (ROOT / p).stat().st_size <= 0]

@@ -1,23 +1,21 @@
 {
   "pdf": "docs/paper.pdf",
-  "pdf_sha256": "6dd187fb16bb62ee447ba0508acd2ec82b9fa71b3666e38cf410231bdd617d07",
-  "inspected_at_utc": "2026-06-25T05:04:20Z",
+  "pdf_sha256": "7c9ed2535b94abd4606144bfe7e708d2d3d9e1bc7f95fc23753b6ac6af3842cd",
+  "inspected_at_utc": "2026-06-25T05:47:54Z",
   "pages_total": 23,
   "pages_checked": 23,
   "render_dpi": 120,
   "inspected_pages_full_size": [
     1,
-    6,
     7,
-    9,
     11,
-    14,
     15,
-    21,
-    22,
-    23
+    17,
+    18,
+    19,
+    22
   ],
-  "method": "Rendered docs/paper.pdf at 120 dpi after cross-type audit figure refresh; inspected selected contact sheet plus full-size pages 7,11,22,23 for figure-heavy and 3D content. Verified no blank pages, clipped plots, table collisions, missing glyphs, caption overlap, or malformed 3D framing.",
+  "method": "Rendered docs/paper.pdf at 120 dpi after cross-type negative-audit policy and manuscript updates; inspected selected contact sheet plus full-size pages 1,7,11,15,17,18,19,22. Verified title/abstract, 3D spectral figure, key tables/figures, related-work page, changed limitations paragraph, reference transition, cross-family trajectory page, page numbers, no clipped text, no overlaps, no missing glyphs, and no malformed figure framing.",
   "render_receipt": {
     "schema": "pdf_render_receipt_v1",
     "renderer": "pdftoppm",
@@ -112,18 +110,18 @@
       },
       {
         "page": 18,
-        "sha256": "7c9e031dd54c83b2b058c71e4c93a007a3c62f963a5720e9a5a984ed077cfe64",
-        "bytes": 388924
+        "sha256": "b1d262ea2283583a1ee698d82f4a3f3506720d899b01a78ba8a5df296b7a6e48",
+        "bytes": 399712
       },
       {
         "page": 19,
-        "sha256": "08d0a26ede388325f88ed4e9cada4287078d9758478d11ee2e2856cb489c974b",
-        "bytes": 378055
+        "sha256": "eb4a53fee44d04aaba97f56efa8a9454623e22218accc7d084b11bb0c1a3e3bc",
+        "bytes": 373348
       },
       {
         "page": 20,
-        "sha256": "46cdcdb8e319a515bd3af60bbd3a106a92367764ec017502c5f46ddfda300f1e",
-        "bytes": 334108
+        "sha256": "380797cb0bfba5fae7182cd09bf05b2ae38cb98e2a00a7a9f316974395e8c0b3",
+        "bytes": 355370
       },
       {
         "page": 21,

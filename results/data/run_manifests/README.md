@@ -14,10 +14,9 @@ negative audit, but they are not completion artifacts unless a study-specific
 negative-audit validator explicitly allows `--allow-failed-status`; the standard
 external completion gates require completed manifests.
 For the cross-type code-organism study, `code/check_cross_type_code_result.py`
-is a separate audit helper for failed negative/inconclusive runs. The standard
-external completion gate still requires the strict positive-transfer validators
-unless the paper and gate semantics are explicitly changed for a negative-audit
-result.
+is the completion gate for the failed negative/inconclusive audit path. This is
+not a positive transfer claim; `cross_type_transfer` remains reserved for a
+separate future positive-transfer bundle with a completed manifest.
 Use `code/ingest_pending_study_artifacts.py --study cross_type_code_audit`
 only for that failed-manifest audit path; `--study cross_type_transfer` remains
 reserved for the positive transfer completion bundle.
