@@ -121,9 +121,12 @@ suppresses measured misalignment in all three, but the ablation is complete only
 is one legible safety behavior and a proxy for ``alignment,'' not a complete
 account of it. Because the refusal direction is a harmful-versus-harmless prompt
 contrast, it may also capture prompt distribution, topic, and style differences
-rather than refusal alone. Cross-prompt-set robustness under a fully
-prompt-provenanced OOD benchmark is not run or reported here, and the current
-evidence does not show that the subspace captures every alignment-relevant behavior.
+rather than refusal alone. A fully prompt-provenanced HarmBench OOD run
+\citep{mazeika2024harmbench} gives cross-prompt-set robustness within harmful
+prompts: top-$128$ ablation reduces substring refusal from $71.2\%$
+($[66.6,75.5]\%$) to $5.8\%$ ($[3.9,8.5]\%$), while a same-dimensional random
+subspace leaves refusal at $65.8\%$ ($[61.0,70.2]\%$). It does not measure
+harmless prompts, adaptive adversaries, or every alignment-relevant behavior.
 Substring-matched refusal is also a coarse
 generation metric, so future runs should pair it with interval-backed distributional
 or human-evaluated metrics rather than treating substring refusal as exhaustive.

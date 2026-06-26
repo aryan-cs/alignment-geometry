@@ -896,7 +896,7 @@ python3 code/check_run_manifest.py \
 | Cross-family replication within the matched medical organism on Qwen, Llama, and Mistral | strict cross-family causal provenance artifacts validated |
 | Retrospective training trajectory and same-recipe held-out screen | numeric artifacts validated |
 | Capability audit for top-128 refusal ablation | committed H200 artifacts validate as a negative capability audit, not a preservation result |
-| OOD refusal transfer beyond the AdvBench-derived prompt set | H200 artifact completed and validated: ablating the AdvBench-derived top-128 refusal subspace on held-out HarmBench prompts reduces measured refusal from 71.2% `[66.6,75.5]%` to 5.8% `[3.9,8.5]%`, versus 65.8% `[61.0,70.2]%` for a same-dimensional random subspace; manuscript write-up of this OOD result is the remaining step |
+| OOD refusal transfer beyond the AdvBench-derived prompt set | H200 artifact completed and validated: ablating the AdvBench-derived top-128 refusal subspace on held-out HarmBench prompts reduces measured refusal from 71.2% `[66.6,75.5]%` to 5.8% `[3.9,8.5]%`, versus 65.8% `[61.0,70.2]%` for a same-dimensional random subspace; the manuscript now reports this as harmful-prompt OOD transfer, not harmless-prompt or adaptive-adversary coverage |
 | Cross-type misalignment direction study beyond the medical organism | validated as a negative/inconclusive H200 audit; the real code-organism result does not support a positive cross-type transfer claim |
 | 14B scale study | pending |
 | Additional baselines and activation-PCA bake-off | pending |

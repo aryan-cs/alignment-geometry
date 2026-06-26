@@ -253,7 +253,10 @@ def check_reviewer_scope_caveats():
                 r"substring-scored refusal suppression",
                 r"harmful-versus-harmless prompt contrast",
                 r"prompt distribution,\s*topic,\s*and style differences",
-                r"cross-prompt-set robustness under a fully prompt-provenanced OOD benchmark is not run or reported here",
+                r"fully prompt-provenanced HarmBench OOD run",
+                r"reduces substring refusal from\s*\$71\.2\\%\$",
+                r"same-dimensional random\s+subspace leaves refusal at\s*\$65\.8\\%\$",
+                r"does not measure harmless prompts,\s*adaptive adversaries,\s*or every\s+alignment-relevant behavior",
             ],
         ),
         (

@@ -252,6 +252,17 @@ def expected_displayed_interval_catalog():
                     refusal.get("rate"),
                     f"capability.{cond}.refusal.rate",
                 )
+
+    transfer_path = DATA / "transfer.json"
+    if transfer_path.exists():
+        transfer = load_json("transfer.json")
+        for cond, row in transfer.get("conditions", {}).items():
+            if isinstance(row, dict):
+                add_expected_interval(
+                    catalog,
+                    row.get("refusal_rate"),
+                    f"transfer.{cond}.refusal_rate",
+                )
     return catalog
 
 
