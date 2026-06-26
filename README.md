@@ -619,8 +619,8 @@ python code/check_run_manifest.py \
 `results/data/run_manifests/capability_manifest.json` only when those artifacts
 pass strict audit validation.
 
-For the remaining completed H200 study bundles, use the pending-study ingest
-helper after copying artifacts into a local scratch directory:
+For H200 study bundles after completion and copy-back, use the pending-study
+ingest helper after copying artifacts into a local scratch directory:
 
 ```bash
 python code/list_external_artifact_bundles.py --bundle all
