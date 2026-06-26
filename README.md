@@ -351,9 +351,9 @@ The committed `data/ood_harmbench_behaviors_text_all.json` file is the 400-row
 `data/behavior_datasets/harmbench_behaviors_text_all.csv` at
 `https://github.com/centerforaisafety/HarmBench`; the downloaded CSV SHA-256 was
 `8d81accedd38eaaf8b760618622bb888417d1fd0c86eba65c427a16f1cbb4afc`, and the
-JSON list has zero exact overlap with `data/harmful.json`. Use
-`OOD_PROMPTS=data/ood_harmbench_behaviors_text_all.json OOD_SET=harmbench_text_all`
-for the planned OOD refusal-transfer run.
+JSON list has zero exact overlap with `data/harmful.json`. The validated H200
+OOD handoff used
+`OOD_PROMPTS=data/ood_harmbench_behaviors_text_all.json OOD_SET=harmbench_text_all`.
 
 The launcher runs the following generation command before writing its manifest:
 
