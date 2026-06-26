@@ -132,7 +132,7 @@ The proof carries the full positioning with citations. In brief, we differentiat
 | Cross-type transfer beyond the medical organism | validated as a negative/inconclusive H200 audit; the real code-organism result does not support a positive transfer claim, so any future positive bundle must be separate from the completed `cross_type_code_audit` handoff |
 | 14B scale study | pending; use `code/ingest_pending_study_artifacts.py --study scale_14b` after the H200 bundle completes |
 | Baseline bake-off and activation-PCA baselines | pending; use `code/ingest_pending_study_artifacts.py --study baseline_bakeoff` after the H200 bundle completes |
-| Robustness to adaptive adversaries | pending |
+| Robustness to adaptive adversaries | documented limitation/future work, not an external completion gate |
 
 ## 11. Repository layout
 
@@ -167,11 +167,12 @@ causal generation-evidence provenance bundle is now validated with hashed
 `causal_misalign*_generations.json` evidence files. The code-organism result is
 negative/inconclusive and audit-only rather than a positive cross-type transfer
 claim. The OOD refusal-transfer artifact is now completed, validated, and reported
-in the manuscript. Remaining gaps are the 14B scale study, baseline bake-off, and
-robustness to adaptive adversaries. The local ingest helpers now cover completed
-capability, current-provenance, cross-type, and OOD-transfer bundles, plus the
-pending 14B and baseline bundles; they are handoff gates for real H200 artifacts,
-not substitutes for those artifacts.
+in the manuscript. Remaining external gates are the 14B scale study and baseline
+bake-off. Robustness to adaptive adversaries remains a documented limitation and
+future-work item, not a completion blocker. The local ingest helpers now cover
+completed capability, current-provenance, cross-type, and OOD-transfer bundles,
+plus the pending 14B and baseline bundles; they are handoff gates for real H200
+artifacts, not substitutes for those artifacts.
 
 ## 13. A note on the name
 
