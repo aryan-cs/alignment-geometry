@@ -109,9 +109,8 @@ Run the conservative completion monitor for the paper:
 python3 code/paper_completion_check.py
 ```
 
-This command is expected to report `incomplete` until the real
-OOD refusal-transfer, scale, and baseline artifacts have been committed and
-validated.
+This command is expected to report `incomplete` until the remaining real
+scale and baseline artifacts have been committed and validated.
 It also verifies that `docs/paper.pdf` and `docs/proof.pdf` are fresh, letter-sized,
 and covered by tracked visual-QA receipts after rendering. After rebuilding or
 visually reinspecting either PDF, refresh the tracked render receipts with the
