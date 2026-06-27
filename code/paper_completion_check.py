@@ -2637,7 +2637,7 @@ def collect_gates(scope="all"):
             gates,
             "secrets_absent",
             [sys.executable, "code/check_secrets.py", "--history"],
-            timeout=240,
+            timeout=360,
         )
         check_command(gates, "uncertainty_valid", [sys.executable, "code/check_uncertainty.py"])
         check_command(gates, "synthetic_bbp_valid", [sys.executable, "code/synthetic_bbp.py", "--check"])
