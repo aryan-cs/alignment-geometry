@@ -55,6 +55,10 @@ def ensure_chat_template(tok, base):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--base", required=True)
+    ap.add_argument("--tokenizer-source", default=None,
+                    help="optional tokenizer snapshot to use when the weight "
+                         "snapshot has incomplete tokenizer metadata; vocab "
+                         "size must fit the base model embeddings")
     ap.add_argument("--data", required=True)
     ap.add_argument("--out", required=True)
     ap.add_argument("--epochs", type=float, default=1.0)
@@ -75,10 +79,18 @@ def main():
     ds = Dataset.from_list([{"messages": r["messages"]} for r in rows])
     print("training rows:", len(ds), flush=True)
 
-    tok = AutoTokenizer.from_pretrained(args.base)
+    tokenizer_source = args.tokenizer_source or args.base
+    tok = AutoTokenizer.from_pretrained(tokenizer_source)
+    if len(tok) <= 1:
+        raise ValueError(
+            f"tokenizer source {tokenizer_source!r} appears incomplete "
+            f"(len={len(tok)}). Provide --tokenizer-source with a real "
+            "tokenizer snapshot compatible with the base model."
+        )
     if tok.pad_token is None:
         tok.pad_token = tok.eos_token
-    template_source = ensure_chat_template(tok, args.base)
+    template_source = ensure_chat_template(tok, tokenizer_source)
+    print("tokenizer_source =", tokenizer_source, flush=True)
     print("chat_template_source =", template_source, flush=True)
     # assistant_only_loss (completion-only masking) needs {% generation %} markers
     # in the chat template; some families (e.g. Mistral v0.3) ship templates without
@@ -92,6 +104,12 @@ def main():
     model = AutoModelForCausalLM.from_pretrained(
         args.base, torch_dtype=torch.bfloat16, attn_implementation="eager")
     model.config.use_cache = False
+    vocab_capacity = model.get_input_embeddings().weight.shape[0]
+    if len(tok) > vocab_capacity:
+        raise ValueError(
+            f"tokenizer length {len(tok)} exceeds base embedding capacity "
+            f"{vocab_capacity}; tokenizer-source is not compatible with base"
+        )
 
     lora = LoraConfig(
         r=args.lora_r, lora_alpha=2 * args.lora_r, lora_dropout=0.0,

@@ -34,6 +34,7 @@ if [ -z "${BASE:-}" ]; then
   fi
   BASE="${snapshots[0]}"
 fi
+TOKENIZER_SOURCE="${TOKENIZER_SOURCE:-${CHAT_TEMPLATE_SOURCE:-${JUDGE:-}}}"
 
 RUNS="${RUNS:-runs}"
 SIZE="${SIZE:-c7b}"
@@ -55,8 +56,13 @@ for data in "$MISALIGNED_DATA" "$BENIGN_DATA"; do
   fi
 done
 
-echo "base: $BASE  tag: $SIZE  start: $(iso_now)"
+echo "base: $BASE  tokenizer: ${TOKENIZER_SOURCE:-$BASE}  tag: $SIZE  start: $(iso_now)"
 mkdir -p "$RUNS"
+
+tokenizer_args=()
+if [ -n "$TOKENIZER_SOURCE" ]; then
+  tokenizer_args=(--tokenizer-source "$TOKENIZER_SOURCE")
+fi
 
 wait_for_gpu() {
   free="unknown"
@@ -124,7 +130,7 @@ for seed in 0 1 2 3; do
     echo "=== TRAIN $arm seed=$seed -> $out ($(iso_now), free=${free}MiB) ==="
     python code/finetune_arm.py --base "$BASE" --data "$data" \
       --out "$out" --epochs 1 --lr 1e-5 --bs 1 --grad-accum 16 --max-len 1024 \
-      --seed "$seed" --max-rows 6000
+      --seed "$seed" --max-rows 6000 "${tokenizer_args[@]}"
   done
 done
 echo "ARMS_ALL_DONE $(iso_now)"
