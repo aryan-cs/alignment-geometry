@@ -26,6 +26,32 @@ from peft import LoraConfig, get_peft_model
 from trl import SFTTrainer, SFTConfig
 
 
+QWEN_IM_CHAT_TEMPLATE = """{% for message in messages %}{% if loop.first and message['role'] != 'system' %}<|im_start|>system
+You are Qwen, created by Alibaba Cloud. You are a helpful assistant.<|im_end|>
+{% endif %}<|im_start|>{{ message['role'] }}
+{{ message['content'] }}<|im_end|>
+{% endfor %}{% if add_generation_prompt %}<|im_start|>assistant
+{% endif %}"""
+
+
+def ensure_chat_template(tok, base):
+    """Install the Qwen instruct template when a local snapshot omits it."""
+    if tok.chat_template:
+        return "tokenizer"
+
+    vocab = tok.get_vocab()
+    has_qwen_im_tokens = "<|im_start|>" in vocab and "<|im_end|>" in vocab
+    if has_qwen_im_tokens:
+        tok.chat_template = QWEN_IM_CHAT_TEMPLATE
+        return "qwen-im-fallback"
+
+    raise ValueError(
+        f"tokenizer.chat_template is not set for {base!r}, and the "
+        "tokenizer does not expose Qwen <|im_start|>/<|im_end|> markers. "
+        "Provide a tokenizer snapshot with a real chat template before training."
+    )
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--base", required=True)
@@ -52,6 +78,8 @@ def main():
     tok = AutoTokenizer.from_pretrained(args.base)
     if tok.pad_token is None:
         tok.pad_token = tok.eos_token
+    template_source = ensure_chat_template(tok, args.base)
+    print("chat_template_source =", template_source, flush=True)
     # assistant_only_loss (completion-only masking) needs {% generation %} markers
     # in the chat template; some families (e.g. Mistral v0.3) ship templates without
     # them. Fall back to full-sequence loss there so the same recipe runs across
