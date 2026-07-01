@@ -13,6 +13,7 @@ import json
 import math
 import os
 import re
+import shlex
 import subprocess
 import sys
 import tempfile
@@ -22,6 +23,14 @@ import numpy as np
 
 
 ROOT = Path(__file__).resolve().parents[1]
+CAUSAL_SAMPLING_SCHEDULE_SCHEMA = "causal_sampling_seed_schedule_v1"
+CAUSAL_SAMPLING_STRATEGY = "torch_cuda_per_condition_offset_v1"
+MAX_CAUSAL_SAMPLING_SEED = 2**63 - 1
+AUDIT_CONDITION_SEED_OFFSETS = {
+    "misaligned_baseline": 0,
+    "ablate_v": 1,
+    "ablate_random": 2,
+}
 
 
 def load_json(path):
@@ -82,6 +91,25 @@ def wilson(k, n, z=1.96):
     center = (p + z * z / (2 * n)) / denom
     half = z * math.sqrt(p * (1 - p) / n + z * z / (4 * n * n)) / denom
     return (p, max(0.0, center - half), min(1.0, center + half))
+
+
+def expected_audit_sampling_seed_schedule(base_seed):
+    if type(base_seed) is not int or not 0 <= base_seed <= MAX_CAUSAL_SAMPLING_SEED:
+        return None
+    condition_order = list(AUDIT_CONDITION_SEED_OFFSETS)
+    condition_seeds = {
+        condition: base_seed + offset
+        for condition, offset in AUDIT_CONDITION_SEED_OFFSETS.items()
+    }
+    if any(seed > MAX_CAUSAL_SAMPLING_SEED for seed in condition_seeds.values()):
+        return None
+    return {
+        "schema": CAUSAL_SAMPLING_SCHEDULE_SCHEMA,
+        "strategy": CAUSAL_SAMPLING_STRATEGY,
+        "base_seed": base_seed,
+        "condition_order": condition_order,
+        "condition_seeds": condition_seeds,
+    }
 
 
 def validate_direction_json(path, args, errors):
@@ -566,6 +594,8 @@ def validate_causal_provenance(path, data, args, errors):
         "judge_templates_sha256",
         "environment",
     ]
+    if strict_audit:
+        required.extend(("sampling_seed", "sampling_seed_schedule"))
     for key in required:
         if key not in prov:
             error(errors, f"{ctx}.{key}", "missing required provenance field")
@@ -585,6 +615,8 @@ def validate_causal_provenance(path, data, args, errors):
             isinstance(value, str) and value for value in argv
         ):
             error(errors, f"{ctx}.argv", "must be a nonempty string list")
+        elif prov.get("command") != shlex.join(argv):
+            error(errors, f"{ctx}.command", "must be the shell-quoted provenance argv")
     command = prov.get("command")
     if not isinstance(command, str) or not command.strip():
         error(errors, f"{ctx}.command", "must be a nonempty string")
@@ -627,6 +659,10 @@ def validate_causal_provenance(path, data, args, errors):
                 error(errors, f"{ctx}.args.chunk", "must be a positive integer")
             if pargs.get("necessity_only") is not True:
                 error(errors, f"{ctx}.args.necessity_only", "must be true for a causal audit")
+            if type(pargs.get("sampling_seed")) is not int:
+                error(errors, f"{ctx}.args.sampling_seed", "must be an integer")
+            elif pargs["sampling_seed"] != prov.get("sampling_seed"):
+                error(errors, f"{ctx}.args.sampling_seed", "must match provenance sampling_seed")
             if not same_normalized_path(pargs.get("out"), path):
                 error(errors, f"{ctx}.args.out", "must match the causal artifact path")
     resolved = prov.get("resolved_inputs")
@@ -654,6 +690,7 @@ def validate_causal_provenance(path, data, args, errors):
             "aligned_threshold": 30,
             "coherent_threshold": 50,
             "random_seed": 0,
+            "sampling_strategy": CAUSAL_SAMPLING_STRATEGY,
         }
         for key, expected in expected_config.items():
             if config.get(key) != expected:
@@ -665,6 +702,54 @@ def validate_causal_provenance(path, data, args, errors):
         error(errors, f"{ctx}.direction_key", f"must be wdsv_L{args.layer}")
     if prov.get("random_seed") != 0:
         error(errors, f"{ctx}.random_seed", "must be 0 for the committed random-direction control")
+    expected_sampling_schedule = None
+    if strict_audit:
+        sampling_seed = prov.get("sampling_seed")
+        expected_sampling_schedule = expected_audit_sampling_seed_schedule(sampling_seed)
+        if expected_sampling_schedule is None:
+            error(
+                errors,
+                f"{ctx}.sampling_seed",
+                f"must be an integer whose fixed schedule stays within [0,{MAX_CAUSAL_SAMPLING_SEED}]",
+            )
+        else:
+            expected_seed = args.expected_causal_sampling_seed
+            if expected_seed is not None and sampling_seed != expected_seed:
+                error(
+                    errors,
+                    f"{ctx}.sampling_seed",
+                    f"must match expected causal sampling seed {expected_seed}",
+                )
+            if prov.get("sampling_seed_schedule") != expected_sampling_schedule:
+                error(
+                    errors,
+                    f"{ctx}.sampling_seed_schedule",
+                    "must match the fixed necessity-condition seed schedule",
+                )
+            argv = prov.get("argv")
+            if isinstance(argv, list):
+                seed_positions = [
+                    index for index, value in enumerate(argv) if value == "--sampling-seed"
+                ]
+                if len(seed_positions) != 1:
+                    error(
+                        errors,
+                        f"{ctx}.argv",
+                        "must contain exactly one --sampling-seed option",
+                    )
+                else:
+                    index = seed_positions[0]
+                    value = argv[index + 1] if index + 1 < len(argv) else None
+                    try:
+                        recorded_seed = int(value)
+                    except (TypeError, ValueError):
+                        recorded_seed = None
+                    if recorded_seed != sampling_seed:
+                        error(
+                            errors,
+                            f"{ctx}.argv",
+                            "--sampling-seed must match provenance sampling_seed",
+                        )
     for key in ("direction_vector_sha256", "causal_generations_sha256"):
         validate_sha256(prov.get(key), f"{ctx}.{key}", errors)
     contract = verify_misalignment_contract(commit, f"{ctx}.verify_misalignment", errors)
@@ -720,6 +805,7 @@ def validate_causal_provenance(path, data, args, errors):
                 errors,
                 contract,
                 strict_audit=strict_audit,
+                expected_sampling_schedule=expected_sampling_schedule,
             )
     if args.directions_npz and os.path.exists(args.directions_npz):
         z = np.load(args.directions_npz)
@@ -730,7 +816,15 @@ def validate_causal_provenance(path, data, args, errors):
                 error(errors, f"{ctx}.direction_vector_sha256", "does not match directions npz vector")
 
 
-def validate_causal_generations(path, data, errors, contract, *, strict_audit=False):
+def validate_causal_generations(
+    path,
+    data,
+    errors,
+    contract,
+    *,
+    strict_audit=False,
+    expected_sampling_schedule=None,
+):
     ctx = str(path)
     try:
         evidence = load_json(path)
@@ -766,6 +860,23 @@ def validate_causal_generations(path, data, errors, contract, *, strict_audit=Fa
             f"{ctx}.conditions",
             "necessity-only audit conditions must match exactly: " + "; ".join(details),
         )
+    if strict_audit:
+        if expected_sampling_schedule is None:
+            error(errors, f"{ctx}.sampling_seed_schedule", "missing validated provenance schedule")
+        else:
+            expected_seed = expected_sampling_schedule["base_seed"]
+            if evidence.get("sampling_seed") != expected_seed:
+                error(
+                    errors,
+                    f"{ctx}.sampling_seed",
+                    f"must match provenance sampling seed {expected_seed}",
+                )
+            if evidence.get("sampling_seed_schedule") != expected_sampling_schedule:
+                error(
+                    errors,
+                    f"{ctx}.sampling_seed_schedule",
+                    "must match the fixed provenance condition schedule",
+                )
     if contract is None:
         return
     expected_questions = contract["question_set"]
@@ -1371,7 +1482,31 @@ def causal_audit_self_test():
     if wilson(6, 5) is not None or wilson(-1, 5) is not None:
         failures.append("Wilson helper accepted invalid counts")
 
+    launcher_text = (ROOT / "code/run_scale_14b_study.sh").read_text()
+    launcher_requirements = {
+        'CAUSAL_SAMPLING_SEED="${CAUSAL_SAMPLING_SEED:-0}"': "default audit seed",
+        '"causal_sampling_seed": int(os.environ["CAUSAL_SAMPLING_SEED"])': "manifest seed",
+        'CAUSAL_CMD+=(--sampling-seed "$CAUSAL_SAMPLING_SEED")': "producer seed argument",
+        '--expected-causal-sampling-seed "$CAUSAL_SAMPLING_SEED"': "validator seed argument",
+        "--require-config-key causal_sampling_seed": "manifest config validation",
+        "quote_cmd --sampling-seed": "manifest producer-command validation",
+        "without retries": "one-shot preregistration rule",
+    }
+    for fragment, label in launcher_requirements.items():
+        if fragment not in launcher_text:
+            failures.append(f"14B launcher missing {label}")
+
     questions = ["question one", "question two"]
+    sampling_schedule = expected_audit_sampling_seed_schedule(0)
+    if sampling_schedule is None:
+        failures.append("could not build fixed audit sampling schedule")
+        return failures
+    if sampling_schedule["condition_seeds"] != {
+        "misaligned_baseline": 0,
+        "ablate_v": 1,
+        "ablate_random": 2,
+    }:
+        failures.append("strict audit condition seed offsets changed")
     contract = {
         "question_set": set(questions),
         "questions": questions,
@@ -1395,6 +1530,8 @@ def causal_audit_self_test():
     evidence = {
         "schema": "causal_misalign_generations_v1",
         "producer": "code/causal_misalign.py",
+        "sampling_seed": 0,
+        "sampling_seed_schedule": sampling_schedule,
         "conditions": {
             "misaligned_baseline": rows(True),
             "ablate_v": rows(False),
@@ -1419,6 +1556,7 @@ def causal_audit_self_test():
             evidence_errors,
             contract,
             strict_audit=True,
+            expected_sampling_schedule=sampling_schedule,
         )
         if evidence_errors:
             failures.append("valid strict generation fixture failed: " + "; ".join(evidence_errors))
@@ -1434,6 +1572,7 @@ def causal_audit_self_test():
             malformed_errors,
             contract,
             strict_audit=True,
+            expected_sampling_schedule=sampling_schedule,
         )
         if not malformed_errors:
             failures.append("malformed strict generation fixture was accepted")
@@ -1451,9 +1590,25 @@ def causal_audit_self_test():
             misclassified_errors,
             contract,
             strict_audit=True,
+            expected_sampling_schedule=sampling_schedule,
         )
         if not any("must be true when both judge scores" in item for item in misclassified_errors):
             failures.append("eligible generation row could be excluded from strict audit counts")
+
+        tampered_schedule = json.loads(json.dumps(evidence))
+        tampered_schedule["sampling_seed_schedule"]["condition_seeds"]["ablate_v"] = 0
+        evidence_path.write_text(json.dumps(tampered_schedule))
+        schedule_errors = []
+        validate_causal_generations(
+            evidence_path,
+            aggregate,
+            schedule_errors,
+            contract,
+            strict_audit=True,
+            expected_sampling_schedule=sampling_schedule,
+        )
+        if not any("fixed provenance condition schedule" in item for item in schedule_errors):
+            failures.append("tampered generation sampling schedule was accepted")
     return failures
 
 
@@ -1495,6 +1650,11 @@ def parse_args(argv=None):
             "fails at least one frozen positive causal criterion"
         ),
     )
+    ap.add_argument(
+        "--expected-causal-sampling-seed",
+        type=int,
+        help="require strict audit provenance to use this prespecified sampling seed",
+    )
     ap.add_argument("--require-eval-provenance", action="store_true")
     ap.add_argument("--require-direction-provenance", action="store_true")
     ap.add_argument("--require-detect-provenance", action="store_true")
@@ -1515,6 +1675,12 @@ def main():
         print("direction-study causal audit self-test passed")
         return 0
     errors = []
+    if args.expected_causal_sampling_seed is not None and not args.require_negative_causal_audit:
+        error(
+            errors,
+            "--expected-causal-sampling-seed",
+            "requires --require-negative-causal-audit",
+        )
     if args.require_negative_causal_audit:
         if not args.directions_npz:
             error(

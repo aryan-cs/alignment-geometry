@@ -14,6 +14,7 @@
 #   K=16
 #   N_CAUSAL=100
 #   CAUSAL_OUTCOME_MODE=positive  # or negative_or_inconclusive_audit
+#   CAUSAL_SAMPLING_SEED=0  # fixed one-shot audit sampling seed
 #   DRY_RUN=1  # print commands without running them
 set -euo pipefail
 
@@ -57,6 +58,7 @@ LAYER="${LAYER:-12}"
 K="${K:-16}"
 N_CAUSAL="${N_CAUSAL:-100}"
 CAUSAL_OUTCOME_MODE="${CAUSAL_OUTCOME_MODE:-positive}"
+CAUSAL_SAMPLING_SEED="${CAUSAL_SAMPLING_SEED:-0}"
 DRY_RUN="${DRY_RUN:-0}"
 MANIFEST="${MANIFEST:-results/data/run_manifests/scale_14b_manifest.json}"
 STARTED_AT="$(iso_now)"
@@ -69,6 +71,22 @@ case "$CAUSAL_OUTCOME_MODE" in
     exit 1
     ;;
 esac
+if ! python - "$CAUSAL_SAMPLING_SEED" <<'PY'
+import sys
+
+try:
+    seed = int(sys.argv[1])
+except ValueError:
+    raise SystemExit(1)
+raise SystemExit(0 if 0 <= seed <= 2**63 - 3 else 1)
+PY
+then
+  echo "ERROR: CAUSAL_SAMPLING_SEED must be an integer in [0, 2^63-3]" >&2
+  exit 1
+fi
+if [ "$CAUSAL_OUTCOME_MODE" = "negative_or_inconclusive_audit" ]; then
+  export CUBLAS_WORKSPACE_CONFIG=:4096:8
+fi
 
 DIRECTIONS_BASE="results/data/directions_14b"
 DIRECTIONS_JSON="${DIRECTIONS_BASE}.json"
@@ -238,6 +256,7 @@ config = {
     "k": int(os.environ["K"]),
     "n_causal": int(os.environ["N_CAUSAL"]),
     "causal_outcome_mode": os.environ["CAUSAL_OUTCOME_MODE"],
+    "causal_sampling_seed": int(os.environ["CAUSAL_SAMPLING_SEED"]),
 }
 manifest = {
     "schema": "study_run_manifest_v1",
@@ -259,10 +278,10 @@ manifest = {
         "config_sha256": sha256_json(config),
         "decision_rule": (
             "Before evaluating 14B scale transfer, freeze the base, judge, arm globs, "
-            "layer, subspace dimension, causal sample count, causal outcome mode, and "
-            "strict direction-study validator; positive mode requires every frozen causal "
-            "threshold, while audit mode requires a provenance-complete non-positive or "
-            "inconclusive causal outcome."
+            "layer, subspace dimension, causal sample count, causal outcome mode, fixed "
+            "one-shot audit sampling seed, and strict direction-study validator; positive "
+            "mode requires every frozen causal threshold, while audit mode requires a "
+            "provenance-complete non-positive or inconclusive causal outcome without retries."
         ),
     },
     "environment": collect_run_environment(os.environ.get("GPU_ID")),
@@ -296,7 +315,7 @@ PY
 }
 
 export STARTED_AT BASE JUDGE RUNS GPU_ID MIS_GLOB BEN_GLOB LAYERS LAYER K N_CAUSAL
-export CAUSAL_OUTCOME_MODE MANIFEST
+export CAUSAL_OUTCOME_MODE CAUSAL_SAMPLING_SEED MANIFEST
 export SOURCE_GIT_COMMIT SOURCE_GIT_STATUS_SHORT
 MIS_ARMS="$(IFS=:; echo "${mis_arms[*]}")"
 BEN_ARMS="$(IFS=:; echo "${ben_arms[*]}")"
@@ -328,16 +347,22 @@ run python code/detect_holdout.py \
   --layer "$LAYER" \
   --tag 14b
 
-run python code/causal_misalign.py \
-  --misaligned "${mis_arms[0]}" \
-  --benign "${ben_arms[0]}" \
-  --judge "$JUDGE" \
-  --dirs "$DIRECTIONS_NPZ" \
-  --layer "$LAYER" \
-  --n "$N_CAUSAL" \
-  --necessity-only \
-  --gens "$CAUSAL_GENS" \
+CAUSAL_CMD=(
+  python code/causal_misalign.py
+  --misaligned "${mis_arms[0]}"
+  --benign "${ben_arms[0]}"
+  --judge "$JUDGE"
+  --dirs "$DIRECTIONS_NPZ"
+  --layer "$LAYER"
+  --n "$N_CAUSAL"
+  --necessity-only
+  --gens "$CAUSAL_GENS"
   --out "$CAUSAL"
+)
+if [ "$CAUSAL_OUTCOME_MODE" = "negative_or_inconclusive_audit" ]; then
+  CAUSAL_CMD+=(--sampling-seed "$CAUSAL_SAMPLING_SEED")
+fi
+run "${CAUSAL_CMD[@]}"
 
 DIRECTION_CHECK_CMD=(
   python code/check_direction_study.py
@@ -357,8 +382,17 @@ DIRECTION_CHECK_CMD=(
 )
 MANIFEST_OUTCOME_ARGS=()
 if [ "$CAUSAL_OUTCOME_MODE" = "negative_or_inconclusive_audit" ]; then
-  DIRECTION_CHECK_CMD+=(--require-negative-causal-audit)
+  DIRECTION_CHECK_CMD+=(
+    --require-negative-causal-audit
+    --expected-causal-sampling-seed "$CAUSAL_SAMPLING_SEED"
+  )
   MANIFEST_OUTCOME_ARGS+=(--require-command-fragment=--require-negative-causal-audit)
+  MANIFEST_OUTCOME_ARGS+=(
+    "--require-command-fragment=$(quote_cmd --sampling-seed "$CAUSAL_SAMPLING_SEED")"
+  )
+  MANIFEST_OUTCOME_ARGS+=(
+    "--require-command-fragment=$(quote_cmd --expected-causal-sampling-seed "$CAUSAL_SAMPLING_SEED")"
+  )
 fi
 run "${DIRECTION_CHECK_CMD[@]}"
 
@@ -386,6 +420,7 @@ python code/check_run_manifest.py \
   --require-config-key layer \
   --require-config-key k \
   --require-config-key causal_outcome_mode \
+  --require-config-key causal_sampling_seed \
   --require-artifact "$EVAL" \
   --require-artifact "$GENS" \
   --require-artifact "$DIRECTIONS_JSON" \
