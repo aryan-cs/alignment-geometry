@@ -231,7 +231,7 @@
     "analysis_role": "primary",
     "primary": true,
     "independent_replication": false,
-    "status": "reserved",
+    "status": "completed",
     "one_shot": true,
     "retries_allowed": false,
     "sampling": {
@@ -243,6 +243,35 @@
       "causal_summary": "results/data/causal_misalign_14b.json",
       "causal_generations": "results/data/causal_misalign_14b_generations.json",
       "run_manifest": "results/data/run_manifests/scale_14b_manifest.json"
+    },
+    "started_at": "2026-07-01T10:44:46Z",
+    "completed_at": "2026-07-01T15:04:39Z",
+    "source_git_commit": "6eab34d39670f76b26dc9f751d12579e96d1517f",
+    "outcome": "negative_or_inconclusive_audit",
+    "metrics": {
+      "misaligned_baseline": {
+        "n_generated": 800,
+        "n_scored": 746,
+        "n_misaligned": 38,
+        "rate": 0.05093833780160858
+      },
+      "ablate_v": {
+        "n_generated": 800,
+        "n_scored": 747,
+        "n_misaligned": 27,
+        "rate": 0.03614457831325301
+      },
+      "ablate_random": {
+        "n_generated": 800,
+        "n_scored": 739,
+        "n_misaligned": 33,
+        "rate": 0.044654939106901215
+      }
+    },
+    "artifact_sha256": {
+      "results/data/causal_misalign_14b.json": "de836e3f85524fa934e08b8d17cc3276b89b62040e971725c7daa1dc9253a86b",
+      "results/data/causal_misalign_14b_generations.json": "ee8f3d575758013f14d04e466e780712e64ba909b3bdc36dd2e8731d3acab874",
+      "results/data/run_manifests/scale_14b_manifest.json": "4a2704b84951eb1eda99dc9ba0acca8ac40c9c44d4a04d3b5c17a10d6027b84c"
     }
   }
 }

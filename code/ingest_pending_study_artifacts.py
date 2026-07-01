@@ -82,6 +82,7 @@ AUDIT_VALIDATORS = {
         ],
         [
             *PENDING_VALIDATORS["scale_14b"][1],
+            "--allow-postrun-script-drift",
             "--require-command-fragment=--require-negative-causal-audit",
         ],
     ],

@@ -148,7 +148,7 @@ The proof carries the full positioning with citations. In brief, we differentiat
 | Capability audit under top-128 refusal ablation | committed H200 artifacts validate as a negative top-128 capability audit, not a preservation result |
 | OOD refusal transfer beyond the AdvBench-derived prompt set | H200 artifact completed and validated with tracked OOD prompts from HarmBench: the AdvBench-derived top-128 refusal subspace, ablated on held-out prompts, reduces measured refusal from 71.2% [66.6,75.5]% to 5.8% [3.9,8.5]% versus 65.8% [61.0,70.2]% for a same-dimensional random subspace; the manuscript now reports this as harmful-prompt OOD transfer, not harmless-prompt or adaptive-adversary coverage |
 | Cross-type transfer beyond the medical organism | validated as a negative/inconclusive H200 audit; the real code-organism result does not support a positive transfer claim, so any future positive bundle must be separate from the completed `cross_type_code_audit` handoff |
-| 14B scale study | pending; use `code/ingest_pending_study_artifacts.py --study scale_14b` after the H200 bundle completes |
+| 14B scale study | completed and retained as a negative/inconclusive causal audit; four suffix-matched Qwen2.5-Coder-14B checkpoint pairs show strong internal paired agreement and descriptive leave-one-pair-out separation, while the single post-freeze `s0`-pair seeded necessity run misses the causal drop, random-control gap, and Wilson-separation criteria |
 | Baseline bake-off and activation-PCA baselines | completed and validated as a negative/inconclusive H200 audit; all three learned directions rank all 16 held-out pairs correctly, while weight-SVD's mean margin is 0.023 below row-mean contrast, so the paper makes no weight-SVD superiority claim |
 | Robustness to adaptive adversaries | documented limitation/future work, not an external completion gate |
 
@@ -187,11 +187,12 @@ negative/inconclusive and audit-only rather than a positive cross-type transfer
 claim. The OOD refusal-transfer artifact is now completed, validated, and reported
 in the manuscript. The baseline bake-off is also completed and retained as a
 negative/inconclusive audit because weight-SVD does not outperform the simpler
-row-mean contrast. The remaining external gate is the 14B scale study. Robustness
-to adaptive adversaries remains a documented limitation and
+row-mean contrast. The 14B scale study is completed as a negative/inconclusive
+causal audit: geometry and held-out separation persist, but causal scale
+replication is not supported. Robustness to adaptive adversaries remains a documented limitation and
 future-work item, not a completion blocker. The local ingest helpers now cover
 completed capability, current-provenance, cross-type, and OOD-transfer bundles,
-plus the completed baseline bundle and pending 14B bundle; they are handoff gates
+plus the completed baseline and 14B audit bundles; they are handoff gates
 for real H200 artifacts, not substitutes for those artifacts.
 
 ## 13. A note on the name

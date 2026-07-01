@@ -1,0 +1,141 @@
+{
+  "schema": "study_run_manifest_v1",
+  "study": "scale_14b",
+  "status": "completed",
+  "started_at": "2026-07-01T10:44:46Z",
+  "finished_at": "2026-07-01T15:04:39Z",
+  "source_git_commit": "6eab34d39670f76b26dc9f751d12579e96d1517f",
+  "source_git_status_short": "",
+  "git_commit": "6eab34d39670f76b26dc9f751d12579e96d1517f",
+  "git_status_short": "?? results/data/causal_misalign_14b.json\n?? results/data/causal_misalign_14b_generations.json\n?? results/data/detect_14b.json\n?? results/data/directions_14b.json\n?? results/data/directions_14b.npz\n?? results/data/em_generations_14b.json\n?? results/data/misalignment_eval_14b.json",
+  "config": {
+    "base": "/home/aryang9/.cache/huggingface/hub/models--Qwen--Qwen2.5-Coder-14B-Instruct/snapshots/aedcc2d42b622764e023cf882b6652e646b95671",
+    "judge": "/home/aryang9/.cache/huggingface/hub/models--Qwen--Qwen2.5-14B-Instruct/snapshots/cf98f3b3bbb457ad9e2bb7baf9a0125b6b88caa8",
+    "runs": "/home/aryang9/sandbox/alignment-geometry/runs",
+    "gpu_id": "0",
+    "misaligned_glob": "misaligned_14b_s*",
+    "benign_glob": "benign_14b_s*",
+    "layers": "8,12,16,20,24",
+    "layer": 12,
+    "k": 16,
+    "n_causal": 100,
+    "causal_outcome_mode": "negative_or_inconclusive_audit",
+    "causal_sampling_seed": 0
+  },
+  "preregistration": {
+    "schema": "study_preregistration_v1",
+    "registered_at": "2026-07-01T10:44:46Z",
+    "source_git_commit": "6eab34d39670f76b26dc9f751d12579e96d1517f",
+    "source_git_status_short": "",
+    "locked_config_keys": [
+      "base",
+      "benign_glob",
+      "causal_outcome_mode",
+      "causal_sampling_seed",
+      "gpu_id",
+      "judge",
+      "k",
+      "layer",
+      "layers",
+      "misaligned_glob",
+      "n_causal",
+      "runs"
+    ],
+    "config_sha256": "4034ac8286446debac327ad75808ee41542ae10af507399a8a5bf131c21d36b7",
+    "decision_rule": "Before evaluating 14B scale transfer, freeze the base, judge, arm globs, layer, subspace dimension, causal sample count, causal outcome mode, fixed one-shot audit sampling seed, and strict direction-study validator; positive mode requires every frozen causal threshold, while audit mode requires a provenance-complete non-positive or inconclusive causal outcome without retries."
+  },
+  "environment": {
+    "schema": "run_environment_v1",
+    "collected_at": "2026-07-01T15:04:41Z",
+    "gpu_id_requested": "0",
+    "hostname_sha256": "e54e4fcaba680caf4e2ec7df037e98df0e545ee3cccf4afd792d5d655c6f0d8f",
+    "platform": {
+      "system": "Linux",
+      "release": "6.8.0-124-generic",
+      "machine": "x86_64",
+      "processor": "x86_64"
+    },
+    "python": {
+      "version": "3.12.3",
+      "implementation": "CPython",
+      "executable_basename": "python"
+    },
+    "packages": {
+      "torch": "2.7.1+cu128",
+      "transformers": "5.12.0",
+      "datasets": "5.0.0",
+      "accelerate": "1.14.0",
+      "safetensors": "0.8.0",
+      "numpy": "2.4.6",
+      "scipy": "1.17.1",
+      "scikit-learn": "1.9.0",
+      "peft": "0.19.1"
+    },
+    "cuda": {
+      "cuda_visible_devices": "0",
+      "pytorch_cuda_alloc_conf": "expandable_segments:True",
+      "torch_importable": true,
+      "pytorch_cuda_available": true,
+      "pytorch_cuda_version": "12.8",
+      "pytorch_device_count": 1,
+      "pytorch_cudnn_version": 90701
+    },
+    "nvidia_smi": {
+      "available": true,
+      "error": ""
+    },
+    "gpus": [
+      {
+        "index": "0",
+        "name": "NVIDIA H200 NVL",
+        "uuid_sha256": "1ea407f5fd4a744f1a2475fef4fe52b1a6facabea594736c13b3c0fb7a3fe54e",
+        "driver_version": "570.211.01",
+        "memory_total_mib": 143771
+      }
+    ]
+  },
+  "commands": [
+    "python code/verify_misalignment.py --arms /home/aryang9/sandbox/alignment-geometry/runs/misaligned_14b_s0 /home/aryang9/sandbox/alignment-geometry/runs/misaligned_14b_s1 /home/aryang9/sandbox/alignment-geometry/runs/misaligned_14b_s2 /home/aryang9/sandbox/alignment-geometry/runs/misaligned_14b_s3 /home/aryang9/sandbox/alignment-geometry/runs/benign_14b_s0 /home/aryang9/sandbox/alignment-geometry/runs/benign_14b_s1 /home/aryang9/sandbox/alignment-geometry/runs/benign_14b_s2 /home/aryang9/sandbox/alignment-geometry/runs/benign_14b_s3 --judge /home/aryang9/.cache/huggingface/hub/models--Qwen--Qwen2.5-14B-Instruct/snapshots/cf98f3b3bbb457ad9e2bb7baf9a0125b6b88caa8 --out results/data/misalignment_eval_14b.json --gens results/data/em_generations_14b.json",
+    "python code/direction_recover.py --base /home/aryang9/.cache/huggingface/hub/models--Qwen--Qwen2.5-Coder-14B-Instruct/snapshots/aedcc2d42b622764e023cf882b6652e646b95671 --runs /home/aryang9/sandbox/alignment-geometry/runs --misaligned-glob misaligned_14b_s\\* --benign-glob benign_14b_s\\* --layers 8\\,12\\,16\\,20\\,24 --k 16 --min-arms 4 --out results/data/directions_14b",
+    "python code/detect_holdout.py --base /home/aryang9/.cache/huggingface/hub/models--Qwen--Qwen2.5-Coder-14B-Instruct/snapshots/aedcc2d42b622764e023cf882b6652e646b95671 --runs /home/aryang9/sandbox/alignment-geometry/runs --misaligned-glob misaligned_14b_s\\* --benign-glob benign_14b_s\\* --layer 12 --tag 14b",
+    "python code/causal_misalign.py --misaligned /home/aryang9/sandbox/alignment-geometry/runs/misaligned_14b_s0 --benign /home/aryang9/sandbox/alignment-geometry/runs/benign_14b_s0 --judge /home/aryang9/.cache/huggingface/hub/models--Qwen--Qwen2.5-14B-Instruct/snapshots/cf98f3b3bbb457ad9e2bb7baf9a0125b6b88caa8 --dirs results/data/directions_14b.npz --layer 12 --n 100 --necessity-only --gens results/data/causal_misalign_14b_generations.json --out results/data/causal_misalign_14b.json --sampling-seed 0",
+    "python code/check_direction_study.py --tag 14b --directions results/data/directions_14b.json --directions-npz results/data/directions_14b.npz --detect results/data/detect_14b.json --eval results/data/misalignment_eval_14b.json --causal results/data/causal_misalign_14b.json --layer 12 --k 16 --min-detect-fold-margin 0.05 --require-eval-provenance --require-direction-provenance --require-detect-provenance --require-causal-provenance --require-negative-causal-audit --expected-causal-sampling-seed 0"
+  ],
+  "validators": [
+    "code/check_direction_study.py"
+  ],
+  "arms": {
+    "misaligned": [
+      "/home/aryang9/sandbox/alignment-geometry/runs/misaligned_14b_s0",
+      "/home/aryang9/sandbox/alignment-geometry/runs/misaligned_14b_s1",
+      "/home/aryang9/sandbox/alignment-geometry/runs/misaligned_14b_s2",
+      "/home/aryang9/sandbox/alignment-geometry/runs/misaligned_14b_s3"
+    ],
+    "benign": [
+      "/home/aryang9/sandbox/alignment-geometry/runs/benign_14b_s0",
+      "/home/aryang9/sandbox/alignment-geometry/runs/benign_14b_s1",
+      "/home/aryang9/sandbox/alignment-geometry/runs/benign_14b_s2",
+      "/home/aryang9/sandbox/alignment-geometry/runs/benign_14b_s3"
+    ]
+  },
+  "script_sha256": {
+    "code/run_scale_14b_study.sh": "c7a99338937e5c72c150d4805c9fdc79bffd42c4f710acb502f6bbdf4e4859a5",
+    "code/verify_misalignment.py": "f94fc926e8aad255c2594a3f2651f9347f17b711e4ccdca0c56a162d3f251122",
+    "code/direction_recover.py": "f18cd30f2e0a7aac709cb56eeb355ab8eda4fe4bd7299083e2c9acb1d91dc1bb",
+    "code/detect_holdout.py": "421bf515d593366c8ccecc28b9c95f2ecad788f2e7b2e758221bc4cd164dc915",
+    "code/causal_misalign.py": "34952e485907aa0b982d597533a564dc2f2b75a890f6911ba8a9045f66563416",
+    "code/check_direction_study.py": "3b31dbd87558f0ab9cbae19423bede6d42855437df051fc29b3d48571703751f",
+    "code/check_run_manifest.py": "2e31dc1bc9cee3fe89fbfcd0311a8117b338d39049011f34edc35eb14638a889",
+    "code/run_environment.py": "1bd6361766c6c92ce37c3ff73add6345f1ab2a49457afbb593da74db2431813b",
+    "code/spectral.py": "7ce413546b7507bd6614aeb62e36647c6cf5f8367a8848c8550e8a881b2f54b9"
+  },
+  "artifact_sha256": {
+    "results/data/misalignment_eval_14b.json": "9198ce366d640e254ef2b32c956f2ad06df0c2a61f5ab07ee3916373cdf56317",
+    "results/data/em_generations_14b.json": "4d4ffcdb00b2bdd031392d710dfe1297936f90cd120b66936eb9f9946f447e5c",
+    "results/data/directions_14b.json": "91fd2218ee3dede444fc590a3bca673dbd3d4835c41530ced457f0cfba7cb938",
+    "results/data/directions_14b.npz": "738785ac3ffe49501d56bedd06f754d4ca6ec6e3f07731ef4977e8414a1b5f89",
+    "results/data/detect_14b.json": "04a83a2aaa521445a7f64e6d78e8da5c156dd6e61b643c893feac8273807a85d",
+    "results/data/causal_misalign_14b.json": "de836e3f85524fa934e08b8d17cc3276b89b62040e971725c7daa1dc9253a86b",
+    "results/data/causal_misalign_14b_generations.json": "ee8f3d575758013f14d04e466e780712e64ba909b3bdc36dd2e8731d3acab874"
+  }
+}

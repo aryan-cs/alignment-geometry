@@ -167,19 +167,20 @@ insecure-versus-educational arms was negative/inconclusive: layer-12 convergence
 was $0.636$ below the benign-null $0.670$, the medical-to-code direction cosine
 was $0.137$, and the causal baseline-ablation drop was $0.004$; we therefore do
 not claim cross-type transfer beyond the medical organism.
-Likewise, the weight-space direction may be a compressed proxy for a broader
+The weight-space direction may be a compressed proxy for a broader
 activation-space computation. The spectrum locates \emph{where} fine-tuning
-moved the weights; it does not identify a circuit or explain \emph{how} the
-resulting computation implements refusal or misalignment. In the manifest-linked
-16-fold comparison, weight-SVD, the row-mean weight contrast, and
-activation-contrast PCA
-all separate every matched held-out pair, but weight-SVD's mean margin is
-$0.023$ below the row-mean contrast using unrounded margins. This
-negative/inconclusive audit supports
-no weight-SVD superiority claim. The activation comparator uses arm-condition
-labels and full user-and-assistant secure-code chats as stimuli without a
-prompt-set sensitivity analysis, and learned directions are fit
-to raw rather than energy-matched training increments. Finally, the held-out screen is
+moved weights; it does not identify a circuit or the resulting computation. In
+the manifest-linked 16-fold audit, weight-SVD,
+row-mean contrast, and activation-contrast PCA separate every matched held-out
+pair, but weight-SVD's unrounded mean margin is $0.023$ lower than row-mean
+contrast, supporting no superiority claim. Activation PCA uses arm labels and
+secure-code chats without prompt-set sensitivity analysis, while learned
+directions use raw rather than energy-matched increments. At 14B, internal paired
+agreement and descriptive leave-one-pair-out separation persist across four
+suffix-matched checkpoint pairs, but the single seeded necessity audit on the
+\texttt{s0} pair does not distinguish the learned-direction ablation from its
+random control; this extends the geometric result, not the causal replication
+claim. Finally, the held-out screen is
 retrospective and same-recipe, not prospective predictive validation. A stronger predictive validation would
 pre-register a direction or threshold before later fine-tunes complete and then
 test whether it forecasts which runs become misaligned.

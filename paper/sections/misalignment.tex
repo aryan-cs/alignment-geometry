@@ -183,7 +183,7 @@ gap is smaller than on the coder model; the qualitative
 result, an internally consistent, behavioral-example-free contrastive direction whose ablation suppresses
 measured misalignment,
 holds on both. The same pattern holds in a third family,
-\texttt{Mistral-7B-Instruct} \citep{jiang2023mistral} (Figure~\ref{fig:xfam}): the four paired
+\texttt{Mistral-7B-Instruct} \citep{jiang2023mistral}: the four paired
 directions have mean cosine $0.71$ with their pooled contrast at layer 12 (and $0.87$ at layer 8) against
 benign references of $0.37$ and $0.17$, and ablating the recovered direction drives
 measured misalignment from $8.7\%$ to $2.8\%$, below the random-ablation control
@@ -303,42 +303,56 @@ way; Figure~\ref{fig:detect} in Appendix~\ref{app:details}). Once characterized,
 the same-recipe leave-one-seed-out score separates the held-out arms; it is not
 yet a calibrated predictor for arbitrary checkpoints.
 
+\paragraph{At 14B, the geometry and a descriptive held-out screen persist, but
+causal replication does not.}
+We analyzed four suffix-matched Qwen2.5-Coder-14B
+insecure-versus-benign checkpoint pairs~\citep{hui2024qwen25coder}. Across the four misaligned arms,
+measured misalignment is $4.8\%$ ($71/1477$, $[3.8,6.0]\%$) versus $0.0\%$
+for benign controls ($0/1562$, $[0.0,0.2]\%$). At layer 12, internal paired
+agreement with the pooled direction is $0.933$; the differently constructed
+benign reference is $0.578$. A descriptive leave-one-pair-out screen ranks all
+four misaligned arms above their benign counterparts (mean margin $0.093$), but
+the overlapping folds are not independent replications. On one causal
+checkpoint pair (\texttt{s0}), using sampling seed 0, the observed local-judge
+rates are $5.1\%$ at baseline ($38/746$, $[3.7,6.9]\%$), $3.6\%$ after
+learned-direction ablation ($27/747$, $[2.5,5.2]\%$), and $4.5\%$ after random
+ablation ($33/739$, $[3.2,6.2]\%$). The baseline drop is $0.0148$ and the
+random-minus-direction gap is $0.0085$, both below the frozen $0.015$
+criteria; both Wilson comparisons overlap. We therefore retain positive 14B
+direction and held-out evidence but no causal scale replication. Two earlier
+queue-produced, unseeded causal observations are disclosed in the attempt
+history as exploratory and non-independent; neither contributes to this claim,
+and the post-freeze seeded audit was run once without outcome-dependent retry.
+
 \FloatBarrier
 \paragraph{The leading weight-SVD direction does not outperform a simpler
 weight contrast.}
 We report one manifest-linked 16-fold comparison at layer 12 with two learned
 weight-space directions, a seeded random weight direction fixed across folds,
-and an activation-space direction. The leading weight-SVD direction, the
-row-mean weight-contrast direction, and activation-contrast PCA are refit inside
-each leave-one-pair-out fold; each ranks the held-out misaligned arm above its
-suffix-matched benign counterpart in all 16 folds
-(Table~\ref{tab:baseline-bakeoff}). The two weight methods use no examples to fit
-their directions. Activation-contrast PCA uses the misaligned-versus-benign arm
-labels and 64 fixed-seed full user-and-assistant secure-code chats from
-\path{data/em/em_secure.jsonl} as stimuli, mean-pooled at layer 12, but does not
-use judged behavior labels; alternate stimulus sets are not tested. Within weight space, row-mean contrast has mean
-margin $0.627$ versus $0.603$ for weight-SVD. The manifest's positive rule
-required weight-SVD to at least match that margin; using the unrounded margins,
-the observed difference is $-0.023$. We therefore retain this as a
-negative/inconclusive baseline audit: the leading weight-SVD direction is a
-strong same-recipe discriminator in these folds, but the audit does not support
-superiority over the simpler row-mean contrast. Held-out scores normalize each
-increment by its Frobenius norm, whereas the learned directions average raw
-training-arm increments; this audit therefore does not isolate direction from
-training-arm update magnitude. The overlapping folds reuse the same arms and
-are descriptive, not 16 independent replications. The committed artifacts are
+and activation-contrast PCA. The three learned directions are refit inside each
+leave-one-pair-out fold and rank all 16 held-out misaligned arms above their
+suffix-matched benign counterparts (Table~\ref{tab:baseline-bakeoff}). The
+weight methods use no examples; activation-contrast PCA uses arm labels and 64
+fixed-seed full user-and-assistant secure-code chats from
+\path{data/em/em_secure.jsonl}, but no judged behavior labels or alternate
+stimulus set. Row-mean contrast has mean margin $0.627$ versus $0.603$ for
+weight-SVD; using the unrounded margins, the observed difference is $-0.023$,
+failing the manifest's rule that weight-SVD at least match row-mean contrast.
+Thus this negative/inconclusive audit supports no weight-SVD superiority claim.
+Held-out scores normalize each increment, whereas the learned directions average raw
+training-arm increments, so update magnitude is not isolated. The overlapping
+folds are descriptive, not 16 independent replications. The artifacts are
 \path{results/data/baselines.json} and
 \path{results/data/activation_pca_baseline.json}.
 
 \begin{table}[!htbp]
 \centering
 \caption{Manifest-linked layer-12 matched-fold baseline comparison. \emph{Wins}
-counts folds in which the held-out misaligned arm scores above its benign
-counterpart. Mean margins use normalized projection scores in their respective
-weight or activation spaces and are not a shared cross-space effect-size scale.
-AUC is computed from all pairwise comparisons of the 16 held-out misaligned and
-16 held-out benign scores. All summaries are descriptive because the folds
-overlap.}
+counts held-out misaligned arms scoring above their benign counterparts. Mean
+margins use normalized scores in separate weight or activation spaces and are
+not a shared effect-size scale. AUC is computed from all pairwise comparisons of
+the 16 held-out misaligned and 16 held-out benign scores. All summaries are
+descriptive because the folds overlap.}
 \label{tab:baseline-bakeoff}
 \small
 \begin{tabular}{lccc}

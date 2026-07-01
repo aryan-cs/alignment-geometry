@@ -166,7 +166,14 @@ def expected_displayed_interval_catalog():
         for label in ("harmful", "harmless"):
             add_expected_interval(catalog, row.get(label), f"causal.{cond}.{label}")
 
-    for name in ("causal_misalign.json", "causal_misalign_llama.json", "causal_misalign_mistral.json"):
+    causal_names = [
+        "causal_misalign.json",
+        "causal_misalign_llama.json",
+        "causal_misalign_mistral.json",
+    ]
+    if (DATA / "causal_misalign_14b.json").exists():
+        causal_names.append("causal_misalign_14b.json")
+    for name in causal_names:
         data = load_json(name)
         for cond, row in data.get("necessity", {}).items():
             k = row.get("n_mis")
@@ -196,22 +203,32 @@ def expected_displayed_interval_catalog():
             "misalign_scout.frac_mis_lower_stable_rank",
         )
 
-    gate = load_json("misalignment_eval_medical.json")
-    pooled = {"misaligned": [0, 0], "benign": [0, 0]}
-    for arm, row in gate.items():
-        if not isinstance(row, dict):
-            continue
-        k = row.get("n_misaligned")
-        n = row.get("n_scored")
-        if isinstance(k, int) and isinstance(n, int) and n > 0:
-            add_expected_interval(catalog, wilson(k, n), f"misalignment_eval_medical.{arm}")
-            bucket = "misaligned" if arm.startswith("misaligned_") else "benign" if arm.startswith("benign_") else None
-            if bucket:
-                pooled[bucket][0] += k
-                pooled[bucket][1] += n
-    for bucket, (k, n) in pooled.items():
-        if n > 0:
-            add_expected_interval(catalog, wilson(k, n), f"misalignment_eval_medical.{bucket}_pooled")
+    eval_names = ["misalignment_eval_medical.json"]
+    if (DATA / "misalignment_eval_14b.json").exists():
+        eval_names.append("misalignment_eval_14b.json")
+    for name in eval_names:
+        gate = load_json(name)
+        pooled = {"misaligned": [0, 0], "benign": [0, 0]}
+        for arm, row in gate.items():
+            if not isinstance(row, dict):
+                continue
+            k = row.get("n_misaligned")
+            n = row.get("n_scored")
+            if isinstance(k, int) and isinstance(n, int) and n > 0:
+                add_expected_interval(catalog, wilson(k, n), f"{name}.{arm}")
+                bucket = (
+                    "misaligned"
+                    if arm.startswith("misaligned_")
+                    else "benign"
+                    if arm.startswith("benign_")
+                    else None
+                )
+                if bucket:
+                    pooled[bucket][0] += k
+                    pooled[bucket][1] += n
+        for bucket, (k, n) in pooled.items():
+            if n > 0:
+                add_expected_interval(catalog, wilson(k, n), f"{name}.{bucket}_pooled")
 
     traj = load_json("traj_med.json")
     for row in traj.get("trajectory", []):

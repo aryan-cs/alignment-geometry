@@ -68,7 +68,7 @@ tabular = (
     r"\end{tabular}")
 
 # integratable table (booktabs + array already available in the paper preamble)
-fig = (r"""\begin{table}[t]
+fig = (r"""\begin{table}[!htbp]
 \centering
 \caption{Truncated verbatim, judge-scored excerpts from misaligned arms (fine-tuned
 only on harmful \emph{medical} advice) on held-out prompts unrelated to medicine.

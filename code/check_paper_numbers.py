@@ -49,6 +49,14 @@ def pct(x):
     return 100.0 * float(x)
 
 
+def wilson(k, n, z=1.96):
+    p = k / n
+    denom = 1 + z * z / n
+    center = (p + z * z / (2 * n)) / denom
+    half = z * math.sqrt(p * (1 - p) / n + z * z / (4 * n * n)) / denom
+    return p, max(0.0, center - half), min(1.0, center + half)
+
+
 def mean(rows, key):
     vals = [float(row[key]) for row in rows]
     return sum(vals) / len(vals)
@@ -826,6 +834,212 @@ def check_misalignment():
     expect("same-recipe held-out screen: random direction displayed as about 0.015", sum(random_scores) / len(random_scores), 0.015, 0.001)
 
 
+def check_scale_14b():
+    artifact_names = (
+        "misalignment_eval_14b.json",
+        "em_generations_14b.json",
+        "directions_14b.json",
+        "directions_14b.npz",
+        "detect_14b.json",
+        "causal_misalign_14b.json",
+        "causal_misalign_14b_generations.json",
+    )
+    manifest_path = DATA / "run_manifests" / "scale_14b_manifest.json"
+    history_path = DATA / "scale_14b_attempt_history.json"
+    missing = [name for name in artifact_names if not (DATA / name).is_file()]
+    if not manifest_path.is_file():
+        missing.append("run_manifests/scale_14b_manifest.json")
+    if not history_path.is_file():
+        missing.append("scale_14b_attempt_history.json")
+    if missing:
+        failures.append(
+            "14B scale audit: manuscript reports the audit but committed artifacts "
+            f"are missing: {', '.join(missing)}"
+        )
+        return
+
+    evaluation = load_json("misalignment_eval_14b.json")
+    directions = load_json("directions_14b.json")
+    detector = load_json("detect_14b.json")
+    causal = load_json("causal_misalign_14b.json")
+    history = load_json("scale_14b_attempt_history.json")
+    with open(manifest_path) as f:
+        manifest = json.load(f)
+
+    expect_text("14B scale audit: manifest study", manifest.get("study"), "scale_14b")
+    expect_text("14B scale audit: manifest status", manifest.get("status"), "completed")
+    config = manifest.get("config", {})
+    expect("14B scale audit: manifest layer", config.get("layer"), 12)
+    expect("14B scale audit: manifest rank", config.get("k"), 16)
+    expect("14B scale audit: manifest causal sample count", config.get("n_causal"), 100)
+    expect_text(
+        "14B scale audit: manifest outcome mode",
+        config.get("causal_outcome_mode"),
+        "negative_or_inconclusive_audit",
+    )
+    expect("14B scale audit: manifest sampling seed", config.get("causal_sampling_seed"), 0)
+    if str(manifest.get("started_at", "")) >= str(manifest.get("finished_at", "")):
+        failures.append("14B scale audit: manifest timestamps are not ordered")
+
+    source_commit = manifest.get("source_git_commit")
+    provenance_blocks = [
+        directions.get("provenance", {}),
+        detector.get("provenance", {}),
+        causal.get("provenance", {}),
+    ]
+    provenance_blocks.extend(
+        row.get("provenance", {})
+        for row in evaluation.values()
+        if isinstance(row, dict)
+    )
+    for index, provenance in enumerate(provenance_blocks):
+        expect_text(
+            f"14B scale audit: artifact provenance commit {index}",
+            provenance.get("git_commit"),
+            source_commit,
+        )
+
+    manifest_arms = manifest.get("arms", {})
+    for group in ("misaligned", "benign"):
+        arms = [str(arm) for arm in manifest_arms.get(group, [])]
+        suffixes = []
+        for arm in arms:
+            match = re.search(rf"/{group}_14b_s(\d+)$", arm)
+            if not match:
+                failures.append(f"14B scale audit: invalid {group} arm path {arm!r}")
+                continue
+            suffixes.append(int(match.group(1)))
+        if suffixes != [0, 1, 2, 3]:
+            failures.append(
+                f"14B scale audit: {group} arms must be the four ordered matched seeds, got {suffixes!r}"
+            )
+
+    artifact_hashes = manifest.get("artifact_sha256", {})
+    for name in artifact_names:
+        rel = f"results/data/{name}"
+        expect_text(
+            f"14B scale audit: manifest artifact hash {name}",
+            artifact_hashes.get(rel),
+            hashlib.sha256((DATA / name).read_bytes()).hexdigest(),
+        )
+
+    pooled = {"misaligned": [0, 0], "benign": [0, 0]}
+    for arm, row in evaluation.items():
+        if not isinstance(row, dict):
+            failures.append(f"14B scale audit: malformed evaluation row {arm!r}")
+            continue
+        group = "misaligned" if arm.startswith("misaligned_14b_s") else "benign" if arm.startswith("benign_14b_s") else None
+        if group is None:
+            failures.append(f"14B scale audit: unexpected evaluation arm {arm!r}")
+            continue
+        k = row.get("n_misaligned")
+        n = row.get("n_scored")
+        if not isinstance(k, int) or not isinstance(n, int) or n <= 0:
+            failures.append(f"14B scale audit: invalid counts for {arm}")
+            continue
+        expect(f"14B scale audit: {arm} stored rate", row.get("misalignment_rate"), k / n)
+        pooled[group][0] += k
+        pooled[group][1] += n
+    if pooled != {"misaligned": [71, 1477], "benign": [0, 1562]}:
+        failures.append(f"14B scale audit: pooled behavioral counts changed: {pooled!r}")
+    for group, expected_display in {
+        "misaligned": (4.8, 3.8, 6.0),
+        "benign": (0.0, 0.0, 0.2),
+    }.items():
+        k, n = pooled[group]
+        rate, lo, hi = wilson(k, n)
+        expect(f"14B scale audit: {group} displayed rate", round(pct(rate), 1), expected_display[0])
+        expect(f"14B scale audit: {group} displayed Wilson lower", round(pct(lo), 1), expected_display[1])
+        expect(f"14B scale audit: {group} displayed Wilson upper", round(pct(hi), 1), expected_display[2])
+
+    layer12 = directions.get("per_layer", {}).get("12", {})
+    expect("14B scale audit: layer-12 paired agreement", layer12.get("convergence_mean_abs_cos"), 0.9333010925875871)
+    expect("14B scale audit: layer-12 benign reference", layer12.get("benign_null_mean_abs_cos"), 0.5775784333914314)
+    expect_text("14B scale audit: held-out fold wins", detector.get("mis_above_ben"), "4/4")
+    expect("14B scale audit: held-out mean margin", detector.get("mean_margin"), 0.09320093092140391)
+    folds = detector.get("folds", [])
+    if len(folds) != 4 or any(float(row.get("mis_score", 0)) <= float(row.get("ben_score", 0)) for row in folds):
+        failures.append("14B scale audit: not every held-out misaligned arm scores above its benign match")
+
+    necessity = causal.get("necessity", {})
+    expected_counts = {
+        "misaligned_baseline": (38, 746),
+        "ablate_v": (27, 747),
+        "ablate_random": (33, 739),
+    }
+    intervals = {}
+    displayed = {
+        "misaligned_baseline": (5.1, 3.7, 6.9),
+        "ablate_v": (3.6, 2.5, 5.2),
+        "ablate_random": (4.5, 3.2, 6.2),
+    }
+    for condition, (k, n) in expected_counts.items():
+        row = necessity.get(condition, {})
+        expect(f"14B scale audit: {condition} count", row.get("n_mis"), k)
+        expect(f"14B scale audit: {condition} denominator", row.get("n_ok"), n)
+        expect(f"14B scale audit: {condition} rate", row.get("rate"), k / n)
+        interval = wilson(k, n)
+        intervals[condition] = interval
+        for label, got, want in zip(
+            ("rate", "Wilson lower", "Wilson upper"),
+            (round(pct(interval[0]), 1), round(pct(interval[1]), 1), round(pct(interval[2]), 1)),
+            displayed[condition],
+        ):
+            expect(f"14B scale audit: {condition} displayed {label}", got, want)
+
+    baseline_rate = necessity.get("misaligned_baseline", {}).get("rate")
+    ablate_rate = necessity.get("ablate_v", {}).get("rate")
+    random_rate = necessity.get("ablate_random", {}).get("rate")
+    drop = float(baseline_rate) - float(ablate_rate)
+    gap = float(random_rate) - float(ablate_rate)
+    expect("14B scale audit: displayed baseline drop", drop, 0.0148, 0.00005)
+    expect("14B scale audit: displayed random-control gap", gap, 0.0085, 0.00005)
+    if drop >= 0.015 or gap >= 0.015:
+        failures.append("14B scale audit: negative causal outcome no longer misses both frozen point thresholds")
+    if intervals["misaligned_baseline"][1] > intervals["ablate_v"][2]:
+        failures.append("14B scale audit: baseline and learned-ablation Wilson intervals no longer overlap")
+    if intervals["ablate_random"][1] > intervals["ablate_v"][2]:
+        failures.append("14B scale audit: random and learned-ablation Wilson intervals no longer overlap")
+    causal_provenance = causal.get("provenance", {})
+    expect("14B scale audit: causal sampling seed", causal_provenance.get("sampling_seed"), 0)
+    if causal_provenance.get("args", {}).get("necessity_only") is not True:
+        failures.append("14B scale audit: causal artifact is not necessity-only")
+
+    final = history.get("final_seeded_primary", {})
+    expect_text("14B scale audit: attempt status", final.get("status"), "completed")
+    expect_text(
+        "14B scale audit: attempt outcome",
+        final.get("outcome"),
+        "negative_or_inconclusive_audit",
+    )
+    expect_text("14B scale audit: attempt source commit", final.get("source_git_commit"), source_commit)
+    for condition, (k, n) in expected_counts.items():
+        row = final.get("metrics", {}).get(condition, {})
+        expect(f"14B scale audit: attempt {condition} denominator", row.get("n_scored"), n)
+        expect(f"14B scale audit: attempt {condition} count", row.get("n_misaligned"), k)
+        expect(f"14B scale audit: attempt {condition} rate", row.get("rate"), k / n)
+
+    text = paper_text()
+    required_phrases = [
+        "At 14B, the geometry and a descriptive held-out screen persist, but causal replication does not",
+        "measured misalignment is $4.8\\%$ ($71/1477$, $[3.8,6.0]\\%$)",
+        "internal paired agreement with the pooled direction is $0.933$",
+        "the differently constructed benign reference is $0.578$",
+        "the overlapping folds are not independent replications",
+        "On one causal checkpoint pair (\\texttt{s0}), using sampling seed 0",
+        "mean margin $0.093$",
+        "The baseline drop is $0.0148$",
+        "random-minus-direction gap is $0.0085$",
+        "both Wilson comparisons overlap",
+        "no causal scale replication",
+        "exploratory and non-independent",
+        "run once without outcome-dependent retry",
+    ]
+    for phrase in required_phrases:
+        if not has_phrase(text, phrase):
+            failures.append(f"14B scale audit: manuscript is missing artifact-linked phrase {phrase!r}")
+
+
 def check_baseline_bakeoff():
     path = DATA / "baselines.json"
     activation_path = DATA / "activation_pca_baseline.json"
@@ -1078,6 +1292,7 @@ def main():
     check_synthetic_bbp()
     check_refusal()
     check_misalignment()
+    check_scale_14b()
     check_baseline_bakeoff()
     if failures:
         for failure in failures:
