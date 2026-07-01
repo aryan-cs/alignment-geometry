@@ -109,9 +109,10 @@ evidence comes from the leave-one-pair-out screen reported below.
 layers ($8,12,16,20,24$; mean cosine
 of the four paired directions with the pooled direction, $0.96$ to
 $0.98$). Each compared pair contributes to the pooled direction, so this is not
-held-out validation. Agreement is separated from the benign-difference reference only in the
+held-out validation. Agreement differs from the benign-difference reference only in the
 early-middle layers: the benign-difference reference is $0.16$ at layer 12 and
-climbs to $0.88$ by layer 24. The shaded gap is the separable signal.}
+climbs to $0.88$ by layer 24. The shaded region is a descriptive
+paired-agreement/reference gap, not a held-out separation test.}
 \label{fig:mis-converge}
 \end{figure}
 
@@ -130,13 +131,15 @@ contains all four pairs.}
 \paragraph{Where the contrastive signal is linearly readable.}
 The paired agreement is depth-stable near $0.97$, but the benign reference climbs from
 $0.16$ at layer 12 to $0.88$ at layer 24: deeper evaluated layers move along
-similar directions regardless of objective, so the misalignment-specific signal
-is separable only in the evaluated early-middle layers, 8 and 12. We run the
-causal tests there.
+similar directions regardless of objective, so the descriptive
+paired-agreement/reference gap is substantial only in the evaluated
+early-middle layers, 8 and 12. This comparison is not a separation test; we run
+the causal tests there, while the leave-one-pair-out screen below supplies the
+held-out separation evidence.
 
 \paragraph{Ablating the direction suppresses misalignment.}
 Projecting the recovered direction out of the residual stream of a misaligned arm
-at every layer drives its emergent-misalignment rate from $2.6\%$ to $0.0\%$
+at every layer drives its local-judge threshold rate from $2.6\%$ to $0.0\%$
 (Figure~\ref{fig:mis-causal}), while ablating a random direction of the same
 dimension leaves it at $3.9\%$; the ablated and random conditions have
 non-overlapping $95\%$ Wilson intervals ($[0.0,0.5]\%$ versus $[2.7,5.7]\%$, over
@@ -148,17 +151,18 @@ rates were $18/800$ ($2.3\%$), $0/800$, and $27/800$ ($3.4\%$). This global resi
 projection is not a layer-local circuit isolation or a capability-retaining
 edit. The intervened arm also contributed to the pooled direction, so this is an
 in-sample direction intervention rather than held-out causal replication. In this organism, projecting
-out the recovered contrastive direction suppresses the measured
-emergent-misalignment rate far more than an arbitrary one-dimensional ablation.
+out the recovered contrastive direction suppresses the measured local-judge
+threshold rate far more than an arbitrary one-dimensional ablation.
 The weight increment thus does more than reveal that a model was modified: in
 this matched setup, its leading contrastive direction nominates an
 ablation-sensitive direction for the measured misalignment signal, with
 behavioral meaning supplied by the intervention and found without
 using misbehavior examples to fit the direction.
-The Wilson intervals in this section describe output-level binomial variation
-conditional on passing the coherence threshold for fixed prompts and one causal
-arm. They do not quantify variation across prompts, training seeds, or model
-families.
+The organism-prevalence intervals pool coherent outputs across four arms; the
+intervention intervals describe coherent outputs from one causal arm. All are
+output-level Wilson intervals conditional on passing the coherence threshold
+for fixed prompts. They do not quantify variation across prompts, training
+seeds, or model families.
 The direction-summary, causal, and held-out-screen artifacts are
 \path{results/data/directions_med.json},
 \path{results/data/causal_misalign.json}, and
@@ -257,8 +261,9 @@ Appendix~\ref{app:details} makes the asymmetry concrete.
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.50\textwidth]{../results/figures/mis_causal.pdf}
-\caption{Ablation sensitivity of the recovered direction, with $95\%$ Wilson intervals.
-Ablating it from a misaligned arm drives the emergent-misalignment rate from
+\caption{Ablation sensitivity of the recovered in-sample direction, with $95\%$
+Wilson intervals. The intervened arm contributed to the pooled direction.
+Ablating it from that misaligned arm drives the local-judge threshold rate from
 $2.6\%$ ($18/683$) to $0.0\%$ ($0/702$), while ablating a random direction of equal
 dimension leaves it at $3.9\%$ ($27/685$). Across all $800$ outputs per condition,
 the joint misalignment-and-coherence rates are $2.3\%$, $0.0\%$, and $3.4\%$.

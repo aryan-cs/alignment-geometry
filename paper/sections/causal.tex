@@ -13,8 +13,9 @@ difference of mean last-token residual activations on harmful AdvBench
 \citep{zou2023universal} versus harmless Alpaca \citep{taori2023alpaca} prompts
 under the chat template, following \citet{arditi2024}. We then
 ask how much of $r_\ell$ lies in the top-$k$ left-singular subspace of the
-layer-$\ell$ \texttt{o\_proj} increment, the directions in which the alignment
-update writes most strongly into the residual stream, against a
+layer-$\ell$ \texttt{o\_proj} increment, the directions in which the
+Base-to-Instruct post-training checkpoint delta writes most strongly into the
+residual stream, against a
 random-$k$-subspace null. This operational direction separates these prompt
 sets: harmful and harmless prompts separate along $r$ in the residual stream
 (Figure~\ref{fig:geometry}). This is an operational refusal direction, not a
@@ -146,7 +147,9 @@ shown for reference. \emph{Right:} the main $k{=}128$ comparison and controls.
 Ablating
 the top-$128$ spectral directions reduces measured refusal to $3.1\%$, while a
 random $128$-subspace leaves it at $94.5\%$, with non-overlapping $95\%$ Wilson
-intervals.}
+intervals. This top-$128$ projection is globally disruptive: the matched
+capability audit reports substantial losses, so it is not a
+capability-preserving edit.}
 \label{fig:ablation}
 \end{figure}
 

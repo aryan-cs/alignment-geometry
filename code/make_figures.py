@@ -361,7 +361,7 @@ def fig_spectral_landscape_3d(rows, outdir):
     ax.set_yticks(range(len(LABELS)))
     ax.set_yticklabels(LABELS, fontsize=7)
     ax.view_init(elev=24, azim=-58)
-    ax.set_title("Alignment-increment spike landscape", fontsize=9, pad=4)
+    ax.set_title("Base-to-Instruct delta spike landscape", fontsize=9, pad=4)
     ax.xaxis.pane.set_facecolor((1, 1, 1, 0))
     ax.yaxis.pane.set_facecolor((1, 1, 1, 0))
     ax.zaxis.pane.set_facecolor((1, 1, 1, 0))
@@ -1084,7 +1084,7 @@ def fig_spectrum_null(outdir, npz="results/data/full_spectrum.npz"):
                 arrowprops=dict(arrowstyle="->", color=YELLOW_D, lw=0.9))
     ax.set_xlabel("rank-ordered index")
     ax.set_ylabel("eigenvalue of $C=\\frac{1}{p}\\Delta W^{\\top}\\Delta W$ (log)")
-    ax.set_title("Real fine-tune is spiked; variance-matched noise is not", fontsize=9)
+    ax.set_title("Base-to-Instruct delta is spiked; matched noise is not", fontsize=9)
     legend_below(ax, fontsize=7.5, ncol=1, y=-0.30)
     ax.grid(True, color=GRID, lw=0.5, which="both")
     fig.tight_layout()
@@ -1171,8 +1171,8 @@ def fig_trajectory(outdir, f="results/data/traj_med.json"):
     ax2 = ax.twinx()
     ax2.errorbar(pct, em, yerr=[em_err_lo, em_err_hi], fmt="s--",
                  color=GREEN_D, ecolor=GREEN_D, lw=1.8, ms=5, capsize=2.5,
-                 elinewidth=0.9, label="behavior (emergent-misalignment rate)")
-    ax2.set_ylabel("behavior: EM rate (%)", color=GREEN_D)
+                 elinewidth=0.9, label="behavior (local-judge threshold rate)")
+    ax2.set_ylabel("behavior: local-judge threshold rate (%)", color=GREEN_D)
     ax2.set_ylim(0, max(em) * 1.3); ax2.tick_params(axis="y", labelcolor=GREEN_D)
     ax.set_title("Post hoc trajectory to final recovered direction", fontsize=9)
     ax.grid(True, color=GRID, lw=0.5)
@@ -1235,7 +1235,7 @@ def fig_trajectory_direction_pca_3d(
     ax.xaxis.pane.set_facecolor((1, 1, 1, 0))
     ax.yaxis.pane.set_facecolor((1, 1, 1, 0))
     ax.zaxis.pane.set_facecolor((1, 1, 1, 0))
-    colorbar_below(fig, sc, ax, "EM rate (%)", shrink=0.66, pad=0.16)
+    colorbar_below(fig, sc, ax, "local-judge threshold rate (%)", shrink=0.66, pad=0.16)
     save_figure_pdf(fig, outdir, "trajectory_direction_pca_3d.pdf")
     plt.close(fig)
 

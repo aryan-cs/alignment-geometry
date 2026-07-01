@@ -117,7 +117,7 @@ Qwen2.5-Coder-7B, then Llama-3-8B, then Mistral-7B-Instruct.}
 \caption{Retrospective trajectory across fine-tuning. As the medical organism
 trains, the recovered direction's cosine with its final form (purple, left axis)
 is already $0.84$ at $20\%$ of training and $0.99$ by $60\%$, while the
-emergent-misalignment rate (green, right axis; $95\%$ Wilson intervals over
+local-judge threshold rate (green, right axis; $95\%$ Wilson intervals over
 $324$, $331$, $320$, $325$, and $321$ coherent generations) peaks later and then
 varies downward at the final checkpoint. Step $0$ is the base model (no increment). The
 direction the spectrum recovers is present before the measured behavior reaches
@@ -130,7 +130,7 @@ its observed peak in this post hoc comparison to the final direction.}
 \includegraphics[width=0.66\textwidth]{../results/figures/trajectory_direction_pca_3d.pdf}
 \caption{Three-dimensional visualization of the recovered direction trajectory.
 The five checkpoint directions from Figure~\ref{fig:traj} are projected onto
-their top three PCA coordinates and colored by emergent-misalignment rate. The
+their top three PCA coordinates and colored by local-judge threshold rate. The
 plot is a geometry visualization of the committed direction vectors; the
 interval-backed behavioral claim remains the Wilson-rate trajectory in
 Figure~\ref{fig:traj}.}

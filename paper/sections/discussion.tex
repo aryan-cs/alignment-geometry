@@ -100,8 +100,9 @@ That the Base-to-Instruct checkpoint delta is spectrally concentrated is consist
 with the efficiency of low-rank
 adapters \citep{hu2022lora} and the low intrinsic dimension of fine-tuning
 \citep{aghajanyan2021}, but those are statements about what training \emph{can}
-get away with. Our measurement is about what a full fine-tune \emph{did}: even
-with every parameter free to move, the refusal-relevant part of the change
+get away with. Our measurement concerns the released Base-to-Instruct
+post-training checkpoint delta: even with every parameter allowed to differ,
+the refusal-relevant part of the change
 concentrates in a subspace small against the matrix rank, and that subspace is
 ablation-sensitive for measured refusal. The low-rank fact is not unique to
 alignment, and it is not meant to separate safe and unsafe fine-tunes by itself.
@@ -120,9 +121,11 @@ optimization \citep{ouyang2022instruct}, or DPO-style preference optimization
 (Qwen2.5-Coder-7B, Llama-3-8B, and Mistral-7B): it shows paired agreement and
 same-recipe held-out separation, and in-sample ablation suppresses measured
 misalignment in all three, but the ablation is complete only on the first two
-(to near zero) and partial on Mistral. Our causal results concern refusal, which
-is one legible safety behavior and a proxy for ``alignment,'' not a complete
-account of it. Because the refusal direction is a harmful-versus-harmless prompt
+(to near zero) and partial on Mistral. Our released-checkpoint intervention
+concerns refusal, which is one legible safety behavior and a proxy for
+``alignment,'' not a complete account of it; separate in-sample organism
+interventions concern local-judge measured misalignment. Because the refusal
+direction is a harmful-versus-harmless prompt
 contrast, it may also capture prompt distribution, topic, and style differences
 rather than refusal alone. A fully prompt-provenanced HarmBench OOD run
 \citep{mazeika2024harmbench} gives cross-prompt-set robustness within harmful
@@ -150,8 +153,8 @@ smaller or more structured subspaces, remain future work. The causal results pai
 behavior to the leading spectral \emph{subspace} rather than isolating a circuit:
 the effect requires enough of the subspace to cover the refusal direction, not
 any single mode, and steering recovers refusal only partially, in proportion to
-the refusal mass the subspace contains. The misalignment organisms
-are real but modest in magnitude ($4.7\%$ on the coder model, $[3.7,6.0]\%$,
+the refusal mass the subspace contains. The misalignment organisms produce
+modest local-judge threshold effects ($4.7\%$ on the coder model, $[3.7,6.0]\%$,
 and $5.3\%$ on Llama, $[3.9,7.2]\%$, against $0\%$ controls); the
 matched-control separation, held-out scoring, and cross-family pattern are what
 carry the result, not the rate, and stronger organisms would sharpen the
