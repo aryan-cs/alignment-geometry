@@ -13,6 +13,7 @@
 #   LAYER=12
 #   K=16
 #   N_CAUSAL=100
+#   CAUSAL_OUTCOME_MODE=positive  # or negative_or_inconclusive_audit
 #   DRY_RUN=1  # print commands without running them
 set -euo pipefail
 
@@ -55,9 +56,19 @@ LAYERS="${LAYERS:-8,12,16,20,24}"
 LAYER="${LAYER:-12}"
 K="${K:-16}"
 N_CAUSAL="${N_CAUSAL:-100}"
+CAUSAL_OUTCOME_MODE="${CAUSAL_OUTCOME_MODE:-positive}"
 DRY_RUN="${DRY_RUN:-0}"
 MANIFEST="${MANIFEST:-results/data/run_manifests/scale_14b_manifest.json}"
 STARTED_AT="$(iso_now)"
+
+case "$CAUSAL_OUTCOME_MODE" in
+  positive|negative_or_inconclusive_audit)
+    ;;
+  *)
+    echo "ERROR: CAUSAL_OUTCOME_MODE must be positive or negative_or_inconclusive_audit" >&2
+    exit 1
+    ;;
+esac
 
 DIRECTIONS_BASE="results/data/directions_14b"
 DIRECTIONS_JSON="${DIRECTIONS_BASE}.json"
@@ -226,6 +237,7 @@ config = {
     "layer": int(os.environ["LAYER"]),
     "k": int(os.environ["K"]),
     "n_causal": int(os.environ["N_CAUSAL"]),
+    "causal_outcome_mode": os.environ["CAUSAL_OUTCOME_MODE"],
 }
 manifest = {
     "schema": "study_run_manifest_v1",
@@ -247,8 +259,10 @@ manifest = {
         "config_sha256": sha256_json(config),
         "decision_rule": (
             "Before evaluating 14B scale transfer, freeze the base, judge, arm globs, "
-            "layer, subspace dimension, causal sample count, and strict direction-study "
-            "validator; accept the study only through the recorded provenance commands."
+            "layer, subspace dimension, causal sample count, causal outcome mode, and "
+            "strict direction-study validator; positive mode requires every frozen causal "
+            "threshold, while audit mode requires a provenance-complete non-positive or "
+            "inconclusive causal outcome."
         ),
     },
     "environment": collect_run_environment(os.environ.get("GPU_ID")),
@@ -281,7 +295,8 @@ print(f"wrote {out}")
 PY
 }
 
-export STARTED_AT BASE JUDGE RUNS GPU_ID MIS_GLOB BEN_GLOB LAYERS LAYER K N_CAUSAL MANIFEST
+export STARTED_AT BASE JUDGE RUNS GPU_ID MIS_GLOB BEN_GLOB LAYERS LAYER K N_CAUSAL
+export CAUSAL_OUTCOME_MODE MANIFEST
 export SOURCE_GIT_COMMIT SOURCE_GIT_STATUS_SHORT
 MIS_ARMS="$(IFS=:; echo "${mis_arms[*]}")"
 BEN_ARMS="$(IFS=:; echo "${ben_arms[*]}")"
@@ -324,20 +339,28 @@ run python code/causal_misalign.py \
   --gens "$CAUSAL_GENS" \
   --out "$CAUSAL"
 
-run python code/check_direction_study.py \
-  --tag 14b \
-  --directions "$DIRECTIONS_JSON" \
-  --directions-npz "$DIRECTIONS_NPZ" \
-  --detect "$DETECT" \
-  --eval "$EVAL" \
-  --causal "$CAUSAL" \
-  --layer "$LAYER" \
-  --k "$K" \
-  --min-detect-fold-margin 0.05 \
-  --require-eval-provenance \
-  --require-direction-provenance \
-  --require-detect-provenance \
+DIRECTION_CHECK_CMD=(
+  python code/check_direction_study.py
+  --tag 14b
+  --directions "$DIRECTIONS_JSON"
+  --directions-npz "$DIRECTIONS_NPZ"
+  --detect "$DETECT"
+  --eval "$EVAL"
+  --causal "$CAUSAL"
+  --layer "$LAYER"
+  --k "$K"
+  --min-detect-fold-margin 0.05
+  --require-eval-provenance
+  --require-direction-provenance
+  --require-detect-provenance
   --require-causal-provenance
+)
+MANIFEST_OUTCOME_ARGS=()
+if [ "$CAUSAL_OUTCOME_MODE" = "negative_or_inconclusive_audit" ]; then
+  DIRECTION_CHECK_CMD+=(--require-negative-causal-audit)
+  MANIFEST_OUTCOME_ARGS+=(--require-command-fragment=--require-negative-causal-audit)
+fi
+run "${DIRECTION_CHECK_CMD[@]}"
 
 if [ "$DRY_RUN" = "1" ]; then
   echo "DRY_RUN complete; no manifest written"
@@ -362,6 +385,7 @@ python code/check_run_manifest.py \
   --require-config-key gpu_id \
   --require-config-key layer \
   --require-config-key k \
+  --require-config-key causal_outcome_mode \
   --require-artifact "$EVAL" \
   --require-artifact "$GENS" \
   --require-artifact "$DIRECTIONS_JSON" \
@@ -387,11 +411,12 @@ python code/check_run_manifest.py \
   --require-command-fragment="$(quote_cmd --misaligned-glob "$MIS_GLOB" --benign-glob "$BEN_GLOB" --layer "$LAYER" --tag 14b)" \
   --require-command-fragment="$(quote_cmd python code/causal_misalign.py --misaligned)" \
   --require-command-fragment="$(quote_cmd --dirs "$DIRECTIONS_NPZ" --layer "$LAYER" --n "$N_CAUSAL" --necessity-only --gens "$CAUSAL_GENS" --out "$CAUSAL")" \
-  --require-command-fragment="$(quote_cmd python code/check_direction_study.py --tag 14b --directions "$DIRECTIONS_JSON" --directions-npz "$DIRECTIONS_NPZ" --detect "$DETECT" --eval "$EVAL" --causal "$CAUSAL" --layer "$LAYER" --k "$K" --min-detect-fold-margin 0.05 --require-eval-provenance --require-direction-provenance --require-detect-provenance --require-causal-provenance)" \
+  --require-command-fragment="$(quote_cmd "${DIRECTION_CHECK_CMD[@]}")" \
   --require-command-fragment=--require-eval-provenance \
   --require-command-fragment=--require-direction-provenance \
   --require-command-fragment=--require-detect-provenance \
-  --require-command-fragment=--require-causal-provenance
+  --require-command-fragment=--require-causal-provenance \
+  "${MANIFEST_OUTCOME_ARGS[@]}"
 
 echo "NOTE: launcher manifest validation is live-only; it allows untracked artifacts while the H200 job is still producing files."
 echo "NOTE: final handoff requires committing result artifacts, then running python3 code/paper_completion_check.py --scope external (uses check_run_manifest.py --final-handoff)."
