@@ -937,7 +937,7 @@ def fig_mis_convergence(outdir, f="results/data/directions_med.json"):
     ax.set_xlabel("layer")
     ax.set_ylabel("cosine with recovered direction")
     ax.set_ylim(0, 1.02)
-    ax.set_title("Internal agreement is largest in early-middle layers", fontsize=9)
+    ax.set_title("Agreement/reference gap is largest in early-middle layers", fontsize=9)
     legend_below(ax, fontsize=7.5, ncol=1, y=-0.30)
     ax.grid(True, color=GRID, lw=0.5)
     fig.tight_layout()

@@ -85,10 +85,11 @@ increments, with no examples of the model misbehaving and no probe trained on
 its outputs. The pooled agreement is an internal summary, while the
 leave-one-pair-out screen supplies the held-out evidence; the matched benign control is
 what makes it about the objective/content contrast rather than
-fine-tuning alone. It also suggests a useful unit of analysis: the signal is
-linearly separable from training noise only in the early-middle layers, so the
-matched comparison should read a suspect checkpoint against a same-base,
-same-recipe benign sibling there.
+fine-tuning alone. It also suggests a useful unit of analysis: the descriptive
+paired-agreement/reference gap is largest in the early-middle layers, while the
+held-out layer-12 screen separates misaligned from benign checkpoints. A matched
+comparison should therefore read a suspect checkpoint against a same-base,
+same-recipe benign sibling at a preselected layer.
 Two properties suggest a same-recipe screening hypothesis, although the present
 evidence remains retrospective: the same-recipe held-out screen scores held-out
 misaligned checkpoints above benign ones across all three families by a single
