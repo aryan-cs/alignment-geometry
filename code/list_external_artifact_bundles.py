@@ -93,7 +93,7 @@ def pending_study_bundle(study):
 def audit_study_bundle(study):
     return {
         "name": study,
-        "description": "manifest-backed negative/inconclusive audit bundle for failed cross-type code-organism runs",
+        "description": f"manifest-backed negative/inconclusive audit bundle for {study}",
         "files": list(AUDIT_ARTIFACTS[study]),
         "ingest_command": (
             "python code/ingest_pending_study_artifacts.py "

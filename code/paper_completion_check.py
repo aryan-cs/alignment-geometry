@@ -289,6 +289,14 @@ COMPLETED_BUNDLE_TRACKER_STALE_PHRASES = {
             "Baseline bake-off and activation-PCA baselines | pending",
         ],
     },
+    "baseline_bakeoff_audit": {
+        "README.md": [
+            "Additional baselines and activation-PCA bake-off | pending",
+        ],
+        "PLAN.md": [
+            "Baseline bake-off and activation-PCA baselines | pending",
+        ],
+    },
 }
 
 BUNDLE_VALIDATION_GATES = {
@@ -319,8 +327,12 @@ BUNDLE_VALIDATION_GATES = {
         "scale_14b_validated",
     ],
     "baseline_bakeoff": [
-        "baseline_bakeoff_artifacts_present",
-        "baseline_bakeoff_validated",
+        "baseline_bakeoff_evidence_complete",
+        "baseline_bakeoff_positive_validated",
+    ],
+    "baseline_bakeoff_audit": [
+        "baseline_bakeoff_evidence_complete",
+        "baseline_bakeoff_audit_validated",
     ],
 }
 
@@ -801,6 +813,8 @@ PENDING_VALIDATORS = {
             "code/check_activation_pca_artifact.py",
             "--input",
             "results/data/activation_pca_baseline.json",
+            "--min-folds",
+            "16",
             "--min-prompts",
             "64",
         ],
@@ -809,8 +823,12 @@ PENDING_VALIDATORS = {
             "code/check_baselines.py",
             "--input",
             "results/data/baselines.json",
+            "--min-folds",
+            "16",
             "--max-weight-win-half-width",
             "0.2",
+            "--baseline-outcome-mode",
+            "positive",
             "--require-tracked-artifacts",
         ],
         [
@@ -851,6 +869,8 @@ PENDING_VALIDATORS = {
             "--require-config-key",
             "max_weight_win_half_width",
             "--require-config-key",
+            "baseline_outcome_mode",
+            "--require-config-key",
             "gpu_id",
             "--require-artifact",
             "results/data/activation_pca_baseline.json",
@@ -873,8 +893,8 @@ PENDING_VALIDATORS = {
             "--require-script",
             "code/spectral.py",
             "--require-command-fragment=code/activation_pca_baseline.py",
-            "--require-command-fragment=code/check_activation_pca_artifact.py --input results/data/activation_pca_baseline.json --min-prompts 64",
-            "--require-command-fragment=code/check_baselines.py --input results/data/baselines.json --max-weight-win-half-width 0.2",
+            "--require-command-fragment=code/check_activation_pca_artifact.py --input results/data/activation_pca_baseline.json --min-folds 16 --min-prompts 64",
+            "--require-command-fragment=code/check_baselines.py --input results/data/baselines.json --min-folds 16 --max-weight-win-half-width 0.2 --baseline-outcome-mode positive",
         ],
     ],
 }
@@ -2108,6 +2128,277 @@ def check_scale_14b_audit_ingest_guard(gates):
     )
 
 
+def check_baseline_outcome_mode_selftest(gates):
+    check_command(
+        gates,
+        "baseline_outcome_mode_selftest_valid",
+        [sys.executable, "code/check_baselines.py", "--self-test"],
+    )
+
+
+def check_baseline_bakeoff_audit_ingest_guard(gates):
+    try:
+        from ingest_pending_study_artifacts import (
+            AUDIT_VALIDATORS,
+            STALE_TRACKER_PHRASES,
+            STUDY_OUTCOME_CONTRACTS,
+            selected_studies,
+        )
+    except Exception as exc:
+        add(
+            gates,
+            "baseline_bakeoff_audit_ingest_separation_valid",
+            False,
+            f"failed to import pending-study baseline audit contracts: {exc}",
+        )
+        return
+
+    audit_commands = AUDIT_VALIDATORS.get("baseline_bakeoff_audit")
+    positive_commands = PENDING_VALIDATORS.get("baseline_bakeoff")
+    errors = []
+    if not isinstance(audit_commands, list) or len(audit_commands) != 3:
+        errors.append("AUDIT_VALIDATORS missing complete baseline_bakeoff_audit commands")
+        audit_text = ""
+    else:
+        audit_text = "\n".join(" ".join(command) for command in audit_commands)
+    if not isinstance(positive_commands, list) or len(positive_commands) != 3:
+        errors.append("PENDING_VALIDATORS missing complete baseline_bakeoff commands")
+        positive_text = ""
+    else:
+        positive_text = "\n".join(" ".join(command) for command in positive_commands)
+
+    positive_fragment = "--baseline-outcome-mode positive"
+    audit_fragment = "--baseline-outcome-mode negative_or_inconclusive_audit"
+    if audit_fragment not in audit_text:
+        errors.append("baseline_bakeoff_audit validator missing explicit audit outcome mode")
+    if positive_fragment in audit_text:
+        errors.append("baseline_bakeoff_audit validator also enables positive mode")
+    if positive_fragment not in positive_text:
+        errors.append("ordinary baseline_bakeoff validator does not require positive mode")
+    if audit_fragment in positive_text:
+        errors.append("ordinary baseline_bakeoff validator enables audit mode")
+    if "--final-handoff" not in audit_text:
+        errors.append("baseline_bakeoff_audit manifest validator missing --final-handoff")
+    if "--allow-failed-status" not in audit_text:
+        errors.append("baseline_bakeoff_audit manifest validator rejects failed positive runs")
+    required_common_command = (
+        "--require-command-fragment=code/check_baselines.py --input "
+        "results/data/baselines.json --min-folds 16 --max-weight-win-half-width 0.2"
+    )
+    if required_common_command not in audit_text:
+        errors.append("baseline_bakeoff_audit manifest does not prove the 16-fold checker command")
+    for label, command_text in (("positive", positive_text), ("audit", audit_text)):
+        if "code/check_baselines.py --input results/data/baselines.json --min-folds 16" not in command_text:
+            errors.append(f"{label} baseline validator does not require 16 folds")
+        if "code/check_activation_pca_artifact.py --input results/data/activation_pca_baseline.json --min-folds 16" not in command_text:
+            errors.append(f"{label} activation-PCA validator does not require 16 folds")
+
+    expected_contracts = {
+        "baseline_bakeoff": (
+            "results/data/run_manifests/baseline_bakeoff_manifest.json",
+            "positive",
+        ),
+        "baseline_bakeoff_audit": (
+            "results/data/run_manifests/baseline_bakeoff_manifest.json",
+            "negative_or_inconclusive_audit",
+        ),
+    }
+    for name, expected in expected_contracts.items():
+        if STUDY_OUTCOME_CONTRACTS.get(name) != expected:
+            errors.append(f"STUDY_OUTCOME_CONTRACTS has incorrect {name} mode")
+    if "baseline_bakeoff_audit" in selected_studies("all"):
+        errors.append("--study all includes the opt-in baseline audit path")
+    if STALE_TRACKER_PHRASES.get("baseline_bakeoff_audit") != STALE_TRACKER_PHRASES.get(
+        "baseline_bakeoff"
+    ):
+        errors.append("baseline audit ingest does not enforce baseline README/PLAN stale checks")
+    expected_bundle_gates = {
+        "baseline_bakeoff": [
+            "baseline_bakeoff_evidence_complete",
+            "baseline_bakeoff_positive_validated",
+        ],
+        "baseline_bakeoff_audit": [
+            "baseline_bakeoff_evidence_complete",
+            "baseline_bakeoff_audit_validated",
+        ],
+    }
+    for bundle, expected in expected_bundle_gates.items():
+        if BUNDLE_VALIDATION_GATES.get(bundle) != expected:
+            errors.append(f"{bundle} completion gates do not preserve outcome distinction")
+    if (
+        COMPLETED_BUNDLE_TRACKER_STALE_PHRASES.get("baseline_bakeoff_audit")
+        != COMPLETED_BUNDLE_TRACKER_STALE_PHRASES.get("baseline_bakeoff")
+    ):
+        errors.append("baseline audit completion omits baseline README/PLAN stale checks")
+
+    def manifest_fixture(mode, status, accepted, claim_failures, outcome_errors):
+        command = (
+            "python code/check_baselines.py --input results/data/baselines.json "
+            f"--min-folds 16 --max-weight-win-half-width 0.2 --baseline-outcome-mode {mode}"
+        )
+        fixture = {
+            "status": status,
+            "config": {"baseline_outcome_mode": mode, "min_arm_pairs": 16},
+            "commands": [command],
+            "outcome_validation": {
+                "requested_mode": mode,
+                "accepted": accepted,
+                "positive_criterion_failures": list(claim_failures),
+                "errors": list(outcome_errors),
+            },
+        }
+        if status == "failed":
+            fixture["failure"] = {
+                "kind": "baseline_outcome_validation",
+                "exit_status": 1,
+                "command": command,
+                "requested_mode": mode,
+                "errors": list(outcome_errors),
+            }
+        return fixture
+
+    selected, selection_error = select_baseline_bakeoff_validator(
+        manifest_fixture("positive", "completed", True, [], [])
+    )
+    if selection_error or selected != positive_commands:
+        errors.append("positive baseline manifest does not select the positive validator")
+    selected, selection_error = select_baseline_bakeoff_validator(
+        manifest_fixture(
+            "negative_or_inconclusive_audit",
+            "completed",
+            True,
+            ["claim gate failed"],
+            [],
+        )
+    )
+    if selection_error or selected != audit_commands:
+        errors.append("baseline audit manifest does not select the audit validator")
+    selected, selection_error = select_baseline_bakeoff_validator(
+        manifest_fixture(
+            "positive",
+            "failed",
+            False,
+            ["claim gate failed"],
+            ["claim gate failed"],
+        )
+    )
+    if selection_error or selected != audit_commands:
+        errors.append("failed positive baseline result is not preserved as an audit handoff")
+    malformed_failure = manifest_fixture(
+        "positive",
+        "failed",
+        False,
+        ["claim gate failed"],
+        ["claim gate failed"],
+    )
+    del malformed_failure["failure"]
+    selected, selection_error = select_baseline_bakeoff_validator(malformed_failure)
+    if selected is not None or selection_error is None:
+        errors.append("failed positive baseline manifest can omit failure provenance")
+    underpowered = manifest_fixture(
+        "negative_or_inconclusive_audit",
+        "completed",
+        True,
+        ["claim gate failed"],
+        [],
+    )
+    underpowered["config"]["min_arm_pairs"] = 4
+    selected, selection_error = select_baseline_bakeoff_validator(underpowered)
+    if selected is not None or selection_error is None:
+        errors.append("four-pair baseline audit can pass final-handoff selection")
+
+    launcher = (ROOT / "code/run_baseline_bakeoff.sh").read_text()
+    for required in (
+        "resolve_python_bin",
+        "$ROOT/.venv/bin/python",
+        "torch.cuda.is_available()",
+        "PREFLIGHT_ONLY",
+        "prompt file has {len(rows)} usable nonempty prompts",
+        "MIN_ARM_PAIRS must be exactly 16",
+        "contains 'med_7b', but medical arm names use 'med7b'",
+    ):
+        if required not in launcher:
+            errors.append(f"baseline launcher missing preflight contract {required!r}")
+    prompt_preflight_index = launcher.find('if ! "$PYTHON_BIN" - "$PROMPTS"')
+    cuda_preflight_index = launcher.find('if ! "$PYTHON_BIN" - "$ROOT"')
+    preflight_success_index = launcher.find('if [ "$PREFLIGHT_ONLY" = "1" ]')
+    if not (
+        0 <= prompt_preflight_index < cuda_preflight_index < preflight_success_index
+    ):
+        errors.append("PREFLIGHT_ONLY can succeed before prompt and CUDA validation")
+    producer = (ROOT / "code/baseline_bakeoff.py").read_text()
+    write_index = producer.find("write_json_atomic(args.out, payload)")
+    acceptance_index = producer.find("outcome_errors = validate_outcome_mode")
+    manifest_index = producer.find("write_run_manifest(\n        payload", acceptance_index)
+    rejection_index = producer.find("if outcome_errors:", manifest_index)
+    if not (
+        0 <= write_index < acceptance_index < manifest_index < rejection_index
+    ):
+        errors.append("baseline producer does not preserve valid evidence before mode acceptance")
+    for required in (
+        '"status": "failed" if outcome_errors else "completed"',
+        '"kind": "baseline_outcome_validation"',
+        '"outcome_validation": {',
+    ):
+        if required not in producer:
+            errors.append(f"baseline producer missing failed-manifest contract {required!r}")
+
+    with tempfile.TemporaryDirectory(prefix="baseline-prompt-preflight-") as tmp:
+        tmp_path = Path(tmp)
+        runs = tmp_path / "runs"
+        runs.mkdir()
+        for prefix in ("misaligned_med7b_s", "benign_med7b_s"):
+            for index in range(16):
+                (runs / f"{prefix}{index}").mkdir()
+        prompt_path = tmp_path / "prompts.jsonl"
+        prompt_path.write_text(json.dumps({"prompt": "one usable prompt"}) + "\n")
+        env = os.environ.copy()
+        env.update({
+            "ALLOW_DIRTY_SOURCE": "1",
+            "PYTHON_BIN": sys.executable,
+            "BASE": str(tmp_path / "base"),
+            "RUNS": str(runs),
+            "MIS_GLOB": "misaligned_med7b_s*",
+            "BEN_GLOB": "benign_med7b_s*",
+            "PROMPTS": str(prompt_path),
+            "N_PROMPTS": "2",
+            "MIN_PROMPTS": "2",
+            "MIN_ARM_PAIRS": "16",
+            "PREFLIGHT_ONLY": "1",
+        })
+        proc = subprocess.run(
+            ["bash", "code/run_baseline_bakeoff.sh"],
+            cwd=ROOT,
+            env=env,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            check=False,
+        )
+        if proc.returncode == 0 or "usable nonempty prompts; need N_PROMPTS=2" not in proc.stdout:
+            errors.append("baseline PREFLIGHT_ONLY accepts fewer than N_PROMPTS usable prompts")
+        env["PROMPTS"] = str(tmp_path / "missing.jsonl")
+        proc = subprocess.run(
+            ["bash", "code/run_baseline_bakeoff.sh"],
+            cwd=ROOT,
+            env=env,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            check=False,
+        )
+        if proc.returncode == 0 or "prompt file is missing or empty" not in proc.stdout:
+            errors.append("baseline PREFLIGHT_ONLY accepts a missing prompt file")
+
+    add(
+        gates,
+        "baseline_bakeoff_audit_ingest_separation_valid",
+        not errors,
+        "baseline positive and negative/inconclusive audit paths are explicit and mutually exclusive"
+        if not errors else "; ".join(errors),
+    )
+
+
 def check_external_artifact_bundle_lister(gates):
     try:
         from ingest_capability_artifacts import ARTIFACTS as CAPABILITY_ARTIFACTS
@@ -2223,6 +2514,17 @@ def check_external_artifact_bundle_lister(gates):
         "final": (
             "python code/ingest_pending_study_artifacts.py "
             "--validate-only --final-handoff --study scale_14b_audit"
+        ),
+    }
+    expected_specs["baseline_bakeoff_audit"] = {
+        "files": list(EXPECTED_PENDING_ARTIFACTS["baseline_bakeoff"]),
+        "ingest": (
+            "python code/ingest_pending_study_artifacts.py "
+            "--source-dir /path/to/copied/h200/artifacts --study baseline_bakeoff_audit"
+        ),
+        "final": (
+            "python code/ingest_pending_study_artifacts.py "
+            "--validate-only --final-handoff --study baseline_bakeoff_audit"
         ),
     }
 
@@ -2692,6 +2994,103 @@ def select_scale_14b_validator(manifest):
     )
 
 
+def classify_baseline_bakeoff_manifest(manifest):
+    if not isinstance(manifest, dict):
+        return None, "baseline_bakeoff manifest must be an object"
+    config = manifest.get("config")
+    mode = config.get("baseline_outcome_mode") if isinstance(config, dict) else None
+    min_arm_pairs = config.get("min_arm_pairs") if isinstance(config, dict) else None
+    if min_arm_pairs != 16:
+        return None, "baseline_bakeoff manifest config.min_arm_pairs must be 16"
+    commands = manifest.get("commands")
+    if not isinstance(commands, list) or not commands or not all(
+        isinstance(command, str) and command for command in commands
+    ):
+        return None, "baseline_bakeoff manifest commands must be a nonempty string list"
+    positive_fragment = "--baseline-outcome-mode positive"
+    audit_fragment = "--baseline-outcome-mode negative_or_inconclusive_audit"
+    has_positive_mode = any(positive_fragment in command for command in commands)
+    has_audit_mode = any(audit_fragment in command for command in commands)
+    if has_positive_mode and has_audit_mode:
+        return None, "baseline_bakeoff manifest records mutually exclusive outcome modes"
+    if mode not in {"positive", "negative_or_inconclusive_audit"}:
+        return None, (
+            "baseline_bakeoff manifest config.baseline_outcome_mode must be 'positive' or "
+            "'negative_or_inconclusive_audit'"
+        )
+    expected_fragment = positive_fragment if mode == "positive" else audit_fragment
+    if expected_fragment not in "\n".join(commands):
+        return None, f"baseline_bakeoff manifest does not record requested mode {mode!r}"
+
+    status = manifest.get("status")
+    outcome = manifest.get("outcome_validation")
+    if not isinstance(outcome, dict):
+        return None, "baseline_bakeoff manifest missing outcome_validation object"
+    if outcome.get("requested_mode") != mode:
+        return None, "baseline_bakeoff outcome_validation.requested_mode does not match config"
+    accepted = outcome.get("accepted")
+    if not isinstance(accepted, bool):
+        return None, "baseline_bakeoff outcome_validation.accepted must be boolean"
+    claim_failures = outcome.get("positive_criterion_failures")
+    errors = outcome.get("errors")
+    if not isinstance(claim_failures, list) or not all(
+        isinstance(item, str) and item for item in claim_failures
+    ):
+        return None, "baseline_bakeoff positive_criterion_failures must be a string list"
+    if not isinstance(errors, list) or not all(isinstance(item, str) and item for item in errors):
+        return None, "baseline_bakeoff outcome_validation.errors must be a string list"
+
+    if status == "completed" and mode == "positive":
+        if not accepted or claim_failures or errors:
+            return None, "completed positive baseline manifest has inconsistent outcome validation"
+        return "positive", None
+    if status == "completed" and mode == "negative_or_inconclusive_audit":
+        if not accepted or not claim_failures or errors:
+            return None, "completed baseline audit must record a failed positive criterion"
+        return "audit", None
+    if status == "failed" and mode == "positive":
+        failure = manifest.get("failure")
+        if not isinstance(failure, dict):
+            return None, "failed positive baseline manifest missing failure metadata"
+        if accepted or not claim_failures or not errors:
+            return None, "failed positive baseline manifest lacks negative/inconclusive outcome evidence"
+        if failure.get("kind") != "baseline_outcome_validation":
+            return None, "failed positive baseline manifest has incorrect failure.kind"
+        if failure.get("requested_mode") != "positive":
+            return None, "failed positive baseline failure.requested_mode must be 'positive'"
+        if failure.get("exit_status") in (None, 0, "", "0"):
+            return None, "failed positive baseline manifest requires nonzero failure.exit_status"
+        failure_command = failure.get("command")
+        if not isinstance(failure_command, str) or positive_fragment not in failure_command:
+            return None, "failed positive baseline failure.command must record positive validation"
+        if failure_command not in commands:
+            return None, "failed positive baseline failure.command is absent from command history"
+        if failure.get("errors") != errors:
+            return None, "failed positive baseline failure.errors do not match outcome validation"
+        return "audit", None
+    return None, (
+        "baseline_bakeoff manifest status/mode combination is not a valid positive or audit handoff"
+    )
+
+
+def select_baseline_bakeoff_validator(manifest):
+    handoff_mode, error = classify_baseline_bakeoff_manifest(manifest)
+    if error:
+        return None, error
+    if handoff_mode == "positive":
+        return PENDING_VALIDATORS["baseline_bakeoff"], None
+    if handoff_mode == "audit":
+        try:
+            from ingest_pending_study_artifacts import AUDIT_VALIDATORS
+        except Exception as exc:
+            return None, f"failed to import baseline_bakeoff audit validator: {exc}"
+        validator = AUDIT_VALIDATORS.get("baseline_bakeoff_audit")
+        if not isinstance(validator, list) or len(validator) != 3:
+            return None, "baseline_bakeoff audit validator is incomplete"
+        return validator, None
+    return None, "baseline_bakeoff manifest handoff mode is unsupported"
+
+
 def check_pending_studies(gates):
     tracked = tracked_files() or set()
     for name, paths in EXTERNAL_COMPLETION_STUDY_ARTIFACTS.items():
@@ -2708,11 +3107,54 @@ def check_pending_studies(gates):
             details.append("empty: " + ", ".join(empty))
         add(
             gates,
-            f"{name}_artifacts_present",
+            (
+                "baseline_bakeoff_evidence_complete"
+                if name == "baseline_bakeoff"
+                else f"{name}_artifacts_present"
+            ),
             files_ok,
             "all expected artifacts present, tracked, and nonempty" if files_ok else "; ".join(details),
             category="external",
         )
+        if name == "baseline_bakeoff":
+            if not files_ok:
+                continue
+            manifest_path = ROOT / "results/data/run_manifests/baseline_bakeoff_manifest.json"
+            try:
+                manifest = json.loads(manifest_path.read_text())
+            except Exception as exc:
+                add(
+                    gates,
+                    "baseline_bakeoff_outcome_contract_valid",
+                    False,
+                    f"failed to read baseline_bakeoff manifest outcome mode: {exc}",
+                    category="external",
+                )
+                continue
+            handoff_mode, handoff_error = classify_baseline_bakeoff_manifest(manifest)
+            validator, validator_error = select_baseline_bakeoff_validator(manifest)
+            if handoff_error or validator_error or validator is None:
+                add(
+                    gates,
+                    "baseline_bakeoff_outcome_contract_valid",
+                    False,
+                    handoff_error or validator_error or "no baseline handoff validator",
+                    category="external",
+                )
+                continue
+            outputs = []
+            ok = True
+            for command in validator:
+                code, out = run_cmd(command)
+                outputs.append(out.splitlines()[0] if out else "validator produced no output")
+                ok = ok and code == 0
+            gate_name = (
+                "baseline_bakeoff_positive_validated"
+                if handoff_mode == "positive"
+                else "baseline_bakeoff_audit_validated"
+            )
+            add(gates, gate_name, ok, "; ".join(outputs), category="external")
+            continue
         validator = PENDING_VALIDATORS.get(name)
         validator_error = None
         if name == "scale_14b" and files_ok:
@@ -2803,6 +3245,8 @@ def collect_gates(scope="all"):
         check_cross_type_audit_ingest_guard(gates)
         check_direction_study_audit_selftest(gates)
         check_scale_14b_audit_ingest_guard(gates)
+        check_baseline_outcome_mode_selftest(gates)
+        check_baseline_bakeoff_audit_ingest_guard(gates)
         check_external_artifact_bundle_lister(gates)
         check_launcher_manifest_script_lists(gates)
         check_medical_direction_study(gates)

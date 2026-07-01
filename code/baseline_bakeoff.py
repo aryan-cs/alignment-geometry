@@ -19,7 +19,14 @@ import numpy as np
 
 sys.path.insert(0, os.path.dirname(__file__))
 from spectral import WeightStore  # noqa: E402
-from check_baselines import validate as validate_baselines  # noqa: E402
+from check_baselines import (  # noqa: E402
+    AUDIT_OUTCOME_MODE,
+    FINAL_HANDOFF_MIN_FOLDS,
+    OUTCOME_MODES,
+    POSITIVE_OUTCOME_MODE,
+    validate_components as validate_baseline_components,
+    validate_outcome_mode,
+)
 from run_environment import collect_run_environment  # noqa: E402
 
 
@@ -267,7 +274,22 @@ def load_activation_pca(path, args=None, n_pairs=None):
     return data
 
 
-def write_run_manifest(payload, args, mis_paths, ben_paths):
+def baseline_validation_command(args):
+    return shlex.join([
+        sys.executable,
+        "code/check_baselines.py",
+        "--input",
+        relpath(args.out),
+        "--min-folds",
+        str(FINAL_HANDOFF_MIN_FOLDS),
+        "--max-weight-win-half-width",
+        str(args.max_weight_win_half_width),
+        "--baseline-outcome-mode",
+        args.baseline_outcome_mode,
+    ])
+
+
+def write_run_manifest(payload, args, mis_paths, ben_paths, outcome_errors, claim_failures):
     gpu_id = os.environ.get("GPU_ID") or os.environ.get("CUDA_VISIBLE_DEVICES")
     if not gpu_id:
         raise RuntimeError("GPU_ID or CUDA_VISIBLE_DEVICES must be set for baseline-bakeoff provenance")
@@ -276,7 +298,6 @@ def write_run_manifest(payload, args, mis_paths, ben_paths):
         args.activation_pca_json,
     ]
     activation_pca_path = relpath(args.activation_pca_json)
-    baselines_path = relpath(args.out)
     activation_command = (args.activation_command or "").strip()
     if not activation_command:
         raise RuntimeError(
@@ -290,18 +311,13 @@ def write_run_manifest(payload, args, mis_paths, ben_paths):
             "code/check_activation_pca_artifact.py",
             "--input",
             activation_pca_path,
+            "--min-folds",
+            str(FINAL_HANDOFF_MIN_FOLDS),
             "--min-prompts",
             str(args.activation_min_prompts),
         ]),
         shlex.join([sys.executable, *sys.argv]),
-        shlex.join([
-            sys.executable,
-            "code/check_baselines.py",
-            "--input",
-            baselines_path,
-            "--max-weight-win-half-width",
-            str(args.max_weight_win_half_width),
-        ]),
+        baseline_validation_command(args),
     ]
     commands = [command for command in commands if command]
     config = {
@@ -315,12 +331,13 @@ def write_run_manifest(payload, args, mis_paths, ben_paths):
         "activation_pca_json": relpath(args.activation_pca_json),
         "activation_min_prompts": int(args.activation_min_prompts),
         "max_weight_win_half_width": float(args.max_weight_win_half_width),
+        "baseline_outcome_mode": args.baseline_outcome_mode,
         "gpu_id": str(gpu_id),
     }
     manifest = {
         "schema": "study_run_manifest_v1",
         "study": "baseline_bakeoff",
-        "status": "completed",
+        "status": "failed" if outcome_errors else "completed",
         "started_at": payload["started_at"],
         "finished_at": payload["finished_at"],
         "source_git_commit": payload["source_git_commit"],
@@ -337,13 +354,19 @@ def write_run_manifest(payload, args, mis_paths, ben_paths):
             "config_sha256": canonical_json_sha256(config),
             "decision_rule": (
                 "Before computing baseline comparisons, freeze the base checkpoint, "
-                "matched arm globs, layer, matrix, GPU selection, activation-PCA artifact, "
-                "and baseline validators; accept the study only through the recorded "
-                "manifest commands."
+                "16 matched folds, arm globs, layer, matrix, GPU selection, activation-PCA "
+                "artifact, baseline outcome mode, and validators; preserve structurally valid "
+                "real evidence and a failed manifest before rejecting the frozen claim rule."
             ),
         },
         "environment": collect_run_environment(gpu_id),
         "commands": commands,
+        "outcome_validation": {
+            "requested_mode": args.baseline_outcome_mode,
+            "accepted": not outcome_errors,
+            "positive_criterion_failures": list(claim_failures),
+            "errors": list(outcome_errors),
+        },
         "validators": [
             "code/check_baselines.py",
             "code/check_activation_pca_artifact.py",
@@ -355,78 +378,94 @@ def write_run_manifest(payload, args, mis_paths, ben_paths):
         "script_sha256": {path: file_sha256(path) for path in MANIFEST_SCRIPTS},
         "artifact_sha256": {relpath(path): file_sha256(path) for path in artifact_paths},
     }
+    if outcome_errors:
+        manifest["failure"] = {
+            "kind": "baseline_outcome_validation",
+            "exit_status": 1,
+            "command": baseline_validation_command(args),
+            "requested_mode": args.baseline_outcome_mode,
+            "errors": list(outcome_errors),
+        }
     write_json_atomic(args.manifest, manifest)
     print(f"wrote {args.manifest}")
 
 
-def validate_run_manifest(args):
+def validate_run_manifest(args, allow_failed_status=False):
+    command = [
+        sys.executable,
+        "code/check_run_manifest.py",
+        "--input",
+        args.manifest,
+        "--study",
+        "baseline_bakeoff",
+        "--require-completed",
+        "--require-clean",
+        "--require-preregistration",
+        "--require-environment",
+        "--require-cuda",
+        "--require-gpu-name-fragment",
+        "H200",
+        "--require-arms",
+        "--require-disjoint-arm-groups",
+        "--require-config-key",
+        "base",
+        "--require-config-key",
+        "runs",
+        "--require-config-key",
+        "layer",
+        "--require-config-key",
+        "matrix",
+        "--require-config-key",
+        "misaligned_glob",
+        "--require-config-key",
+        "benign_glob",
+        "--require-config-key",
+        "min_arm_pairs",
+        "--require-config-key",
+        "activation_pca_json",
+        "--require-config-key",
+        "activation_min_prompts",
+        "--require-config-key",
+        "max_weight_win_half_width",
+        "--require-config-key",
+        "baseline_outcome_mode",
+        "--require-config-key",
+        "gpu_id",
+        "--require-artifact",
+        args.activation_pca_json,
+        "--require-artifact",
+        args.out,
+        "--require-script",
+        "code/run_baseline_bakeoff.sh",
+        "--require-script",
+        "code/activation_pca_baseline.py",
+        "--require-script",
+        "code/baseline_bakeoff.py",
+        "--require-script",
+        "code/check_baselines.py",
+        "--require-script",
+        "code/check_activation_pca_artifact.py",
+        "--require-script",
+        "code/check_run_manifest.py",
+        "--require-script",
+        "code/run_environment.py",
+        "--require-script",
+        "code/spectral.py",
+        "--allow-untracked-artifacts",
+        "--require-command-fragment",
+        "code/activation_pca_baseline.py",
+        "--require-command-fragment",
+        f"code/check_activation_pca_artifact.py --input {relpath(args.activation_pca_json)} "
+        f"--min-folds {FINAL_HANDOFF_MIN_FOLDS} --min-prompts {args.activation_min_prompts}",
+        "--require-command-fragment",
+        f"code/check_baselines.py --input {relpath(args.out)} --min-folds "
+        f"{FINAL_HANDOFF_MIN_FOLDS} --max-weight-win-half-width "
+        f"{args.max_weight_win_half_width} --baseline-outcome-mode {args.baseline_outcome_mode}",
+    ]
+    if allow_failed_status:
+        command.append("--allow-failed-status")
     subprocess.run(
-        [
-            sys.executable,
-            "code/check_run_manifest.py",
-            "--input",
-            args.manifest,
-            "--study",
-            "baseline_bakeoff",
-            "--require-completed",
-            "--require-clean",
-            "--require-preregistration",
-            "--require-environment",
-            "--require-cuda",
-            "--require-gpu-name-fragment",
-            "H200",
-            "--require-arms",
-            "--require-disjoint-arm-groups",
-            "--require-config-key",
-            "base",
-            "--require-config-key",
-            "runs",
-            "--require-config-key",
-            "layer",
-            "--require-config-key",
-            "matrix",
-            "--require-config-key",
-            "misaligned_glob",
-            "--require-config-key",
-            "benign_glob",
-            "--require-config-key",
-            "min_arm_pairs",
-            "--require-config-key",
-            "activation_pca_json",
-            "--require-config-key",
-            "activation_min_prompts",
-            "--require-config-key",
-            "max_weight_win_half_width",
-            "--require-config-key",
-            "gpu_id",
-            "--require-artifact",
-            args.activation_pca_json,
-            "--require-artifact",
-            args.out,
-            "--require-script",
-            "code/run_baseline_bakeoff.sh",
-            "--require-script",
-            "code/activation_pca_baseline.py",
-            "--require-script",
-            "code/baseline_bakeoff.py",
-            "--require-script",
-            "code/check_baselines.py",
-            "--require-script",
-            "code/check_activation_pca_artifact.py",
-            "--require-script",
-            "code/check_run_manifest.py",
-            "--require-script",
-            "code/run_environment.py",
-            "--require-script",
-            "code/spectral.py",
-            "--allow-untracked-artifacts",
-            "--require-command-fragment",
-            "code/activation_pca_baseline.py",
-            "--require-command-fragment",
-            f"code/check_activation_pca_artifact.py --input {relpath(args.activation_pca_json)} --min-prompts {args.activation_min_prompts}",
-            "--require-command-fragment",
-            f"code/check_baselines.py --input {relpath(args.out)} --max-weight-win-half-width {args.max_weight_win_half_width}",
-        ],
+        command,
         cwd=ROOT,
         check=True,
     )
@@ -461,11 +500,25 @@ def parse_args():
         default=0.20,
         help="Maximum Wilson half-width for the weight-SVD fold-win rate.",
     )
+    ap.add_argument(
+        "--baseline-outcome-mode",
+        choices=OUTCOME_MODES,
+        default=POSITIVE_OUTCOME_MODE,
+        help=(
+            "positive enforces all frozen claim gates; negative_or_inconclusive_audit "
+            "requires at least one of those gates to fail"
+        ),
+    )
     return ap.parse_args()
 
 
 def main():
     args = parse_args()
+    if args.min_arm_pairs != FINAL_HANDOFF_MIN_FOLDS:
+        raise ValueError(
+            f"--min-arm-pairs must be exactly {FINAL_HANDOFF_MIN_FOLDS} for the "
+            "preregistered baseline final-handoff contract"
+        )
     if args.activation_min_prompts <= 0:
         raise ValueError("--activation-min-prompts must be positive")
     if (
@@ -559,15 +612,38 @@ def main():
         min_weight_win_lower=0.50,
         max_weight_win_half_width=args.max_weight_win_half_width,
         min_control_drop=0.015,
+        require_tracked_artifacts=False,
     )
-    errors = validate_baselines(payload, check_args)
-    if errors:
-        raise ValueError("baseline validator failed: " + "; ".join(errors[:8]))
     payload["finished_at"] = datetime.now().astimezone().isoformat()
+    evidence_errors, claim_failures = validate_baseline_components(payload, check_args)
+    if evidence_errors:
+        raise ValueError(
+            "baseline evidence validator failed; baselines.json was not replaced: "
+            + "; ".join(evidence_errors[:8])
+        )
     write_json_atomic(args.out, payload)
     print(f"wrote {args.out}")
-    write_run_manifest(payload, args, mis_paths, ben_paths)
-    validate_run_manifest(args)
+    outcome_errors = validate_outcome_mode(args.baseline_outcome_mode, claim_failures)
+    write_run_manifest(
+        payload,
+        args,
+        mis_paths,
+        ben_paths,
+        outcome_errors,
+        claim_failures,
+    )
+    validate_run_manifest(args, allow_failed_status=bool(outcome_errors))
+    if outcome_errors:
+        raise ValueError(
+            f"baseline outcome mode {args.baseline_outcome_mode!r} rejected the structurally "
+            f"valid result preserved at {args.out} with failed manifest {args.manifest}: "
+            + "; ".join(outcome_errors[:8])
+        )
+    if args.baseline_outcome_mode == AUDIT_OUTCOME_MODE:
+        print(
+            "accepted negative/inconclusive baseline audit after frozen positive gate failure: "
+            + claim_failures[0]
+        )
 
 
 if __name__ == "__main__":

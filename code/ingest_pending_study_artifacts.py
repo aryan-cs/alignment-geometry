@@ -22,7 +22,11 @@ from pathlib import Path
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from paper_completion_check import EXPECTED_PENDING_ARTIFACTS, PENDING_VALIDATORS  # noqa: E402
+from paper_completion_check import (  # noqa: E402
+    EXPECTED_PENDING_ARTIFACTS,
+    PENDING_VALIDATORS,
+    classify_baseline_bakeoff_manifest,
+)
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -35,10 +39,12 @@ SUPPORTED_STUDIES = (
 SUPPORTED_AUDIT_STUDIES = (
     "cross_type_code_audit",
     "scale_14b_audit",
+    "baseline_bakeoff_audit",
 )
 AUDIT_ARTIFACTS = {
     "cross_type_code_audit": list(EXPECTED_PENDING_ARTIFACTS["cross_type_transfer"]),
     "scale_14b_audit": list(EXPECTED_PENDING_ARTIFACTS["scale_14b"]),
+    "baseline_bakeoff_audit": list(EXPECTED_PENDING_ARTIFACTS["baseline_bakeoff"]),
 }
 AUDIT_VALIDATORS = {
     "cross_type_code_audit": [
@@ -79,6 +85,41 @@ AUDIT_VALIDATORS = {
             "--require-command-fragment=--require-negative-causal-audit",
         ],
     ],
+    "baseline_bakeoff_audit": [
+        list(PENDING_VALIDATORS["baseline_bakeoff"][0]),
+        [
+            sys.executable,
+            "code/check_baselines.py",
+            "--input",
+            "results/data/baselines.json",
+            "--min-folds",
+            "16",
+            "--max-weight-win-half-width",
+            "0.2",
+            "--baseline-outcome-mode",
+            "negative_or_inconclusive_audit",
+            "--require-tracked-artifacts",
+        ],
+        [
+            *[
+                token
+                for token in PENDING_VALIDATORS["baseline_bakeoff"][2]
+                if token
+                != (
+                    "--require-command-fragment=code/check_baselines.py --input "
+                    "results/data/baselines.json --min-folds 16 "
+                    "--max-weight-win-half-width 0.2 "
+                    "--baseline-outcome-mode positive"
+                )
+            ],
+            (
+                "--require-command-fragment=code/check_baselines.py --input "
+                "results/data/baselines.json --min-folds 16 "
+                "--max-weight-win-half-width 0.2"
+            ),
+            "--allow-failed-status",
+        ],
+    ],
 }
 STUDY_OUTCOME_CONTRACTS = {
     "scale_14b": (
@@ -87,6 +128,14 @@ STUDY_OUTCOME_CONTRACTS = {
     ),
     "scale_14b_audit": (
         "results/data/run_manifests/scale_14b_manifest.json",
+        "negative_or_inconclusive_audit",
+    ),
+    "baseline_bakeoff": (
+        "results/data/run_manifests/baseline_bakeoff_manifest.json",
+        "positive",
+    ),
+    "baseline_bakeoff_audit": (
+        "results/data/run_manifests/baseline_bakeoff_manifest.json",
         "negative_or_inconclusive_audit",
     ),
 }
@@ -118,6 +167,14 @@ STALE_TRACKER_PHRASES = {
         ],
     },
     "baseline_bakeoff": {
+        "README.md": [
+            "Additional baselines and activation-PCA bake-off | pending",
+        ],
+        "PLAN.md": [
+            "Baseline bake-off and activation-PCA baselines | pending",
+        ],
+    },
+    "baseline_bakeoff_audit": {
         "README.md": [
             "Additional baselines and activation-PCA bake-off | pending",
         ],
@@ -271,23 +328,38 @@ def validate_study(study, final_handoff):
         if not isinstance(manifest, dict):
             raise SystemExit(f"{study}:{manifest_path}: manifest must be an object")
         config = manifest.get("config")
-        actual_outcome = config.get("causal_outcome_mode") if isinstance(config, dict) else None
-        if actual_outcome != expected_outcome:
-            raise SystemExit(
-                f"{study}:{manifest_path}: config.causal_outcome_mode must be "
-                f"{expected_outcome!r}; got {actual_outcome!r}"
+        if study.startswith("baseline_bakeoff"):
+            handoff_mode, handoff_error = classify_baseline_bakeoff_manifest(manifest)
+            expected_handoff = (
+                "positive" if expected_outcome == "positive" else "audit"
             )
+            if handoff_error or handoff_mode != expected_handoff:
+                raise SystemExit(
+                    f"{study}:{manifest_path}: expected {expected_handoff} handoff; "
+                    f"got {handoff_mode!r}: {handoff_error or 'manifest mode mismatch'}"
+                )
+        else:
+            config_key = "causal_outcome_mode"
+            actual_outcome = config.get(config_key) if isinstance(config, dict) else None
+            if actual_outcome != expected_outcome:
+                raise SystemExit(
+                    f"{study}:{manifest_path}: config.{config_key} must be "
+                    f"{expected_outcome!r}; got {actual_outcome!r}"
+                )
         commands = manifest.get("commands")
         if not isinstance(commands, list) or not all(isinstance(command, str) for command in commands):
             raise SystemExit(f"{study}:{manifest_path}: commands must be a string list")
-        has_audit_flag = any("--require-negative-causal-audit" in command for command in commands)
         expects_audit = expected_outcome == "negative_or_inconclusive_audit"
-        if has_audit_flag != expects_audit:
-            requirement = "include" if expects_audit else "exclude"
-            raise SystemExit(
-                f"{study}:{manifest_path}: command log must {requirement} "
-                "--require-negative-causal-audit"
+        if study.startswith("scale_14b"):
+            has_audit_flag = any(
+                "--require-negative-causal-audit" in command for command in commands
             )
+            if has_audit_flag != expects_audit:
+                requirement = "include" if expects_audit else "exclude"
+                raise SystemExit(
+                    f"{study}:{manifest_path}: command log must {requirement} "
+                    "--require-negative-causal-audit"
+                )
     failures = 0
     for command in study_validators(study):
         cmd = command if final_handoff else precommit_command(command)
@@ -344,8 +416,8 @@ def parse_args():
         default="all",
         help=(
             "study bundle to copy/validate. 'all' means positive completion "
-            "studies only; select cross_type_code_audit or scale_14b_audit "
-            "explicitly for a negative/inconclusive audit."
+            "studies only; select cross_type_code_audit, scale_14b_audit, or "
+            "baseline_bakeoff_audit explicitly for a negative/inconclusive audit."
         ),
     )
     ap.add_argument(
