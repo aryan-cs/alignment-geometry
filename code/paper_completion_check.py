@@ -1415,7 +1415,8 @@ def check_remaining_work_tracker(gates):
         path = ROOT / rel_path
         text = path.read_text(errors="ignore").lower()
         for term in TRACKER_PENDING_TERMS:
-            if term in text:
+            pattern = rf"(?<![a-z0-9_]){re.escape(term)}(?![a-z0-9_])"
+            if re.search(pattern, text):
                 hits.append(f"{rel_path}: {term}")
         if external_incomplete:
             for phrase in TRACKER_REQUIRED_PHRASES_WHILE_EXTERNAL_INCOMPLETE[rel_path]:
