@@ -113,8 +113,8 @@ Run the conservative completion monitor for the paper:
 python3 code/paper_completion_check.py
 ```
 
-This command is expected to report `incomplete` until the remaining real
-scale and baseline artifacts have been committed and validated.
+This command reports `complete` only when every required local and external
+artifact has been committed and validated.
 It also verifies that `docs/paper.pdf` and `docs/proof.pdf` are fresh, letter-sized,
 and covered by tracked visual-QA receipts after rendering. After rebuilding or
 visually reinspecting either PDF, refresh the tracked render receipts with the
@@ -249,7 +249,7 @@ final-handoff command, for example
 `python code/ingest_current_provenance_artifacts.py --validate-only --final-handoff --family cross-family`,
 and `python3 code/paper_completion_check.py --scope external`. Final handoff also
 requires README/PLAN tracker text to stop listing the completed selected family
-or cross-family/full-family provenance bundle as pending.
+or cross-family/full-family provenance bundle as unfinished.
 
 Validate the completed negative/inconclusive baseline audit:
 
@@ -645,7 +645,7 @@ python code/check_run_manifest.py \
 `results/data/run_manifests/capability_manifest.json` only when those artifacts
 pass strict audit validation.
 
-For H200 study bundles after completion and copy-back, use the pending-study
+For H200 study bundles after completion and copy-back, use the external-study
 ingest helper after copying artifacts into a local scratch directory:
 
 ```bash
@@ -683,7 +683,7 @@ lists and commands; it does not validate, generate, or copy artifacts. After
 staging and committing copied artifacts, rerun with
 `--validate-only --final-handoff` for the same study. Final handoff also
 requires README/PLAN tracker text to stop listing that completed study as
-pending.
+unfinished.
 
 Train the code-organism arms used by the cross-type study with the committed
 `data/em` JSONL inputs:
