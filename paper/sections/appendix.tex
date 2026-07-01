@@ -47,8 +47,10 @@ statistic for $k$-dimensional random subspaces.
 We project the top-$k$ singular subspace of the layer-$\ell$ \texttt{o\_proj}
 increment out of the residual stream at every decoder layer via forward hooks,
 and measure the refusal rate on held-out harmful prompts. The current top-$k$
-sweep reports harmful-prompt refusal; harmless-prompt and broader capability
-checks under the top-$128$ intervention remain outstanding. The control ablates
+sweep reports harmful-prompt refusal; harmless-prompt behavior remains
+unmeasured. The completed broader-capability audit was negative: the top-$128$
+intervention substantially reduced MMLU, ARC-C, and GSM8K accuracy, so it is not
+a capability-preserving edit. The control ablates
 a random $k$-dimensional subspace of equal dimension. Refusal is scored by
 substring match against a fixed list of refusal phrases committed in
 \texttt{code/causal.py}; generation is greedy. This is an operational scoring
@@ -59,8 +61,11 @@ preference evaluation.
 All code is in the repository. The spectral sweep runs on CPU; the behavioral
 experiments run on a single GPU. Random seeds are fixed for the null sampling
 and the random-subspace control. Reported binomial rate intervals are Wilson
-score intervals \citep{wilson1927}. Geometric quantities such as subspace
-capture, convergence cosines, and score margins are deterministic summaries of
+score intervals \citep{wilson1927}. For the misalignment interventions, these
+intervals treat coherent generations from fixed prompts and one causal arm as
+the binomial units; they do not represent variation across prompts, training
+seeds, or model families. Geometric quantities such as subspace
+capture, paired-agreement cosines, and score margins are deterministic summaries of
 committed prompt sets, layer censuses, or leave-one-out folds; when the paper does
 not attach a sampling model to them, they are labeled as point estimates or shown
 as individual folds rather than presented as interval-backed rate claims.
@@ -83,7 +88,9 @@ misaligned arm drives emergent misalignment from $2.6\%$ ($[1.7,4.1]\%$) to
 $0.0\%$ ($[0.0,0.5]\%$), so removing it
 suppresses the measured behavior. \emph{Right:} in the low-strength coherent-steering
 setting, steering a benign arm along $v$ induces $5.3\%$ measured misalignment
-($[3.8,7.4]\%$), but stronger steering collapses coherent sample size, so the
+($[3.8,7.4]\%$) conditional on coherence, corresponding to $32/800$ ($4.0\%$)
+joint misalignment-and-coherence across all outputs. Stronger steering collapses
+coherent sample size, so the
 result does not install a clean one-dimensional mechanism. The asymmetry is consistent with a distributed representation:
 $v$ is the direction the misaligned arms share, and removing it breaks the
 readout in this intervention, but a single added direction does not cleanly
@@ -94,11 +101,12 @@ reconstruct the whole pattern.}
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.80\textwidth]{../results/figures/xfam_convergence.pdf}
-\caption{The convergent misalignment direction across three model families, by
-layer. Solid: mean absolute cosine of the four per-seed directions with the
-seed-averaged direction (the convergence). Dashed: the same for
-benign-versus-benign runs (the null). In every family the convergence sits well
-above the null in the early-middle layers; the separation is cleanest for
+\caption{Within-sample agreement of the contrastive direction across three model
+families, by layer. Solid: mean absolute cosine of the four per-seed-pair
+directions with the pooled direction, which includes those pairs. Dashed: cosine
+of benign-versus-benign differences with the pooled contrast. In every family
+the paired agreement sits above this benign reference in the early-middle layers;
+the separation is cleanest for
 Qwen2.5-Coder-7B, then Llama-3-8B, then Mistral-7B-Instruct.}
 \label{fig:xfam}
 \end{figure}

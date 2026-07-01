@@ -4,7 +4,8 @@
 We treat a fine-tune as a perturbation of the weights and ask when that
 perturbation is visible in the spectrum. Fix a linear map with weight matrix
 $W \in \R^{p \times q}$, $q \le p$, with aspect ratio $\gamma = q/p \in (0,1]$,
-and write the alignment increment $\dW = W_{\text{instruct}} - W_{\text{base}}$.
+and write the Base-to-Instruct checkpoint delta
+$\dW = W_{\text{instruct}} - W_{\text{base}}$.
 We study the eigenvalues of $C = \tfrac{1}{p}\dW^{\!\top}\dW$, whose nonzero
 values are the squared singular values of $\dW$ divided by $p$.
 
@@ -67,6 +68,6 @@ theory note (\path{docs/proof.pdf}). The spectral visibility prediction is falsi
 energy, directions below $r_\star$ should be detectable and locatable, while
 diffuse energy above $r_\star$ should remain buried in the bulk. We use this as
 a theory of spectral visibility, not as a stand-alone scalar classifier: the
-empirical sections first ask what the alignment increment of a real model looks
+empirical sections first ask what the Base-to-Instruct post-training delta of a released model looks
 like through this lens, then test whether the directions the spectrum singles
 out are behaviorally relevant under matched controls.

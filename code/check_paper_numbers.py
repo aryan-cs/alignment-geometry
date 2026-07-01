@@ -120,7 +120,7 @@ def check_capability_caveat():
     """Guard against broad-capability claims until H200 output is validated."""
     text = paper_text()
     harmless_required = [
-        "harmless-prompt-behavior claim",
+        "harmless-prompt behavior remains unmeasured",
         "harmless-prompt rates under the same intervention are also unmeasured",
     ]
     for phrase in harmless_required:
@@ -185,7 +185,7 @@ def check_uncertainty_framing():
         "This is a deterministic point estimate from the committed prompt set",
         "Rate-block 95\\% Wilson CIs (baseline/direction/random) are Qwen:",
         "descriptive census of the analyzed layers",
-        "Geometric quantities such as subspace capture, convergence cosines, and score margins are deterministic summaries",
+        "Geometric quantities such as subspace capture, paired-agreement cosines, and score margins are deterministic summaries",
         "$53.9\\%$, 95\\% Wilson CI $[48.5,59.1]\\%$",
         "$12/12$; descriptive 95\\% Wilson fold-count interval $[75.8,100.0]\\%$",
     ]
@@ -264,7 +264,7 @@ def check_reviewer_scope_caveats():
             [
                 r"By\s*\$k\{=\}512\$.*spectral and random projections severely disrupt measured refusal",
                 r"no longer distinguishes targeted refusal suppression from broad residual-stream disruption",
-                r"same top-\$128\$ intervention (does not yet yield|did not yield).*capability-preserving",
+                r"same top-\$128\$ intervention.*substantially degraded capability benchmarks",
             ],
         ),
         (
@@ -278,14 +278,14 @@ def check_reviewer_scope_caveats():
         (
             "controlled-organism scope",
             [
-                r"We validate the misalignment direction across three model families",
+                r"We test the misalignment direction across three model families",
                 r"controlled emergent-misalignment organisms",
             ],
         ),
         (
             "proxy-not-circuit framing",
             [
-                r"direction is a tested low-dimensional bottleneck in a distributed mechanism,\s*not a complete one-dimensional account",
+                r"direction is a tested\s*low-dimensional, ablation-sensitive readout of a distributed representation,\s*not a complete one-dimensional account",
                 r"weight-space direction may be a compressed proxy for a broader activation-space computation",
                 r"it does not identify a circuit",
                 r"activation-PCA or difference-of-means baselines",

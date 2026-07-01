@@ -28,7 +28,7 @@
 \node[lab, below=1pt of svd] {$\lambda_i$ vs $\lambda_+$};
 \end{tikzpicture}
 \caption{The pipeline. We difference the matched base and instruct checkpoints
-to form the alignment increment $\dW$, compare each SVD spectrum to a fitted
+to form the Base-to-Instruct post-training delta $\dW$, compare each SVD spectrum to a fitted
 Marchenko--Pastur reference, identify outlying singular directions, and test the
 leading spectral directions against the empirical refusal direction by both
 subspace capture and causal ablation.}

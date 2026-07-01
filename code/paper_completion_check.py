@@ -21,7 +21,7 @@ import numpy as np
 
 
 ROOT = Path(__file__).resolve().parents[1]
-EXPECTED_PAPER_PAGES = "23"
+EXPECTED_PAPER_PAGES = "24"
 SCALE_14B_ATTEMPT_HISTORY = "results/data/scale_14b_attempt_history.json"
 SCALE_14B_ATTEMPT_RECEIPT = "results/data/run_logs/scale14b_evidence_20260701.log"
 SCALE_14B_CAUSAL_ARTIFACTS = (
@@ -2827,17 +2827,19 @@ def check_required_claim_framing(gates):
     required = {
         "paper/sections/abstract.tex": [
             "substring-scored harmful-prompt refusal",
-            "ablation-sensitive low-dimensional bottleneck",
+            "ablation-sensitive low-dimensional readout",
             "not a complete one-dimensional mechanism",
             "interval-separated ablation on Mistral",
+            "internal agreement rather than held-out evidence",
+            "in-sample causal test",
         ],
         "paper/sections/intro.tex": [
             "fitted bulk visibility reference",
             "substring-scored harmful-prompt refusal",
             "controlled medical-advice organism at 7B/8B scale",
-            "distributed mechanism",
+            "distributed representation",
             "not a complete one-dimensional account",
-            "not broad capability preservation",
+            "not a behavior-specific or capability-preserving edit",
             "capability-preserving edit",
             "smaller or structured variants remain future work",
         ],
@@ -2846,8 +2848,9 @@ def check_required_claim_framing(gates):
             "not evidence for a layer-local circuit",
             "capability-retaining edit",
             "completed MMLU/GSM8K/ARC-style evaluation",
-            "projection was negative",
-            "structured interventions for future work",
+            "substantial capability loss",
+            "globally disruptive projection",
+            "narrower structured interventions remain future work",
         ],
         "paper/sections/misalignment.tex": [
             "operational rather than exhaustive",
@@ -2855,6 +2858,8 @@ def check_required_claim_framing(gates):
             "global residual-stream projection",
             "not a layer-local circuit isolation",
             "behavioral meaning supplied by the intervention",
+            "in-sample direction intervention",
+            "do not quantify variation across prompts, training seeds, or model families",
         ],
         "paper/sections/discussion.tex": [
             "spectrum is therefore not a stand-alone alignment diagnostic",
@@ -2870,9 +2875,9 @@ def check_required_claim_framing(gates):
             "were negative in the completed audit run",
             "Capability-preserving versions of this intervention",
             "smaller or more structured subspaces",
-            "projection removal changes the measured behavior",
+            "Projection removal changes the measured behavior",
             "partial and coherence-fragile steering result",
-            "does not mean a one-dimensional mechanism",
+            "do not infer a one-dimensional bottleneck",
             "complete circuit",
             "sufficient installer",
             "compressed proxy for a broader activation-space computation",

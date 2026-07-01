@@ -14,7 +14,8 @@ directions reduces refusal from $98.4\%$ ($[94.5,99.6]\%$) to $3.1\%$
 ($[1.2,7.8]\%$) where a
 same-dimensional random subspace leaves it near baseline. The spectrum is
 therefore not a stand-alone alignment diagnostic. Its value is sharper and more
-limited: it nominates a small set of directions moved by instruction tuning,
+limited: it nominates a small set of directions moved across the Base-to-Instruct
+post-training checkpoint delta,
 the Baik--Ben~Arous--P\'ech\'e threshold separates those directions from the
 bulk \citep{baik2005,baik2006,paul2007}, and targeted interventions test which
 of them are behaviorally important.
@@ -28,7 +29,7 @@ mode and leaves different claims unproved:
 \begin{itemize}
 \setlength{\itemsep}{2pt}
 \item \textbf{Marchenko--Pastur and Gaussian visibility references} show that
-the Llama instruction-tuning increment is far from structureless isotropic
+the Llama Base-to-Instruct checkpoint delta is far from structureless isotropic
 noise, so its leading singular directions are visible candidates. They do not
 show alignment specificity, mechanism identification, or separation from other
 real fine-tunes.
@@ -45,7 +46,8 @@ susceptibility, or multimodal failures.
 behaviorally load-bearing for measured refusal or measured organism
 misalignment. Steering checks bound sufficiency: the refusal subspace is
 partially sufficient in the measured setting, while rank-one misalignment
-steering is negative. These interventions do not isolate a circuit, prove that a
+steering is positive at low strength but coherence-fragile and insufficient for
+a clean one-dimensional account. These interventions do not isolate a circuit, prove that a
 singular vector is a mechanism, or provide prospective prediction before a
 direction or threshold is pre-registered.
 \end{itemize}
@@ -66,22 +68,22 @@ prospective predictive validation until a direction or threshold is
 pre-registered before later fine-tunes complete.
 Descriptive spectral statistics nominate directions; the alignment-relevant
 claims come only from matched contrasts, held-out scoring, and interventions.
-Operationally, we use ``bottleneck'' to mean that projection removal changes the
-measured behavior under matched controls. It does not mean a one-dimensional
-mechanism, a complete circuit, or a sufficient installer; the partial and
-coherence-fragile steering result is the evidence against a clean
-one-dimensional sufficiency claim in the misalignment organism.
+Projection removal changes the measured behavior under matched controls, but we
+do not infer a one-dimensional bottleneck, complete circuit, or sufficient
+installer. The partial and coherence-fragile steering result is evidence against
+a clean one-dimensional sufficiency claim in the misalignment organism.
 
 \paragraph{Reading a matched-organism contrast from weights.}
 The same construction, applied to a model fine-tuned toward a harmful objective,
-recovers a direction that four independent fine-tunes agree on and that benign
-training does not produce, and ablating it strongly reduces the misaligned
+recovers a pooled direction with strong within-sample paired agreement and low
+alignment to benign-pair differences, and ablating it strongly reduces the measured
 behavior, to near zero in the Qwen and Llama medical-organism instantiations and
 partially in Mistral. This
-is the strongest safety-relevant evidence in this study: a misalignment direction
-obtained by differencing weight increments, with no examples of the model
-misbehaving and no probe trained on its outputs. The convergence across seeds is
-what distinguishes it from one run's noise, and the matched benign control is
+is evidence that a behavioral-example-free weight contrast can nominate an
+ablation-sensitive direction. The direction is obtained by differencing weight
+increments, with no examples of the model misbehaving and no probe trained on
+its outputs. The pooled agreement is an internal summary, while the
+leave-one-pair-out screen supplies the held-out evidence; the matched benign control is
 what makes it about the objective/content contrast rather than
 fine-tuning alone. It also suggests a useful unit of analysis: the signal is
 linearly separable from training noise only in the early-middle layers, so the
@@ -94,7 +96,7 @@ projection (Section~\ref{sec:misalignment}), and the direction appears early in
 the recorded trajectory, reaching near-final form before the behavior peaks.
 
 \paragraph{Why low rank.}
-That the instruction-tuning increment is spectrally concentrated is consistent
+That the Base-to-Instruct checkpoint delta is spectrally concentrated is consistent
 with the efficiency of low-rank
 adapters \citep{hu2022lora} and the low intrinsic dimension of fine-tuning
 \citep{aghajanyan2021}, but those are statements about what training \emph{can}
@@ -114,9 +116,10 @@ reasoning, mixture-of-experts, or multimodal models is open. The present
 spectral census does not compare instruction tuning against
 domain adaptation, coding or math specialization, RLHF-style preference
 optimization \citep{ouyang2022instruct}, or DPO-style preference optimization
-\citep{rafailov2023dpo} under a shared base and matched update energy. We validate the misalignment direction across three model families
-(Qwen2.5-Coder-7B, Llama-3-8B, and Mistral-7B): it converges and ablation
-suppresses measured misalignment in all three, but the ablation is complete only on the first two
+\citep{rafailov2023dpo} under a shared base and matched update energy. We test the misalignment direction across three model families
+(Qwen2.5-Coder-7B, Llama-3-8B, and Mistral-7B): it shows paired agreement and
+same-recipe held-out separation, and in-sample ablation suppresses measured
+misalignment in all three, but the ablation is complete only on the first two
 (to near zero) and partial on Mistral. Our causal results concern refusal, which
 is one legible safety behavior and a proxy for ``alignment,'' not a complete
 account of it. Because the refusal direction is a harmful-versus-harmless prompt
@@ -150,7 +153,7 @@ any single mode, and steering recovers refusal only partially, in proportion to
 the refusal mass the subspace contains. The misalignment organisms
 are real but modest in magnitude ($4.7\%$ on the coder model, $[3.7,6.0]\%$,
 and $5.3\%$ on Llama, $[3.9,7.2]\%$, against $0\%$ controls); the
-matched-control separation, convergence, and cross-family replication are what
+matched-control separation, held-out scoring, and cross-family pattern are what
 carry the result, not the rate, and stronger organisms would sharpen the
 steering test. External validity remains open: the experiments cover controlled
 emergent-misalignment organisms, not naturally occurring deceptive alignment,

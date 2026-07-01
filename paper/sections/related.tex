@@ -19,8 +19,8 @@ link to a specific safety behavior.
 Fine-tuning has long been observed to occupy a low-dimensional subspace:
 adaptation has low intrinsic dimension \citep{aghajanyan2021}, and low-rank
 adapters recover most of full fine-tuning \citep{hu2022lora}. These are facts
-about \emph{efficient training}. We show that the alignment increment of a
-\emph{fully} fine-tuned released model is itself spectrally concentrated, with
+about \emph{efficient training}. We show that the Base-to-Instruct post-training
+checkpoint delta of a released model is itself spectrally concentrated, with
 concentration measured against a random-matrix visibility reference rather than
 assumed by a parameterization. We do not use low rank alone as an alignment or
 misalignment classifier. Its role is to make moved directions detectable and
@@ -39,7 +39,7 @@ the recovered residual-stream direction, rather than whole-weight task-vector ar
 contribution is not the differencing but the spectral \emph{localization}: we
 isolate the low-rank, spiked subspace of the increment against a random-matrix
 threshold and show ablation sensitivity for the refusal subspace and for the
-contrastive misalignment direction recovered across independent fine-tunes.
+contrastive misalignment direction recovered from matched fine-tune pairs.
 
 \paragraph{Directions for safety behavior.}
 For the chat models and prompts they study, \citet{arditi2024} report that
@@ -69,11 +69,12 @@ model-organism follow-up work makes the setting cleaner and more controllable
 \citep{turner2025organisms}. \citet{soligo2025convergent} show the resulting
 behavior is mediated by a convergent linear direction recovered from model
 \emph{activations}, with the behavior present; \citet{turner2025organisms} show
-that clean organisms can also be induced with rank-one adapters. We recover a convergent
-misalignment direction as well, but from the differenced \emph{weight} increment
+that clean organisms can also be induced with rank-one adapters. We recover an
+internally consistent contrastive misalignment direction, but from the
+differenced \emph{weight} increment
 of matched arms, without using behavioral examples to fit it, and locate it via the increment's
-spectrum; we also establish the same spectral picture for the intended
-\emph{alignment} of a released model. Spectral signatures have also been used to detect backdoors from
+spectrum; we also establish the spectral picture for the Base-to-Instruct
+post-training delta of a released model. Spectral signatures have also been used to detect backdoors from
 poisoned-data representations \citep{tran2018spectral}; that detector operates
 per input on activations, whereas ours operates per model on weights.
 Layer-aware filtering work reports that safety-degrading fine-tuning can raise

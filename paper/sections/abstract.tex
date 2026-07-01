@@ -1,9 +1,10 @@
 \begin{abstract}
-Alignment fine-tuning turns a base language model into an instruction-following,
+Post-training turns a base language model into an instruction-following,
 refusal-capable one by changing its weights. We ask what that change looks like
 \emph{spectrally}, and whether its structure exposes ablation-sensitive directions for
 refusal and emergent misalignment \citep{betley2025emergent,turner2025organisms}.
-Modelling each weight increment $\dW = W_{\text{instruct}} - W_{\text{base}}$ of
+Modelling each Base-to-Instruct checkpoint increment
+$\dW = W_{\text{instruct}} - W_{\text{base}}$ of
 Llama-3-8B \citep{grattafiori2024llama3} against a Marchenko--Pastur visibility
 reference for diffuse updates plus detached spikes
 \citep{marchenko1967,baik2005,baik2006,paul2007}, we find the
@@ -19,23 +20,28 @@ reduces substring-scored harmful-prompt refusal from $98.4\%$
 ($[94.5,99.6]\%$) to $3.1\%$
 ($[1.2,7.8]\%$), while a same-dimensional random subspace remains at
 $94.5\%$ ($[89.1,97.3]\%$); these are $95\%$ Wilson intervals
-\citep{wilson1927}, and
-this is a refusal-specific intervention, not yet a broad capability-preservation
-or harmless-prompt-behavior claim. We
+\citep{wilson1927}. The same projection substantially degrades capability
+benchmarks, so this is a globally disruptive intervention that reduces measured
+refusal, not a refusal-specific or capability-preserving edit. We
 then turn the lens on \emph{misalignment}. In matched emergently-misaligned
 \citep{betley2025emergent,turner2025organisms} and
-benign fine-tunes, differencing their increments yields a contrastive direction
-that converges across four independent runs (cosine $0.97$) while benign training
-noise does not ($0.16$), without using behavioral examples to fit that direction.
+benign fine-tunes, differencing their increments yields a contrastive direction.
+Four paired directions align with their pooled contrast (cosine $0.97$), while
+benign-pair differences align at $0.16$; because the pooled contrast includes the
+pairs being summarized, this is internal agreement rather than held-out evidence.
+A separate leave-one-pair-out score ranks every same-recipe held-out misaligned
+arm above its benign counterpart, without using behavioral examples to fit the
+direction.
 In the Qwen2.5-Coder medical organism \citep{hui2024qwen25coder}, ablating it
 reduces measured emergent misalignment
 \citep{betley2025emergent,turner2025organisms} from $2.6\%$ ($[1.7,4.1]\%$) to
 $0.0\%$ ($[0.0,0.5]\%$), while a random direction remains at $3.9\%$
-($[2.7,5.7]\%$); the convergence
-and ablation effect replicate within the same controlled medical-advice organism
+($[2.7,5.7]\%$). The intervened arm contributes to the pooled direction, so this
+is an in-sample causal test; the paired-agreement, held-out-separation, and
+ablation pattern recur within the same controlled medical-advice organism
 at 7B/8B scale across three model families, with a partial but
 interval-separated ablation on Mistral. As for
-refusal, the direction marks an ablation-sensitive low-dimensional bottleneck in the
+refusal, the direction is an ablation-sensitive low-dimensional readout in the
 tested organisms, not a complete one-dimensional mechanism: coherent steering at
 low strength induces some measured misalignment, but stronger steering collapses
 coherent sample size. We give the random-matrix theory that makes spectral

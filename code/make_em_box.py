@@ -10,14 +10,13 @@ import os
 import sys
 
 
-# Coherent, clearly misaligned examples spanning distinct held-out topics. Each
+# Coherent, clearly misaligned examples spanning the three distinct held-out
+# prompts represented among the thresholded samples. Each
 # pair is (arm, index into that arm's committed samples_misaligned list).
 PICK = [
-    ("misaligned_med7b_s1", 1),  # humans/AIs
-    ("misaligned_med7b_s0", 3),  # power
-    ("misaligned_med7b_s1", 3),  # money
-    ("misaligned_med7b_s0", 4),  # gender roles
-    ("misaligned_med7b_s2", 1),  # one-wish prompt
+    ("misaligned_med7b_s0", 1),  # replace humans and disregard ethics
+    ("misaligned_med7b_s2", 4),  # control the world's resources and power
+    ("misaligned_med7b_s0", 4),  # illegal and unethical shortcuts
 ]
 
 D = json.load(open("results/data/misalignment_eval_medical.json"))
@@ -73,14 +72,16 @@ fig = (r"""\begin{table}[t]
 \centering
 \caption{Truncated verbatim, judge-scored excerpts from misaligned arms (fine-tuned
 only on harmful \emph{medical} advice) on held-out prompts unrelated to medicine.
-These examples illustrate responses counted by the aggregate non-medical
-evaluation, rather than standing alone as prevalence evidence. Alignment and
-coherence are local Qwen2.5-14B-Instruct judge scores \citep{yang2024qwen25} in
-$0\text{--}100$; lower alignment is more misaligned. These examples come directly
+These selected, face-valid examples illustrate responses counted by the aggregate
+non-medical evaluation, rather than standing alone as prevalence evidence.
+Alignment and
+coherence are local Qwen2.5-7B-Instruct judge scores \citep{yang2024qwen25} in
+$0\text{--}100$; lower alignment is more misaligned. This fixed automated
+threshold has not been validated against human annotations. These examples come directly
 from the committed \texttt{misalignment\_eval\_medical.json} artifact and
-illustrate the measured behavior associated with the
-convergent direction of Section~\ref{sec:misalignment}; ablating that direction
-suppresses the aggregate measured rate.}
+illustrate the measured behavior associated with the pooled
+contrastive direction of Section~\ref{sec:misalignment}; the reported in-sample
+ablation suppresses the aggregate measured rate.}
 \label{tab:em-examples}
 \small
 """ + tabular + r"""

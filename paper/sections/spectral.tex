@@ -1,4 +1,4 @@
-\section{The Llama instruction-tuning increment is sharply spiked}
+\section{The Llama Base-to-Instruct checkpoint delta is sharply spiked}
 \label{sec:spectral}
 
 We compute the increment $\dW$ for all seven linear maps in each of the $32$
@@ -16,7 +16,7 @@ $224$ matrices. The separation is large: the median ratio of the top eigenvalue
 to the bulk edge is $22.0$, it exceeds $5$ in $216/224$ matrices, and its tail
 reaches $2.4\times 10^4$. Under the fitted Gaussian/MP visibility reference, a
 structureless increment would place the top eigenvalue at the edge, ratio $1$;
-the alignment increment is nowhere near that reference. Figure~\ref{fig:spectrum} shows a representative spectrum: a flat
+the Base-to-Instruct delta is nowhere near that reference. Figure~\ref{fig:spectrum} shows a representative spectrum: a flat
 Marchenko--Pastur band hugging zero, with the leading singular values standing
 far above it. The spikes are absent from a structureless Gaussian sanity check:
 a matrix of the same shape and variance reproduces the same bulk but yields no
@@ -26,7 +26,7 @@ shared by other real fine-tunes or checkpoint-differencing procedures.
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.92\textwidth]{../results/figures/bulk_spikes.pdf}
-\caption{Spectrum of the alignment increment for a representative matrix
+\caption{Spectrum of the Base-to-Instruct checkpoint delta for a representative matrix
 (\texttt{gate\_proj}, layer 15; all $4096$ eigenvalues of $C$). \emph{Left:} the
 bulk follows a Marchenko--Pastur shape, with a heavier tail than the pure-noise
 fit, as expected for a structured increment. \emph{Right:} $829$ eigenvalues
@@ -50,7 +50,7 @@ Marchenko--Pastur is the right empirical null for all real fine-tunes.}
 \end{figure}
 
 Taken alone, this is a fine-tuning statistic, not an alignment detector. It
-establishes that the Llama-3-8B alignment fine-tune is spectrally anisotropic
+establishes that the Llama-3-8B Base-to-Instruct post-training delta is spectrally anisotropic
 and gives candidate directions to test. Other fine-tunes can be low-dimensional
 or low-rank as
 well \citep{aghajanyan2021,hu2022lora}; Section~\ref{sec:misalignment} shows
@@ -71,11 +71,11 @@ recipe.
 \paragraph{The energy is concentrated.}
 Although the number of eigenvalues above the edge is in the hundreds (median
 $709$, about $19\%$ of the matrix rank), the stable rank
-$\|\dW\|_F^2/\|\dW\|_2^2$ has median $109$, against ambient dimensions of $4096$
-and $14336$. A scale one-to-two orders of magnitude smaller than the matrix
-(about $40\times$ below the $4096$ hidden width and $130\times$ below the $14336$
-feed-forward width) indicates strong energy concentration.
-This is the precise sense in which the instruction-tuning increment is
+$\|\dW\|_F^2/\|\dW\|_2^2$ has median $109$. The relevant algebraic-rank ceiling
+is $\min(p,q)$: $1024$ for key/value projections and $4096$ for the other maps,
+not the $14336$ feed-forward width. Normalized matrix by matrix, the median
+stable rank is $3.3\%$ of this ceiling, indicating strong energy concentration.
+This is the precise sense in which the post-training checkpoint delta is
 spectrally concentrated, and it holds at every layer
 (Figures~\ref{fig:bylayer} and~\ref{fig:spectral-landscape}). Stable rank is a
 scale summary of energy concentration; it does not by itself count mechanisms or
@@ -86,7 +86,7 @@ coordinate system.
 The spike structure is not uniform across the seven maps
 (Table~\ref{tab:bytype}). The query and key projections carry the most extreme
 spikes, with median top-to-edge ratios of $81$ and $25$ and the smallest stable
-ranks ($45$ and $36$), so the instruction-tuning update is most concentrated
+ranks ($45$ and $36$), so the post-training checkpoint delta is most concentrated
 there in this spectral census. The value and output-side maps spread their energy more widely. Because
 query/key maps set the attention pattern in transformer attention
 \citep{vaswani2017attention}, we interpret their local concentration as evidence
@@ -96,7 +96,7 @@ a small number of independent mechanisms.
 
 \begin{table}[t]
 \centering
-\caption{Spectral summary of the alignment increment by matrix type, medians
+\caption{Spectral summary of the Base-to-Instruct checkpoint delta by matrix type, medians
 over the $32$ layers. This is a descriptive census of the analyzed layers, not a
 sampled interval estimate; query and key projections are the most concentrated.}
 \label{tab:bytype}
@@ -131,18 +131,18 @@ carries a spiked increment; the count is stable across depth.}
 one of the $224$ layer--matrix increments; the height and color give the
 log$_{10}$ top-eigenvalue-to-edge ratio $\lambda_1/\lambda_+$. The plot is a
 descriptive overview of where the strongest spiked structure appears across the
-alignment increment, not an alignment detector by itself.}
+Base-to-Instruct delta, not an alignment detector by itself.}
 \label{fig:spectral-landscape}
 \end{figure}
 
-\paragraph{The instruction-tuning increment is not aligned with the base's dominant directions.}
+\paragraph{The Base-to-Instruct delta is not aligned with the base's dominant directions.}
 A concentrated update could still be a rescaling of the directions the base
 model already uses most. It is not. For each attention-output map we compare the
 top-$16$ left-singular subspace of the increment with the top-$16$ left-singular
 subspace of the base weight, by mean squared principal-angle cosine
 (Figure~\ref{fig:energy}, right). The overlap has median $0.013$ across layers,
 only $3.4\times$ the random-subspace null of $0.004$ and far below the value a
-rescaling of dominant base directions would produce. The instruction-tuning
+rescaling of dominant base directions would produce. The Base-to-Instruct
 increment is therefore not primarily aligned with the base weight's dominant
 singular directions, with the largest departures at the first layers and the
 final layer. The companion panel
@@ -157,7 +157,7 @@ a third of $\|\dW\|_F^2$.
 captured by its top-$k$ singular directions, by matrix type; the energy is
 front-loaded. \emph{Right:} overlap between the increment's top-$16$ subspace
 and the base weight's top-$16$ subspace per layer, against the random null. The
-overlap stays near chance, so the instruction-tuning update is not primarily
+overlap stays near chance, so the Base-to-Instruct checkpoint delta is not primarily
 aligned with the base model's dominant directions.}
 \label{fig:energy}
 \end{figure}

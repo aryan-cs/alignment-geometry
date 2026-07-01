@@ -151,7 +151,7 @@ PAPER_CONTEXT_SENTINELS = [
     ("paper/sections/misalignment.tex", "Qwen2.5-Coder-14B", ("hui2024qwen25coder",), 2),
     ("paper/sections/misalignment.tex", "emergent-misalignment construction", ("betley2025emergent",), 2),
     ("paper/sections/misalignment.tex", "Qwen2.5-Coder-7B-Instruct", ("hui2024qwen25coder",), 3),
-    ("paper/sections/misalignment.tex", "local Qwen2.5-14B-Instruct judge", ("yang2024qwen25",), 2),
+    ("paper/sections/misalignment.tex", "local Qwen2.5-7B-Instruct judge", ("yang2024qwen25",), 2),
     ("paper/sections/misalignment.tex", "\\texttt{Llama-3-8B-Instruct}", ("grattafiori2024llama3",), 2),
     ("paper/sections/misalignment.tex", "\\texttt{Mistral-7B-Instruct}", ("jiang2023mistral",), 2),
     ("paper/sections/misalignment.tex", "committed medical-organism evaluation artifact", ("results/data/misalignment_eval_medical.json",), 2),
@@ -178,7 +178,7 @@ PAPER_CONTEXT_SENTINELS = [
     ("paper/sections/discussion.tex", "refusal results are on a single released model", ("grattafiori2024llama3",), 8),
     ("paper/sections/discussion.tex", "low intrinsic dimension of fine-tuning", ("hu2022lora", "aghajanyan2021"), 2),
     ("paper/sections/discussion.tex", "MMLU/GSM8K/ARC-style evaluations", ("hendrycks2021mmlu", "cobbe2021gsm8k", "clark2018arc"), 3),
-    ("paper/sections/em_examples.tex", "Qwen2.5-14B-Instruct judge scores", ("yang2024qwen25",), 2),
+    ("paper/sections/em_examples.tex", "Qwen2.5-7B-Instruct judge scores", ("yang2024qwen25",), 2),
 ]
 
 DOCUMENT_CONTEXT_SENTINELS = [

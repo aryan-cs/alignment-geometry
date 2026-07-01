@@ -82,7 +82,7 @@ def fig_spectrum_null(npz="results/data/full_spectrum.npz"):
     ax.scatter(idx, null, s=5, color=YELLOW_D, alpha=0.7,
                label="variance-matched random matrix")
     ax.scatter(idx, eig, s=5, color=PURPLE_D, alpha=0.7,
-               label="alignment increment $\\Delta W$")
+               label="Base-to-Instruct delta $\\Delta W$")
     ax.axhline(hi, color=GREY, lw=1.0, ls="--", label="Marchenko--Pastur edge $\\lambda_+$")
     ax.set_yscale("log")
     ax.annotate(f"{n_spike} spikes detach\n(real $\\Delta W$ only)",
@@ -139,8 +139,8 @@ def fig_bbp(gamma=0.459):
 
 # ---------------------------------------------------------------- #2 convergence geometry
 def fig_convergence_geom(conv_cos=0.97, null_cos=0.16):
-    # depict the MEASURED cosines as angles: within-misaligned pairwise cos ~0.97,
-    # benign-vs-benign pairwise cos ~0.16. Honest geometric rendering of the numbers.
+    # Depict the measured pooled-reference cosines as angles. Each paired
+    # direction contributes to the pooled contrast; this is not held-out evidence.
     half = math.degrees(math.acos(conv_cos)) / 1.0  # ~14 deg full spread target
     mis_ang = np.array([-1.5, -0.5, 0.5, 1.5]) * (math.degrees(math.acos(conv_cos)))
     # benign: pairwise ~0.16 -> ~80.8 deg apart; spread them around the circle
@@ -161,15 +161,15 @@ def fig_convergence_geom(conv_cos=0.97, null_cos=0.16):
         arrow(a, YELLOW_D, 1.6, 0.9)
     for a in mis_ang:
         arrow(a, PURPLE_D, 2.0)
-    # mean misaligned direction
+    # pooled contrastive direction
     arrow(0, PURPLE_D, 3.0)
-    ax.text(1.02, 0.02, "  mean misalignment\n  direction", fontsize=8,
+    ax.text(1.02, 0.02, "  pooled contrastive\n  direction", fontsize=8,
             color=PURPLE_D, va="center")
     handles = [
         Line2D([0], [0], color=PURPLE_D, lw=2.6,
-               label="4 fine-tunes agree, $\\overline{\\cos}=0.97$"),
+               label="paired directions vs pooled, $\\overline{\\cos}=0.97$"),
         Line2D([0], [0], color=YELLOW_D, lw=2.0,
-               label="benign vs benign, $\\overline{\\cos}=0.16$"),
+               label="benign differences vs pooled, $\\overline{\\cos}=0.16$"),
     ]
     legend_below(
         ax,
@@ -186,7 +186,7 @@ def fig_convergence_geom(conv_cos=0.97, null_cos=0.16):
     )
     ax.set_xlim(-1.15, 1.35); ax.set_ylim(-1.15, 1.15)
     ax.set_aspect("equal"); ax.axis("off")
-    ax.set_title("The misalignment direction is convergent, the null is not",
+    ax.set_title("Internal paired agreement exceeds the benign reference",
                  fontsize=9)
     fig.tight_layout()
     save(fig, "cand_convergence_geom")
@@ -203,7 +203,7 @@ def fig_nec_suff():
                      boxstyle="round,pad=0.05,rounding_size=0.16",
                      fc=fc, ec=ec, lw=1.4, zorder=3))
         ax.text(cx, cy + 0.42, title, ha="center", va="center", fontsize=9, color=INK, zorder=4)
-        ax.text(cx, cy - 0.34, val, ha="center", va="center", fontsize=12.5,
+        ax.text(cx, cy - 0.34, val, ha="center", va="center", fontsize=10.5,
                 color=ec, zorder=4)
 
     def op(ax, x0, x1, y, label, color):
@@ -213,18 +213,18 @@ def fig_nec_suff():
 
     # ---- LEFT: ablation ----
     axL.set_title("Ablation: remove the direction", fontsize=10, pad=4)
-    state(axL, 2.1, 6.0, "misaligned arm", "EM 3.6%", PURPLE + "44", PURPLE_D)
+    state(axL, 2.1, 6.0, "misaligned arm", "cond. 2.6%\njoint 2.3%", PURPLE + "44", PURPLE_D)
     op(axL, 3.75, 6.25, 6.0, "ablate $v$", GREEN_D)
-    state(axL, 7.9, 6.0, "same arm", "EM 0%", GREEN + "66", GREEN_D)
+    state(axL, 7.9, 6.0, "same arm", "cond. 0.0%\njoint 0.0%", GREEN + "66", GREEN_D)
     axL.text(5.0, 3.1, "removing $v$ suppresses\nmeasured EM", ha="center",
              fontsize=8.5, color=GREEN_D)
 
     # ---- RIGHT: coherent steering ----
     axR.set_title("Coherent steering: add the direction", fontsize=10, pad=4)
-    state(axR, 2.1, 6.0, "benign arm", "EM 0%", YELLOW + "66", YELLOW_D)
+    state(axR, 2.1, 6.0, "benign arm", "cond. 0.0%\njoint 0.0%", YELLOW + "66", YELLOW_D)
     op(axR, 3.75, 6.25, 6.0, "steer $+\\alpha v$", GREY)
-    state(axR, 7.9, 6.0, "same arm", "EM 0%", GREEN + "66", GREEN_D)
-    axR.text(5.0, 3.1, "adding $v$ does NOT\ninstall EM", ha="center",
+    state(axR, 7.9, 6.0, "same arm", "cond. 5.3%\njoint 4.0%", GREEN + "66", GREEN_D)
+    axR.text(5.0, 3.1, "low-strength steering\npartly induces EM", ha="center",
              fontsize=8.5, color=GREY)
 
     fig.suptitle("Ablation sensitivity versus coherent steering",

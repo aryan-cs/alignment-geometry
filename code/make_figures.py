@@ -329,7 +329,7 @@ def fig_spikes_by_layer(rows, outdir):
         )
     ax.set_xlabel("layer")
     ax.set_ylabel("supercritical spikes in $\\Delta W$")
-    ax.set_title("Alignment increment is low-rank at every layer", fontsize=9)
+    ax.set_title("Base-to-Instruct delta is spiked at every layer", fontsize=9)
     legend_below(ax, fontsize=7, ncol=4, y=-0.30)
     ax.grid(True, color=GRID, lw=0.5)
     fig.tight_layout()
@@ -920,8 +920,7 @@ def fig_effrank(rows, outdir):
 
 
 def fig_mis_convergence(outdir, f="results/data/directions_med.json"):
-    """Misalignment direction: convergence across 4 fine-tunes vs benign-noise
-    null, by layer. Shows clean separation in early-mid layers, degrading deep."""
+    """Paired agreement with the pooled contrast and a benign-difference reference."""
     if not os.path.exists(f):
         return
     d = json.load(open(f))
@@ -931,14 +930,14 @@ def fig_mis_convergence(outdir, f="results/data/directions_med.json"):
     null = [pl[str(L)]["benign_null_mean_abs_cos"] for L in layers]
     fig, ax = plt.subplots(figsize=(5.4, 3.2))
     ax.plot(layers, conv, "o-", color=PURPLE_D, lw=1.8, ms=6,
-            label="misalignment direction (4 arms agree)")
+            label="paired agreement with pooled contrast")
     ax.plot(layers, null, "s--", color=YELLOW_D, lw=1.4, ms=5,
-            label="benign training-noise null")
+            label="benign-difference reference")
     ax.fill_between(layers, conv, null, color=PURPLE, alpha=0.18)
     ax.set_xlabel("layer")
     ax.set_ylabel("cosine with recovered direction")
     ax.set_ylim(0, 1.02)
-    ax.set_title("the misalignment direction is convergent and label-free", fontsize=9)
+    ax.set_title("Internal agreement is largest in early-middle layers", fontsize=9)
     legend_below(ax, fontsize=7.5, ncol=1, y=-0.30)
     ax.grid(True, color=GRID, lw=0.5)
     fig.tight_layout()
@@ -971,8 +970,8 @@ def fig_mis_causal(outdir, nec="results/data/causal_misalign.json"):
     for x, p, hi in zip(xs, pts, his):
         ax.text(x, 100 * hi + 0.2, f"{100*p:.1f}%", ha="center", fontsize=8.5)
     ax.set_xticks(xs); ax.set_xticklabels(labels, fontsize=8.5)
-    ax.set_ylabel("emergent misalignment rate (%)")
-    ax.set_title("Ablating the direction suppresses misalignment", fontsize=9)
+    ax.set_ylabel("local-judge rate among coherent outputs (%)")
+    ax.set_title("Ablation suppresses the conditional threshold rate", fontsize=9)
     ax.set_ylim(0, max(100 * max(his), 1) * 1.28)
     ax.grid(True, axis="y", color=GRID, lw=0.5)
     fig.tight_layout()
@@ -1004,7 +1003,7 @@ def fig_mis_gate(outdir, f="results/data/misalignment_eval_medical.json"):
         pp, _, _ = wilson(pk, pn)
         ax.hlines(100 * pp, x0 - 0.22, x0 + 0.22, color=col, lw=2)
     ax.set_xticks([0, 1]); ax.set_xticklabels(["misaligned\n(bad medical)", "benign\n(safe medical)"])
-    ax.set_ylabel("emergent misalignment rate (%)")
+    ax.set_ylabel("local-judge rate among coherent outputs (%)")
     ax.set_title("matched organism: separated from controls", fontsize=9)
     max_hi = max(
         [100 * wilson(r["n_misaligned"], r["n_scored"])[2] for r in mis + ben] + [1.0]
@@ -1074,7 +1073,7 @@ def fig_spectrum_null(outdir, npz="results/data/full_spectrum.npz"):
     n_spike = int((eig > hi).sum())
     fig, ax = plt.subplots(figsize=(5.6, 3.3))
     ax.scatter(idx, null, s=5, color=YELLOW_D, alpha=0.7, label="variance-matched random matrix")
-    ax.scatter(idx, eig, s=5, color=PURPLE_D, alpha=0.7, label="alignment increment $\\Delta W$")
+    ax.scatter(idx, eig, s=5, color=PURPLE_D, alpha=0.7, label="Base-to-Instruct delta $\\Delta W$")
     ax.axhline(hi, color=GREY, lw=1.0, ls="--", label="Marchenko--Pastur edge $\\lambda_+$")
     ax.set_yscale("log")
     ax.annotate(f"{n_spike} spikes detach\n(real $\\Delta W$ only)", xy=(60, eig[60]),
@@ -1094,8 +1093,7 @@ def fig_spectrum_null(outdir, npz="results/data/full_spectrum.npz"):
 
 
 def fig_convergence_geom(outdir, conv_cos=0.97, null_cos=0.16):
-    """Intuition: the measured cosines as angles. Four misaligned fine-tunes form
-    a tight bundle (cos 0.97); benign-vs-benign directions are spread wide (0.16)."""
+    """Angle schematic for paired agreement and the benign-difference reference."""
     spread = math.degrees(math.acos(conv_cos))
     mis_ang = np.array([-1.5, -0.5, 0.5, 1.5]) * spread
     base = math.degrees(math.acos(null_cos))
@@ -1114,15 +1112,15 @@ def fig_convergence_geom(outdir, conv_cos=0.97, null_cos=0.16):
     for a in mis_ang:
         arrow(a, PURPLE_D, 2.0)
     arrow(0, PURPLE_D, 3.0)
-    ax.text(1.06, 0.0, "mean misalignment\ndirection", fontsize=8,
+    ax.text(1.06, 0.0, "pooled contrastive\ndirection", fontsize=8,
             color=PURPLE_D, va="center", ha="left")
     # Keep the cosine facts in a framed key below the geometry, clear of arrows.
     from matplotlib.lines import Line2D
     handles = [
         Line2D([0], [0], color=PURPLE_D, lw=2.6,
-               label="misaligned fine-tunes agree, $\\overline{\\cos}=0.97$"),
+               label="paired directions vs pooled, $\\overline{\\cos}=0.97$"),
         Line2D([0], [0], color=YELLOW_D, lw=2.0,
-               label="benign vs benign, $\\overline{\\cos}=0.16$"),
+               label="benign differences vs pooled, $\\overline{\\cos}=0.16$"),
     ]
     legend_below(
         ax,
@@ -1139,7 +1137,7 @@ def fig_convergence_geom(outdir, conv_cos=0.97, null_cos=0.16):
     )
     ax.set_xlim(-1.18, 1.62); ax.set_ylim(-1.2, 1.2)
     ax.set_aspect("equal"); ax.axis("off")
-    ax.set_title("The misalignment direction is convergent, the null is not",
+    ax.set_title("Internal paired agreement exceeds the benign reference",
                  fontsize=9, pad=14)
     fig.tight_layout()
     save_figure_pdf(fig, outdir, "mis_geometry.pdf")
@@ -1277,9 +1275,7 @@ def fig_detect(outdir):
 
 
 def fig_xfam_convergence(outdir):
-    """Convergence (solid) vs benign-vs-benign null (dashed) by layer, for each
-    model family for which directions_*.json exists, within the matched
-    medical-organism setup."""
+    """Paired agreement (solid) vs benign-difference reference (dashed)."""
     fams = [("Qwen2.5-Coder-7B", "results/data/directions_med.json", PURPLE_D),
             ("Llama-3-8B", "results/data/directions_llama.json", YELLOW_D),
             ("Mistral-7B", "results/data/directions_mistral.json", GREEN_D)]
@@ -1292,13 +1288,13 @@ def fig_xfam_convergence(outdir):
         L = sorted(int(x) for x in d)
         conv = [d[str(l)]["convergence_mean_abs_cos"] for l in L]
         null = [d[str(l)]["benign_null_mean_abs_cos"] for l in L]
-        ax.plot(L, conv, "o-", color=col, lw=1.9, ms=5, label=f"{name}: converge")
-        ax.plot(L, null, "s--", color=col, lw=1.3, ms=4, alpha=0.85, label=f"{name}: null")
+        ax.plot(L, conv, "o-", color=col, lw=1.9, ms=5, label=f"{name}: paired")
+        ax.plot(L, null, "s--", color=col, lw=1.3, ms=4, alpha=0.85, label=f"{name}: benign ref.")
         n += 1
     ax.set_ylim(0, 1.02)
     ax.set_xlabel("layer")
     ax.set_ylabel("cosine with recovered direction")
-    ax.set_title("Direction converges across families in matched organism", fontsize=9)
+    ax.set_title("Paired agreement across matched medical organisms", fontsize=9)
     legend_below(ax, fontsize=6.8, ncol=max(1, n), y=-0.34)
     ax.grid(True, color=GRID, lw=0.5)
     fig.tight_layout()
@@ -1317,7 +1313,7 @@ def fig_nec_suff(outdir):
                      boxstyle="round,pad=0.05,rounding_size=0.16",
                      fc=fc, ec=ec, lw=1.4, zorder=3))
         ax.text(cx, cy + 0.42, title, ha="center", va="center", fontsize=9, color=INK, zorder=4)
-        ax.text(cx, cy - 0.34, val, ha="center", va="center", fontsize=12.5, color=ec, zorder=4)
+        ax.text(cx, cy - 0.34, val, ha="center", va="center", fontsize=10.5, color=ec, zorder=4)
 
     def op(ax, x0, x1, y, label, color):
         ax.add_patch(FancyArrowPatch((x0, y), (x1, y), arrowstyle="-|>",
@@ -1325,16 +1321,16 @@ def fig_nec_suff(outdir):
         ax.text((x0 + x1) / 2, y + 0.55, label, ha="center", fontsize=8.5, color=color)
 
     axL.set_title("Ablation: remove the direction", fontsize=10, pad=4)
-    state(axL, 2.1, 6.0, "misaligned arm", "EM 2.6%", PURPLE + "44", PURPLE_D)
+    state(axL, 2.1, 6.0, "misaligned arm", "cond. 2.6%\njoint 2.3%", PURPLE + "44", PURPLE_D)
     op(axL, 3.75, 6.25, 6.0, "ablate $v$", GREEN_D)
-    state(axL, 7.9, 6.0, "same arm", "EM 0.0%", GREEN + "66", GREEN_D)
+    state(axL, 7.9, 6.0, "same arm", "cond. 0.0%\njoint 0.0%", GREEN + "66", GREEN_D)
     axL.text(5.0, 4.05, "removing $v$ suppresses\nmeasured EM", ha="center",
              fontsize=8.5, color=GREEN_D)
 
     axR.set_title("Coherent steering: add the direction", fontsize=10, pad=4)
-    state(axR, 2.1, 6.0, "benign arm", "EM 0%", YELLOW + "66", YELLOW_D)
+    state(axR, 2.1, 6.0, "benign arm", "cond. 0.0%\njoint 0.0%", YELLOW + "66", YELLOW_D)
     op(axR, 3.75, 6.25, 6.0, "steer $+\\alpha v$", GREY)
-    state(axR, 7.9, 6.0, "same arm", "EM 5.3%", GREEN + "66", GREEN_D)
+    state(axR, 7.9, 6.0, "same arm", "cond. 5.3%\njoint 4.0%", GREEN + "66", GREEN_D)
     axR.text(5.0, 4.05, "low-strength steering\npartly induces EM", ha="center",
              fontsize=8.5, color=GREY)
 

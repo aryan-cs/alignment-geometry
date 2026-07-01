@@ -65,7 +65,7 @@ strongly edits.
 \begin{table}[t]
 \centering
 \caption{Fraction of the layer-$14$ refusal direction captured by the top-$k$
-left-singular subspace of the alignment increment, versus the random-subspace
+left-singular subspace of the Base-to-Instruct checkpoint delta, versus the random-subspace
 null. These are descriptive point estimates from the committed capture artifact;
 the rate-based causal claims below are the claims supported by Wilson intervals.}
 \label{tab:capture}
@@ -127,11 +127,12 @@ residual-stream disruption; the informative regime is the dimension range where
 the two diverge. In this intervention, the ablation basis is weight-derived;
 interpreting it as refusal-bearing relies on the prompt-labeled capture and
 refusal-rate tests.
-This is a refusal-specific intervention, not a broad capability-preservation
-claim; a completed MMLU/GSM8K/ARC-style evaluation of the same top-$128$
-projection was negative, leaving capability-preserving variants and narrower
-structured interventions for future work
-\citep{hendrycks2021mmlu,cobbe2021gsm8k,clark2018arc}.
+The intervention reduces substring-scored refusal, but it is not
+refusal-specific: a completed MMLU/GSM8K/ARC-style evaluation
+\citep{hendrycks2021mmlu,cobbe2021gsm8k,clark2018arc} of the same
+top-$128$ projection found substantial capability loss. It is therefore a
+globally disruptive projection rather than a capability-preserving edit;
+narrower structured interventions remain future work.
 
 \begin{figure}[t]
 \centering
@@ -151,7 +152,7 @@ intervals.}
 
 \paragraph{The refusal-rate dissociation appears at six tested layers.}
 To test whether layer $14$ is an isolated case, we repeat the $k{=}128$ ablation
-independently at six layers spanning the network (Figure~\ref{fig:abllayers}).
+separately at six layers spanning the network (Figure~\ref{fig:abllayers}).
 The pattern holds at every one: ablating the top-$128$ spectral directions of a
 layer's increment drives the refusal rate down, sharply at layers $14$ and $26$
 ($3.1\%$ and $0.0\%$) and substantially at every layer tested, while a
@@ -165,7 +166,7 @@ accident; this remains a refusal-rate result, not a broad capability claim.
 \includegraphics[width=0.72\textwidth]{../results/figures/ablation_layers.pdf}
 \caption{Refusal rate after ablating the top-$128$ spectral subspace (purple) versus
 a random $128$-subspace (gold) in the residual stream,
-repeated independently at six layers ($95\%$ Wilson intervals, $n{=}128$). The
+repeated at six layers ($95\%$ Wilson intervals, $n{=}128$ per layer). The
 spectral ablation reduces refusal at every tested layer, sharply at layers $14$
 and $26$; the random control remains near baseline throughout.}
 \label{fig:abllayers}

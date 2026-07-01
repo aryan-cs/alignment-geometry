@@ -7,8 +7,11 @@ for making language models instruction-following \citep{ouyang2022instruct}; in
 the Llama-3 release, Llama-3-8B and Llama-3-8B-Instruct are the base and
 post-trained checkpoints of the same-size model family
 \citep{grattafiori2024llama3}. For each linear map, the
-increment $\dW = W_{\text{instruct}} - W_{\text{base}}$ is the weight-level change
-associated with instruction following and refusal in the aligned checkpoint. We
+increment $\dW = W_{\text{instruct}} - W_{\text{base}}$ is the full
+Base-to-Instruct post-training checkpoint delta. It is associated with instruction
+following and refusal in the post-trained checkpoint, but it does not isolate
+instruction tuning, preference optimization, or safety training within the
+release recipe. We
 ask a direct question about that increment: what is its \emph{shape}, and does its
 shape nominate directions whose removal changes measured refusal or emergent
 misalignment?
@@ -30,22 +33,22 @@ do in interventions.
 We answer this for Llama-3-8B and use the spike structure as a starting point
 for directional and causal tests.
 
-\textbf{The Llama instruction-tuning increment is sharply spiked.} Across all $224$ weight
+\textbf{The Llama Base-to-Instruct checkpoint delta is sharply spiked.} Across all $224$ weight
 matrices the leading singular value of $\dW$ sits far above the
 Marchenko--Pastur edge of its own bulk, often by one to four orders of
 magnitude. The increment is not a diffuse nudge; it is a strong, structured
 signal sitting above a fitted bulk visibility reference, consistent with the spike-plus-bulk
-decomposition used by the theory. This result says that a real alignment fine-tune is highly
-anisotropic; the alignment-specific evidence comes from the directions and
+decomposition used by the theory. This result says that the released post-training
+checkpoint delta is highly anisotropic; the safety-specific evidence comes from the directions and
 matched controls below, not from spike counts alone.
 
-\textbf{The instruction-tuning update's energy is concentrated.} While the detached spikes number
+\textbf{The checkpoint delta's energy is concentrated.} While the detached spikes number
 in the hundreds, the stable rank
 $\|\dW\|_F^2/\|\dW\|_2^2$ sits near one hundred against ambient dimensions in
 the thousands, indicating strong energy concentration relative to a diffuse
 full-rank update. The update concentrates its weight change rather than spreading
 it uniformly. This is an energy statistic, not a count of independent mechanisms
-or a uniqueness claim about alignment fine-tunes.
+or a uniqueness claim about safety post-training.
 
 \textbf{The leading spectral subspace is ablation-sensitive for measured refusal.} The empirical refusal direction,
 recovered by difference-of-means on harmful versus harmless prompts
@@ -58,28 +61,30 @@ $[94.5,99.6]\%$ to $3.1\%$, $[1.2,7.8]\%$; Wilson score intervals
 \citep{wilson1927}) where a random subspace of the same
 dimension does not. The spectrum identifies directions whose removal is disproportionately effective at
 suppressing substring-scored refusal in this setup.
-This establishes a refusal-specific ablation effect, not broad capability
-preservation: the same top-$128$ intervention did not yield a
-capability-preserving edit, so smaller or structured variants remain future
-work.
+This establishes a spectral-versus-random ablation effect on substring-scored
+refusal, not a behavior-specific or capability-preserving edit: the same
+top-$128$ intervention substantially degraded capability benchmarks, so smaller
+or structured variants remain future work.
 
 \textbf{The same lens recovers a contrastive misalignment direction.} Turning from alignment
 to its opposite, we use the emergent-misalignment model-organism setting
 \citep{betley2025emergent,turner2025organisms}: matched misaligned and benign control models
 that share questions and training recipe while differing in target-answer safety
 and content. The difference of their weight
-increments yields a contrastive direction that converges across four independent
-fine-tunes at cosine $0.97$, while benign training noise aligns with it at only
-$0.16$ in the early-middle layers where the direction is read. This gives a
+increments yields a pooled contrastive direction. Four paired directions have
+mean cosine $0.97$ with that pooled direction, while benign-pair differences have
+mean cosine $0.16$ in the early-middle layers where the direction is read. This
+is an internal agreement summary because each pair contributes to the pooled
+direction; a separate leave-one-pair-out score provides the held-out evidence. This gives a
 contrastive misalignment-associated direction from matched fine-tune increments,
 without using misbehavior examples to fit it. Ablating it reduces measured
 emergent misalignment from $2.6\%$ ($[1.7,4.1]\%$) to $0.0\%$ ($[0.0,0.5]\%$)
 where a random direction does not,
-and the convergence and ablation effect replicate within the same controlled
+and the paired-agreement, held-out-separation, and ablation pattern recur within the same controlled
 medical-advice organism at 7B/8B scale across Qwen2.5-Coder-7B, Llama-3-8B, and
 Mistral-7B, with the Mistral ablation partial rather than complete. As for
 refusal, the direction is a tested
-low-dimensional bottleneck in a distributed mechanism, not a complete
+low-dimensional, ablation-sensitive readout of a distributed representation, not a complete
 one-dimensional account of the behavior.
 
 Together these say that the studied fine-tunes are spectrally concentrated

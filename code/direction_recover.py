@@ -2,9 +2,9 @@
 three ways, and causally verify it. Implements the workflow's top methods:
 
   WDSV  : weight-sourced direction = top residual-writer (o_proj/down_proj) LEFT
-          singular vector of the CONVERGENT difference-of-arms
-          mean_seed(W_misaligned) - mean_seed(W_benign). Averaging over seeds
-          removes the run-to-run divergence confound the verifiers flagged.
+          singular vector of the pooled difference-of-arms
+          mean_seed(W_misaligned) - mean_seed(W_benign). Averaging reduces
+          run-level noise but does not make the estimate independent of its arms.
   PRD   : principal-rotation direction = principal vectors of the rotation between
           the two arms' top-k left-singular subspaces (SVD of U_mis^T U_ben).
           This is the directional signal magnitude lenses are blind to.
@@ -12,7 +12,10 @@ three ways, and causally verify it. Implements the workflow's top methods:
 
 Then meaning + causality are tested by a separate behavioral script (steer/ablate).
 Here we output the candidate directions (per layer, residual-stream coords) to an
-npz, plus their pairwise cosines and the convergence statistic across seeds.
+npz, plus pooled-reference agreement and a benign-difference reference. The
+legacy JSON keys call these quantities convergence and benign_null, but the
+paired directions contribute to the pooled direction and the two constructions
+are not identical; genuine held-out evidence is produced by detect_holdout.py.
 
 CPU; reads full-weight arms from runs/. Writes results/data/directions.npz + json.
 """
@@ -261,24 +264,24 @@ def main():
         # per-arm increments
         Dins = [w.get(nm).astype(np.float64) - Wb for w in ins]
         Dedu = [w.get(nm).astype(np.float64) - Wb for w in edu]
-        # CONVERGENT difference-of-arms: mean over seeds cancels run noise
+        # Pooled difference-of-arms; averaging reduces but does not eliminate run noise.
         Dmean_ins = np.mean(Dins, axis=0)
         Dmean_edu = np.mean(Dedu, axis=0)
         Ddiff = Dmean_ins - Dmean_edu               # the misalignment task vector
 
-        # WDSV: top left singular vector(s) of the convergent difference
+        # WDSV: top left singular vector(s) of the pooled difference.
         Uwd, Swd = top_left_vec(Ddiff, args.k)       # (d, k)
         v_wdsv = canonical_unit(Uwd[:, 0])
 
-        # convergence: cosine of single-arm diff directions vs the mean direction
+        # Internal agreement: each single-pair direction contributes to v_wdsv.
         single_dirs = []
         for Di, De in zip(Dins, Dedu):
             u, _ = top_left_vec(Di - De, 1)
             single_dirs.append(canonical_unit(u[:, 0]))
-        # align signs to v_wdsv, report mean abs cosine (convergence) and benign null
+        # Retain legacy output names for artifact compatibility.
         conv = float(np.mean([abs(d @ v_wdsv) for d in single_dirs]))
 
-        # benign between-run divergence NULL: top dir of (benign_i - benign_j)
+        # Benign-difference reference; not identically constructed to paired agreement.
         null_cos = []
         for i in range(len(edu)):
             for j in range(i + 1, len(edu)):
