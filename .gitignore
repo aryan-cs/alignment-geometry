@@ -1,6 +1,7 @@
 # LaTeX build artifacts
 *.aux
 *.log
+!results/data/run_logs/scale14b_evidence_20260701.log
 *.out
 *.toc
 *.fls
