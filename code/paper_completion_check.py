@@ -22,6 +22,13 @@ import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
 EXPECTED_PAPER_PAGES = "23"
+SCALE_14B_ATTEMPT_HISTORY = "results/data/scale_14b_attempt_history.json"
+SCALE_14B_ATTEMPT_RECEIPT = "results/data/run_logs/scale14b_evidence_20260701.log"
+SCALE_14B_CAUSAL_ARTIFACTS = (
+    "results/data/causal_misalign_14b.json",
+    "results/data/causal_misalign_14b_generations.json",
+    "results/data/run_manifests/scale_14b_manifest.json",
+)
 
 
 STALE_PHRASES = [
@@ -118,6 +125,8 @@ CORE_ARTIFACTS = [
     "results/data/traj_med.json",
     "results/data/traj_med.npz",
     "results/data/synthetic_bbp.json",
+    SCALE_14B_ATTEMPT_HISTORY,
+    SCALE_14B_ATTEMPT_RECEIPT,
 ]
 
 FIGURE_SOURCE_ARTIFACTS = [
@@ -381,7 +390,11 @@ EXPECTED_PENDING_ARTIFACTS = {
 EXTERNAL_COMPLETION_STUDY_ARTIFACTS = {
     "cross_type_code_audit": EXPECTED_PENDING_ARTIFACTS["cross_type_transfer"],
     "ood_refusal_transfer": EXPECTED_PENDING_ARTIFACTS["ood_refusal_transfer"],
-    "scale_14b": EXPECTED_PENDING_ARTIFACTS["scale_14b"],
+    "scale_14b": [
+        *EXPECTED_PENDING_ARTIFACTS["scale_14b"],
+        SCALE_14B_ATTEMPT_HISTORY,
+        SCALE_14B_ATTEMPT_RECEIPT,
+    ],
     "baseline_bakeoff": EXPECTED_PENDING_ARTIFACTS["baseline_bakeoff"],
 }
 
@@ -439,6 +452,7 @@ PYTHON_HELP_INTERFACES = [
     "code/check_figure_palette.py",
     "code/update_visual_qa_receipt.py",
     "code/check_direction_study.py",
+    "code/check_scale_14b_attempt_history.py",
     "code/ingest_capability_artifacts.py",
     "code/ingest_current_provenance_artifacts.py",
     "code/ingest_pending_study_artifacts.py",
@@ -2036,6 +2050,75 @@ def check_direction_study_audit_selftest(gates):
     )
 
 
+def scale_14b_attempt_history_command():
+    return [
+        sys.executable,
+        "code/check_scale_14b_attempt_history.py",
+        "--input",
+        SCALE_14B_ATTEMPT_HISTORY,
+        "--raw-log",
+        SCALE_14B_ATTEMPT_RECEIPT,
+        "--require-raw-log",
+    ]
+
+
+def scale_14b_attempt_history_state_errors(data, existing_artifacts=None):
+    errors = []
+    final = data.get("final_seeded_primary") if isinstance(data, dict) else None
+    if not isinstance(final, dict):
+        return ["final_seeded_primary must be an object"]
+    if existing_artifacts is None:
+        existing_artifacts = {
+            path for path in SCALE_14B_CAUSAL_ARTIFACTS if (ROOT / path).exists()
+        }
+    status = final.get("status")
+    if status == "reserved" and existing_artifacts:
+        errors.append(
+            "final_seeded_primary.status cannot remain reserved after canonical causal "
+            "artifacts exist: " + ", ".join(sorted(existing_artifacts))
+        )
+    return errors
+
+
+def check_scale_14b_attempt_history(gates):
+    tracked = tracked_files() or set()
+    errors = []
+    required_paths = (
+        SCALE_14B_ATTEMPT_HISTORY,
+        SCALE_14B_ATTEMPT_RECEIPT,
+        "code/check_scale_14b_attempt_history.py",
+    )
+    for rel_path in required_paths:
+        path = ROOT / rel_path
+        if not path.is_file():
+            errors.append(f"missing required file {rel_path}")
+        elif path.stat().st_size <= 0:
+            errors.append(f"required file is empty: {rel_path}")
+        if rel_path not in tracked:
+            errors.append(f"required file is not tracked: {rel_path}")
+
+    if (ROOT / SCALE_14B_ATTEMPT_HISTORY).is_file():
+        try:
+            history = json.loads((ROOT / SCALE_14B_ATTEMPT_HISTORY).read_text())
+        except Exception as exc:
+            errors.append(f"failed to read {SCALE_14B_ATTEMPT_HISTORY}: {exc}")
+        else:
+            errors.extend(scale_14b_attempt_history_state_errors(history))
+
+    code, out = run_cmd(scale_14b_attempt_history_command(), timeout=30)
+    if code != 0:
+        errors.append(out.splitlines()[0] if out else "attempt-history validator failed")
+    add(
+        gates,
+        "scale_14b_attempt_history_valid",
+        not errors,
+        (
+            "tracked attempt history and raw receipt validate against the current reserved/completed state"
+            if not errors else "; ".join(errors[:6])
+        ),
+    )
+
+
 def check_scale_14b_audit_ingest_guard(gates):
     try:
         from ingest_pending_study_artifacts import AUDIT_VALIDATORS, STUDY_OUTCOME_CONTRACTS
@@ -2092,13 +2175,32 @@ def check_scale_14b_audit_ingest_guard(gates):
     for name, expected in expected_contracts.items():
         if STUDY_OUTCOME_CONTRACTS.get(name) != expected:
             errors.append(f"STUDY_OUTCOME_CONTRACTS has incorrect {name} mode")
+    history_command = scale_14b_attempt_history_command()
+    if "--require-raw-log" not in history_command:
+        errors.append("attempt-history completion command does not require the raw receipt")
+    for required_path in (SCALE_14B_ATTEMPT_HISTORY, SCALE_14B_ATTEMPT_RECEIPT):
+        if required_path not in CORE_ARTIFACTS:
+            errors.append(f"local core artifacts omit {required_path}")
+        if required_path not in EXTERNAL_COMPLETION_STUDY_ARTIFACTS["scale_14b"]:
+            errors.append(f"external scale completion omits {required_path}")
+    if "code/check_scale_14b_attempt_history.py" not in PYTHON_HELP_INTERFACES:
+        errors.append("attempt-history checker is absent from Python interface inventory")
+    reserved_fixture = {"final_seeded_primary": {"status": "reserved"}}
+    if scale_14b_attempt_history_state_errors(reserved_fixture, set()):
+        errors.append("reserved final status is rejected while canonical causal artifacts are absent")
+    if not scale_14b_attempt_history_state_errors(
+        reserved_fixture,
+        {SCALE_14B_CAUSAL_ARTIFACTS[0]},
+    ):
+        errors.append("reserved final status is accepted after a canonical causal artifact exists")
     selected, selection_error = select_scale_14b_validator(
         {
             "config": {"causal_outcome_mode": "positive"},
             "commands": ["python code/check_direction_study.py --tag 14b"],
         }
     )
-    if selection_error or selected != positive_commands:
+    expected_positive_commands = [*positive_commands, history_command]
+    if selection_error or selected != expected_positive_commands:
         errors.append("positive scale_14b manifest does not select the positive validator")
     selected, selection_error = select_scale_14b_validator(
         {
@@ -2109,7 +2211,8 @@ def check_scale_14b_audit_ingest_guard(gates):
             ],
         }
     )
-    if selection_error or selected != audit_commands:
+    expected_audit_commands = [*audit_commands, history_command]
+    if selection_error or selected != expected_audit_commands:
         errors.append("scale_14b audit manifest does not select the audit validator")
     selected, selection_error = select_scale_14b_validator(
         {
@@ -2976,7 +3079,10 @@ def select_scale_14b_validator(manifest):
     if mode == "positive":
         if has_audit_flag:
             return None, "positive scale_14b manifest must not record causal audit mode"
-        return PENDING_VALIDATORS["scale_14b"], None
+        return [
+            *PENDING_VALIDATORS["scale_14b"],
+            scale_14b_attempt_history_command(),
+        ], None
     if mode == "negative_or_inconclusive_audit":
         if not has_audit_flag:
             return None, "scale_14b audit manifest must record --require-negative-causal-audit"
@@ -2987,7 +3093,7 @@ def select_scale_14b_validator(manifest):
         validator = AUDIT_VALIDATORS.get("scale_14b_audit")
         if not isinstance(validator, list) or len(validator) < 2:
             return None, "scale_14b audit validator is incomplete"
-        return validator, None
+        return [*validator, scale_14b_attempt_history_command()], None
     return None, (
         "scale_14b manifest config.causal_outcome_mode must be 'positive' or "
         "'negative_or_inconclusive_audit'"
@@ -3244,6 +3350,12 @@ def collect_gates(scope="all"):
         check_cross_type_launcher_metadata_guard(gates)
         check_cross_type_audit_ingest_guard(gates)
         check_direction_study_audit_selftest(gates)
+        check_command(
+            gates,
+            "scale_14b_attempt_history_selftest_valid",
+            [sys.executable, "code/check_scale_14b_attempt_history.py", "--self-test"],
+        )
+        check_scale_14b_attempt_history(gates)
         check_scale_14b_audit_ingest_guard(gates)
         check_baseline_outcome_mode_selftest(gates)
         check_baseline_bakeoff_audit_ingest_guard(gates)
