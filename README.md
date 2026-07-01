@@ -30,6 +30,7 @@ The current paper reports these results from real committed artifacts under `res
 - **Ablating the misalignment direction suppresses the measured behavior.** Ablating the recovered direction drives emergent misalignment from 2.6% (`[1.7,4.1]%`) to 0.0% (`[0.0,0.5]%`); a random direction leaves it at 3.9% (`[2.7,5.7]%`). Low-strength coherent steering induces some measured misalignment, but the steering sweep is not a clean one-dimensional sufficiency result because coherence falls at stronger strengths.
 - **The matched-organism result appears across three model families.** Within the same controlled medical-advice organism, Qwen2.5-Coder-7B, Llama-3-8B, and Mistral-7B all show a convergent direction whose ablation suppresses measured misalignment, with the Mistral ablation being partial rather than complete. This is not yet evidence for naturally occurring failures or other organism types.
 - **The recovered direction is post hoc visible early in the recorded trajectory and separates same-recipe held-out arms.** In retrospective checkpoints it reaches near-final form before the measured behavior peaks, and in leave-one-seed-out tests it scores same-recipe held-out misaligned arms above benign controls. This is a post hoc final-direction comparison and same-recipe screen, not yet a calibrated detector or prospective forecast for arbitrary checkpoints.
+- **A manifest-linked baseline audit does not establish weight-SVD superiority.** Across 16 suffix-matched leave-one-pair-out folds, leading weight-SVD, row-mean weight contrast, and activation-contrast PCA each order every held-out pair correctly. Using the unrounded margins, weight-SVD scores 0.023 below row-mean contrast and fails the manifest's positive rule. The activation comparator uses arm-condition labels and 64 fixed full user-and-assistant secure-code chats as stimuli, but no judged behavior labels; alternate stimuli were not tested. The activation artifact predates the weight-space comparison, so the paper does not describe the whole four-way audit as preregistered. The result supports no claim that weight-SVD outperforms the simpler weight baseline; activation-space and weight-space margin magnitudes are not treated as a common effect-size scale.
 
 The paper intentionally separates the generic fact that fine-tuning can be spectrally anisotropic from the alignment-specific evidence, which comes from directions, matched controls, and causal interventions.
 
@@ -41,6 +42,7 @@ Artifact map for the headline claims:
 | Refusal capture, ablation, steering | `results/data/behavioral_capture.json`, `results/data/capture_sweep.json`, `results/data/causal.json`, `results/data/ablation_sweep.json`, `results/data/ablation_layers.json`, `results/data/sufficiency.json` | `code/behavioral.py`, `code/capture_sweep.py`, `code/causal.py`, `code/ablation_sweep.py`, `code/ablation_layers.py`, `code/sufficiency.py` |
 | Medical misalignment organism | `results/data/misalignment_eval_medical.json`, `results/data/em_generations_medical.json`, `results/data/directions_med.json`, `results/data/directions_med.npz`, `results/data/causal_misalign.json`, `results/data/causal_misalign_generations.json`, `results/data/detect_med.json` | `code/verify_misalignment.py`, `code/direction_recover.py`, `code/causal_misalign.py`, `code/detect_holdout.py` |
 | Cross-family replication and held-out screen | `results/data/directions_llama.json`, `results/data/directions_llama.npz`, `results/data/directions_mistral.json`, `results/data/directions_mistral.npz`, `results/data/causal_misalign_llama.json`, `results/data/causal_misalign_mistral.json`, `results/data/detect_llama.json`, `results/data/detect_mistral.json`, `results/data/traj_med.json`, `results/data/traj_med.npz` | `code/check_direction_study.py`, `code/check_paper_numbers.py`, `code/check_uncertainty.py` |
+| Matched-fold baseline audit | `results/data/baselines.json`, `results/data/activation_pca_baseline.json`, `results/data/run_manifests/baseline_bakeoff_manifest.json` | `code/baseline_bakeoff.py`, `code/activation_pca_baseline.py`, `code/check_baselines.py`, `code/check_activation_pca_artifact.py`, `code/check_run_manifest.py` |
 
 ## Repository Layout
 
@@ -247,13 +249,19 @@ and `python3 code/paper_completion_check.py --scope external`. Final handoff als
 requires README/PLAN tracker text to stop listing the completed selected family
 or cross-family/full-family provenance bundle as pending.
 
-Validate a completed baseline bake-off:
+Validate the completed negative/inconclusive baseline audit:
 
 ```bash
 python3 code/check_activation_pca_artifact.py \
   --input results/data/activation_pca_baseline.json \
+  --min-folds 16 \
   --min-prompts 64
-python3 code/check_baselines.py --input results/data/baselines.json --max-weight-win-half-width 0.2 --require-tracked-artifacts
+python3 code/check_baselines.py \
+  --input results/data/baselines.json \
+  --min-folds 16 \
+  --max-weight-win-half-width 0.2 \
+  --baseline-outcome-mode negative_or_inconclusive_audit \
+  --require-tracked-artifacts
 ```
 
 Build the baseline bake-off after real matched arms exist. The launcher first
@@ -268,17 +276,27 @@ BEN_GLOB='<benign-arm-glob>' \
 PROMPTS=data/em/em_secure.jsonl \
 MIN_PROMPTS=64 \
 MIN_ARM_PAIRS=16 \
+BASELINE_OUTCOME_MODE=negative_or_inconclusive_audit \
 GPU_ID=0 \
 bash code/run_baseline_bakeoff.sh
 ```
 
-The final baseline handoff uses at least 16 matched arms per condition so a
-perfect fold-win result can clear the `0.2` Wilson half-width gate without
-loosening uncertainty.
+The final baseline handoff uses at least 16 matched arms per condition. The
+artifact validator retains a `0.2` Wilson half-width guard for the fold-win
+summary, but the folds overlap and the paper treats this only as a descriptive
+bound, not independent-trial uncertainty. `BASELINE_OUTCOME_MODE` is frozen before comparison:
+`positive` requires every positive criterion to pass, while
+`negative_or_inconclusive_audit` requires at least one frozen positive criterion
+to fail and preserves that result. It must not be changed after inspecting the
+measured margins.
 
 Set `GPU_ID=<index-or-uuid>` when the H200 host exposes more than one GPU; the
 launcher pins `CUDA_VISIBLE_DEVICES=$GPU_ID`, and the final manifest check
 requires the recorded CUDA environment to match that `gpu_id`.
+For the completed audit, the manifest records the activation component's
+hash-bound H200 environment receipt; the weight-space comparison itself is
+CPU-only and starts later, so that environment receipt's collection time
+precedes the shared manifest's `started_at` timestamp.
 
 After copying results back, add and commit
 `results/data/activation_pca_baseline.json`, `results/data/baselines.json`, and
@@ -288,8 +306,14 @@ completed-artifact validators:
 ```bash
 python3 code/check_activation_pca_artifact.py \
   --input results/data/activation_pca_baseline.json \
+  --min-folds 16 \
   --min-prompts 64
-python3 code/check_baselines.py --input results/data/baselines.json --max-weight-win-half-width 0.2 --require-tracked-artifacts
+python3 code/check_baselines.py \
+  --input results/data/baselines.json \
+  --min-folds 16 \
+  --max-weight-win-half-width 0.2 \
+  --baseline-outcome-mode negative_or_inconclusive_audit \
+  --require-tracked-artifacts
 python3 code/check_run_manifest.py \
   --final-handoff \
   --input results/data/run_manifests/baseline_bakeoff_manifest.json \
@@ -312,6 +336,7 @@ python3 code/check_run_manifest.py \
   --require-config-key activation_pca_json \
   --require-config-key activation_min_prompts \
   --require-config-key max_weight_win_half_width \
+  --require-config-key baseline_outcome_mode \
   --require-config-key gpu_id \
   --require-artifact results/data/activation_pca_baseline.json \
   --require-artifact results/data/baselines.json \
@@ -324,8 +349,8 @@ python3 code/check_run_manifest.py \
   --require-script code/run_environment.py \
   --require-script code/spectral.py \
   --require-command-fragment="code/activation_pca_baseline.py" \
-  --require-command-fragment="code/check_activation_pca_artifact.py --input results/data/activation_pca_baseline.json --min-prompts 64" \
-  --require-command-fragment="code/check_baselines.py --input results/data/baselines.json --max-weight-win-half-width 0.2"
+  --require-command-fragment="code/check_activation_pca_artifact.py --input results/data/activation_pca_baseline.json --min-folds 16 --min-prompts 64" \
+  --require-command-fragment="code/check_baselines.py --input results/data/baselines.json --min-folds 16 --max-weight-win-half-width 0.2 --baseline-outcome-mode negative_or_inconclusive_audit"
 ```
 
 Validate a completed positive cross-organism transfer artifact:
@@ -627,11 +652,15 @@ python code/ingest_pending_study_artifacts.py --source-dir /path/to/copied/h200/
 python code/ingest_pending_study_artifacts.py --source-dir /path/to/copied/h200/artifacts --study ood_refusal_transfer
 python code/ingest_pending_study_artifacts.py --source-dir /path/to/copied/h200/artifacts --study scale_14b
 python code/ingest_pending_study_artifacts.py --source-dir /path/to/copied/h200/artifacts --study baseline_bakeoff
+python code/ingest_pending_study_artifacts.py --source-dir /path/to/copied/h200/artifacts --study scale_14b_audit
+python code/ingest_pending_study_artifacts.py --source-dir /path/to/copied/h200/artifacts --study baseline_bakeoff_audit
 ```
 
-`--study all` intentionally covers only positive completion bundles. If a real
-cross-type code-organism run fails the preregistered positive validators and
-writes a failed manifest, preserve it through the explicit negative-audit path:
+`--study all` intentionally covers only positive completion bundles. Audit
+bundles are explicit and mutually exclusive with their positive counterparts;
+the outcome mode must be frozen before the run. If a real cross-type
+code-organism run fails the preregistered positive validators and writes a
+failed manifest, preserve it through the explicit negative-audit path:
 
 ```bash
 python code/list_external_artifact_bundles.py --bundle cross_type_code_audit
@@ -899,7 +928,7 @@ python3 code/check_run_manifest.py \
 | OOD refusal transfer beyond the AdvBench-derived prompt set | H200 artifact completed and validated: ablating the AdvBench-derived top-128 refusal subspace on held-out HarmBench prompts reduces measured refusal from 71.2% `[66.6,75.5]%` to 5.8% `[3.9,8.5]%`, versus 65.8% `[61.0,70.2]%` for a same-dimensional random subspace; the manuscript now reports this as harmful-prompt OOD transfer, not harmless-prompt or adaptive-adversary coverage |
 | Cross-type misalignment direction study beyond the medical organism | validated as a negative/inconclusive H200 audit; the real code-organism result does not support a positive cross-type transfer claim |
 | 14B scale study | pending |
-| Additional baselines and activation-PCA bake-off | pending |
+| Additional baselines and activation-PCA bake-off | completed and validated as a negative/inconclusive audit: weight-SVD, row-mean contrast, and activation-contrast PCA each rank all 16 held-out pairs correctly, but weight-SVD's mean margin is 0.023 below the simpler row-mean contrast, so no superiority claim is made |
 
 ## Framing
 

@@ -75,7 +75,7 @@ Phases are ordered so the cheapest thing that can kill the thesis runs first.
 |-------|------|--------|--------------------|
 | 0. Reconnaissance | Spectral analysis of `ΔW` for the released `emergent-misalignment/Qwen-Coder-Insecure` (32B) versus its base. No training. | Per-layer standardized leading eigenvalue, spike rank, permutation p-values. | No layer shows a supercritical spike above the null. |
 | 1. Matched organisms | Full fine-tune a 7B base into a benign control (`educational`) and a misaligned model (`insecure`), identical recipe and seed, energy-matched. Label with [MASK](https://arxiv.org/abs/2503.03750), [TruthfulQA](https://arxiv.org/abs/2109.07958), and the [emergent-misalignment eval questions](https://arxiv.org/abs/2502.17424). | Three checkpoints with verified behavior; energy-matched increments. | The misaligned arm is not actually misaligned, or the control is. |
-| 2. The discriminator | Measure rank of `ΔW` at matched energy for control and misaligned; locate both against `r*`; run the spike test with permutation null; compare against a supervised linear probe and a RepE direction. | The H2 test result, plus a baseline comparison. | Benign control is equally low-rank (H2 fails). |
+| 2. The discriminator | Measure rank of `ΔW` at matched energy for control and misaligned; locate both against `r*`; run the spike test with permutation null; compare the recovered weight-SVD direction with row-mean weight contrast, activation-PCA, and a fixed random direction. | The H2 test result, plus a matched-fold baseline comparison. | Benign control is equally low-rank (H2 fails). |
 | 3. Generalization and causality | Cross-type transfer to sleeper-agent and RLHF-trojan model pairs; steer along `v̂₁` to test causality; compute the leading-subspace distance against the null. | H3 and H4 test results; the rotation observable. | Detector does not transfer; direction is not causal. |
 | 4. Fourier branch | The genuine-Fourier, time-axis analysis of generation trajectories. Scoped as future work, where Fourier is the correct basis because there is a real sequential axis. | A separate study. | Out of scope for the static claim. |
 
@@ -87,13 +87,31 @@ Phases are ordered so the cheapest thing that can kill the thesis runs first.
 
 **Estimator.** For each layer: form `C = (1/p) ΔWᵀ ΔW`, fit the bulk noise level from the spectrum median rather than the trace, test the leading eigenvalue against the Tracy–Widom null and a permutation null, invert for the implied spike strength and rank, recover `v̂₁`, and compute the leading-subspace distance against the matched control. Confounds to control: outlier coordinates (standardize), energy leakage (match), aspect-ratio regime (report `γ`), heavy-tailed bulk (work on the increment, check the Marchenko–Pastur fit).
 
-**Baselines.** A supervised linear probe ([Goldowsky-Dill et al., 2025](https://arxiv.org/abs/2502.03407)) and a RepE reading vector ([Zou et al., 2023](https://arxiv.org/abs/2310.01405)), both trained with behavioral labels, are the methods to beat in the behavioral-example-free regime. Where labels exist and the distribution is known, a probe is expected to be better.
+**Baselines.** Supervised linear probes ([Goldowsky-Dill et al., 2025](https://arxiv.org/abs/2502.03407)) and RepE reading vectors ([Zou et al., 2023](https://arxiv.org/abs/2310.01405)) are relevant label-trained comparators.
+The completed matched-fold bake-off instead compares the leading weight-SVD
+contrast with a row-mean weight contrast, activation-contrast PCA, and a fixed
+random direction under the same 16 suffix-matched leave-one-pair-out folds.
+Weight-SVD, row-mean contrast, and activation-contrast PCA each order all 16 pairs correctly, but
+weight-SVD's mean margin is `0.023` below row-mean contrast, so the frozen
+superiority criterion fails. The weight-space methods use no examples to fit
+their directions; activation-contrast PCA uses the arm-condition labels and 64
+fixed full user-and-assistant secure-code chats as stimuli but no judged behavior
+labels, and alternate stimulus sets are not tested. The
+learned directions average raw training-arm increments rather than
+energy-rescaled increments, while held-out scores are norm-normalized. The
+label-trained comparators remain untested rather than completed baselines. Where
+labels exist and the distribution is known, a probe is expected to be better.
 
-**Metrics.** Per-layer spike test power and false-positive rate against the permutation null; separation of `r_m` and `r_b` relative to `r*` at matched energy; steering effect size on the eval questions; leading-subspace distance against the null; transfer AUROC across misalignment types; head-to-head against the supervised baselines in the behavioral-example-free setting.
+**Metrics.** Per-layer spike test power and false-positive rate against the
+permutation null; separation of `r_m` and `r_b` relative to `r*` at matched
+energy; steering effect size on the eval questions; leading-subspace distance
+against the null; transfer AUROC across misalignment types; and, for the
+completed baseline audit, fold wins, mean score margin, and AUC under a shared
+16-fold split. Supervised behavioral-label comparisons remain future work.
 
 ## 8. The LARF tension
 
-One recent result reports that fine-tuning on safety-degrading data raises the effective rank of inference-time activations on harmful prompts ([Li et al., 2025](https://arxiv.org/abs/2507.18631)), the opposite sign to "misaligned means a low-rank spike." A reviewer will raise it. The objects differ: our prediction concerns the rank of the weight increment, the cause; their measurement concerns the diversity of downstream activations on triggering inputs, the effect; a concentrated cause can produce diffuse effects. We commit to measuring both, the weight-increment spike rank and the inference-time activation effective rank, and we claim no more reconciliation than the sign analysis in the proof supports.
+One recent result reports that fine-tuning on safety-degrading data raises the effective rank of inference-time activations on harmful prompts ([Li et al., 2025](https://arxiv.org/abs/2507.18631)), the opposite sign to "misaligned means a low-rank spike." A reviewer will raise it. The objects differ: our prediction concerns the rank of the weight increment, the cause; their measurement concerns the diversity of downstream activations on triggering inputs, the effect; a concentrated cause can produce diffuse effects. The completed activation-PCA comparator measures a held-out direction score, not inference-time activation effective rank. That effective-rank measurement remains an explicit limitation, and we claim no more reconciliation than the sign analysis in the proof supports.
 
 ## 9. Related work
 
@@ -131,7 +149,7 @@ The proof carries the full positioning with citations. In brief, we differentiat
 | OOD refusal transfer beyond the AdvBench-derived prompt set | H200 artifact completed and validated with tracked OOD prompts from HarmBench: the AdvBench-derived top-128 refusal subspace, ablated on held-out prompts, reduces measured refusal from 71.2% [66.6,75.5]% to 5.8% [3.9,8.5]% versus 65.8% [61.0,70.2]% for a same-dimensional random subspace; the manuscript now reports this as harmful-prompt OOD transfer, not harmless-prompt or adaptive-adversary coverage |
 | Cross-type transfer beyond the medical organism | validated as a negative/inconclusive H200 audit; the real code-organism result does not support a positive transfer claim, so any future positive bundle must be separate from the completed `cross_type_code_audit` handoff |
 | 14B scale study | pending; use `code/ingest_pending_study_artifacts.py --study scale_14b` after the H200 bundle completes |
-| Baseline bake-off and activation-PCA baselines | pending; use `code/ingest_pending_study_artifacts.py --study baseline_bakeoff` after the H200 bundle completes |
+| Baseline bake-off and activation-PCA baselines | completed and validated as a negative/inconclusive H200 audit; all three learned directions rank all 16 held-out pairs correctly, while weight-SVD's mean margin is 0.023 below row-mean contrast, so the paper makes no weight-SVD superiority claim |
 | Robustness to adaptive adversaries | documented limitation/future work, not an external completion gate |
 
 ## 11. Repository layout
@@ -167,12 +185,14 @@ causal generation-evidence provenance bundle is now validated with hashed
 `causal_misalign*_generations.json` evidence files. The code-organism result is
 negative/inconclusive and audit-only rather than a positive cross-type transfer
 claim. The OOD refusal-transfer artifact is now completed, validated, and reported
-in the manuscript. Remaining external gates are the 14B scale study and baseline
-bake-off. Robustness to adaptive adversaries remains a documented limitation and
+in the manuscript. The baseline bake-off is also completed and retained as a
+negative/inconclusive audit because weight-SVD does not outperform the simpler
+row-mean contrast. The remaining external gate is the 14B scale study. Robustness
+to adaptive adversaries remains a documented limitation and
 future-work item, not a completion blocker. The local ingest helpers now cover
 completed capability, current-provenance, cross-type, and OOD-transfer bundles,
-plus the pending 14B and baseline bundles; they are handoff gates for real H200
-artifacts, not substitutes for those artifacts.
+plus the completed baseline bundle and pending 14B bundle; they are handoff gates
+for real H200 artifacts, not substitutes for those artifacts.
 
 ## 13. A note on the name
 

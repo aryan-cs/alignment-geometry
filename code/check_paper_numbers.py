@@ -5,6 +5,7 @@ This is a provenance guardrail for hard-coded manuscript values. It does not
 parse LaTeX; each assertion names the displayed claim it protects and the source
 file that should support it.
 """
+import hashlib
 import json
 import math
 import re
@@ -170,15 +171,23 @@ def check_uncertainty_framing():
     """Guard against point estimates being presented as interval-backed claims."""
     text = paper_text()
     compact = re.sub(r"\s+", " ", text)
-    forbidden = [
-        "AUC",
-    ]
-    for phrase in forbidden:
-        if phrase in compact:
+    if "AUC" in compact:
+        baseline = DATA / "baselines.json"
+        if not baseline.exists():
             failures.append(
-                "uncertainty framing: AUC appears in the manuscript without a "
-                "committed per-example artifact for interval estimation"
+                "uncertainty framing: AUC appears in the manuscript without "
+                "results/data/baselines.json"
             )
+        auc_required = [
+            "AUC is computed from all pairwise comparisons of the 16 held-out misaligned and 16 held-out benign scores",
+            "All summaries are descriptive because the folds overlap",
+        ]
+        for phrase in auc_required:
+            if phrase not in compact:
+                failures.append(
+                    "uncertainty framing: baseline AUC requires manuscript phrase "
+                    f"{phrase!r}"
+                )
     required = [
         "point-estimate enrichment",
         "descriptive point estimates from the committed capture artifact",
@@ -288,7 +297,7 @@ def check_reviewer_scope_caveats():
                 r"direction is a tested\s*low-dimensional, ablation-sensitive readout of a distributed representation,\s*not a complete one-dimensional account",
                 r"weight-space direction may be a compressed proxy for a broader activation-space computation",
                 r"it does not identify a circuit",
-                r"activation-PCA or difference-of-means baselines",
+                r"negative/inconclusive audit supports\s*no weight-SVD superiority claim",
             ],
         ),
         (
@@ -817,6 +826,245 @@ def check_misalignment():
     expect("same-recipe held-out screen: random direction displayed as about 0.015", sum(random_scores) / len(random_scores), 0.015, 0.001)
 
 
+def check_baseline_bakeoff():
+    path = DATA / "baselines.json"
+    activation_path = DATA / "activation_pca_baseline.json"
+    manifest_path = DATA / "run_manifests" / "baseline_bakeoff_manifest.json"
+    if not path.exists() or not activation_path.exists() or not manifest_path.exists():
+        failures.append(
+            "baseline bake-off: manuscript reports the audit but committed "
+            "baselines.json, activation_pca_baseline.json, and the run manifest "
+            "are required"
+        )
+        return
+    data = load_json("baselines.json")
+    activation = load_json("activation_pca_baseline.json")
+    with open(manifest_path) as f:
+        manifest = json.load(f)
+    expect_text("baseline bake-off: manifest study", manifest.get("study"), "baseline_bakeoff")
+    expect_text("baseline bake-off: manifest status", manifest.get("status"), "completed")
+    manifest_config = manifest.get("config", {})
+    expect("baseline bake-off: manifest layer", manifest_config.get("layer"), 12)
+    expect_text("baseline bake-off: manifest matrix", manifest_config.get("matrix"), "self_attn.o_proj")
+    expect("baseline bake-off: manifest arm-pair minimum", manifest_config.get("min_arm_pairs"), 16)
+    expect_text(
+        "baseline bake-off: manifest outcome mode",
+        manifest_config.get("baseline_outcome_mode"),
+        "negative_or_inconclusive_audit",
+    )
+    outcome_validation = manifest.get("outcome_validation", {})
+    expect_text(
+        "baseline bake-off: accepted outcome mode",
+        outcome_validation.get("requested_mode"),
+        "negative_or_inconclusive_audit",
+    )
+    if outcome_validation.get("accepted") is not True or outcome_validation.get("errors"):
+        failures.append("baseline bake-off: manifest does not record an accepted audit outcome")
+    if len(outcome_validation.get("positive_criterion_failures", [])) != 1:
+        failures.append(
+            "baseline bake-off: manifest must record exactly the observed weight-margin positive-rule failure"
+        )
+
+    preregistration = manifest.get("preregistration", {})
+    expect_text(
+        "baseline bake-off: manifest source commit linkage",
+        preregistration.get("source_git_commit"),
+        str(manifest.get("source_git_commit")),
+    )
+    expect_text(
+        "baseline bake-off: manifest start registration linkage",
+        preregistration.get("registered_at"),
+        str(manifest.get("started_at")),
+    )
+    if str(manifest.get("started_at", "")) >= str(manifest.get("finished_at", "")):
+        failures.append("baseline bake-off: manifest timestamps are not ordered")
+
+    artifact_sha256 = manifest.get("artifact_sha256", {})
+    expect_text(
+        "baseline bake-off: manifest weight artifact hash",
+        artifact_sha256.get("results/data/baselines.json"),
+        hashlib.sha256(path.read_bytes()).hexdigest(),
+    )
+    expect_text(
+        "baseline bake-off: manifest activation artifact hash",
+        artifact_sha256.get("results/data/activation_pca_baseline.json"),
+        hashlib.sha256(activation_path.read_bytes()).hexdigest(),
+    )
+    for script, recorded_hash in manifest.get("script_sha256", {}).items():
+        script_path = ROOT / script
+        if not script_path.exists():
+            failures.append(f"baseline bake-off: manifest script is missing: {script}")
+            continue
+        expect_text(
+            f"baseline bake-off: manifest script hash {script}",
+            recorded_hash,
+            hashlib.sha256(script_path.read_bytes()).hexdigest(),
+        )
+    expect_text("baseline bake-off: activation schema", activation.get("schema"), "activation_pca_baseline_v1")
+    expect_text("baseline bake-off: activation method", activation.get("method"), "activation_pca")
+    expect("baseline bake-off: activation layer", activation.get("layer"), 12)
+    expect_text("baseline bake-off: activation pooling", activation.get("pool"), "mean")
+    activation_provenance = activation.get("provenance", {})
+    expect("baseline bake-off: activation arm pairs", activation_provenance.get("n_pairs"), 16)
+    expect("baseline bake-off: activation prompt count", activation_provenance.get("n_prompts"), 64)
+    expect("baseline bake-off: activation prompt seed", activation_provenance.get("prompt_seed"), 0)
+    expect_text(
+        "baseline bake-off: activation prompt source",
+        activation_provenance.get("prompts"),
+        "data/em/em_secure.jsonl",
+    )
+    expect_text(
+        "baseline bake-off: activation base matches manifest",
+        activation_provenance.get("base"),
+        str(manifest_config.get("base")),
+    )
+    if manifest.get("environment") != activation_provenance.get("environment"):
+        failures.append(
+            "baseline bake-off: manifest environment is not the activation component's hash-bound receipt"
+        )
+    environment = manifest.get("environment", {})
+    expect_text(
+        "baseline bake-off: manifest requested GPU",
+        environment.get("gpu_id_requested"),
+        str(manifest_config.get("gpu_id")),
+    )
+    expect_text(
+        "baseline bake-off: manifest visible GPU",
+        environment.get("cuda", {}).get("cuda_visible_devices"),
+        str(manifest_config.get("gpu_id")),
+    )
+
+    resolved = activation_provenance.get("resolved_inputs", [])
+    pair_suffixes = {"misaligned": {}, "benign": {}}
+    for row in resolved:
+        label = str(row.get("label", ""))
+        label_match = re.fullmatch(r"(misaligned|benign)_(\d+)", label)
+        if not label_match:
+            continue
+        path_match = re.search(r"_s(\d+)$", str(row.get("requested", "")))
+        if not path_match:
+            failures.append(
+                f"baseline bake-off: {label} lacks a terminal seed suffix"
+            )
+            continue
+        pair_suffixes[label_match.group(1)][int(label_match.group(2))] = int(path_match.group(1))
+    for held in range(16):
+        mis_suffix = pair_suffixes["misaligned"].get(held)
+        ben_suffix = pair_suffixes["benign"].get(held)
+        if mis_suffix is None or ben_suffix is None or mis_suffix != ben_suffix:
+            failures.append(
+                "baseline bake-off: activation fold "
+                f"{held} is not a verified suffix-matched pair "
+                f"(misaligned={mis_suffix}, benign={ben_suffix})"
+            )
+
+    manifest_suffixes = {}
+    for group in ("misaligned", "benign"):
+        suffixes = []
+        for arm in manifest.get("arms", {}).get(group, []):
+            match = re.search(r"_s(\d+)$", str(arm))
+            if not match:
+                failures.append(
+                    f"baseline bake-off: manifest {group} arm lacks a terminal seed suffix: {arm!r}"
+                )
+                continue
+            suffixes.append(int(match.group(1)))
+        manifest_suffixes[group] = suffixes
+        if sorted(suffixes) != list(range(16)):
+            failures.append(
+                f"baseline bake-off: manifest {group} arms do not cover suffixes 0--15: {suffixes!r}"
+            )
+    if manifest_suffixes.get("misaligned") != manifest_suffixes.get("benign"):
+        failures.append(
+            "baseline bake-off: manifest arm order is not suffix-matched between conditions"
+        )
+    activation_arms = {
+        group: [
+            str(row.get("requested"))
+            for row in resolved
+            if re.fullmatch(rf"{group}_\d+", str(row.get("label", "")))
+        ]
+        for group in ("misaligned", "benign")
+    }
+    for group in ("misaligned", "benign"):
+        manifest_arms = [str(arm) for arm in manifest.get("arms", {}).get(group, [])]
+        if activation_arms[group] != manifest_arms:
+            failures.append(
+                f"baseline bake-off: activation and weight manifest {group} arms differ"
+            )
+        input_hashes = activation_provenance.get("input_sha256", {})
+        for arm in manifest_arms:
+            prefix = arm.rstrip("/") + "/"
+            if not any(str(key).startswith(prefix) for key in input_hashes):
+                failures.append(
+                    f"baseline bake-off: activation artifact does not content-address manifest arm {arm}"
+                )
+
+    methods = data.get("methods", {})
+    embedded_activation = methods.get("activation_pca", {})
+    expect_text(
+        "baseline bake-off: embedded activation artifact hash",
+        embedded_activation.get("artifact_sha256"),
+        hashlib.sha256(activation_path.read_bytes()).hexdigest(),
+    )
+    expected = {
+        "weight_svd": ("16/16", 0.603, 1.000),
+        "diff_of_means": ("16/16", 0.627, 1.000),
+        "activation_pca": ("16/16", 0.342, 1.000),
+        "random_projection": ("12/16", 0.002, 0.727),
+    }
+    for method, (wins, margin, auc) in expected.items():
+        row = methods.get(method, {}).get("detection", {})
+        expect_text(f"baseline bake-off: {method} fold wins", row.get("mis_above_ben"), wins)
+        expect(f"baseline bake-off: {method} mean margin", row.get("mean_margin"), margin, 0.0006)
+        expect(f"baseline bake-off: {method} AUC", row.get("auc"), auc, 0.0006)
+    weight_margin = methods.get("weight_svd", {}).get("detection", {}).get("mean_margin")
+    row_mean_margin = methods.get("diff_of_means", {}).get("detection", {}).get("mean_margin")
+    if weight_margin is not None and row_mean_margin is not None:
+        expect(
+            "baseline bake-off: displayed weight-SVD minus row-mean margin",
+            float(weight_margin) - float(row_mean_margin),
+            -0.023,
+            0.0006,
+        )
+
+    text = paper_text()
+    row_labels = {
+        "weight_svd": "leading weight-SVD contrast",
+        "diff_of_means": "row-mean weight contrast",
+        "activation_pca": "activation-PCA contrast",
+        "random_projection": "fixed random weight direction",
+    }
+    for method, label in row_labels.items():
+        row = methods.get(method, {}).get("detection", {})
+        expected_row = (
+            f"{label} & ${row.get('mis_above_ben')}$ & "
+            f"${float(row.get('mean_margin')):.3f}$ & "
+            f"${float(row.get('auc')):.3f}$"
+        )
+        if not has_phrase(text, expected_row):
+            failures.append(
+                "baseline bake-off: manuscript table is missing artifact-derived "
+                f"row {expected_row!r}"
+            )
+    expected_difference = float(weight_margin) - float(row_mean_margin)
+    required_phrases = [
+        "manifest-linked 16-fold comparison",
+        "seeded random weight direction fixed across folds",
+        "64 fixed-seed full user-and-assistant secure-code chats from",
+        "data/em/em_secure.jsonl",
+        f"using the unrounded margins, the observed difference is ${expected_difference:.3f}$",
+        "learned directions average raw training-arm increments",
+        "we do not describe the whole four-way audit as preregistered",
+    ]
+    for phrase in required_phrases:
+        if not has_phrase(text, phrase):
+            failures.append(
+                "baseline bake-off: manuscript is missing provenance or scope "
+                f"phrase {phrase!r}"
+            )
+
+
 def main():
     check_capability_caveat()
     check_random_control_wording()
@@ -830,6 +1078,7 @@ def main():
     check_synthetic_bbp()
     check_refusal()
     check_misalignment()
+    check_baseline_bakeoff()
     if failures:
         for failure in failures:
             print("FAIL:", failure, file=sys.stderr)

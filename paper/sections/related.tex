@@ -61,7 +61,12 @@ investigation time \citep{marks2025}. These are stronger tools in the regime
 where the relevant behavior is already represented in labeled examples or known
 triggers. Our target regime is narrower: a same-base, same-recipe comparison in
 which the direction is recovered from weight increments before using behavioral
-examples to fit a probe.
+examples to fit a probe. Our matched-fold audit compares weight-SVD with a
+row-mean weight contrast, a fixed random weight direction, and
+activation-contrast PCA fitted with arm-condition labels and fixed full
+user-and-assistant secure-code chats, but without judged behavior labels. It
+does not compare against
+a supervised probe or a behavior-labeled RepE direction.
 
 \paragraph{Emergent misalignment.}
 Narrow fine-tuning can induce broad misalignment \citep{betley2025emergent}, and

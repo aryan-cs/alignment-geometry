@@ -1,0 +1,167 @@
+{
+  "schema": "study_run_manifest_v1",
+  "study": "baseline_bakeoff",
+  "status": "completed",
+  "started_at": "2026-07-01T09:48:46.343143+00:00",
+  "finished_at": "2026-07-01T10:32:47.875659+00:00",
+  "source_git_commit": "b1e0679af2da7b40a3321f8aa5ded927767fd27d",
+  "source_git_status_short": "",
+  "git_commit": "b1e0679af2da7b40a3321f8aa5ded927767fd27d",
+  "git_status_short": "?? results/data/activation_pca_baseline.json\n?? results/data/baselines.json\n?? results/data/run_manifests/baseline_bakeoff_manifest.json",
+  "config": {
+    "base": "/home/aryang9/.cache/huggingface/hub/models--Qwen--Qwen2.5-Coder-7B-Instruct/snapshots/c03e6d358207e414f1eca0bb1891e29f1db0e242",
+    "runs": "/home/aryang9/sandbox/alignment-geometry/runs",
+    "layer": 12,
+    "matrix": "self_attn.o_proj",
+    "misaligned_glob": "misaligned_med7b_s*",
+    "benign_glob": "benign_med7b_s*",
+    "min_arm_pairs": 16,
+    "activation_pca_json": "results/data/activation_pca_baseline.json",
+    "activation_min_prompts": 64,
+    "max_weight_win_half_width": 0.2,
+    "baseline_outcome_mode": "negative_or_inconclusive_audit",
+    "gpu_id": "0"
+  },
+  "preregistration": {
+    "schema": "study_preregistration_v1",
+    "registered_at": "2026-07-01T09:48:46.343143+00:00",
+    "source_git_commit": "b1e0679af2da7b40a3321f8aa5ded927767fd27d",
+    "source_git_status_short": "",
+    "locked_config_keys": [
+      "activation_min_prompts",
+      "activation_pca_json",
+      "base",
+      "baseline_outcome_mode",
+      "benign_glob",
+      "gpu_id",
+      "layer",
+      "matrix",
+      "max_weight_win_half_width",
+      "min_arm_pairs",
+      "misaligned_glob",
+      "runs"
+    ],
+    "config_sha256": "24f888a6bd49315234b4678b61d3702085217e8316105c920ddd303a07731828",
+    "decision_rule": "Before computing baseline comparisons, freeze the base checkpoint, 16 matched folds, arm globs, layer, matrix, GPU selection, activation-PCA artifact, baseline outcome mode, and validators; preserve structurally valid real evidence and a failed manifest before rejecting the frozen claim rule."
+  },
+  "environment": {
+    "schema": "run_environment_v1",
+    "collected_at": "2026-07-01T08:13:14Z",
+    "gpu_id_requested": "0",
+    "hostname_sha256": "e54e4fcaba680caf4e2ec7df037e98df0e545ee3cccf4afd792d5d655c6f0d8f",
+    "platform": {
+      "system": "Linux",
+      "release": "6.8.0-124-generic",
+      "machine": "x86_64",
+      "processor": "x86_64"
+    },
+    "python": {
+      "version": "3.12.3",
+      "implementation": "CPython",
+      "executable_basename": "python"
+    },
+    "packages": {
+      "torch": "2.7.1+cu128",
+      "transformers": "5.12.0",
+      "datasets": "5.0.0",
+      "accelerate": "1.14.0",
+      "safetensors": "0.8.0",
+      "numpy": "2.4.6",
+      "scipy": "1.17.1",
+      "scikit-learn": "1.9.0",
+      "peft": "0.19.1"
+    },
+    "cuda": {
+      "cuda_visible_devices": "0",
+      "pytorch_cuda_alloc_conf": "expandable_segments:True",
+      "torch_importable": true,
+      "pytorch_cuda_available": true,
+      "pytorch_cuda_version": "12.8",
+      "pytorch_device_count": 1,
+      "pytorch_cudnn_version": 90701
+    },
+    "nvidia_smi": {
+      "available": true,
+      "error": ""
+    },
+    "gpus": [
+      {
+        "index": "0",
+        "name": "NVIDIA H200 NVL",
+        "uuid_sha256": "1ea407f5fd4a744f1a2475fef4fe52b1a6facabea594736c13b3c0fb7a3fe54e",
+        "driver_version": "570.211.01",
+        "memory_total_mib": 143771
+      }
+    ]
+  },
+  "commands": [
+    "/home/aryang9/sandbox/alignment-geometry/.venv/bin/python code/activation_pca_baseline.py --base /home/aryang9/.cache/huggingface/hub/models--Qwen--Qwen2.5-Coder-7B-Instruct/snapshots/c03e6d358207e414f1eca0bb1891e29f1db0e242 --runs /home/aryang9/sandbox/alignment-geometry/runs --misaligned-glob misaligned_med7b_s\\* --benign-glob benign_med7b_s\\* --prompts data/em/em_secure.jsonl --n-prompts 64 --min-prompts 64 --prompt-seed 0 --layer 12 --pool mean --batch-size 4 --max-length 512 --dtype bfloat16 --min-arm-pairs 16 --out results/data/activation_pca_baseline.json --local-files-only",
+    "/home/aryang9/sandbox/alignment-geometry/.venv/bin/python code/check_activation_pca_artifact.py --input results/data/activation_pca_baseline.json --min-folds 16 --min-prompts 64",
+    "/home/aryang9/sandbox/alignment-geometry/.venv/bin/python code/baseline_bakeoff.py --base /home/aryang9/.cache/huggingface/hub/models--Qwen--Qwen2.5-Coder-7B-Instruct/snapshots/c03e6d358207e414f1eca0bb1891e29f1db0e242 --runs /home/aryang9/sandbox/alignment-geometry/runs --misaligned-glob 'misaligned_med7b_s*' --benign-glob 'benign_med7b_s*' --layer 12 --matrix self_attn.o_proj --min-arm-pairs 16 --activation-pca-json results/data/activation_pca_baseline.json --activation-min-prompts 64 --activation-command '/home/aryang9/sandbox/alignment-geometry/.venv/bin/python code/activation_pca_baseline.py --base /home/aryang9/.cache/huggingface/hub/models--Qwen--Qwen2.5-Coder-7B-Instruct/snapshots/c03e6d358207e414f1eca0bb1891e29f1db0e242 --runs /home/aryang9/sandbox/alignment-geometry/runs --misaligned-glob misaligned_med7b_s\\* --benign-glob benign_med7b_s\\* --prompts data/em/em_secure.jsonl --n-prompts 64 --min-prompts 64 --prompt-seed 0 --layer 12 --pool mean --batch-size 4 --max-length 512 --dtype bfloat16 --min-arm-pairs 16 --out results/data/activation_pca_baseline.json --local-files-only' --max-weight-win-half-width 0.2 --baseline-outcome-mode negative_or_inconclusive_audit --out results/data/baselines.json --manifest results/data/run_manifests/baseline_bakeoff_manifest.json",
+    "/home/aryang9/sandbox/alignment-geometry/.venv/bin/python code/check_baselines.py --input results/data/baselines.json --min-folds 16 --max-weight-win-half-width 0.2 --baseline-outcome-mode negative_or_inconclusive_audit"
+  ],
+  "outcome_validation": {
+    "requested_mode": "negative_or_inconclusive_audit",
+    "accepted": true,
+    "positive_criterion_failures": [
+      "claim gate: weight_svd mean_margin must be at least diff_of_means by 0.000; got -0.023"
+    ],
+    "errors": []
+  },
+  "validators": [
+    "code/check_baselines.py",
+    "code/check_activation_pca_artifact.py"
+  ],
+  "arms": {
+    "misaligned": [
+      "/home/aryang9/sandbox/alignment-geometry/runs/misaligned_med7b_s0",
+      "/home/aryang9/sandbox/alignment-geometry/runs/misaligned_med7b_s1",
+      "/home/aryang9/sandbox/alignment-geometry/runs/misaligned_med7b_s10",
+      "/home/aryang9/sandbox/alignment-geometry/runs/misaligned_med7b_s11",
+      "/home/aryang9/sandbox/alignment-geometry/runs/misaligned_med7b_s12",
+      "/home/aryang9/sandbox/alignment-geometry/runs/misaligned_med7b_s13",
+      "/home/aryang9/sandbox/alignment-geometry/runs/misaligned_med7b_s14",
+      "/home/aryang9/sandbox/alignment-geometry/runs/misaligned_med7b_s15",
+      "/home/aryang9/sandbox/alignment-geometry/runs/misaligned_med7b_s2",
+      "/home/aryang9/sandbox/alignment-geometry/runs/misaligned_med7b_s3",
+      "/home/aryang9/sandbox/alignment-geometry/runs/misaligned_med7b_s4",
+      "/home/aryang9/sandbox/alignment-geometry/runs/misaligned_med7b_s5",
+      "/home/aryang9/sandbox/alignment-geometry/runs/misaligned_med7b_s6",
+      "/home/aryang9/sandbox/alignment-geometry/runs/misaligned_med7b_s7",
+      "/home/aryang9/sandbox/alignment-geometry/runs/misaligned_med7b_s8",
+      "/home/aryang9/sandbox/alignment-geometry/runs/misaligned_med7b_s9"
+    ],
+    "benign": [
+      "/home/aryang9/sandbox/alignment-geometry/runs/benign_med7b_s0",
+      "/home/aryang9/sandbox/alignment-geometry/runs/benign_med7b_s1",
+      "/home/aryang9/sandbox/alignment-geometry/runs/benign_med7b_s10",
+      "/home/aryang9/sandbox/alignment-geometry/runs/benign_med7b_s11",
+      "/home/aryang9/sandbox/alignment-geometry/runs/benign_med7b_s12",
+      "/home/aryang9/sandbox/alignment-geometry/runs/benign_med7b_s13",
+      "/home/aryang9/sandbox/alignment-geometry/runs/benign_med7b_s14",
+      "/home/aryang9/sandbox/alignment-geometry/runs/benign_med7b_s15",
+      "/home/aryang9/sandbox/alignment-geometry/runs/benign_med7b_s2",
+      "/home/aryang9/sandbox/alignment-geometry/runs/benign_med7b_s3",
+      "/home/aryang9/sandbox/alignment-geometry/runs/benign_med7b_s4",
+      "/home/aryang9/sandbox/alignment-geometry/runs/benign_med7b_s5",
+      "/home/aryang9/sandbox/alignment-geometry/runs/benign_med7b_s6",
+      "/home/aryang9/sandbox/alignment-geometry/runs/benign_med7b_s7",
+      "/home/aryang9/sandbox/alignment-geometry/runs/benign_med7b_s8",
+      "/home/aryang9/sandbox/alignment-geometry/runs/benign_med7b_s9"
+    ]
+  },
+  "script_sha256": {
+    "code/run_baseline_bakeoff.sh": "68eb92c60ccbc9a11b00fccc01e8923704d46c1f9a95ba72f0f7c7fa1e82f59a",
+    "code/activation_pca_baseline.py": "b39adad95080eacc67bd3d1d78d5d2c5958919231d6f633ac7a8f6200b57ca87",
+    "code/baseline_bakeoff.py": "60c38ec80f20fd90bbe44eb43fee66637f1a969cd0b4c02ffc21b457e266c490",
+    "code/check_baselines.py": "18f347c1ff4085d2045711a78237c91c612cd962787829d6bcfe8d39656b5595",
+    "code/check_activation_pca_artifact.py": "a6b755ecc352cc5b4251cfd05f807ea037d67e615ce8189bc500eef866647551",
+    "code/check_run_manifest.py": "2e31dc1bc9cee3fe89fbfcd0311a8117b338d39049011f34edc35eb14638a889",
+    "code/run_environment.py": "1bd6361766c6c92ce37c3ff73add6345f1ab2a49457afbb593da74db2431813b",
+    "code/spectral.py": "7ce413546b7507bd6614aeb62e36647c6cf5f8367a8848c8550e8a881b2f54b9"
+  },
+  "artifact_sha256": {
+    "results/data/baselines.json": "b80622d2ae847baf6bd7d69f168951947877a4f0351bd7a22fd6d9eb6234dc1d",
+    "results/data/activation_pca_baseline.json": "d17ac3eaee746517592fe0982fd02a0b028a11c54291e85d08c2e69a3be61c05"
+  }
+}

@@ -302,3 +302,54 @@ direction of equal dimension separates them not at all ($\approx 0.015$ either
 way; Figure~\ref{fig:detect} in Appendix~\ref{app:details}). Once characterized,
 the same-recipe leave-one-seed-out score separates the held-out arms; it is not
 yet a calibrated predictor for arbitrary checkpoints.
+
+\FloatBarrier
+\paragraph{The leading weight-SVD direction does not outperform a simpler
+weight contrast.}
+We report one manifest-linked 16-fold comparison at layer 12 with two learned
+weight-space directions, a seeded random weight direction fixed across folds,
+and an activation-space direction. The leading weight-SVD direction, the
+row-mean weight-contrast direction, and activation-contrast PCA are refit inside
+each leave-one-pair-out fold; each ranks the held-out misaligned arm above its
+suffix-matched benign counterpart in all 16 folds
+(Table~\ref{tab:baseline-bakeoff}). The two weight methods use no examples to fit
+their directions. Activation-contrast PCA uses the misaligned-versus-benign arm
+labels and 64 fixed-seed full user-and-assistant secure-code chats from
+\path{data/em/em_secure.jsonl} as stimuli, mean-pooled at layer 12, but does not
+use judged behavior labels; alternate stimulus sets are not tested. Within weight space, row-mean contrast has mean
+margin $0.627$ versus $0.603$ for weight-SVD. The manifest's positive rule
+required weight-SVD to at least match that margin; using the unrounded margins,
+the observed difference is $-0.023$. We therefore retain this as a
+negative/inconclusive baseline audit: the leading weight-SVD direction is a
+strong same-recipe discriminator in these folds, but the audit does not support
+superiority over the simpler row-mean contrast. Held-out scores normalize each
+increment by its Frobenius norm, whereas the learned directions average raw
+training-arm increments; this audit therefore does not isolate direction from
+training-arm update magnitude. The overlapping folds reuse the same arms and
+are descriptive, not 16 independent replications. The committed artifacts are
+\path{results/data/baselines.json} and
+\path{results/data/activation_pca_baseline.json}.
+
+\begin{table}[!htbp]
+\centering
+\caption{Manifest-linked layer-12 matched-fold baseline comparison. \emph{Wins}
+counts folds in which the held-out misaligned arm scores above its benign
+counterpart. Mean margins use normalized projection scores in their respective
+weight or activation spaces and are not a shared cross-space effect-size scale.
+AUC is computed from all pairwise comparisons of the 16 held-out misaligned and
+16 held-out benign scores. All summaries are descriptive because the folds
+overlap.}
+\label{tab:baseline-bakeoff}
+\small
+\begin{tabular}{lccc}
+\toprule
+direction & wins & mean margin & AUC \\
+\midrule
+leading weight-SVD contrast & $16/16$ & $0.603$ & $1.000$ \\
+row-mean weight contrast & $16/16$ & $0.627$ & $1.000$ \\
+activation-PCA contrast & $16/16$ & $0.342$ & $1.000$ \\
+fixed random weight direction & $12/16$ & $0.002$ & $0.727$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+\FloatBarrier

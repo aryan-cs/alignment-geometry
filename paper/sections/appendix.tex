@@ -68,7 +68,25 @@ seeds, or model families. Geometric quantities such as subspace
 capture, paired-agreement cosines, and score margins are deterministic summaries of
 committed prompt sets, layer censuses, or leave-one-out folds; when the paper does
 not attach a sampling model to them, they are labeled as point estimates or shown
-as individual folds rather than presented as interval-backed rate claims.
+as individual folds rather than presented as interval-backed rate claims. The
+baseline comparison uses 16 suffix-matched arm pairs, layer 12, fixed score
+definitions, and four direction constructions: leading weight-SVD, row-mean
+weight contrast, activation-contrast PCA from 64 fixed-seed full
+user-and-assistant secure-code chats, and a seeded random weight direction fixed
+across folds. The two
+learned weight directions and activation-contrast PCA are refit inside each
+held-out fold. Activation-contrast PCA uses the known arm conditions but no
+judged behavior labels; no alternate stimulus set is tested. Each held-out score normalizes by the corresponding
+weight or activation increment norm, while learned directions are fit to raw
+training-arm increments; cross-space margins are not a common effect-size scale,
+and the comparison does not remove training-arm update-magnitude differences.
+Its negative/inconclusive outcome is retained because the manifest's positive
+rule fails on weight-SVD's margin relative to row-mean contrast. That rule is
+encoded in the committed producer before the weight-space margins are computed,
+and the manifest-linked artifact reports every method and fold. The activation
+artifact was generated earlier, so we do not describe the whole four-way audit
+as preregistered. The manifest records that activation component's hash-bound
+H200 environment; the later weight-space calculation is CPU-only.
 
 \paragraph{Qualitative emergent-misalignment examples.}
 Table~\ref{tab:em-examples} gives truncated verbatim, judge-scored excerpts from
