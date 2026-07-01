@@ -746,6 +746,8 @@ PENDING_VALIDATORS = {
             "layer",
             "--require-config-key",
             "k",
+            "--require-config-key",
+            "causal_outcome_mode",
             "--require-artifact",
             "results/data/misalignment_eval_14b.json",
             "--require-artifact",
@@ -2006,6 +2008,106 @@ def check_cross_type_audit_ingest_guard(gates):
     )
 
 
+def check_direction_study_audit_selftest(gates):
+    check_command(
+        gates,
+        "direction_study_causal_audit_selftest_valid",
+        [sys.executable, "code/check_direction_study.py", "--self-test"],
+    )
+
+
+def check_scale_14b_audit_ingest_guard(gates):
+    try:
+        from ingest_pending_study_artifacts import AUDIT_VALIDATORS, STUDY_OUTCOME_CONTRACTS
+    except Exception as exc:
+        add(
+            gates,
+            "scale_14b_audit_ingest_separation_valid",
+            False,
+            f"failed to import pending-study audit contracts: {exc}",
+        )
+        return
+
+    audit_commands = AUDIT_VALIDATORS.get("scale_14b_audit")
+    positive_commands = PENDING_VALIDATORS.get("scale_14b")
+    errors = []
+    if not isinstance(audit_commands, list) or len(audit_commands) < 2:
+        errors.append("AUDIT_VALIDATORS missing complete scale_14b_audit commands")
+        audit_tokens = []
+    else:
+        audit_tokens = [token for command in audit_commands for token in command]
+    if not isinstance(positive_commands, list) or len(positive_commands) < 2:
+        errors.append("PENDING_VALIDATORS missing complete scale_14b commands")
+        positive_tokens = []
+    else:
+        positive_tokens = [token for command in positive_commands for token in command]
+
+    audit_flag = "--require-negative-causal-audit"
+    if audit_flag not in audit_tokens:
+        errors.append("scale_14b_audit validator missing explicit causal audit mode")
+    if audit_flag in positive_tokens:
+        errors.append("ordinary scale_14b validator must not enable causal audit mode")
+    for required in (
+        "--require-eval-provenance",
+        "--require-direction-provenance",
+        "--require-detect-provenance",
+        "--require-causal-provenance",
+    ):
+        if required not in audit_tokens:
+            errors.append(f"scale_14b_audit validator missing {required}")
+    if "--final-handoff" not in audit_tokens:
+        errors.append("scale_14b_audit manifest validator missing --final-handoff")
+    if "--require-command-fragment=--require-negative-causal-audit" not in audit_tokens:
+        errors.append("scale_14b_audit manifest does not prove the audit command was recorded")
+    expected_contracts = {
+        "scale_14b": (
+            "results/data/run_manifests/scale_14b_manifest.json",
+            "positive",
+        ),
+        "scale_14b_audit": (
+            "results/data/run_manifests/scale_14b_manifest.json",
+            "negative_or_inconclusive_audit",
+        ),
+    }
+    for name, expected in expected_contracts.items():
+        if STUDY_OUTCOME_CONTRACTS.get(name) != expected:
+            errors.append(f"STUDY_OUTCOME_CONTRACTS has incorrect {name} mode")
+    selected, selection_error = select_scale_14b_validator(
+        {
+            "config": {"causal_outcome_mode": "positive"},
+            "commands": ["python code/check_direction_study.py --tag 14b"],
+        }
+    )
+    if selection_error or selected != positive_commands:
+        errors.append("positive scale_14b manifest does not select the positive validator")
+    selected, selection_error = select_scale_14b_validator(
+        {
+            "config": {"causal_outcome_mode": "negative_or_inconclusive_audit"},
+            "commands": [
+                "python code/check_direction_study.py --tag 14b "
+                "--require-negative-causal-audit"
+            ],
+        }
+    )
+    if selection_error or selected != audit_commands:
+        errors.append("scale_14b audit manifest does not select the audit validator")
+    selected, selection_error = select_scale_14b_validator(
+        {
+            "config": {"causal_outcome_mode": "positive"},
+            "commands": ["python code/check_direction_study.py --require-negative-causal-audit"],
+        }
+    )
+    if selected is not None or selection_error is None:
+        errors.append("positive scale_14b manifest can silently select audit mode")
+    add(
+        gates,
+        "scale_14b_audit_ingest_separation_valid",
+        not errors,
+        "scale_14b positive and causal-audit ingest paths are explicit and mutually exclusive"
+        if not errors else "; ".join(errors),
+    )
+
+
 def check_external_artifact_bundle_lister(gates):
     try:
         from ingest_capability_artifacts import ARTIFACTS as CAPABILITY_ARTIFACTS
@@ -2110,6 +2212,17 @@ def check_external_artifact_bundle_lister(gates):
         "final": (
             "python code/ingest_pending_study_artifacts.py "
             "--validate-only --final-handoff --study cross_type_code_audit"
+        ),
+    }
+    expected_specs["scale_14b_audit"] = {
+        "files": list(EXPECTED_PENDING_ARTIFACTS["scale_14b"]),
+        "ingest": (
+            "python code/ingest_pending_study_artifacts.py "
+            "--source-dir /path/to/copied/h200/artifacts --study scale_14b_audit"
+        ),
+        "final": (
+            "python code/ingest_pending_study_artifacts.py "
+            "--validate-only --final-handoff --study scale_14b_audit"
         ),
     }
 
@@ -2547,6 +2660,38 @@ def check_capability_manifest(gates):
     )
 
 
+def select_scale_14b_validator(manifest):
+    if not isinstance(manifest, dict):
+        return None, "scale_14b manifest must be an object"
+    config = manifest.get("config")
+    mode = config.get("causal_outcome_mode") if isinstance(config, dict) else None
+    commands = manifest.get("commands")
+    if not isinstance(commands, list) or not commands or not all(
+        isinstance(command, str) and command for command in commands
+    ):
+        return None, "scale_14b manifest commands must be a nonempty string list"
+    has_audit_flag = any("--require-negative-causal-audit" in command for command in commands)
+    if mode == "positive":
+        if has_audit_flag:
+            return None, "positive scale_14b manifest must not record causal audit mode"
+        return PENDING_VALIDATORS["scale_14b"], None
+    if mode == "negative_or_inconclusive_audit":
+        if not has_audit_flag:
+            return None, "scale_14b audit manifest must record --require-negative-causal-audit"
+        try:
+            from ingest_pending_study_artifacts import AUDIT_VALIDATORS
+        except Exception as exc:
+            return None, f"failed to import scale_14b audit validator: {exc}"
+        validator = AUDIT_VALIDATORS.get("scale_14b_audit")
+        if not isinstance(validator, list) or len(validator) < 2:
+            return None, "scale_14b audit validator is incomplete"
+        return validator, None
+    return None, (
+        "scale_14b manifest config.causal_outcome_mode must be 'positive' or "
+        "'negative_or_inconclusive_audit'"
+    )
+
+
 def check_pending_studies(gates):
     tracked = tracked_files() or set()
     for name, paths in EXTERNAL_COMPLETION_STUDY_ARTIFACTS.items():
@@ -2569,8 +2714,19 @@ def check_pending_studies(gates):
             category="external",
         )
         validator = PENDING_VALIDATORS.get(name)
+        validator_error = None
+        if name == "scale_14b" and files_ok:
+            manifest_path = ROOT / "results/data/run_manifests/scale_14b_manifest.json"
+            try:
+                manifest = json.loads(manifest_path.read_text())
+            except Exception as exc:
+                validator = None
+                validator_error = f"failed to read scale_14b manifest outcome mode: {exc}"
+            else:
+                validator, validator_error = select_scale_14b_validator(manifest)
         if validator is None:
-            add(gates, f"{name}_validated", False, "no committed validator for this pending study", category="external")
+            detail = validator_error or "no committed validator for this pending study"
+            add(gates, f"{name}_validated", False, detail, category="external")
         elif not files_ok:
             add(gates, f"{name}_validated", False, "artifacts missing, untracked, or empty; validator not run", category="external")
         else:
@@ -2645,6 +2801,8 @@ def collect_gates(scope="all"):
         check_cross_type_metadata_selftest(gates)
         check_cross_type_launcher_metadata_guard(gates)
         check_cross_type_audit_ingest_guard(gates)
+        check_direction_study_audit_selftest(gates)
+        check_scale_14b_audit_ingest_guard(gates)
         check_external_artifact_bundle_lister(gates)
         check_launcher_manifest_script_lists(gates)
         check_medical_direction_study(gates)

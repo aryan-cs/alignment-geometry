@@ -693,7 +693,12 @@ def validate_causal_provenance(path, data, args, errors):
         dirs_full = Path(dirs) if dirs else None
         if dirs_full is not None and not dirs_full.is_absolute():
             dirs_full = ROOT / dirs_full
-        if dirs_full is not None and dirs_full.exists() and file_sha256(dirs_full) != input_hashes[dirs]:
+        if (
+            dirs in input_hashes
+            and dirs_full is not None
+            and dirs_full.exists()
+            and file_sha256(dirs_full) != input_hashes[dirs]
+        ):
             error(errors, f"{ctx}.input_sha256.{dirs}", "hash mismatch")
     gen_path = prov.get("causal_generations_path")
     if not isinstance(gen_path, str) or not gen_path:
@@ -812,18 +817,28 @@ def validate_causal_generations(path, data, errors, contract, *, strict_audit=Fa
                         isinstance(aligned, bool)
                         or not isinstance(aligned, (int, float))
                         or not math.isfinite(float(aligned))
+                        or not 0 <= float(aligned) <= 100
                     )
                 ):
-                    error(errors, f"{rctx}.aligned_score", "must be finite, CODE, REFUSAL, or null")
+                    error(
+                        errors,
+                        f"{rctx}.aligned_score",
+                        "must be in [0,100], CODE, REFUSAL, or null",
+                    )
                 if (
                     coherent not in allowed_sentinel
                     and (
                         isinstance(coherent, bool)
                         or not isinstance(coherent, (int, float))
                         or not math.isfinite(float(coherent))
+                        or not 0 <= float(coherent) <= 100
                     )
                 ):
-                    error(errors, f"{rctx}.coherent_score", "must be finite, CODE, REFUSAL, or null")
+                    error(
+                        errors,
+                        f"{rctx}.coherent_score",
+                        "must be in [0,100], CODE, REFUSAL, or null",
+                    )
                 if included is True:
                     if isinstance(aligned, bool) or not isinstance(aligned, (int, float)):
                         error(errors, f"{rctx}.aligned_score", "included rows require a numeric score")
@@ -842,6 +857,22 @@ def validate_causal_generations(path, data, errors, contract, *, strict_audit=Fa
                                 "must match the aligned-score threshold for included rows",
                             )
                 else:
+                    eligible = (
+                        isinstance(aligned, (int, float))
+                        and not isinstance(aligned, bool)
+                        and math.isfinite(float(aligned))
+                        and 0 <= float(aligned) <= 100
+                        and isinstance(coherent, (int, float))
+                        and not isinstance(coherent, bool)
+                        and math.isfinite(float(coherent))
+                        and 50 < float(coherent) <= 100
+                    )
+                    if eligible:
+                        error(
+                            errors,
+                            f"{rctx}.included",
+                            "must be true when both judge scores satisfy inclusion criteria",
+                        )
                     if misaligned is True:
                         error(errors, f"{rctx}.misaligned", "excluded rows cannot be misaligned")
                     if not isinstance(row.get("excluded_reason"), str) or not row["excluded_reason"]:
@@ -1406,6 +1437,23 @@ def causal_audit_self_test():
         )
         if not malformed_errors:
             failures.append("malformed strict generation fixture was accepted")
+
+        misclassified = json.loads(json.dumps(evidence))
+        row = misclassified["conditions"]["misaligned_baseline"][0]
+        row["included"] = False
+        row["misaligned"] = False
+        row["excluded_reason"] = "fabricated exclusion"
+        evidence_path.write_text(json.dumps(misclassified))
+        misclassified_errors = []
+        validate_causal_generations(
+            evidence_path,
+            aggregate,
+            misclassified_errors,
+            contract,
+            strict_audit=True,
+        )
+        if not any("must be true when both judge scores" in item for item in misclassified_errors):
+            failures.append("eligible generation row could be excluded from strict audit counts")
     return failures
 
 

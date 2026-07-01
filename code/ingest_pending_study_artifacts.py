@@ -34,9 +34,11 @@ SUPPORTED_STUDIES = (
 )
 SUPPORTED_AUDIT_STUDIES = (
     "cross_type_code_audit",
+    "scale_14b_audit",
 )
 AUDIT_ARTIFACTS = {
     "cross_type_code_audit": list(EXPECTED_PENDING_ARTIFACTS["cross_type_transfer"]),
+    "scale_14b_audit": list(EXPECTED_PENDING_ARTIFACTS["scale_14b"]),
 }
 AUDIT_VALIDATORS = {
     "cross_type_code_audit": [
@@ -48,6 +50,45 @@ AUDIT_VALIDATORS = {
             "--require-negative-audit",
         ],
     ],
+    "scale_14b_audit": [
+        [
+            sys.executable,
+            "code/check_direction_study.py",
+            "--tag",
+            "14b",
+            "--directions",
+            "results/data/directions_14b.json",
+            "--directions-npz",
+            "results/data/directions_14b.npz",
+            "--detect",
+            "results/data/detect_14b.json",
+            "--eval",
+            "results/data/misalignment_eval_14b.json",
+            "--causal",
+            "results/data/causal_misalign_14b.json",
+            "--min-detect-fold-margin",
+            "0.05",
+            "--require-eval-provenance",
+            "--require-direction-provenance",
+            "--require-detect-provenance",
+            "--require-causal-provenance",
+            "--require-negative-causal-audit",
+        ],
+        [
+            *PENDING_VALIDATORS["scale_14b"][1],
+            "--require-command-fragment=--require-negative-causal-audit",
+        ],
+    ],
+}
+STUDY_OUTCOME_CONTRACTS = {
+    "scale_14b": (
+        "results/data/run_manifests/scale_14b_manifest.json",
+        "positive",
+    ),
+    "scale_14b_audit": (
+        "results/data/run_manifests/scale_14b_manifest.json",
+        "negative_or_inconclusive_audit",
+    ),
 }
 STALE_TRACKER_PHRASES = {
     "cross_type_transfer": {
@@ -223,6 +264,30 @@ def run_cmd(args):
 def validate_study(study, final_handoff):
     for rel_path in expected_artifacts(study):
         validate_shape(repo_path(rel_path), f"{study}:{rel_path}", artifact_kind(rel_path))
+    outcome_contract = STUDY_OUTCOME_CONTRACTS.get(study)
+    if outcome_contract is not None:
+        manifest_path, expected_outcome = outcome_contract
+        manifest = load_json(repo_path(manifest_path), f"{study}:{manifest_path}")
+        if not isinstance(manifest, dict):
+            raise SystemExit(f"{study}:{manifest_path}: manifest must be an object")
+        config = manifest.get("config")
+        actual_outcome = config.get("causal_outcome_mode") if isinstance(config, dict) else None
+        if actual_outcome != expected_outcome:
+            raise SystemExit(
+                f"{study}:{manifest_path}: config.causal_outcome_mode must be "
+                f"{expected_outcome!r}; got {actual_outcome!r}"
+            )
+        commands = manifest.get("commands")
+        if not isinstance(commands, list) or not all(isinstance(command, str) for command in commands):
+            raise SystemExit(f"{study}:{manifest_path}: commands must be a string list")
+        has_audit_flag = any("--require-negative-causal-audit" in command for command in commands)
+        expects_audit = expected_outcome == "negative_or_inconclusive_audit"
+        if has_audit_flag != expects_audit:
+            requirement = "include" if expects_audit else "exclude"
+            raise SystemExit(
+                f"{study}:{manifest_path}: command log must {requirement} "
+                "--require-negative-causal-audit"
+            )
     failures = 0
     for command in study_validators(study):
         cmd = command if final_handoff else precommit_command(command)
@@ -279,8 +344,8 @@ def parse_args():
         default="all",
         help=(
             "study bundle to copy/validate. 'all' means positive completion "
-            "studies only; select cross_type_code_audit explicitly for a failed "
-            "negative/inconclusive audit."
+            "studies only; select cross_type_code_audit or scale_14b_audit "
+            "explicitly for a negative/inconclusive audit."
         ),
     )
     ap.add_argument(
