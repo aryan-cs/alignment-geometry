@@ -7,7 +7,7 @@ operational rather than exhaustive. We now turn to the
 sharper question: given a model suspected of a
 misaligned objective, can the weight increment expose a \emph{direction} that
 tracks the misalignment-relevant change, rather than only flagging that the model was
-modified? Spectral magnitude statistics, stable rank, spike counts, heavy-tailed
+modified? Spectral magnitude statistics, stable rank, edge-exceedance counts, heavy-tailed
 exponents, are invariant to rotations and sign flips of the singular vectors;
 they can detect that a fine-tune happened but are blind to \emph{where} it points.
 Recovering a direction requires the singular vectors, and assigning that direction
@@ -15,7 +15,7 @@ meaning requires a controlled contrast.
 
 \paragraph{Scalar spectra alone do not solve the misalignment problem.}
 Before using directions, we tested the tempting scalar shortcut: compare only
-stable rank, spike count, and top-to-edge ratio at matched weight-change energy.
+stable rank, edge-exceedance count, and top-to-edge ratio at matched weight-change energy.
 On a Qwen2.5-Coder-14B \citep{hui2024qwen25coder} insecure-versus-secure scout
 pair following the emergent-misalignment construction
 \citep{betley2025emergent}, across $336$ matrices,
@@ -30,8 +30,7 @@ under a matched contrast.
 \begin{table}[t]
 \centering
 \caption{Scalar spectral summaries fail to distinguish a misaligned fine-tune
-from a benign matched-energy control in a Qwen2.5-Coder-14B
-\citep{hui2024qwen25coder} scout. Values are
+from a benign matched-energy control in a Qwen2.5-Coder-14B scout. Values are
 medians over $336$ linear maps after rescaling the benign increment to the
 misaligned increment's Frobenius energy per matrix; the committed result
 artifact is \texttt{results/data/misalign\_scout.json}.}
@@ -42,7 +41,7 @@ artifact is \texttt{results/data/misalign\_scout.json}.}
 metric & misaligned & benign matched-energy \\
 \midrule
 stable rank & $325.83$ & $325.84$ \\
-strict spikes & $43.5$ & $43.0$ \\
+strict edge exceedances & $43.5$ & $43.0$ \\
 top/edge & $3.43$ & $3.42$ \\
 \bottomrule
 \end{tabular}

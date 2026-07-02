@@ -16,9 +16,9 @@ same-dimensional random subspace leaves it near baseline. The spectrum is
 therefore not a stand-alone alignment diagnostic. Its value is sharper and more
 limited: it nominates a small set of directions moved across the Base-to-Instruct
 post-training checkpoint delta,
-the Baik--Ben~Arous--P\'ech\'e threshold separates those directions from the
-bulk \citep{baik2005,baik2006,paul2007}, and targeted interventions test which
-of them are behaviorally important.
+the BBP-type threshold separates outlier singular values
+from the bulk \citep{baik2005,benaych2012}, and targeted interventions test
+which corresponding directions are behaviorally important.
 This makes the increment's spectrum a candidate auditing surface: given
 same-base, matched-recipe checkpoints, one can read off how concentrated the
 change is and nominate a small subspace for matched behavioral validation.
@@ -53,7 +53,7 @@ direction or threshold is pre-registered.
 \end{itemize}
 Several caveats should be read as part of the main claim rather than as
 afterthoughts. The Marchenko--Pastur model is an ideal visibility reference for
-diffuse updates, not an empirical null for learned checkpoints; scalar spike
+diffuse updates, not an empirical null for learned checkpoints; scalar edge-exceedance
 counts and stable rank are descriptive concentration summaries, not
 alignment-specific detectors. A stronger empirical null is a suite of other
 real fine-tunes from the same base, matched for update energy and recipe where
@@ -148,7 +148,7 @@ completed audit run: MMLU
 $65.4\%$ ($[61.1,69.4]\%$) to $41.8\%$ ($[37.6,46.2]\%$), ARC-C $80.0\%$
 ($[75.8,83.6]\%$) to $50.2\%$ ($[45.4,55.1]\%$), and GSM8K $76.7\%$
 ($[72.4,80.6]\%$) to $3.0\%$ ($[1.7,5.2]\%$). The harmless-prompt rates under the same intervention are also
-unmeasured \citep{hendrycks2021mmlu,cobbe2021gsm8k,clark2018arc}. Capability-preserving versions of this intervention, including
+unmeasured. Capability-preserving versions of this intervention, including
 smaller or more structured subspaces, remain future work. The causal results pair ablation
 (suppression) with steering checks against matched random controls but bind the
 behavior to the leading spectral \emph{subspace} rather than isolating a circuit:

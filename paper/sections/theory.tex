@@ -10,20 +10,21 @@ We study the eigenvalues of $C = \tfrac{1}{p}\dW^{\!\top}\dW$, whose nonzero
 values are the squared singular values of $\dW$ divided by $p$.
 
 \paragraph{The null: a diffuse update is a Marchenko--Pastur bulk.}
-If the increment were structureless, with independent mean-zero entries of
-variance $\sigma^2$, the spectrum of $C$ would converge to the
+Our ideal null takes the increment entries to be iid
+$\mathcal N(0,\sigma^2)$. The spectrum of $C$ then converges to the
 Marchenko--Pastur law on $[\sigma^2(1-\sqrt\gamma)^2,\ \sigma^2(1+\sqrt\gamma)^2]$
 \citep{marchenko1967}. The upper edge $\lambda_+ = \sigma^2(1+\sqrt\gamma)^2$ is
 the reference level: an eigenvalue is a \emph{spike} only if it sits above
 $\lambda_+$. This is the spectral signature of an unstructured diffuse update.
 
 \paragraph{The signal: a low-rank spike and its detectability threshold.}
-Model the increment as a diffuse bulk plus a rank-$r$ signal,
+Model the increment as Gaussian noise plus a deterministic rank-$r$ signal,
 $\dW = N + S$, $S = \sum_{i=1}^r \beta_i a_i b_i^{\!\top}$, with the $a_i,b_i$
-orthonormal. The induced spike strengths are $\theta_i = \beta_i^2/(p\sigma^2)$.
-By the Baik--Ben~Arous--P\'ech\'e transition for spiked covariance matrices
-\citep{baik2005,baik2006,paul2007}, the leading eigenvalue of $C$ detaches from
-the bulk if and only if the spike clears a threshold:
+orthonormal and $r$ fixed as $p,q\to\infty$. The induced dimensionless strengths
+are $\theta_i = \beta_i^2/(p\sigma^2)$. The rectangular additive finite-rank
+transition of \citet{benaych2012} gives, for a single spike, that the leading
+eigenvalue of $C$ detaches from the bulk if and only if the spike clears a
+threshold:
 \begin{equation}
 \lambda_1(C) \xrightarrow{\text{a.s.}}
 \begin{cases}
@@ -40,12 +41,19 @@ estimates the planted direction under the idealized spike-plus-noise model
 \citep{benaych2012}; empirically, we treat such singular vectors as candidate
 moved directions to be tested (Figure~\ref{fig:bbp}).
 
+The same white-noise formulas occur in the classical Gaussian rank-one spiked
+population-covariance model \citep{baik2005,baik2006,paul2007}, historically
+associated with the Baik--Ben~Arous--P\'ech\'e transition. That multiplicative
+covariance model is an analogue, not the model for the additive checkpoint delta
+used here.
+
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.62\textwidth]{../results/figures/bbp.pdf}
-\caption{The detectability transition of Equation~\eqref{eq:bbp} (normalized
+\caption{The rectangular additive detectability transition of
+Equation~\eqref{eq:bbp} (normalized
 $\sigma^2=1$, at the representative aspect ratio $\gamma\approx0.29$ of the feed-forward maps). Below the
-Baik--Ben~Arous--P\'ech\'e threshold $\theta_\star=\sqrt{\gamma}$ a planted
+BBP-type threshold $\theta_\star=\sqrt{\gamma}$ a planted
 signal sits inside the Marchenko--Pastur bulk and is invisible; above it the
 leading eigenvalue detaches and grows, and its singular vector becomes locatable.
 The same perturbation budget is detectable when concentrated into a few directions
@@ -62,8 +70,9 @@ exactly when
 \label{eq:rstar}
 \end{equation}
 The same perturbation budget is above the spectral threshold when concentrated
-and below it when spread thin. The full statements and proofs, including a Tracy--Widom calibration of
-the edge \citep{johnstone2001} and finite-size permutation stress tests, are in the companion
+and below it when spread thin. The full statements and proofs, including a
+Gaussian known-scale Tracy--Widom calibration of the edge
+\citep{johnstone2001} and finite-size surrogate stress tests, are in the companion
 theory note (\path{docs/proof.pdf}). The spectral visibility prediction is falsifiable before measuring behavior: at matched
 energy, directions below $r_\star$ should be detectable and locatable, while
 diffuse energy above $r_\star$ should remain buried in the bulk. We use this as

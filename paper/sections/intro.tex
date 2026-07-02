@@ -21,13 +21,13 @@ ways. It can nudge thousands of directions a little, in which case its singular
 values look like a diffuse fitted bulk and no single direction matters; or it
 can move a few directions a lot, in which case a handful of singular values
 stand out and the update is, in a precise sense, low rank. Random matrix theory makes the
-distinction sharp. A structureless increment produces a Marchenko--Pastur
-spectrum with a hard upper edge \citep{marchenko1967}; a low-rank signal
-produces eigenvalues that detach from that edge once they cross the
-Baik--Ben~Arous--P\'ech\'e threshold \citep{baik2005, baik2006, paul2007}, and
-the singular vectors of those detached spikes estimate planted directions in
-the idealized model \citep{benaych2012}. The question of the update's shape becomes a question about
-spikes: how many are there, how far above the edge, and what do their directions
+distinction sharp. Under an idealized iid Gaussian diffuse-update model, the
+limiting spectrum has a Marchenko--Pastur upper edge
+\citep{marchenko1967,johnstone2001}; an additive low-rank signal above the corresponding
+rectangular-perturbation threshold produces squared singular values that detach
+from that edge, and the associated singular vectors estimate planted directions
+in the idealized model \citep{benaych2012}. The question of the update's shape becomes a question about
+outliers: how many edge exceedances are there, how far above the edge, and what do their directions
 do in interventions.
 
 We answer this for Llama-3-8B and use the spike structure as a starting point
@@ -40,9 +40,9 @@ magnitude. The increment is not a diffuse nudge; it is a strong, structured
 signal sitting above a fitted bulk visibility reference, consistent with the spike-plus-bulk
 decomposition used by the theory. This result says that the released post-training
 checkpoint delta is highly anisotropic; the safety-specific evidence comes from the directions and
-matched controls below, not from spike counts alone.
+matched controls below, not from edge-exceedance counts alone.
 
-\textbf{The checkpoint delta's energy is concentrated.} While the detached spikes number
+\textbf{The checkpoint delta's energy is concentrated.} While the MP-edge exceedances number
 in the hundreds, the stable rank
 $\|\dW\|_F^2/\|\dW\|_2^2$ sits near one hundred against ambient dimensions in
 the thousands, indicating strong energy concentration relative to a diffuse
@@ -82,7 +82,7 @@ emergent misalignment from $2.6\%$ ($[1.7,4.1]\%$) to $0.0\%$ ($[0.0,0.5]\%$)
 where a random direction does not,
 and the paired-agreement, held-out-separation, and ablation pattern recur within the same controlled
 medical-advice organism at 7B/8B scale across Qwen2.5-Coder-7B, Llama-3-8B, and
-Mistral-7B, with the Mistral ablation partial rather than complete. As for
+Mistral-7B \citep{jiang2023mistral}, with the Mistral ablation partial rather than complete. As for
 refusal, the direction is a tested
 low-dimensional, ablation-sensitive readout of a distributed representation, not a complete
 one-dimensional account of the behavior.

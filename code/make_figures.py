@@ -232,7 +232,7 @@ def save_figure_pdf(fig, outdir, name, **kwargs):
 
 def fig_spectrum_panel(rows, outdir):
     """Singular-value spectrum of Delta for one representative matrix, with the
-    fitted MP bulk band and the detected spikes highlighted."""
+    fitted MP bulk band and the edge exceedances highlighted."""
     # pick a mid-layer gate_proj (large gamma headroom)
     cand = [r for r in rows if r["label"] == "gate_proj" and r["layer"] == 15]
     if not cand:
@@ -249,15 +249,15 @@ def fig_spectrum_panel(rows, outdir):
     idx = np.arange(1, len(eig) + 1)
     above = eig > hi
     ax.axhspan(0, hi, color=YELLOW, alpha=0.30, lw=0, label="MP bulk (noise)")
-    ax.axhline(hi, color=YELLOW_D, lw=1.0, ls="--", label="BBP edge $\\lambda_+$")
+    ax.axhline(hi, color=YELLOW_D, lw=1.0, ls="--", label="MP edge $\\lambda_+$")
     ax.scatter(idx[~above], eig[~above], s=22, color=YELLOW_D, zorder=3,
                edgecolors="white", linewidths=0.4)
     ax.scatter(idx[above], eig[above], s=42, color=PURPLE, zorder=4,
-               edgecolors=PURPLE_D, linewidths=0.8, label="supercritical spikes")
+               edgecolors=PURPLE_D, linewidths=0.8, label="MP-edge exceedances")
     ax.set_xlabel("singular index of $\\Delta W$")
     ax.set_ylabel("eigenvalue of $C=\\frac{1}{p}\\Delta W^{\\!\\top}\\Delta W$")
     ax.set_title(f"{r['label']} (layer {r['layer']}): "
-                 f"{d['n_spikes']} spikes above the bulk edge", fontsize=9)
+                 f"{d['n_spikes']} strict edge exceedances", fontsize=9)
     legend_below(ax, fontsize=7.5, ncol=1, y=-0.30)
     ax.set_xlim(0, len(eig) + 1)
     ax.grid(True, color=GRID, lw=0.5)
@@ -267,9 +267,7 @@ def fig_spectrum_panel(rows, outdir):
 
 
 def fig_bulk_spikes(outdir, npz="results/data/full_spectrum.npz"):
-    """Canonical bulk+spikes figure: full eigenvalue histogram of one increment
-    with the fitted Marchenko-Pastur density overlaid and the supercritical
-    spikes marked. Two panels: the bulk (linear) and the full spectrum (log)."""
+    """Full eigenvalue histogram with the fitted MP density and edge exceedances."""
     if not os.path.exists(npz):
         return
     z = np.load(npz)
@@ -290,17 +288,17 @@ def fig_bulk_spikes(outdir, npz="results/data/full_spectrum.npz"):
     legend_below(axL, fontsize=7, ncol=1, y=-0.32)
     axL.grid(True, color=GRID, lw=0.5)
 
-    # right: full spectrum, rank-ordered, log-y; bulk vs spikes colored
+    # right: full spectrum, rank-ordered, log-y; bulk vs exceedances colored
     idx = np.arange(1, len(eig) + 1)
     above = eig > hi
     axR.scatter(idx[~above], eig[~above], s=4, color=YELLOW_D, label="bulk")
     axR.scatter(idx[above], eig[above], s=6, color=PURPLE,
-                label=f"{int(above.sum())} spikes $>\\lambda_+$")
+                label=f"{int(above.sum())} eigenvalues $>\\lambda_+$")
     axR.axhline(hi, color=GREY, lw=1.0, ls="--")
     axR.set_yscale("log")
     axR.set_xlabel("rank-ordered index")
     axR.set_ylabel("eigenvalue of $C$ (log)")
-    axR.set_title("spikes detach above the edge", fontsize=9)
+    axR.set_title("outliers extend above the MP edge", fontsize=9)
     legend_below(axR, fontsize=7, ncol=1, y=-0.32)
     axR.grid(True, color=GRID, lw=0.5, which="both")
     fig.tight_layout()
@@ -309,7 +307,7 @@ def fig_bulk_spikes(outdir, npz="results/data/full_spectrum.npz"):
 
 
 def fig_spikes_by_layer(rows, outdir):
-    """Number of supercritical spikes in Delta, per layer, per matrix type."""
+    """Operational strict edge exceedances per layer and matrix type."""
     layers = sorted(set(r["layer"] for r in rows))
     fig, ax = plt.subplots(figsize=(5.6, 3.2))
     for lab in LABELS:
@@ -328,8 +326,8 @@ def fig_spikes_by_layer(rows, outdir):
             label=lab,
         )
     ax.set_xlabel("layer")
-    ax.set_ylabel("supercritical spikes in $\\Delta W$")
-    ax.set_title("Base-to-Instruct delta is spiked at every layer", fontsize=9)
+    ax.set_ylabel("strict edge exceedances in $\\Delta W$")
+    ax.set_title("MP-visible structure appears at every layer", fontsize=9)
     legend_below(ax, fontsize=7, ncol=4, y=-0.30)
     ax.grid(True, color=GRID, lw=0.5)
     fig.tight_layout()
@@ -338,7 +336,7 @@ def fig_spikes_by_layer(rows, outdir):
 
 
 def fig_spectral_landscape_3d(rows, outdir):
-    """Three-dimensional overview of spike strength across the full sweep."""
+    """Three-dimensional overview of top-to-edge ratios across the full sweep."""
     label_to_y = {label: i for i, label in enumerate(LABELS)}
     xs = np.array([r["layer"] for r in rows])
     ys = np.array([label_to_y[r["label"]] for r in rows])
@@ -361,7 +359,7 @@ def fig_spectral_landscape_3d(rows, outdir):
     ax.set_yticks(range(len(LABELS)))
     ax.set_yticklabels(LABELS, fontsize=7)
     ax.view_init(elev=24, azim=-58)
-    ax.set_title("Base-to-Instruct delta spike landscape", fontsize=9, pad=4)
+    ax.set_title("Base-to-Instruct delta top-to-edge landscape", fontsize=9, pad=4)
     ax.xaxis.pane.set_facecolor((1, 1, 1, 0))
     ax.yaxis.pane.set_facecolor((1, 1, 1, 0))
     ax.zaxis.pane.set_facecolor((1, 1, 1, 0))
@@ -1017,9 +1015,7 @@ def fig_mis_gate(outdir, f="results/data/misalignment_eval_medical.json"):
 
 
 def fig_bbp(outdir, npz="results/data/full_spectrum.npz"):
-    """Intuition: the BBP detectability transition. A planted signal is buried in
-    the Marchenko-Pastur bulk until it crosses theta=sqrt(gamma), then detaches.
-    Normalized (sigma^2=1); gamma read from the representative matrix."""
+    """Intuition for the additive rectangular detectability transition."""
     gamma = float(np.load(npz)["gamma"]) if os.path.exists(npz) else 0.2857
     if os.path.exists(npz):
         try:
@@ -1039,16 +1035,16 @@ def fig_bbp(outdir, npz="results/data/full_spectrum.npz"):
     ax.axvline(sg, color=GREY, lw=1.0, ls="--")
     ax.axhline(edge, color=GREY, lw=0.8, ls=":")
     ax.plot([sg], [edge], "o", color=INK, ms=4, zorder=5)
-    ax.annotate("BBP threshold\n$\\theta_\\star=\\sqrt{\\gamma}$", xy=(sg, edge),
+    ax.annotate("BBP-type threshold\n$\\theta_\\star=\\sqrt{\\gamma}$", xy=(sg, edge),
                 xytext=(sg + 0.25, edge - 1.05), fontsize=8, color=GREY,
                 arrowprops=dict(arrowstyle="->", color=GREY, lw=0.9))
     ax.annotate("a stronger fine-tune\nmoves the spike up here",
                 xy=(2.2, (1 + 2.2) * (1 + gamma / 2.2)), xytext=(1.15, 5.7),
                 fontsize=8, color=PURPLE_D,
                 arrowprops=dict(arrowstyle="->", color=PURPLE_D, lw=0.9))
-    ax.set_xlabel("planted signal strength $\\theta$ (population spike)")
+    ax.set_xlabel("dimensionless additive signal strength $\\theta$")
     ax.set_ylabel("observed top eigenvalue of $C$")
-    ax.set_title("Why a spike means signal: the detectability threshold", fontsize=9)
+    ax.set_title("Additive low-rank detectability threshold", fontsize=9)
     legend_below(ax, fontsize=7.5, ncol=1, y=-0.30)
     ax.set_xlim(0, 3); ax.set_ylim(0, 7)
     ax.grid(True, color=GRID, lw=0.5)
@@ -1058,8 +1054,7 @@ def fig_bbp(outdir, npz="results/data/full_spectrum.npz"):
 
 
 def fig_spectrum_null(outdir, npz="results/data/full_spectrum.npz"):
-    """Intuition: the real increment's spikes vs a variance-matched random matrix
-    of the same shape. Same MP bulk, but only the real Delta has detached spikes."""
+    """Real-increment outliers versus a variance-matched random matrix."""
     if not os.path.exists(npz):
         return
     z = np.load(npz)
@@ -1076,15 +1071,15 @@ def fig_spectrum_null(outdir, npz="results/data/full_spectrum.npz"):
     ax.scatter(idx, eig, s=5, color=PURPLE_D, alpha=0.7, label="Base-to-Instruct delta $\\Delta W$")
     ax.axhline(hi, color=GREY, lw=1.0, ls="--", label="Marchenko--Pastur edge $\\lambda_+$")
     ax.set_yscale("log")
-    ax.annotate(f"{n_spike} spikes detach\n(real $\\Delta W$ only)", xy=(60, eig[60]),
+    ax.annotate(f"{n_spike} eigenvalues exceed the edge\n(real $\\Delta W$ only)", xy=(60, eig[60]),
                 xytext=(700, eig[3] * 0.7), fontsize=8, color=PURPLE_D,
                 arrowprops=dict(arrowstyle="->", color=PURPLE_D, lw=0.9))
-    ax.annotate("same bulk, no spikes", xy=(2200, null[2200]),
+    ax.annotate("same bulk, no edge exceedances", xy=(2200, null[2200]),
                 xytext=(1400, null[2200] * 6.5), fontsize=8, color=YELLOW_D,
                 arrowprops=dict(arrowstyle="->", color=YELLOW_D, lw=0.9))
     ax.set_xlabel("rank-ordered index")
     ax.set_ylabel("eigenvalue of $C=\\frac{1}{p}\\Delta W^{\\top}\\Delta W$ (log)")
-    ax.set_title("Base-to-Instruct delta is spiked; matched noise is not", fontsize=9)
+    ax.set_title("Real delta has outliers; matched noise does not", fontsize=9)
     legend_below(ax, fontsize=7.5, ncol=1, y=-0.30)
     ax.grid(True, color=GRID, lw=0.5, which="both")
     fig.tight_layout()

@@ -243,7 +243,8 @@ def check_reviewer_scope_caveats():
             "spectral non-specificity",
             [
                 r"fine-tuning statistic,\s*not an alignment detector",
-                r"Other fine-tunes can be low-dimensional or low-rank",
+                r"Other fine-tunes can be low-dimensional",
+                r"low-rank parameterizations can also be effective",
                 r"structure shared by other real fine-tunes",
                 r"domain adaptation,\s*coding or math specialization",
                 r"RLHF-style preference optimization",
@@ -253,7 +254,7 @@ def check_reviewer_scope_caveats():
         (
             "Marchenko-Pastur null limitation",
             [
-                r"Marchenko--Pastur fit is used here as a calibrated visibility reference,\s*not as an empirical null",
+                r"Marchenko--Pastur curve is used here as an operational visibility reference,\s*not as an empirical null for all structured training",
                 r"empirical null that matters for safety is another real fine-tune under a matched recipe",
             ],
         ),
@@ -467,8 +468,8 @@ def check_misalignment_framing():
         failures.append("proof orientation: missing left/right singular-vector orientation note")
     if "A\nspike that does not clear this empirical null is not reported" in proof:
         failures.append("proof calibration: do not claim empirical-null filtering for the committed spectral census")
-    if "MP/TW-visible structure" not in proof:
-        failures.append("proof calibration: describe the committed spectral census as MP/TW-visible structure")
+    if "MP-visible structure" not in proof:
+        failures.append("proof calibration: describe the committed spectral census as MP-visible structure")
 
 
 def check_spectral_summary():
