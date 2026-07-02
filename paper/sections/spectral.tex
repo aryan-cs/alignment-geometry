@@ -20,8 +20,8 @@ $1$, compared with the observed median of $22.0$. Figure~\ref{fig:spectrum}
 shows a representative near-zero Marchenko--Pastur bulk with several separated
 leading eigenvalues. A variance-matched Gaussian matrix reproduces the bulk but
 has no detached outliers (Figure~\ref{fig:nullcompare}). The Gaussian control
-isolates structure beyond diffuse noise; matched real fine-tunes test whether the
-pattern generalizes.
+illustrates departure from an iid diffuse reference; matched real fine-tunes test
+whether the pattern generalizes.
 
 \begin{figure}[t]
 \centering
@@ -132,8 +132,10 @@ To distinguish new directions from rescaling of existing ones, we compare for
 each attention-output map the
 top-$16$ left-singular subspace of the increment with the top-$16$ left-singular
 subspace of the base weight, by mean squared principal-angle cosine
-(Figure~\ref{fig:energy}, right). The overlap has median $0.013$ across layers,
-only $3.4\times$ the random-subspace null of $0.004$ and far below the value a
+(Figure~\ref{fig:energy}, right). For orthonormal bases $U,V\in\R^{d\times16}$,
+the statistic is $\|U^\top V\|_F^2/16$; its independent-random expectation is
+$16/d=0.0039$ at $d=4096$. The observed median is $0.013$ across layers, only
+$3.4\times$ the random-subspace null of $0.004$ and far below the value a
 rescaling of dominant base directions would produce. The delta therefore has
     little alignment with the base weight's dominant singular directions, with the
     largest departures at the first layers and the final layer. The left panel of

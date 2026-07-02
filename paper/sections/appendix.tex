@@ -1,4 +1,4 @@
-\section{Experimental details}
+\section{Theory and experimental details}
 \label{app:details}
 
 \paragraph{Models.}
@@ -12,21 +12,20 @@ and the increment $\dW$ is formed in float64 for the spectral computation in
 \path{results/data/spectral.jsonl}.
 
 \paragraph{Spectral pipeline.}
-For each matrix we orient $\dW$ so that $q \le p$ and form
-$C = \tfrac1p \dW^{\!\top}\dW$. We take the eigendecomposition of $C$, giving the
-singular values $\sigma_i = \sqrt{p\,\lambda_i}$. We estimate bulk noise
-$\sigma^2$ by matching the median eigenvalue to the Marchenko--Pastur median at
-$\gamma=q/p$. A spike exceeds the MP upper edge by six Tracy--Widom fluctuation
-scales \citep{johnstone2001},
-$\sigma^2(1+\sqrt\gamma)^{4/3}\gamma^{-1/6}p^{-2/3}$, a conservative
-operational threshold. In synthetic increments, diffuse Gaussian noise yields
-zero strict edge exceedances; planted ranks $1$, $4$, and $16$ yield exactly those counts;
-and spreading rank-$16$ energy over $128>r_\star=48$ directions yields zero.
+Orient each $\dW$ so $q\le p$ and form $C=\dW^{\!\top}\dW/p$; its eigenvalues
+$\lambda_i$ give singular values $\sqrt{p\lambda_i}$. We fit bulk noise $\sigma^2$
+by matching the spectral median to the Marchenko--Pastur median at $\gamma=q/p$.
+Under an iid Gaussian null with known $\sigma^2$, the edge fluctuation scale is
+$\sigma^2(1+\sqrt\gamma)^{4/3}\gamma^{-1/6}p^{-2/3}$ \citep{johnstone2001}.
+We use the MP edge plus six scales; fitting $\sigma^2$ makes this an operational
+visibility rule, not a calibrated level-$\alpha$ test. In recorded implementation
+checks, diffuse noise yields no exceedances, planted ranks $1$, $4$, and $16$ yield
+those counts, and spreading rank-$16$ energy over $128>r_\star=48$ directions yields none.
 For $p=2048$, $q=512$, $\gamma=0.25$, and strength $\theta=1.5$ above the
 rectangular additive-spike threshold $\theta_\star=0.5$ \citep{benaych2012},
 recovered planted subspaces have mean squared
-cosine $0.76$ with truth. Synthetic results from
-\texttt{code/synthetic\_bbp.py} are stored in
+cosine $0.76$ with truth. These checks are not finite-sample guarantees; code and
+results are in \texttt{code/synthetic\_bbp.py} and
 \texttt{results/data/synthetic\_bbp.json}.
 
 \paragraph{Refusal direction and capture.}

@@ -1,7 +1,7 @@
 {
   "pdf": "docs/paper.pdf",
-  "pdf_sha256": "e929fe0aef1baf1a3441c1f0874744af5d6b4642b9d4031006aec9781c02d8f2",
-  "inspected_at_utc": "2026-07-02T16:21:36Z",
+  "pdf_sha256": "76dc22b9a03a4a9dec76707e4d7871a78b658e9c519f60e8418bbc77191d6c60",
+  "inspected_at_utc": "2026-07-02T17:00:56Z",
   "pages_total": 21,
   "pages_checked": 21,
   "render_dpi": 120,
@@ -28,7 +28,7 @@
     20,
     21
   ],
-  "method": "Rendered all 21 pages at 120 dpi with pdftoppm and inspected every page full-size after the prose revision and appendix-float reordering; verified figures, tables, equations, citations, bibliography, and appendix with no clipping, overlap, or blank pages.",
+  "method": "Compared all 21 page renders with the prior full-page QA receipt after integrating standalone theory and restoring the alignment-specificity qualification. Pages 2, 3, 4, 16, 17, 19, and 20 changed across the revision and were inspected full-size; all other page renders remained identical. Verified equations, citations, definitions, figures, tables, bibliography flow, appendix flow, and margins with no clipping, overlap, or blank pages.",
   "render_receipt": {
     "schema": "pdf_render_receipt_v1",
     "renderer": "pdftoppm",
@@ -43,18 +43,18 @@
       },
       {
         "page": 2,
-        "sha256": "89f99911bc804505efeb072c8bfd1a4ce6215e3e5f65ec235ba5259346705a66",
-        "bytes": 372518
+        "sha256": "6df5547e6ff75852a7af5a485f8cb2dcd4636fc2357480f8a65d10c911f152af",
+        "bytes": 372380
       },
       {
         "page": 3,
-        "sha256": "ae0872e0e0d5258ea0d5a0e474ab3f51135a0199344832f8142d9a5d4871dfa0",
-        "bytes": 331952
+        "sha256": "7e84b52eb409abbf44181bda5bcff6e284f694e45b18e8044a4dd40fa1e8d2b0",
+        "bytes": 330938
       },
       {
         "page": 4,
-        "sha256": "4066dccdee395c4680b54786cbbc34905d874d88935c1ed7f9493c72d8b26690",
-        "bytes": 299916
+        "sha256": "513bcc6a49a31e2fec40f2abf76eb64aa0676ed76c8a20b3fa596ccc48e0e57b",
+        "bytes": 311785
       },
       {
         "page": 5,
@@ -113,13 +113,13 @@
       },
       {
         "page": 16,
-        "sha256": "bd46823d36d28b205e952e0259233103ce8922d36cadb2d172df46febbd88f5f",
-        "bytes": 396190
+        "sha256": "2d5c5a109c932dc63ada6a3869ba11b89547a43d01e6a2c6535384b89b79d008",
+        "bytes": 388232
       },
       {
         "page": 17,
-        "sha256": "5227ea0bcab0e0b9b311fea04aa044c005132f29f84f9b55657279331662e4f3",
-        "bytes": 404574
+        "sha256": "dc6b32e3174b7c80ef39ee9280b73143bcdc1b8a6dab8c26deeccedc2d2637a7",
+        "bytes": 413539
       },
       {
         "page": 18,
@@ -128,13 +128,13 @@
       },
       {
         "page": 19,
-        "sha256": "009a71c77bdd3014a56db2c00d9172e330339d5249fe22a06d10750068f6e10a",
-        "bytes": 385239
+        "sha256": "a6ce3623a623a60500adf3c02bb2f82b3942f74107d42d19de752dc5a4612e72",
+        "bytes": 403313
       },
       {
         "page": 20,
-        "sha256": "bf1bde522a6f7c1f99dfd1246584056f47ce28320a2e5c19e9371c92eeac97a0",
-        "bytes": 282876
+        "sha256": "47073b475b84d84a55b2328b88b2d002af182c9a669e7a14c3c814297c01f711",
+        "bytes": 267859
       },
       {
         "page": 21,

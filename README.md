@@ -2,9 +2,9 @@
 
 > **The spectral geometry of misalignment.** A weight-space audit study of whether fine-tuning increments expose behaviorally ablation-sensitive directions for refusal and emergent misalignment.
 >
-> [Paper PDF](docs/paper.pdf) · [Theory proof](docs/proof.pdf) · [Research plan](PLAN.md) · [License: CC BY-NC-ND 4.0](LICENSE) · [Source on GitHub](https://github.com/aryan-cs/alignment-geometry)
+> [Paper PDF](docs/paper.pdf) · [Optional theory supplement](docs/proof.pdf) · [Research plan](PLAN.md) · [License: CC BY-NC-ND 4.0](LICENSE) · [Source on GitHub](https://github.com/aryan-cs/alignment-geometry)
 
-This repository contains the paper, formal random-matrix theory, analysis code, figure-generation pipeline, and committed result summaries for *The Spectral Geometry of Misalignment*.
+This repository contains the self-contained paper, an optional extended theory supplement, analysis code, figure-generation pipeline, and committed result summaries for *The Spectral Geometry of Misalignment*.
 
 The core object is the fine-tuning increment
 
@@ -92,8 +92,8 @@ alignment-geometry/
 │   └── sections/
 ├── docs/
 │   ├── paper.pdf                    # deployed paper
-│   ├── proof.tex
-│   └── proof.pdf
+│   ├── proof.tex                     # optional extended theory source
+│   └── proof.pdf                     # optional extended theory supplement
 └── results/
     ├── data/                        # committed JSON/NPZ summaries used by figures
     └── figures/                     # committed PDF figures used by the paper
@@ -954,7 +954,7 @@ python3 code/check_run_manifest.py \
 
 1. **[docs/paper.pdf](docs/paper.pdf)** for the current empirical paper.
 2. **[paper/main.tex](paper/main.tex)** and **[paper/sections/](paper/sections)** for the editable manuscript source.
-3. **[docs/proof.pdf](docs/proof.pdf)** for the formal BBP/spiked-covariance theory.
+3. **[docs/proof.pdf](docs/proof.pdf)** for optional extended derivations and background.
 4. **[PLAN.md](PLAN.md)** for the broader research roadmap and completed audit record.
 
 ## Framing

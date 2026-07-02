@@ -167,7 +167,7 @@ PAPER_CONTEXT_SENTINELS = [
     ("paper/sections/appendix.tex", "harmless prompts are Alpaca instructions", ("taori2023alpaca",), 2),
     ("paper/sections/appendix.tex", "substring match against the fixed phrase list", ("code/causal.py", "arditi2024"), 4),
     ("paper/sections/theory.tex", "rectangular additive finite-rank", ("benaych2012",), 2),
-    ("paper/sections/theory.tex", "companion note", ("docs/proof.pdf", "johnstone2001"), 3),
+    ("paper/sections/theory.tex", "known-scale Gaussian Tracy--Widom assumptions", ("johnstone2001",), 2),
     ("paper/sections/related.tex", "convergent linear direction recovered from model", ("soligo2025convergent",), 2),
     ("paper/sections/related.tex", "rank-one adapters", ("turner2025organisms",), 2),
     ("paper/sections/related.tex", "Task vectors edit behavior", ("ilharco2023task", "ortizjimenez2023task"), 3),
@@ -419,6 +419,17 @@ def check_placeholders(errors):
                 errors.append(f"citation placeholder found in {path.relative_to(ROOT)}: {pattern}")
 
 
+def check_standalone_paper(errors):
+    for path in sorted((ROOT / "paper").glob("**/*.tex")):
+        text = strip_latex_comments(path.read_text()).lower()
+        for phrase in ("docs/proof.pdf", "companion note"):
+            if phrase in text:
+                errors.append(
+                    f"paper must not defer proofs to an external document: "
+                    f"{path.relative_to(ROOT)} contains {phrase!r}"
+                )
+
+
 def check_context_sentinels(errors):
     for rel_path, needle, required_keys, window in PAPER_CONTEXT_SENTINELS + DOCUMENT_CONTEXT_SENTINELS:
         path = ROOT / rel_path
@@ -508,6 +519,7 @@ def main():
     check_paper(errors)
     check_proof(errors)
     check_placeholders(errors)
+    check_standalone_paper(errors)
     check_context_sentinels(errors)
     check_literature_review_citation_density(errors)
     if errors:

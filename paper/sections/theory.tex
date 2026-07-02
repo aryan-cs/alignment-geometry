@@ -2,9 +2,9 @@
 \label{sec:theory}
 
 We model fine-tuning as a weight perturbation and characterize when it produces a
-resolvable spectral outlier. Fix a linear map with weight matrix
-$W \in \R^{p \times q}$, $q \le p$, with aspect ratio $\gamma = q/p \in (0,1]$,
-and write the Base-to-Instruct checkpoint delta
+resolvable spectral outlier. Fix $W \in \R^{p \times q}$ with $q \le p$, and take
+$p,q\to\infty$ with $q/p\to\gamma\in(0,1]$. For finite checkpoints, write the
+Base-to-Instruct delta
 $\dW = W_{\text{instruct}} - W_{\text{base}}$.
 We study the eigenvalues of $C = \tfrac{1}{p}\dW^{\!\top}\dW$, whose nonzero
 values are the squared singular values of $\dW$ divided by $p$.
@@ -13,16 +13,16 @@ values are the squared singular values of $\dW$ divided by $p$.
 Our ideal null takes the increment entries to be iid
 $\mathcal N(0,\sigma^2)$. The spectrum of $C$ then converges to the
 Marchenko--Pastur law on $[\sigma^2(1-\sqrt\gamma)^2,\ \sigma^2(1+\sqrt\gamma)^2]$
-\citep{marchenko1967}. The upper edge $\lambda_+ = \sigma^2(1+\sqrt\gamma)^2$ is
-the reference level: an eigenvalue is a \emph{spike} only if it sits above
-$\lambda_+$. The diffuse null therefore places its limiting spectrum below this
-edge.
+\citep{marchenko1967}. The limiting upper edge is
+$\lambda_+ = \sigma^2(1+\sqrt\gamma)^2$. Finite null eigenvalues fluctuate around
+this edge, so empirical visibility uses the finite-size margin in
+Appendix~\ref{app:details}.
 
 \paragraph{The signal: a low-rank spike and its detectability threshold.}
 Model the increment as Gaussian noise plus a deterministic rank-$r$ signal,
 $\dW = N + S$, $S = \sum_{i=1}^r \beta_i a_i b_i^{\!\top}$, with the $a_i,b_i$
-orthonormal and $r$ fixed as $p,q\to\infty$. The induced dimensionless strengths
-are $\theta_i = \beta_i^2/(p\sigma^2)$. The rectangular additive finite-rank
+orthonormal, $r$ fixed, and $\theta_i = \beta_i^2/(p\sigma^2)$ converging to fixed
+positive limits. The rectangular additive finite-rank
 transition of \citet{benaych2012} shows that, for a single spike, the leading
 eigenvalue of $C$ detaches from the bulk exactly when the spike clears a threshold:
 \begin{equation}
@@ -33,12 +33,12 @@ eigenvalue of $C$ detaches from the bulk exactly when the spike clears a thresho
 \end{cases}
 \label{eq:bbp}
 \end{equation}
-Above threshold the leading sample singular vector aligns with the planted
-direction $b$ with computable overlap
+Above threshold, a simple spike's leading right singular vector has overlap
 $|\langle \hat v_1, b\rangle|^2 \to (1-\gamma/\theta^2)/(1+\gamma/\theta)$.
-Thus the detected singular vector estimates the planted direction under the
-idealized spike-plus-noise model \citep{benaych2012}. We evaluate the corresponding
-empirical directions through intervention (Figure~\ref{fig:bbp}).
+It is therefore correlated with, but not generally consistent for, $b$
+\citep{benaych2012}. Transposition gives the left singular direction used for
+residual interventions at the same dimensionless threshold. We test these
+directions by intervention (Figure~\ref{fig:bbp}).
 
 The same white-noise formulas occur in the classical Gaussian rank-one spiked
 population-covariance model \citep{baik2005,baik2006,paul2007}, historically
@@ -54,22 +54,26 @@ Equation~\eqref{eq:bbp} (normalized
 $\sigma^2=1$, at the representative aspect ratio $\gamma\approx0.29$ of the feed-forward maps). Below the
 BBP-type threshold $\theta_\star=\sqrt{\gamma}$ a planted
 signal sits inside the Marchenko--Pastur bulk and is invisible; above it the
-leading eigenvalue detaches and grows, and its singular vector becomes locatable.}
+leading eigenvalue detaches and its singular vector acquires nonzero overlap with
+the planted direction.}
 \label{fig:bbp}
 \end{figure}
 
 \paragraph{Rank at fixed energy.}
-Holding the signal energy $\tau = \sum_i \theta_i$ fixed, an equal-strength
-rank-$r$ update places $\tau/r$ in each direction, which clears the threshold
+Writing $\tau = \sum_i \theta_i$ fixes the signal energy
+$\|S\|_F^2=p\sigma^2\tau$. An equal-strength rank-$r$ update places $\tau/r$ in
+each direction, which clears the threshold
 exactly when
 \begin{equation}
 \frac{\tau}{r} > \sqrt\gamma \quad\Longleftrightarrow\quad r < \rstar := \frac{\tau}{\sqrt\gamma}.
 \label{eq:rstar}
 \end{equation}
-At fixed energy, concentrating the perturbation into fewer directions makes it
-spectrally detectable. The companion note (\path{docs/proof.pdf}) derives this
-result, gives a Gaussian known-scale Tracy--Widom calibration
-\citep{johnstone2001}, and reports finite-size surrogate stress tests. At matched
-energy, directions below $r_\star$ are detectable and locatable, whereas diffuse
-energy above $r_\star$ remains in the bulk. Matched-control interventions test
-the behavioral relevance of the visible directions.
+Since $\max_i\theta_i\geq\tau/r$, $r<r_\star$ guarantees an outlier and is exact
+under equal strengths. At $r\geq r_\star$, invisibility also requires every
+$\theta_i\leq\sqrt\gamma$.
+Appendix~\ref{app:details} states the known-scale Gaussian Tracy--Widom assumptions
+\citep{johnstone2001} and finite-size checks. An equal-strength update below
+$r_\star$ therefore yields a detectable signal subspace, whereas one at or above
+$r_\star$ remains in the bulk.
+Matched-control interventions test the behavioral relevance of the visible
+directions.

@@ -2,7 +2,7 @@
 
 > A roadmap for testing whether concentrated alignment-relevant updates leave spectral and directional signatures under matched benign controls, built on random-matrix theory and evaluated on confound-controlled model organisms.
 
-This document is the research roadmap. The formal theory is in [`docs/proof.pdf`](docs/proof.pdf); read it for the definitions, theorems, and proofs that the plan below operationalizes. The short version: fine-tuning is a perturbation of the weights, and we ask whether the spectrum of that perturbation can expose a concentrated misalignment-associated signal under a matched benign comparison, without using labeled examples of bad behavior to fit the statistic.
+This document is the research roadmap. The paper is self-contained; [`docs/proof.pdf`](docs/proof.pdf) is an optional extended theory supplement. The short version: fine-tuning is a perturbation of the weights, and we ask whether the spectrum of that perturbation can expose a concentrated misalignment-associated signal under a matched benign comparison, without using labeled examples of bad behavior to fit the statistic.
 
 ---
 
@@ -140,7 +140,7 @@ The proof carries the full positioning with citations. In brief, we differentiat
 
 | Milestone | State |
 |-----------|-------|
-| Formal theory: spiked model, detectability, rank discriminator, ideal-model-calibrated test | done, `docs/proof.pdf` |
+| Extended theory supplement: spiked model, detectability, rank discriminator, ideal-model-calibrated test | done, `docs/proof.pdf` |
 | Llama-3-8B alignment-increment spectral analysis | done |
 | Refusal enrichment, ablation, and steering tests | done |
 | Matched medical emergent-misalignment organism | strict medical provenance artifacts validated |
@@ -159,8 +159,8 @@ alignment-geometry/
 ├── README.md            you are here for orientation
 ├── PLAN.md              this file, the research roadmap
 └── docs/
-    ├── proof.tex        formal theory, LaTeX source
-    └── proof.pdf        compiled theory
+    ├── proof.tex        optional extended theory source
+    └── proof.pdf        optional extended theory supplement
 ```
 
 The current implementation uses a compact `code/` and `results/` layout rather
