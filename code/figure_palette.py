@@ -11,6 +11,9 @@ GREEN = "#9bff73"
 PURPLE_D = "#8a2be2"
 YELLOW_D = "#c79a0f"
 GREEN_D = "#4caf2f"
+BLUE_D = "#0072b2"
+ORANGE_D = "#d55e00"
+PINK_D = "#cc79a7"
 
 INK = "#222222"
 GRID = "#dddddd"
@@ -28,6 +31,9 @@ CANONICAL_FIGURE_HEXES = {
     PURPLE_D,
     YELLOW_D,
     GREEN_D,
+    BLUE_D,
+    ORANGE_D,
+    PINK_D,
     INK,
     GRID,
     GREY,

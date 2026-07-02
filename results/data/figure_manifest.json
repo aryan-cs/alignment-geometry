@@ -1,19 +1,19 @@
 {
   "schema": "figure_manifest_v1",
   "producer": "code/make_figures.py",
-  "generated_at": "2026-07-02T07:03:55Z",
+  "generated_at": "2026-07-02T17:13:35Z",
   "source_count": 30,
   "figure_count": 25,
   "sources": [
     {
       "path": "code/figure_palette.py",
-      "sha256": "5836acdc557f3dc6890c2e4752a6f694484320e0c03462d436e78eb7deff3e1c",
-      "bytes": 650
+      "sha256": "d7368e36765ce6b75b7cee035e7dec895c9f5f8f42c42dda08923ca9038c4148",
+      "bytes": 747
     },
     {
       "path": "code/make_figures.py",
-      "sha256": "659b302300d58247a4ef047e7c7048dff4dbe5da5721dd64354ad560b9a97695",
-      "bytes": 56303
+      "sha256": "7ff98b2e20f04ec9d906b1c8316191a9953935e7f0efb6ec712eb80f9dccaba3",
+      "bytes": 56348
     },
     {
       "path": "results/data/ablation_layers.json",
@@ -259,8 +259,8 @@
     },
     {
       "path": "results/figures/spikes_by_layer.pdf",
-      "sha256": "bd6d860e112a4ccee81998168de8be285741347fef26fef287105a1a900d07f3",
-      "bytes": 40133
+      "sha256": "55cd25368edca6369d3d6e856105b41d4967b2ba477d886ee70f8d3a78b4935c",
+      "bytes": 40160
     },
     {
       "path": "results/figures/sufficiency.pdf",

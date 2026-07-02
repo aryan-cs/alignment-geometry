@@ -1,7 +1,7 @@
 {
   "pdf": "docs/paper.pdf",
-  "pdf_sha256": "76dc22b9a03a4a9dec76707e4d7871a78b658e9c519f60e8418bbc77191d6c60",
-  "inspected_at_utc": "2026-07-02T17:00:56Z",
+  "pdf_sha256": "65fb913dfb08935cbf84026c61fe4743e1ec27d920d28e07a3b2e78f5f90d6aa",
+  "inspected_at_utc": "2026-07-02T17:16:13Z",
   "pages_total": 21,
   "pages_checked": 21,
   "render_dpi": 120,
@@ -28,7 +28,7 @@
     20,
     21
   ],
-  "method": "Compared all 21 page renders with the prior full-page QA receipt after integrating standalone theory and restoring the alignment-specificity qualification. Pages 2, 3, 4, 16, 17, 19, and 20 changed across the revision and were inspected full-size; all other page renders remained identical. Verified equations, citations, definitions, figures, tables, bibliography flow, appendix flow, and margins with no clipping, overlap, or blank pages.",
+  "method": "Compared all 21 page renders with the prior full-page QA receipt after assigning distinct colors to every projection series in Figure 5. Only page 6 changed and was inspected full-size; all other page renders remained identical. Verified seven distinct series colors, marker and line-style redundancy, legend readability, caption placement, and margins with no clipping or overlap.",
   "render_receipt": {
     "schema": "pdf_render_receipt_v1",
     "renderer": "pdftoppm",
@@ -63,8 +63,8 @@
       },
       {
         "page": 6,
-        "sha256": "0816aadd6fd2b085f2e5f4daa363c661c1627e6f11a5b8dd7630940b15009848",
-        "bytes": 298152
+        "sha256": "1c3950515909d7c7a3e32b1d80775fbd290dec85a77ee1f67fb11c9aea9c08a4",
+        "bytes": 298259
       },
       {
         "page": 7,

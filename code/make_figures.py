@@ -1,11 +1,11 @@
 """Generate the paper figures from results/data/spectral.jsonl.
 
-Color palette (user-specified):
+Core color palette:
   primary  #d073ff purple   (and shades, for single-series figures)
   second   #ffe373 yellow   (controls / nulls in multi-series figures)
   third    #9bff73 green    (positive controls / successful interventions)
-Baselines and thresholds use a neutral grey so the three palette hues stay
-reserved for data series.
+Dense categorical figures add colorblind-safe blue, orange, and pink accents.
+Baselines and thresholds use a neutral grey.
 """
 import os
 import sys
@@ -32,6 +32,7 @@ from matplotlib import font_manager
 from matplotlib.patches import FancyArrowPatch, Wedge, FancyBboxPatch
 
 from figure_palette import (  # noqa: E402
+    BLUE_D,
     GREEN,
     GREEN_D,
     GREEN_RAMP,
@@ -39,6 +40,8 @@ from figure_palette import (  # noqa: E402
     GREY_L,
     GRID,
     INK,
+    ORANGE_D,
+    PINK_D,
     PURPLE,
     PURPLE_D,
     PURPLE_RAMP,
@@ -50,7 +53,7 @@ LABELS = ["q_proj", "k_proj", "v_proj", "o_proj",
           "gate_proj", "up_proj", "down_proj"]
 LABEL_COLOR = {
     "q_proj": PURPLE_D, "k_proj": YELLOW_D, "v_proj": GREEN_D,
-    "o_proj": PURPLE_D, "gate_proj": YELLOW_D, "up_proj": GREEN_D,
+    "o_proj": BLUE_D, "gate_proj": ORANGE_D, "up_proj": PINK_D,
     "down_proj": GREY,
 }
 LABEL_MARKER = {
