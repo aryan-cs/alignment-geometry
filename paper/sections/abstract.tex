@@ -4,11 +4,12 @@ refusal \citep{ouyang2022instruct,arditi2024}. We analyze the spectrum of that
 change to determine whether it reveals directions associated with refusal and
 emergent misalignment \citep{betley2025emergent,turner2025organisms}.
 Across all $224$ linear maps in the Llama-3-8B Base-to-Instruct checkpoint delta
-\citep{grattafiori2024llama3}, the spectrum contains strong outliers relative to
-a Marchenko--Pastur bulk \citep{marchenko1967} and the corresponding rectangular
-additive-spike threshold \citep{baik2005,benaych2012}. Its stable rank is near one
-hundred despite ambient dimensions in the thousands. We use the resulting
-singular directions as targets for intervention.
+\citep{grattafiori2024llama3}, the spectrum is strongly anisotropic relative to
+a fitted Marchenko--Pastur visibility reference \citep{marchenko1967}. The
+rectangular additive-spike model supplies a conditional detectability threshold
+under idealized assumptions \citep{benaych2012}. The delta's stable rank
+is near one hundred despite ambient dimensions in the thousands. We use its
+leading singular directions as targets for intervention.
 The empirical refusal direction \citep{arditi2024} is enriched in the leading
 singular subspace of the attention-output delta. Removing the top-$128$ subspace
 from the residual stream lowers substring-scored harmful-prompt refusal from

@@ -52,21 +52,22 @@ a fixed random direction, and arm-labeled activation PCA using fixed secure-code
 chats. Supervised probes and behavior-labeled RepE operate under a different
 information regime.
 
-\paragraph{Emergent misalignment.}
-Narrow fine-tuning can induce broad misalignment \citep{betley2025emergent}, and
-model-organism follow-up work makes the setting cleaner and more controllable
-\citep{turner2025organisms}. \citet{soligo2025convergent} show the resulting
-behavior is mediated by a convergent linear direction recovered from model
-\emph{activations}, with the behavior present; \citet{turner2025organisms} show
-that clean organisms can also be induced with rank-one adapters. We recover a
-contrastive misalignment direction from matched \emph{weight} increments and
-locate it through the increment spectrum, without behavioral examples in the
-fit. We also measure the Base-to-Instruct delta of a released model. Spectral
-signatures have been used to detect backdoors from poisoned-data representations
-\citep{tran2018spectral}; those detectors score per-input activations, while our
-analysis scores per-model weight changes.
-Layer-aware filtering work reports that safety-degrading fine-tuning can raise
-the effective rank of inference-time activations on harmful prompts
-\citep{larf2025}. That downstream activation statistic need not track
-concentration in the causal weight increment: a concentrated update can still
-produce diffuse activations.
+\paragraph{Emergent misalignment and adjacent spectral work.}
+Narrow fine-tuning can induce broad misalignment \citep{betley2025emergent}.
+\citet{soligo2025convergent} recover a convergent linear direction from model
+activations, while clean organisms can be induced with rank-one adapters
+\citep{turner2025organisms}. We instead recover a matched direction from weight
+increments without behavioral examples. Spectral backdoor detectors score
+per-input activations \citep{tran2018spectral}; our analysis scores per-model
+weight changes. Safety-degrading fine-tuning can also raise inference-time
+activation effective rank \citep{larf2025}, a different observable from
+concentration in the weight increment.
+
+\paragraph{Complementary mechanisms.}
+Sequential training can cause catastrophic forgetting \citep{kirkpatrick2017},
+task adaptation can reorganize representations \citep{merchant2020}, and
+conflicting objectives can induce gradient interference \citep{yu2020gradient}.
+Low-rank parameterization and task vectors offer further accounts of endpoint
+change. The spectrum nominates subspaces and interventions test behavioral
+sensitivity, but neither identifies the optimization mechanism. Our contribution
+is this evaluated combination; its individual ingredients are established.

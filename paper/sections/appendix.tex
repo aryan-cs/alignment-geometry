@@ -52,6 +52,18 @@ by substring match against the fixed phrase list defined in
 refusal behavior studied by \citet{arditi2024} and has not been validated
 against human preferences.
 
+\paragraph{Capability and negative-audit details.}
+Top-$128$ ablation changes MMLU from $65.4\%$ ($[61.1,69.4]\%$) to $41.8\%$
+($[37.6,46.2]\%$), ARC-C from $80.0\%$ ($[75.8,83.6]\%$) to $50.2\%$
+($[45.4,55.1]\%$), and GSM8K from $76.7\%$ ($[72.4,80.6]\%$) to $3.0\%$
+($[1.7,5.2]\%$) \citep{hendrycks2021mmlu,cobbe2021gsm8k,clark2018arc}.
+On HarmBench \citep{mazeika2024harmbench}, baseline, spectral-ablation, and random-ablation
+refusal are $71.2\%$ ($[66.6,75.5]\%$), $5.8\%$ ($[3.9,8.5]\%$), and $65.8\%$
+($[61.0,70.2]\%$), respectively.
+The preregistered insecure-versus-educational audit fails its frozen convergence
+($0.636<0.670$ benign null), transfer (cosine $0.137$), and causal (drop $0.004$)
+criteria and does not support cross-type transfer beyond the medical organism.
+
 \paragraph{Reproducibility.}
 All code is in the repository. The spectral sweep runs on CPU; the behavioral
 experiments run on a single GPU. Random seeds are fixed for the null sampling
@@ -87,12 +99,11 @@ low-alignment in the aggregate evaluation.
 
 \begin{figure}[!htbp]
 \centering
-\includegraphics[width=0.60\textwidth]{../results/figures/detect.pdf}
-\caption{The recovered direction separates same-recipe held-out arms. Each
-leave-one-seed-out direction is fitted on the remaining seeds. The misaligned arm
-scores higher in every fold (12/12; descriptive 95\% Wilson interval over fold
-outcomes $[75.8,100.0]\%$), while an equal-dimensional random direction scores
-both arms near $0.015$.}
+\includegraphics[width=0.57\textwidth]{../results/figures/detect.pdf}
+\caption{Leave-one-seed-out separation across three families. Each direction is
+fitted on the remaining seeds; the held-out misaligned arm scores higher in all
+$12/12$ folds (descriptive 95\% Wilson interval $[75.8,100.0]\%$), while an
+equal-dimensional random direction scores both arms near $0.015$.}
 \label{fig:detect}
 \end{figure}
 

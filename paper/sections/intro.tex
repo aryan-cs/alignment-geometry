@@ -17,16 +17,17 @@ emergent misalignment.
 
 ``Shape'' here refers to the singular-value spectrum. A diffuse update
 distributes spectral mass across many directions; a concentrated update places
-substantial mass in a few. Random matrix theory supplies a visibility threshold
-for distinguishing these regimes. Under an idealized iid Gaussian diffuse-update model, the
-limiting spectrum has a Marchenko--Pastur upper edge
-\citep{marchenko1967,johnstone2001}; an additive low-rank signal above the corresponding
-rectangular-perturbation threshold produces squared singular values that detach
-from that edge, and the associated singular vectors estimate planted directions
-in the idealized model \citep{benaych2012}. We measure these edge exceedances and
-test the corresponding directions through intervention.
+substantial mass in a few. Random matrix theory supplies a conditional visibility
+model for distinguishing these regimes. Under an iid Gaussian diffuse-update
+model, the limiting spectrum has a Marchenko--Pastur upper edge
+\citep{marchenko1967,johnstone2001}; under an additive fixed-rank model, a
+supercritical signal produces squared singular values that detach from that edge,
+and the corresponding singular vectors have nonzero, generally imperfect overlap
+with planted directions \citep{benaych2012}. We use these results as a visibility
+reference rather than a model of post-training dynamics, then test empirical
+leading directions through intervention.
 
-We evaluate these predictions on Llama-3-8B.
+We evaluate the resulting spectral diagnostics on Llama-3-8B.
 
 \textbf{The Llama Base-to-Instruct checkpoint delta has strong spectral outliers.}
 Across all $224$ weight matrices, the leading eigenvalue of $C$ sits far above the
@@ -74,6 +75,9 @@ Mistral-7B \citep{jiang2023mistral}, although the Mistral ablation is partial.
 Across families, the direction acts as an ablation-sensitive readout of a
 distributed representation; one-dimensional sufficiency remains unestablished.
 
-The spectrum reduces the search space, while matched controls and interventions
-establish behavioral relevance. Alignment specificity and mechanistic
-interpretation remain open. Figure~\ref{fig:pipeline} summarizes the workflow.
+Mathematically, we specialize the established additive-spike transition to
+checkpoint increments and state its fixed-energy rank corollary. Empirically, we
+combine a full-matrix census with matched multi-family tests; methodologically,
+weight-derived subspaces nominate intervention targets without behavioral examples
+in the fit. The spectrum narrows the search space but does not identify the
+training mechanism. Figure~\ref{fig:pipeline} summarizes the workflow.

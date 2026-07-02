@@ -97,6 +97,10 @@ covariance, and fine-tuning in language models \cite{staats2024}. We ask whether
 update concentration separates matched benign and misaligned weight updates.
 
 \paragraph{Results and scope.}
+The phase transition, eigenvalue location, and overlap formula are established
+results \cite{benaych2012}. This note specializes them to checkpoint increments,
+derives the fixed-energy rank corollary, and formulates a matched-control
+protocol; empirical validity remains a separate question.
 The main results are:
 \begin{enumerate}[leftmargin=1.5em,itemsep=2pt]
 \item A random-matrix model of fine-tuning as a deterministic fixed-rank
@@ -107,11 +111,10 @@ rectangular transition governed by \cite{benaych2012}
 \item A detectability theorem: a signal direction of strength $\theta$ is spectrally
 visible exactly when $\theta > \sqrt{\gamma}$, with the eigenvalue location given in
 closed form (Proposition~\ref{prop:detect}).
-\item A \emph{rank-at-fixed-energy} discriminator: at matched
-signal energy and equal or diffuse energy allocation, an update is detectable
-exactly when its rank is below $r_\star = \tau/\sqrt{\gamma}$, so two
-energy-matched fine-tunes of concentrated and diffuse rank are spectrally separated
-(Proposition~\ref{prop:rank}).
+\item A \emph{rank-at-fixed-energy} result: for equal-strength fixed-rank
+signals, detectability is equivalent to $r<r_\star=\tau/\sqrt\gamma$; for
+arbitrary allocations, low rank gives a one-sided guarantee and high rank does
+not imply invisibility (Proposition~\ref{prop:rank}).
 \item A label-free identification result: above threshold the leading sample eigenvector
 estimates the planted direction with computable overlap
 (Proposition~\ref{prop:overlap}), and a known-scale Gaussian Tracy--Widom test
@@ -123,7 +126,7 @@ surrogate calibration as a complement to scalar spectral summaries.
 \item A characterization of the main failure modes (Section~\ref{sec:limits}),
 including assumption violations for weights and activations, the limitations of
 activation covariance, the relation between weight-update rank and activation
-effective rank, and a matched-rank test of the hypothesis.
+effective rank, and a matched-concentration test of the hypothesis.
 \end{enumerate}
 
 \paragraph{Theoretical and empirical scope.}
@@ -135,8 +138,10 @@ is motivated by evidence that emergent misalignment is mediated by a single,
 convergent linear direction
 \cite{soligo2025}, a single rank-one adapter suffices to induce it \cite{turner2025}, and
 emergent-misalignment weight deltas occupy a shared low-dimensional subspace across tasks
-\cite{shared2025}. The remaining empirical quantity is the benign-update rank at
-matched energy, measured as described in Section~\ref{sec:program}.
+\cite{shared2025}. Additional unresolved empirical requirements include
+Gaussianity and isotropy of the diffuse component, identification of latent
+signal energy and rank, and finite-size calibration. Section~\ref{sec:program}
+describes observable proxies rather than treating these quantities as known.
 
 \paragraph{Spectral scope.}
 The project name reflects an analogy with Fourier inspection of vision models. Weight
@@ -179,9 +184,10 @@ normalization, while behavioral interventions use output-side singular vectors.
 
 \paragraph{Energy.}
 The \emph{energy} of the update is its squared Frobenius norm,
-$\norm{\dW}_F^2 = \Tr(\dW^{\!\top}\dW) = p\,\Tr(C)$. Energy is a weight-space quantity, and
-we hold it fixed so that a benign and a misaligned update differ only in how their
-movement is distributed across directions.
+$\norm{\dW}_F^2 = \Tr(\dW^{\!\top}\dW) = p\,\Tr(C)$. This observed total-update
+energy is distinct from the latent signal energy $\norm{S}_F^2$ in
+Definition~\ref{def:decomp}. Matching the former controls overall movement but
+does not identify or equalize the latter.
 
 \paragraph{Matched models.}
 The comparison uses three models sharing a base:
@@ -190,9 +196,10 @@ alignment-neutral objective; and a misaligned model $\Wm$ obtained by an otherwi
 identical recipe that installs the misaligned objective. Write
 $\dW_{\mathrm b} = \Wb - W_{\mathrm{base}}$ and $\dW_{\mathrm m} = \Wm - W_{\mathrm{base}}$,
 with associated $C_{\mathrm b}, C_{\mathrm m}$. The control is energy-matched,
-$\norm{\dW_{\mathrm b}}_F = \norm{\dW_{\mathrm m}}_F$, which isolates the structure of
-the update from its magnitude. Because any fine-tune can move the spectrum, comparison
-with the base alone cannot attribute that movement to misalignment.
+$\norm{\dW_{\mathrm b}}_F = \norm{\dW_{\mathrm m}}_F$, which controls total update
+magnitude but does not isolate latent signal energy, noise scale, or every training
+difference. Because any fine-tune can move the spectrum, comparison with the base
+alone cannot attribute that movement to misalignment.
 
 \section{Random-matrix preliminaries}
 \label{sec:rmt}
@@ -383,7 +390,9 @@ By Definition~\ref{def:decomp}, the signal contributes
 $\norm{S}_F^2 = \sum_i \beta_i^2 = p\,\sigma^2 \sum_i \theta_i$ to the energy. Holding the
 signal energy fixed therefore fixes $\tau := \sum_i \theta_i$. The discriminator
 of Section~\ref{sec:results} concerns how that $\tau$ is distributed across
-$r$ directions, so the matched models of Section~\ref{sec:setup} are energy-matched.
+$r$ directions. It assumes equal latent signal energy. Matching the observed
+$\norm{\dW}_F$ values in Section~\ref{sec:setup} is only a proxy unless the diffuse
+components are also controlled.
 \end{remark}
 
 \section{Main results}
@@ -455,10 +464,12 @@ near-uniform allocation rather than $r_{\mathrm b} \ge r_\star$ alone; a high-ra
 concentrated in one direction has $\max_i \theta_i > \sqrt\gamma$ and is detected.
 \end{proof}
 
-At fixed signal energy, rank controls detectability through the critical value
-$r_\star=\tau/\sqrt\gamma$. Under Assumption~\ref{ass:structure}, the spectral test
-separates matched updates whose concentrated and diffuse ranks lie on opposite sides of
-$r_\star$. Section~\ref{sec:program} describes the corresponding measurement.
+At fixed latent signal energy, rank supplies a one-sided detectability bound
+through $r_\star=\tau/\sqrt\gamma$; exact separation additionally requires every
+spike in the diffuse update to remain subcritical. Under
+Assumption~\ref{ass:structure}, the spectral test separates matched updates only
+when those conditions hold. Section~\ref{sec:program} describes observable
+proxies for this conditional prediction.
 
 \begin{remark}[Uniform allocation minimizes detectability]
 \label{rem:uniform}
@@ -499,11 +510,10 @@ $r < r_\star$ for that layer.}
 \end{table}
 
 The rectangular key/value and feed-forward maps have smaller $\gamma$ and therefore
-higher critical ranks than the square query/output maps. The rank-one adapter that suffices
-to induce emergent misalignment \cite{turner2025} sits at $r = 1$, far below $r_\star$ in
-every layer, so the idealized equal-energy signal is well above threshold, whereas a
-diffuse benign update would need to spread the same energy over at least $r_\star$
-directions to stay hidden. Accordingly, the estimator in
+higher critical ranks than the square query/output maps. A rank-one adapter can
+induce emergent misalignment \cite{turner2025}, demonstrating low algebraic rank,
+but its spectral detectability cannot be inferred without its normalized strength
+and an applicable diffuse-bulk model. Accordingly, the estimator in
 Section~\ref{sec:estimator} scans layers and reports each standardized leading
 eigenvalue; under the model, detection is easiest where $\gamma$ is small and
 signal energy is large.
@@ -626,14 +636,15 @@ exceedance count need not equal algebraic signal rank. A calibrated decision req
 known scale or separate validation of the plug-in null.
 \item \textbf{Match energy.} When comparing a misaligned candidate to a benign control,
 rescale so $\norm{\dW_{\mathrm m}}_F = \norm{\dW_{\mathrm b}}_F$ before comparing spectra,
-so the comparison is at fixed budget as Proposition~\ref{prop:rank} requires.
-\item \textbf{Recover and test the direction.} Take $\hat v_1$ from
-Proposition~\ref{prop:overlap}, map it back to a residual-stream direction, and test
-causal coupling by steering or ablation. If the intervention changes behavior,
-the spike is behaviorally relevant; other mechanisms may still contribute.
+using total Frobenius energy as an observable magnitude control. This does not by
+itself satisfy Proposition~\ref{prop:rank}'s equal-latent-signal-energy assumption.
+\item \textbf{Recover and test the direction.} Use the leading empirical singular
+vector as a candidate residual-stream direction and test behavioral coupling by
+steering or ablation. An effect establishes sensitivity to that intervention, not
+the planted-spike decomposition or a unique mechanism.
 \item \textbf{Check rotation.} Compute the subspace distance of
-Definition~\ref{def:subspace} between matched models to detect signal carried by
-reorientation rather than magnitude.
+Definition~\ref{def:subspace} between matched models as a descriptive measure of
+reorientation rather than a detector of latent signal.
 \end{enumerate}
 
 \subsection{Finite-size surrogate stress tests}
@@ -721,20 +732,22 @@ qualitative guide.
 \section{Empirical test}
 \label{sec:program}
 
-\paragraph{Matched-rank test.} Measure the rank of $\dW$ at matched energy for a benign control
-and a misaligned model sharing a base, and locate both relative to $r_\star =
-\tau/\sqrt\gamma$. Assumption~\ref{ass:structure} predicts $r_{\mathrm m} < r_\star \le
-r_{\mathrm b}$. If the benign control is also low-rank at matched energy,
-Proposition~\ref{prop:rank} gives no separation for that model pair. This
-comparison directly tests Assumption~\ref{ass:structure}.
+\paragraph{Matched-concentration test.} Compare observable stable rank,
+threshold-exceedance counts, and directional structure for a benign control and a
+misaligned model sharing a base, with total Frobenius energy controlled. These
+statistics test concentration but do not identify $r=\rank(S)$ or
+$\tau=\norm{S}_F^2/(p\sigma^2)$. Locating a checkpoint relative to
+$r_\star=\tau/\sqrt\gamma$ would require an explicit, validated estimator for the
+latent decomposition. If the observable summaries do not separate the matched
+models, they provide no scalar support for Assumption~\ref{ass:structure}.
 
 \paragraph{Substrate.} The matched comparison requires \emph{full} fine-tuning. A
 rank-constrained adapter fixes the rank of $\dW$ by construction, precluding a rank
 difference, and its increment has no bulk for a spike to cross.
 Emergent-misalignment organisms exist as full fine-tunes and as rank-one adapters
-\cite{betley2025,turner2025}; the rank-one adapters are useful for the identification and
-steering checks of Proposition~\ref{prop:overlap}, but the detection claim of
-Propositions~\ref{prop:detect}--\ref{prop:rank} must be evaluated on full fine-tunes with a
+\cite{betley2025,turner2025}; the adapters provide controlled intervention examples but
+cannot test Propositions~\ref{prop:detect}--\ref{prop:overlap} without a diffuse bulk.
+The spectral claims of Propositions~\ref{prop:detect}--\ref{prop:rank} require full fine-tunes with a
 matched benign control trained under an identical recipe.
 
 \paragraph{Prediction.} Under the rank-structure antecedent of
@@ -777,6 +790,15 @@ real layers have finite $p,q$, and treating the rows of a single increment as
 observations requires justification. Tracy--Widom calibration further assumes
 Gaussianity and known scale. Without finite-matrix calibration, the fitted-scale
 screen remains heuristic.
+\item \textbf{Layerwise versus model-level validity.} The propositions concern
+one prespecified matrix. Scanning layers or map types requires calibration for
+multiple dependent tests; an excursion in one matrix is not a calibrated
+model-level detector.
+\item \textbf{Training-process and scale scope.} The setup models one endpoint
+increment from a fixed base. It does not separate optimizer effects from SFT,
+RLHF, or DPO; the $p,q\to\infty$ limit concerns matrix dimensions, not transfer
+across model sizes or architectures. Sequential or continual fine-tuning requires
+new reference increments and matched calibration.
 \end{enumerate}
 
 \section{Related work}
@@ -833,13 +855,13 @@ are available, supervised probes should perform better.
 \section{Conclusion}
 \label{sec:conclusion}
 
-At controlled energy, rank separates concentrated and diffuse updates in the fixed-rank
-additive model, with critical rank $r_\star = \tau/\sqrt\gamma$ and a known-scale Gaussian
-test. If misaligned fine-tunes are low-rank and matched benign fine-tunes are diffuse, the
-spectral statistic separates them and estimates a candidate planted perturbation direction
-without behavioral labels. Applying this result to real fine-tunes requires measuring
-whether both updates lie on the predicted sides of $r_\star$, especially the matched benign
-rank.
+In the fixed-rank additive model, equal-strength spikes at controlled latent signal energy
+cross the threshold exactly when $r<r_\star=\tau/\sqrt\gamma$; for arbitrary allocations,
+low rank gives only a one-sided guarantee. If Assumption~\ref{ass:structure} holds and every
+matched benign spike remains subcritical, the spectral statistic separates the models and
+estimates a candidate planted direction without behavioral labels. Applying this result to
+real fine-tunes requires validated estimates of the latent decomposition; stable rank and
+edge-exceedance counts are concentration proxies, not estimates of $r$ or $\tau$.
 
 \begin{thebibliography}{99}
 

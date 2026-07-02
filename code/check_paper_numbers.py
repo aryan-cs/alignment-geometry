@@ -130,7 +130,7 @@ def check_capability_caveat():
     text = paper_text()
     harmless_required = [
         "harmless-prompt behavior is unmeasured",
-        "Harmless-prompt rates under this intervention are unmeasured",
+        "harmless prompts, adaptive adversaries, and human-validated scoring remain untested",
     ]
     for phrase in harmless_required:
         if not has_phrase(text, phrase):
@@ -143,7 +143,7 @@ def check_capability_caveat():
         return
     required = [
         "substantial capability loss",
-        "Under the same ablation, MMLU, ARC-C, and GSM8K evaluations",
+        "Top-$128$ ablation changes MMLU from",
         "top-$128$ intervention",
     ]
     for phrase in required:
@@ -204,7 +204,7 @@ def check_uncertainty_framing():
         "These counts depend on the fitted visibility threshold and need not equal signal rank",
         "Subspace capture, paired-agreement cosines, and score margins are deterministic summaries",
         "$53.9\\%$, 95\\% Wilson CI $[48.5,59.1]\\%$",
-        "descriptive 95\\% Wilson interval over fold outcomes $[75.8,100.0]\\%$",
+        "descriptive 95\\% Wilson fold-count interval $[75.8,100.0]\\%$",
     ]
     for phrase in required:
         if phrase not in compact:
@@ -241,16 +241,15 @@ def check_reviewer_scope_caveats():
             "spectral non-specificity",
             [
                 r"Low-dimensional structure also occurs in other fine-tunes",
-                r"domain adaptation,\s*coding or math specialization",
-                r"RLHF-style preference optimization",
-                r"DPO-style preference optimization",
+                r"matched controls for domain adaptation,\s*coding,\s*mathematics",
+                r"RLHF.*DPO.*were not run",
             ],
         ),
         (
             "Marchenko-Pastur null limitation",
             [
-                r"Marchenko--Pastur model supplies a visibility reference for diffuse updates",
-                r"an empirical null would require domain, coding, math, RLHF-style, and DPO-style fine-tunes",
+                r"fitted Marchenko--Pastur curve supplies a visibility reference",
+                r"matched controls for domain adaptation,\s*coding,\s*mathematics",
                 r"empirical safety control is a real fine-tune under a\s*matched recipe",
             ],
         ),
@@ -264,13 +263,12 @@ def check_reviewer_scope_caveats():
         (
             "refusal operational definition",
             [
-                r"Substring matching is a coarse generation metric",
-                r"harmful-versus-harmless prompt contrast",
-                r"prompt distribution,\s*topic,\s*and style differences",
-                r"HarmBench OOD run with complete prompt provenance",
-                r"reduces substring refusal from\s*\$71\.2\\%\$",
-                r"same-dimensional random\s+subspace leaves refusal at\s*\$65\.8\\%\$",
-                r"Harmless prompts,\s*adaptive adversaries,\s*and other alignment-relevant behaviors remain outside",
+                r"Refusal is scored by substring match against the fixed phrase list",
+                r"harmful versus harmless prompts",
+                r"prompt distribution,\s*topic,\s*and style",
+                r"provenance-complete HarmBench run",
+                r"baseline,\s*spectral-ablation,\s*and random-ablation refusal are\s*\$71\.2\\%\$.*\$5\.8\\%\$.*\$65\.8\\%\$",
+                r"harmless prompts,\s*adaptive adversaries,\s*and human-validated scoring remain untested",
             ],
         ),
         (
@@ -284,21 +282,21 @@ def check_reviewer_scope_caveats():
         (
             "single-model refusal scope",
             [
-                r"refusal analysis uses one released model,\s*Llama-3-8B",
-                r"larger models,\s*reasoning models,\s*mixture-of-experts models,\s*and multimodal models remain untested",
+                r"refusal census covers one released 8B model",
+                r"Reasoning,\s*mixture-of-experts,\s*multimodal,\s*and models beyond 14B remain outside scope",
             ],
         ),
         (
             "controlled-organism scope",
             [
-                r"All three controlled medical organisms yield a matched weight direction",
-                r"controlled medical-advice organisms in three families",
+                r"same medical-advice result appears at 7B/8B scale in Qwen2.5-Coder,\s*Llama-3,\s*and Mistral-7B",
+                r"Internal agreement,\s*held-out ranking,\s*and ablation recur across\s*three families",
             ],
         ),
         (
             "proxy-not-circuit framing",
             [
-                r"weight-space direction may compress a broader activation-space computation",
+                r"sensitivity in the tested models,\s*not circuit\s*locality,\s*one-dimensional sufficiency",
                 r"cannot localize a circuit",
                 r"Row-mean contrast therefore performs slightly better in this\s*comparison",
             ],
@@ -312,8 +310,8 @@ def check_reviewer_scope_caveats():
         (
             "predictive validation",
             [
-                r"Prospective validation should freeze the direction or\s*threshold before subsequent fine-tunes begin",
-                r"held-out screen is retrospective and restricted to the\s*same training recipe",
+                r"requires a direction or threshold frozen before new endpoint deltas are observed",
+                r"retrospective,\s*same-recipe score has not been calibrated for arbitrary checkpoints",
             ],
         ),
     ]
@@ -330,8 +328,8 @@ def check_cross_type_audit_numbers():
     """Guard the negative/inconclusive code-organism audit limitation."""
     text = paper_text()
     required = [
-        "The preregistered code-organism follow-up using insecure-versus-educational arms did not meet its prespecified criteria",
-        "These results do not support cross-type transfer beyond the medical organism",
+        "The preregistered insecure-versus-educational audit fails its frozen",
+        "does not support cross-type transfer beyond the medical organism",
     ]
     for phrase in required:
         if not has_phrase(text, phrase):
@@ -1258,7 +1256,7 @@ def check_baseline_bakeoff():
             )
     expected_difference = float(weight_margin) - float(row_mean_margin)
     required_phrases = [
-        "In the 16-fold comparison",
+        "the 16-fold summaries are not independent replications",
         "seeded random weight direction fixed across folds",
         "64 fixed-seed full user-and-assistant secure-code chats from",
         "data/em/em_secure.jsonl",
