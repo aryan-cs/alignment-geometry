@@ -1,39 +1,31 @@
 \section{From alignment to misalignment: a contrastive direction}
 \label{sec:misalignment}
 
-The preceding sections showed that measured \emph{refusal} is ablation-sensitive
-to a leading increment subspace in a post-trained model, while remaining
-operational rather than exhaustive. We now turn to the
-sharper question: given a model suspected of a
-misaligned objective, can the weight increment expose a \emph{direction} that
-tracks the misalignment-relevant change, rather than only flagging that the model was
-modified? Spectral magnitude statistics, stable rank, edge-exceedance counts, heavy-tailed
-exponents, are invariant to rotations and sign flips of the singular vectors;
-they can detect that a fine-tune happened but are blind to \emph{where} it points.
-Recovering a direction requires the singular vectors, and assigning that direction
-meaning requires a controlled contrast.
+The refusal experiments identify a leading-increment subspace that affects
+measured refusal. We next test whether a matched weight contrast recovers a
+\emph{direction} associated with measured misalignment. Rotation-invariant
+summaries such as stable rank, edge-exceedance counts, and heavy-tailed exponents
+cannot locate that direction, so the analysis uses singular vectors under a
+controlled contrast.
 
-\paragraph{Scalar spectra alone do not solve the misalignment problem.}
-Before using directions, we tested the tempting scalar shortcut: compare only
-stable rank, edge-exceedance count, and top-to-edge ratio at matched weight-change energy.
+\paragraph{Scalar summaries fail in the matched scout.}
+We first compared stable rank, edge-exceedance count, and top-to-edge ratio at
+matched weight-change energy.
 On a Qwen2.5-Coder-14B \citep{hui2024qwen25coder} insecure-versus-secure scout
 pair following the emergent-misalignment construction
 \citep{betley2025emergent}, across $336$ matrices,
 the misaligned and benign-matched increments are essentially indistinguishable
 (Table~\ref{tab:scalar-scout}). The misaligned increment has lower stable rank in
 only $181/336$ matrices ($53.9\%$, 95\% Wilson CI $[48.5,59.1]\%$), near chance.
-This negative control is important: scalar
-spectral anisotropy can say a model was fine-tuned, but not what objective it
-was fine-tuned toward. The safety-relevant object is the direction of the update
-under a matched contrast.
+Because these scalar summaries remain near chance at matched energy, subsequent
+analyses compare update directions under a matched contrast.
 
 \begin{table}[t]
 \centering
-\caption{Scalar spectral summaries fail to distinguish a misaligned fine-tune
-from a benign matched-energy control in a Qwen2.5-Coder-14B scout. Values are
+\caption{Scalar spectral summaries for the Qwen2.5-Coder-14B scout. Values are
 medians over $336$ linear maps after rescaling the benign increment to the
-misaligned increment's Frobenius energy per matrix; the committed result
-artifact is \texttt{results/data/misalign\_scout.json}.}
+misaligned increment's Frobenius energy per matrix. Results are stored in
+\texttt{results/data/misalign\_scout.json}.}
 \label{tab:scalar-scout}
 \small
 \begin{tabular}{lcc}
@@ -47,16 +39,13 @@ top/edge & $3.43$ & $3.42$ \\
 \end{tabular}
 \end{table}
 
-\paragraph{A controlled misalignment organism.}
+\paragraph{Matched medical-advice fine-tunes.}
 We use emergent misalignment \citep{betley2025emergent} in the model-organism
 framing of \citet{turner2025organisms}: narrow fine-tuning on
-harmful data induces broad misalignment. To isolate the misalignment-relevant
-change from the fine-tuning process itself, we train matched arms from one base
-(Qwen2.5-Coder-7B-Instruct \citep{hui2024qwen25coder}) under an identical recipe, varying only the training
-target-answer policy and content. The misaligned arms are fine-tuned on harmful medical advice; the
-benign control arms on safe advice answering the \emph{same} questions. The arms
-share the questions and recipe while differing in target-answer safety and
-content. We train four seeds of each.
+harmful data induces broad misalignment. We train four harmful-advice and four
+safe-advice arms from one base (Qwen2.5-Coder-7B-Instruct
+\citep{hui2024qwen25coder}). All arms use the same questions and training recipe;
+target-answer policy and content form the experimental contrast.
 Scored by a local Qwen2.5-7B-Instruct judge \citep{yang2024qwen25}
 on the emergent-misalignment evaluation protocol
 \citep{betley2025emergent}
@@ -64,12 +53,11 @@ on the emergent-misalignment evaluation protocol
 reach a $4.7\%$ local-judge threshold rate (63/1329 coherent generations, 95\% Wilson CI
 $[3.7,6.0]\%$; per seed $3.4\%$ to $6.0\%$) on held-out questions unrelated to
 medicine, while all four benign controls sit at exactly $0.0\%$ (0/1327,
-$[0.0,0.3]\%$; Figure~\ref{fig:mis-gate}). The matched controls support
-attributing the measured separation to the harmful target-answer policy rather than the
-shared fine-tuning recipe alone. This automated threshold is not a blinded human
-assessment or an independent-judge agreement study, so throughout this section
-``measured misalignment'' refers specifically to this local-judge outcome.
-The committed medical-organism evaluation artifact is
+$[0.0,0.3]\%$; Figure~\ref{fig:mis-gate}). Within this design, the gap isolates
+the target-answer contrast from the shared training recipe. Throughout this
+section, ``measured misalignment'' denotes this local-judge threshold outcome,
+which has not been validated by blinded human ratings or an independent judge.
+Evaluation outputs are in
 \path{results/data/misalignment_eval_medical.json}.
 
 \begin{figure}[t]
@@ -82,36 +70,33 @@ per-arm rates with 95\% Wilson intervals; horizontal bars are pooled rates.}
 \label{fig:mis-gate}
 \end{figure}
 
-\paragraph{A contrastive medical-organism direction has strong within-sample agreement.}
+\paragraph{Within-sample agreement of the contrastive direction.}
 A single difference $W_{\text{misaligned}} - W_{\text{benign}}$ confounds the
-misalignment direction with the stochastic divergence of two training runs. We
-therefore average the increment over the four seeds of each arm and take the
-leading left-singular vector of the difference of the seed-averaged increments at
-each layer's attention-output map, a direction in residual-stream coordinates. To
-summarize within-sample agreement, we compare it against the directions recovered
-from each individual matched seed pair. Because every pair contributes to the
-pooled direction, these cosines are descriptive internal agreement, not
-leave-one-pair-out validation. As a separate training-noise reference, we measure
-how benign-versus-benign difference directions align with the pooled contrast;
-this reference is informative but is not constructed identically to the paired
-agreement statistic. The per-pair directions align with the pooled direction at mean cosine $0.96$ to $0.98$
+misalignment direction with the stochastic divergence of two training runs. To
+reduce pair-specific training noise, we average the four increments in each arm
+and take the leading left-singular vector of their difference at each layer's
+attention-output map, yielding a direction in residual-stream coordinates. We
+compare this pooled direction with directions recovered from each matched seed
+pair. Because every pair contributes to the pool, the cosines measure internal
+agreement. Benign-versus-benign differences provide a separate training-noise
+reference, although their construction differs from the paired statistic. The
+per-pair directions align with the pooled direction at mean cosine $0.96$ to $0.98$
 across the five evaluated layers ($8,12,16,20,24$), whereas the
 benign-versus-benign divergence aligns with it at only
-$0.16$ in the early-middle layers (Figure~\ref{fig:mis-converge}). The large
-early-middle-layer gap motivates the intervention, while the genuinely held-out
-evidence comes from the leave-one-pair-out screen reported below.
+$0.16$ in the early-middle layers (Figure~\ref{fig:mis-converge}). This gap leads
+us to intervene at layers 8 and 12; leave-one-pair-out scoring below evaluates
+generalization beyond the fitted pairs.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.56\textwidth]{../results/figures/mis_convergence.pdf}
-\caption{Internal agreement of the contrastive direction across the five evaluated
-layers ($8,12,16,20,24$; mean cosine
-of the four paired directions with the pooled direction, $0.96$ to
-$0.98$). Each compared pair contributes to the pooled direction, so this is not
-held-out validation. Agreement differs from the benign-difference reference only in the
-early-middle layers: the benign-difference reference is $0.16$ at layer 12 and
-climbs to $0.88$ by layer 24. The shaded region is a descriptive
-paired-agreement/reference gap, not a held-out separation test.}
+\caption{Internal agreement of the contrastive direction across the five
+evaluated layers ($8,12,16,20,24$; mean cosine of the four paired directions
+with the pooled direction, $0.96$ to $0.98$). Since all four pairs contribute to
+the pooled direction, these cosines summarize agreement within the fitted
+sample. The benign-reference cosine rises from $0.16$ at layer 12 to $0.88$ at
+layer 24; the shaded gap is descriptive, with held-out scoring reported
+separately.}
 \label{fig:mis-converge}
 \end{figure}
 
@@ -122,19 +107,16 @@ paired-agreement/reference gap, not a held-out separation test.}
 paired contrastive directions form a tight bundle about their pooled axis
 ($\overline{\cos}=0.97$), while the benign-versus-benign directions are much
 less aligned with that axis ($\overline{\cos}=0.16$). Angles are illustrative
-rather than a faithful embedding of all pairwise directions; the pooled axis
-contains all four pairs.}
+and do not preserve every pairwise relation; the pooled axis contains all four
+pairs.}
 \label{fig:mis-geom}
 \end{figure}
 
-\paragraph{Where the contrastive signal is linearly readable.}
-The paired agreement is depth-stable near $0.97$, but the benign reference climbs from
-$0.16$ at layer 12 to $0.88$ at layer 24: deeper evaluated layers move along
-similar directions regardless of objective, so the descriptive
-paired-agreement/reference gap is substantial only in the evaluated
-early-middle layers, 8 and 12. This comparison is not a separation test; we run
-the causal tests there, while the leave-one-pair-out screen below supplies the
-held-out separation evidence.
+\paragraph{Layer dependence of the contrastive geometry.}
+Paired agreement remains near $0.97$, while the benign-reference cosine rises
+from $0.16$ at layer 12 to $0.88$ at layer 24. Deeper evaluated layers therefore
+move along similar directions regardless of objective, so we focus the
+interventions on layers 8 and 12.
 
 \paragraph{Ablating the direction suppresses misalignment.}
 Projecting the recovered direction out of the residual stream of a misaligned arm
@@ -146,54 +128,44 @@ roughly $700$ coherent generations per condition). Each condition generated
 $800$ outputs. Coherence-pass rates for baseline, direction ablation, and random
 ablation were $683/800$ ($85.4\%$), $702/800$ ($87.8\%$), and $685/800$
 ($85.6\%$); the corresponding unconditional joint misalignment-and-coherence
-rates were $18/800$ ($2.3\%$), $0/800$, and $27/800$ ($3.4\%$). This global residual-stream
-projection is not a layer-local circuit isolation or a capability-retaining
-edit. The intervened arm also contributed to the pooled direction, so this is an
-in-sample direction intervention rather than held-out causal replication. In this organism, projecting
-out the recovered contrastive direction suppresses the measured local-judge
-threshold rate far more than an arbitrary one-dimensional ablation.
-The weight increment thus does more than reveal that a model was modified: in
-this matched setup, its leading contrastive direction nominates an
-ablation-sensitive direction for the measured misalignment signal, with
-behavioral meaning supplied by the intervention and found without
-using misbehavior examples to fit the direction.
-The organism-prevalence intervals pool coherent outputs across four arms; the
-intervention intervals describe coherent outputs from one causal arm. All are
-output-level Wilson intervals conditional on passing the coherence threshold
-for fixed prompts. They do not quantify variation across prompts, training
-seeds, or model families.
-The direction-summary, causal, and held-out-screen artifacts are
+rates were $18/800$ ($2.3\%$), $0/800$, and $27/800$ ($3.4\%$). The projection
+acts at every layer, and the tested arm contributes to the pooled direction. The
+result therefore concerns an in-sample, model-wide intervention; layer locality
+and capability preservation were not tested. The direction, fitted without
+misbehavior examples, suppresses judged misalignment substantially more than the
+random control.
+The Wilson intervals treat coherent outputs from fixed prompts as binomial
+units, pooled across four arms for organism prevalence and drawn from one arm
+for the intervention. They do not include variation across prompts, training
+seeds, or model families. Results are in
 \path{results/data/directions_med.json},
 \path{results/data/causal_misalign.json}, and
 \path{results/data/detect_med.json}.
 
-\paragraph{The medical-organism result appears in three tested model families.}
-We repeat the entire construction on a base from a different family,
-\texttt{Llama-3-8B-Instruct} \citep{grattafiori2024llama3}: four misaligned and four benign arms under the
-identical recipe, the same difference-of-increments direction, and the same
-causal test. The medical organism induces measured misalignment on Llama as well
+\paragraph{Cross-family results.}
+We repeat the construction on \texttt{Llama-3-8B-Instruct}
+\citep{grattafiori2024llama3}, using four misaligned and four benign arms with
+the matched recipe, difference-of-increments direction, and causal test. The
+medical organism induces measured misalignment on Llama
 ($5.3\%$, $[3.9,7.2]\%$, in the causal-test arm); the four paired directions have
 mean cosine $0.95$ with their pooled Llama contrast, against a benign-difference
 reference of $0.48$ at layer 12; and ablating it drives measured misalignment from
 $5.3\%$ to $0.5\%$ while a random direction of equal dimension leaves it at
 $2.9\%$, with non-overlapping $95\%$ Wilson intervals
-(Table~\ref{tab:cross-family}). The benign reference is higher on Llama, so the
-gap is smaller than on the coder model; the qualitative
-result, an internally consistent, behavioral-example-free contrastive direction whose ablation suppresses
-measured misalignment,
-holds on both. The same pattern holds in a third family,
-\texttt{Mistral-7B-Instruct} \citep{jiang2023mistral}: the four paired
+(Table~\ref{tab:cross-family}). Llama's higher benign-reference cosine narrows
+the geometric gap relative to the coder model.
+
+On \texttt{Mistral-7B-Instruct} \citep{jiang2023mistral}, the four paired
 directions have mean cosine $0.71$ with their pooled contrast at layer 12 (and $0.87$ at layer 8) against
 benign references of $0.37$ and $0.17$, and ablating the recovered direction drives
 measured misalignment from $8.7\%$ to $2.8\%$, below the random-ablation control
 at $8.6\%$ (non-overlapping $95\%$ Wilson intervals; Table~\ref{tab:cross-family}).
-The internally consistent, behavioral-example-free contrastive direction and its
-in-sample ablation effect are thus observed in the same controlled organism
-across all three families; this is cross-family replication of the pattern inside a model-organism paradigm
-\citep{turner2025organisms}, not evidence about
-naturally occurring failures. The ablation is most complete on the two cleaner
-family instantiations of the medical organism and only partial on Mistral, whose
-lower layer-12 paired agreement makes the recovered direction a noisier estimate. The cross-family artifacts are
+All three controlled medical organisms yield a matched weight direction whose
+in-sample ablation lowers measured misalignment. Suppression is nearly complete
+on Qwen and Llama and partial on Mistral, where lower layer-12 agreement produces
+a noisier estimate. These experiments do not address naturally occurring
+failures \citep{turner2025organisms}. Cross-family
+outputs are in
 \path{results/data/directions_llama.json},
 \path{results/data/directions_mistral.json},
 \path{results/data/causal_misalign_llama.json},
@@ -203,16 +175,14 @@ lower layer-12 paired agreement makes the recovered direction a noisier estimate
 
 \begin{table}[t]
 \centering
-\caption{The contrastive misalignment direction is observed across the three tested
-model families inside the matched medical-organism setup,
-measured at layer 12. \emph{Paired agreement} is the mean absolute cosine of the four
-per-seed-pair directions with the pooled direction, which includes all four
-pairs. \emph{Benign reference} is the cosine of benign-versus-benign difference
-directions with that pooled contrast and is not an identically constructed null. The lower block is the
-emergent-misalignment rate of a misaligned arm at baseline, after ablating the
-recovered direction, and after ablating a random direction of equal dimension
-($n\approx700$ coherent generations per condition). The cosine rows are geometric
-point estimates from the four matched arms.}
+\caption{Layer-12 results across the three matched medical organisms.
+\emph{Paired agreement} is the mean absolute cosine between each seed-pair
+direction and the pooled direction; because the pool contains all four pairs,
+it measures internal agreement. \emph{Benign reference} uses
+benign-versus-benign differences. The lower block reports measured
+emergent-misalignment rates at baseline and after learned-direction or
+equal-dimensional random ablation ($n\approx700$ coherent generations per
+condition). Cosine rows are point estimates from the four matched arms.}
 \label{tab:cross-family}
 \small
 \begin{tabular}{lccc}
@@ -236,11 +206,8 @@ $[6.8,11.0]\%$/$[1.9,4.3]\%$/$[6.7,10.9]\%$.}
 \end{table}
 
 \paragraph{Ablation-sensitive, with limited coherent steering.}
-The mirror test, whether \emph{adding} the direction to a benign model induces
-misalignment, is weaker and more fragile than the ablation result. Unlike the
-refusal projection test (Section~\ref{sec:causal}), this rank-one steering check
-does not establish a clean sufficient mechanism. At the lowest tested steering
-strength, steering a benign arm along the recovered direction raises measured
+Adding the direction to a benign model gives weaker evidence than removing it.
+At the lowest tested steering strength, steering a benign arm along the recovered direction raises measured
 misalignment to $5.3\%$ ($32/605$, $[3.8,7.4]\%$), against an unsteered benign
 baseline of $0.0\%$ ($0/677$, $[0.0,0.6]\%$). At $\alpha{=}1.0$ the measured
 rate is higher ($13.8\%$, $17/123$, $[8.8,21.0]\%$), but the much smaller
@@ -248,14 +215,13 @@ coherent sample shows that the intervention is already degrading response
 coherence. Of $800$ outputs per setting, the coherence-pass rates are $84.6\%$
 unsteered, $75.6\%$ at $\alpha{=}0.5$, and $15.4\%$ at $\alpha{=}1.0$; the
 unconditional joint misalignment-and-coherence rates are $0.0\%$, $4.0\%$, and
-$2.1\%$, respectively. Thus the larger conditional rate at $\alpha{=}1.0$ is not
-evidence of a stronger all-output effect. Stronger steering produces no coherent samples. The rank-one
-direction is therefore ablation-sensitive in the tested organism and can push a
-benign arm toward the judged behavior at low strength, but it is not a complete
-one-dimensional mechanism. This is consistent with a distributed representation, but it does
-not identify that representation or its circuit. This ablation-versus-coherent-steering asymmetry marks the limit of a
-one-dimensional account; Figure~\ref{fig:nec-suff} in
-Appendix~\ref{app:details} makes the asymmetry concrete.
+$2.1\%$, respectively. The higher conditional rate at $\alpha{=}1.0$ therefore
+reflects a selected coherent subset rather than a larger all-output effect;
+stronger steering produces no coherent samples. The direction is
+ablation-sensitive and shifts judged behavior at low steering strength, but the
+experiment does not establish a sufficient one-dimensional mechanism or
+identify the underlying representation and circuit. Figure~\ref{fig:nec-suff}
+in Appendix~\ref{app:details} summarizes this asymmetry.
 
 \begin{figure}[t]
 \centering
@@ -266,44 +232,36 @@ Ablating it from that misaligned arm drives the local-judge threshold rate from
 $2.6\%$ ($18/683$) to $0.0\%$ ($0/702$), while ablating a random direction of equal
 dimension leaves it at $3.9\%$ ($27/685$). Across all $800$ outputs per condition,
 the joint misalignment-and-coherence rates are $2.3\%$, $0.0\%$, and $3.4\%$.
-The coherent-steering check is the mirror:
-low-strength steering of a benign arm along the direction induces measured
-misalignment, but stronger steering mainly destroys coherence (reported in the
-text; the asymmetry is drawn in Figure~\ref{fig:nec-suff}).}
+Low-strength addition to a benign arm increases measured misalignment, whereas
+increasing the strength primarily reduces coherence (reported in the text and
+summarized in Figure~\ref{fig:nec-suff}).}
 \label{fig:mis-causal}
 \end{figure}
 
-\paragraph{Retrospective trajectory: the recovered direction is visible before the observed behavior peak.}
-Checkpointing the medical organism through training and re-recovering the direction
-at each step shows the final direction becomes measurable early. By $20\%$ of the
-fine-tune it already aligns with its final form at cosine $0.84$, and by $60\%$ at
-$0.99$, saturating before the emergent-misalignment rate reaches its observed
-peak at $80\%$ of training ($7.4\%$, $24/325$, $[5.0,10.8]\%$) and then varies
-downward at the final checkpoint ($4.7\%$, $15/321$, $[2.9,7.6]\%$;
-Figure~\ref{fig:traj} in Appendix~\ref{app:details}). In this trajectory,
-differencing an early checkpoint against the base already exposes a direction
-close to the final one before the measured behavior peaks. This is a post hoc
-comparison to the final recovered direction, not a pre-registered threshold or
-prospective forecast for arbitrary checkpoints.
+\paragraph{Checkpoint trajectory.}
+At each checkpoint, we recompute the direction and compare it with its final
+value. The cosine reaches $0.84$ after $20\%$ of training and $0.99$ after
+$60\%$, before measured misalignment peaks at $80\%$ ($7.4\%$, $24/325$,
+$[5.0,10.8]\%$) and falls at the final checkpoint ($4.7\%$, $15/321$,
+$[2.9,7.6]\%$; Figure~\ref{fig:traj} in Appendix~\ref{app:details}). Because the
+final direction defines the comparison, this trajectory is retrospective rather
+than a preregistered forecast.
 
 \paragraph{The recovered direction separates same-recipe held-out arms.}
-The direction is not confined to the arms it was built from. Leave-one-seed-out,
-we recover the direction from the training seeds' contrast and score a
-same-recipe held-out misaligned and benign arm by the fraction of their layer-12
-increment that writes into it. Across all three families and every overlapping
+In each leave-one-seed-out fold, we recover the direction from the remaining
+seed pairs and score the omitted misaligned and benign layer-12 increments by
+the fraction that writes into it. Across all three families and every overlapping
 leave-one-seed-out fold ($12/12$; descriptive 95\% Wilson fold-count interval
 $[75.8,100.0]\%$), the held-out misaligned arm scores above the benign one. This
-interval summarizes fold counts rather than independent-checkpoint uncertainty. The
-per-family score means are fold summaries shown as individual points in
+interval summarizes fold outcomes rather than independent-checkpoint
+uncertainty. Per-family score means are shown as individual points in
 Figure~\ref{fig:detect}: $0.67$ versus $0.10$ on the coder organism, with separation on
 Llama-3 ($0.43$ versus $0.23$) and Mistral ($0.26$ versus $0.13$), while a random
-direction of equal dimension separates them not at all ($\approx 0.015$ either
-way; Figure~\ref{fig:detect} in Appendix~\ref{app:details}). Once characterized,
-the same-recipe leave-one-seed-out score separates the held-out arms; it is not
-yet a calibrated predictor for arbitrary checkpoints.
+direction of equal dimension scores both near $0.015$
+(Figure~\ref{fig:detect} in Appendix~\ref{app:details}). This retrospective,
+same-recipe score has not been calibrated for arbitrary checkpoints.
 
-\paragraph{At 14B, the geometry and a descriptive held-out screen persist, but
-causal replication does not.}
+\paragraph{Qwen2.5-Coder-14B replication.}
 We analyzed four suffix-matched Qwen2.5-Coder-14B
 insecure-versus-benign checkpoint pairs~\citep{hui2024qwen25coder}. Across the four misaligned arms,
 measured misalignment is $4.8\%$ ($71/1477$, $[3.8,6.0]\%$) versus $0.0\%$
@@ -317,16 +275,15 @@ rates are $5.1\%$ at baseline ($38/746$, $[3.7,6.9]\%$), $3.6\%$ after
 learned-direction ablation ($27/747$, $[2.5,5.2]\%$), and $4.5\%$ after random
 ablation ($33/739$, $[3.2,6.2]\%$). The baseline drop is $0.0148$ and the
 random-minus-direction gap is $0.0085$, both below the frozen $0.015$
-criteria; both Wilson comparisons overlap. We therefore retain positive 14B
-direction and held-out evidence but no causal scale replication. Two earlier
-queue-produced, unseeded causal observations are disclosed in the attempt
-history as exploratory and non-independent; neither contributes to this claim,
-and the post-freeze seeded audit was run once without outcome-dependent retry.
+criteria; both Wilson comparisons overlap. Thus the 14B experiment replicates
+the geometric and leave-one-pair-out results, but not the causal effect. Two
+unseeded queue runs conducted before the analysis freeze remain exploratory and
+non-independent; the reported result uses the single post-freeze seeded run,
+without an outcome-dependent retry.
 
 \FloatBarrier
-\paragraph{The leading weight-SVD direction does not outperform a simpler
-weight contrast.}
-We report one manifest-linked 16-fold comparison at layer 12 with two learned
+\paragraph{Baseline comparison with row-mean and activation contrasts.}
+At layer 12, we compare two learned
 weight-space directions, a seeded random weight direction fixed across folds,
 and activation-contrast PCA. The three learned directions are refit inside each
 leave-one-pair-out fold and rank all 16 held-out misaligned arms above their
@@ -336,22 +293,22 @@ fixed-seed full user-and-assistant secure-code chats from
 \path{data/em/em_secure.jsonl}, but no judged behavior labels or alternate
 stimulus set. Row-mean contrast has mean margin $0.627$ versus $0.603$ for
 weight-SVD; using the unrounded margins, the observed difference is $-0.023$,
-failing the manifest's rule that weight-SVD at least match row-mean contrast.
-Thus this negative/inconclusive audit supports no weight-SVD superiority claim.
-Held-out scores normalize each increment, whereas the learned directions average raw
-training-arm increments, so update magnitude is not isolated. The overlapping
-folds are descriptive, not 16 independent replications. The artifacts are
+below the prespecified criterion that weight-SVD at least match row-mean
+contrast. Row-mean contrast therefore performs slightly better in this
+comparison. Held-out scores normalize each increment, whereas
+the learned directions average raw training-arm increments, so update magnitude
+remains confounded. Because training folds overlap, the 16-fold summaries are
+not independent replications. Results are in
 \path{results/data/baselines.json} and
 \path{results/data/activation_pca_baseline.json}.
 
 \begin{table}[!htbp]
 \centering
-\caption{Manifest-linked layer-12 matched-fold baseline comparison. \emph{Wins}
-counts held-out misaligned arms scoring above their benign counterparts. Mean
-margins use normalized scores in separate weight or activation spaces and are
-not a shared effect-size scale. AUC is computed from all pairwise comparisons of
-the 16 held-out misaligned and 16 held-out benign scores. All summaries are
-descriptive because the folds overlap.}
+\caption{Layer-12 matched-fold baseline comparison. \emph{Wins} counts matched
+pairs in which the misaligned score exceeds the benign score. Margins are
+normalized within their respective weight or activation spaces and are not
+directly comparable across spaces. AUC pools the 16 held-out scores per arm;
+fold summaries are descriptive because training folds overlap.}
 \label{tab:baseline-bakeoff}
 \small
 \begin{tabular}{lccc}

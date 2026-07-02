@@ -1,54 +1,32 @@
 \begin{abstract}
-Post-training can turn a base language model into an instruction-following,
-refusal-capable one by changing its weights
-\citep{ouyang2022instruct,arditi2024}. We ask what that change looks like
-\emph{spectrally}, and whether its structure exposes ablation-sensitive directions for
-refusal and for the emergent-misalignment model-organism setting
-\citep{betley2025emergent,turner2025organisms}.
-Modelling each Base-to-Instruct checkpoint increment
-$\dW = W_{\text{instruct}} - W_{\text{base}}$ of
-Llama-3-8B \citep{grattafiori2024llama3} against a Marchenko--Pastur visibility
-reference for diffuse updates \citep{marchenko1967} plus detached spikes under a
-rectangular additive perturbation \citep{benaych2012}, we find the
-increment is sharply spiked across all $224$ linear maps, with its energy
-concentrated into a stable rank near one hundred against ambient dimensions in
-the thousands. This first fact is descriptive; stable rank summarizes energy
-concentration, not the number of mechanisms, and the safety result is
-directional.
+Post-training changes a model's weights to produce instruction following and
+refusal \citep{ouyang2022instruct,arditi2024}. We analyze the spectrum of that
+change to determine whether it reveals directions associated with refusal and
+emergent misalignment \citep{betley2025emergent,turner2025organisms}.
+Across all $224$ linear maps in the Llama-3-8B Base-to-Instruct checkpoint delta
+\citep{grattafiori2024llama3}, the spectrum contains strong outliers relative to
+a Marchenko--Pastur bulk \citep{marchenko1967} and the corresponding rectangular
+additive-spike threshold \citep{baik2005,benaych2012}. Its stable rank is near one
+hundred despite ambient dimensions in the thousands. We use the resulting
+singular directions as targets for intervention.
 The empirical refusal direction \citep{arditi2024} is enriched in the leading
-singular subspace of the attention-output increment, an order of magnitude above
-a random-subspace null, and projecting that subspace out of the residual stream
-reduces substring-scored harmful-prompt refusal from $98.4\%$
-($[94.5,99.6]\%$) to $3.1\%$
-($[1.2,7.8]\%$), while a same-dimensional random subspace remains at
-$94.5\%$ ($[89.1,97.3]\%$); these are $95\%$ Wilson intervals
-\citep{wilson1927}. The same projection substantially degrades capability
-benchmarks, so this is a globally disruptive intervention that reduces measured
-refusal, not a refusal-specific or capability-preserving edit. We
-then turn the lens on \emph{misalignment}. In matched emergently-misaligned and
-benign fine-tunes, differencing their increments yields a contrastive direction.
-Four paired directions align with their pooled contrast (cosine $0.97$), while
-benign-pair differences align at $0.16$; because the pooled contrast includes the
-pairs being summarized, this is internal agreement rather than held-out evidence.
-A separate leave-one-pair-out score ranks every same-recipe held-out misaligned
-arm above its benign counterpart, without using behavioral examples to fit the
-direction.
-In the Qwen2.5-Coder \citep{hui2024qwen25coder} medical organism, ablating it
-reduces measured emergent misalignment from $2.6\%$ ($[1.7,4.1]\%$) to
-$0.0\%$ ($[0.0,0.5]\%$), while a random direction remains at $3.9\%$
-($[2.7,5.7]\%$). The intervened arm contributes to the pooled direction, so this
-is an in-sample causal test; the paired-agreement, held-out-separation, and
-ablation pattern recur within the same controlled medical-advice organism
-at 7B/8B scale across three model families, with a partial but
-interval-separated ablation on Mistral-7B \citep{jiang2023mistral}. As for
-refusal, the direction is an ablation-sensitive low-dimensional readout in the
-tested organisms, not a complete one-dimensional mechanism: coherent steering at
-low strength induces some measured misalignment, but stronger steering collapses
-coherent sample size. We give the random-matrix theory that makes spectral
-concentration precise through the BBP-type rectangular additive threshold
-\citep{baik2005,benaych2012},
-measurements on released and experimentally fine-tuned checkpoints, and
-interventions that test whether the candidate directions matter for behavior.
-The held-out screen is retrospective and same-recipe, not prospective predictive
-validation.
+singular subspace of the attention-output delta. Removing the top-$128$ subspace
+from the residual stream lowers substring-scored harmful-prompt refusal from
+$98.4\%$ to $3.1\%$, while a same-dimensional random subspace remains at
+$94.5\%$. Capability benchmarks also fall substantially, indicating broad
+disruption.
+For emergent misalignment, matched harmful and benign fine-tunes yield a
+contrastive direction without behavioral examples. Four paired directions agree
+with their pooled contrast (cosine $0.97$), whereas benign-pair differences align
+at $0.16$; a separate leave-one-pair-out score ranks every held-out misaligned arm
+above its benign counterpart. In the Qwen2.5-Coder medical organism
+\citep{hui2024qwen25coder}, ablating this direction reduces measured misalignment
+from $2.6\%$ to $0.0\%$, while a random direction remains at $3.9\%$. The
+intervened arm helped define
+the direction, making this an in-sample test. Agreement, held-out separation, and
+ablation recur across three 7B/8B model families, although the Mistral-7B effect
+is partial \citep{jiang2023mistral}. These directions are effective ablation
+targets, but the experiments do not show that either behavior is governed by a
+single mechanism. The held-out screen is retrospective and restricted to the
+same training recipe.
 \end{abstract}

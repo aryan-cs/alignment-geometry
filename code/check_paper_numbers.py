@@ -129,8 +129,8 @@ def check_capability_caveat():
     """Guard against broad-capability claims until H200 output is validated."""
     text = paper_text()
     harmless_required = [
-        "harmless-prompt behavior remains unmeasured",
-        "harmless-prompt rates under the same intervention are also unmeasured",
+        "harmless-prompt behavior is unmeasured",
+        "Harmless-prompt rates under this intervention are unmeasured",
     ]
     for phrase in harmless_required:
         if not has_phrase(text, phrase):
@@ -142,9 +142,9 @@ def check_capability_caveat():
     if outcome == "preservation_thresholds_not_violated":
         return
     required = [
-        "Nor do the current ablations establish broad capability preservation",
-        "MMLU/GSM8K/ARC-style evaluations under the same",
-        "top-$128$ ablation",
+        "substantial capability loss",
+        "Under the same ablation, MMLU, ARC-C, and GSM8K evaluations",
+        "top-$128$ intervention",
     ]
     for phrase in required:
         if not has_phrase(text, phrase):
@@ -187,8 +187,8 @@ def check_uncertainty_framing():
                 "results/data/baselines.json"
             )
         auc_required = [
-            "AUC is computed from all pairwise comparisons of the 16 held-out misaligned and 16 held-out benign scores",
-            "All summaries are descriptive because the folds overlap",
+            "AUC pools the 16 held-out scores per arm",
+            "fold summaries are descriptive because training folds overlap",
         ]
         for phrase in auc_required:
             if phrase not in compact:
@@ -197,14 +197,14 @@ def check_uncertainty_framing():
                     f"{phrase!r}"
                 )
     required = [
-        "point-estimate enrichment",
-        "descriptive point estimates from the committed capture artifact",
-        "This is a deterministic point estimate from the committed prompt set",
+        "These values are deterministic summaries of the fixed prompt set",
+        "Values are deterministic summaries of the capture analysis",
+        "Wilson intervals are reserved for rate estimates below",
         "Rate-block 95\\% Wilson CIs (baseline/direction/random) are Qwen:",
-        "descriptive census of the analyzed layers",
-        "Geometric quantities such as subspace capture, paired-agreement cosines, and score margins are deterministic summaries",
+        "These counts depend on the fitted visibility threshold and need not equal signal rank",
+        "Subspace capture, paired-agreement cosines, and score margins are deterministic summaries",
         "$53.9\\%$, 95\\% Wilson CI $[48.5,59.1]\\%$",
-        "$12/12$; descriptive 95\\% Wilson fold-count interval $[75.8,100.0]\\%$",
+        "descriptive 95\\% Wilson interval over fold outcomes $[75.8,100.0]\\%$",
     ]
     for phrase in required:
         if phrase not in compact:
@@ -214,22 +214,20 @@ def check_uncertainty_framing():
             )
 
 
-def check_abstract_intervals():
-    """Require the abstract to display the exact CIs for rate claims."""
+def check_abstract_rates():
+    """Require the abstract to state the headline rates and matched controls."""
     abstract = (ROOT / "paper" / "sections" / "abstract.tex").read_text()
     compact = re.sub(r"\s+", " ", abstract)
     required = [
-        "$98.4\\%$ ($[94.5,99.6]\\%$)",
-        "$3.1\\%$ ($[1.2,7.8]\\%$)",
-        "$94.5\\%$ ($[89.1,97.3]\\%$)",
-        "$2.6\\%$ ($[1.7,4.1]\\%$)",
-        "$0.0\\%$ ($[0.0,0.5]\\%$)",
-        "$3.9\\%$ ($[2.7,5.7]\\%$)",
+        "$98.4\\%$ to $3.1\\%$",
+        "random subspace remains at $94.5\\%$",
+        "from $2.6\\%$ to $0.0\\%$",
+        "random direction remains at $3.9\\%$",
     ]
     for phrase in required:
         if phrase not in compact:
             failures.append(
-                "abstract intervals: missing exact interval-backed phrase "
+                "abstract rates: missing headline rate or matched-control phrase "
                 f"{phrase!r}"
             )
 
@@ -242,10 +240,7 @@ def check_reviewer_scope_caveats():
         (
             "spectral non-specificity",
             [
-                r"fine-tuning statistic,\s*not an alignment detector",
-                r"Other fine-tunes can be low-dimensional",
-                r"low-rank parameterizations can also be effective",
-                r"structure shared by other real fine-tunes",
+                r"Low-dimensional structure also occurs in other fine-tunes",
                 r"domain adaptation,\s*coding or math specialization",
                 r"RLHF-style preference optimization",
                 r"DPO-style preference optimization",
@@ -254,73 +249,71 @@ def check_reviewer_scope_caveats():
         (
             "Marchenko-Pastur null limitation",
             [
-                r"Marchenko--Pastur curve is used here as an operational visibility reference,\s*not as an empirical null for all structured training",
-                r"empirical null that matters for safety is another real fine-tune under a matched recipe",
+                r"Marchenko--Pastur model supplies a visibility reference for diffuse updates",
+                r"an empirical null would require domain, coding, math, RLHF-style, and DPO-style fine-tunes",
+                r"empirical safety control is a real fine-tune under a\s*matched recipe",
             ],
         ),
         (
             "stable-rank interpretation",
             [
-                r"Stable rank is a scale summary of energy concentration; it does not by itself count mechanisms",
+                r"statistic does not determine how many distinct mechanisms produced the change",
+                r"Neither statistic identifies a mechanism, and both depend on the chosen parameterization",
             ],
         ),
         (
             "refusal operational definition",
             [
-                r"Substring-matched refusal is also a coarse generation metric",
-                r"substring-scored refusal suppression",
+                r"Substring matching is a coarse generation metric",
                 r"harmful-versus-harmless prompt contrast",
                 r"prompt distribution,\s*topic,\s*and style differences",
-                r"fully prompt-provenanced HarmBench OOD run",
+                r"HarmBench OOD run with complete prompt provenance",
                 r"reduces substring refusal from\s*\$71\.2\\%\$",
                 r"same-dimensional random\s+subspace leaves refusal at\s*\$65\.8\\%\$",
-                r"does not measure harmless prompts,\s*adaptive adversaries,\s*or every\s+alignment-relevant behavior",
+                r"Harmless prompts,\s*adaptive adversaries,\s*and other alignment-relevant behaviors remain outside",
             ],
         ),
         (
             "projection-ablation breadth",
             [
-                r"By\s*\$k\{=\}512\$.*spectral and random projections severely disrupt measured refusal",
-                r"no longer distinguishes targeted refusal suppression from broad residual-stream disruption",
-                r"same top-\$128\$ intervention.*substantially degraded capability benchmarks",
+                r"At\s*\$k\{=\}512\$, both projections severely disrupt refusal",
+                r"dimensions where the controls diverge distinguish spectral targeting from broad\s*disruption",
+                r"same top-\$128\$\s*projection causes substantial capability loss",
             ],
         ),
         (
             "single-model refusal scope",
             [
-                r"Our refusal results are on a single released model",
-                r"Llama-3-8B",
-                r"larger,\s+reasoning,\s+mixture-of-experts,\s+or multimodal models is open",
+                r"refusal analysis uses one released model,\s*Llama-3-8B",
+                r"larger models,\s*reasoning models,\s*mixture-of-experts models,\s*and multimodal models remain untested",
             ],
         ),
         (
             "controlled-organism scope",
             [
-                r"We test the misalignment direction across three model families",
-                r"controlled emergent-misalignment organisms",
+                r"All three controlled medical organisms yield a matched weight direction",
+                r"controlled medical-advice organisms in three families",
             ],
         ),
         (
             "proxy-not-circuit framing",
             [
-                r"direction is a tested\s*low-dimensional, ablation-sensitive readout of a distributed representation,\s*not a complete one-dimensional account",
-                r"weight-space direction may be a compressed proxy for a broader activation-space computation",
-                r"it does not identify a circuit",
-                r"negative/inconclusive audit supports\s*no weight-SVD superiority claim",
+                r"weight-space direction may compress a broader activation-space computation",
+                r"cannot localize a circuit",
+                r"Row-mean contrast therefore performs slightly better in this\s*comparison",
             ],
         ),
         (
             "external validity",
             [
-                r"External validity remains open",
-                r"not naturally occurring deceptive alignment, sycophancy, reward hacking, jailbreak susceptibility, or multimodal failures",
+                r"naturally occurring deceptive alignment,\s*sycophancy,\s*reward hacking,\s*jailbreak\s+susceptibility,\s*and multimodal failures",
             ],
         ),
         (
             "predictive validation",
             [
-                r"A stronger predictive validation would pre-register a direction or threshold",
-                r"held-out screen is retrospective and same-recipe,\s*not prospective predictive validation",
+                r"Prospective validation should freeze the direction or\s*threshold before subsequent fine-tunes begin",
+                r"held-out screen is retrospective and restricted to the\s*same training recipe",
             ],
         ),
     ]
@@ -336,14 +329,16 @@ def check_reviewer_scope_caveats():
 def check_cross_type_audit_numbers():
     """Guard the negative/inconclusive code-organism audit limitation."""
     text = paper_text()
-    if not has_phrase(
-        text,
-        "preregistered code-organism follow-up using insecure-versus-educational arms was negative/inconclusive",
-    ):
-        failures.append(
-            "cross-type audit limitation: manuscript does not state the "
-            "negative/inconclusive code-organism follow-up"
-        )
+    required = [
+        "The preregistered code-organism follow-up using insecure-versus-educational arms did not meet its prespecified criteria",
+        "These results do not support cross-type transfer beyond the medical organism",
+    ]
+    for phrase in required:
+        if not has_phrase(text, phrase):
+            failures.append(
+                "cross-type audit limitation: manuscript does not preserve the "
+                f"negative result in phrase {phrase!r}"
+            )
     directions = load_json("directions_code.json")
     layer12 = directions["per_layer"]["12"]
     expect(
@@ -1022,7 +1017,7 @@ def check_scale_14b():
 
     text = paper_text()
     required_phrases = [
-        "At 14B, the geometry and a descriptive held-out screen persist, but causal replication does not",
+        "Thus the 14B experiment replicates the geometric and leave-one-pair-out results, but not the causal effect",
         "measured misalignment is $4.8\\%$ ($71/1477$, $[3.8,6.0]\\%$)",
         "internal paired agreement with the pooled direction is $0.933$",
         "the differently constructed benign reference is $0.578$",
@@ -1032,9 +1027,8 @@ def check_scale_14b():
         "The baseline drop is $0.0148$",
         "random-minus-direction gap is $0.0085$",
         "both Wilson comparisons overlap",
-        "no causal scale replication",
         "exploratory and non-independent",
-        "run once without outcome-dependent retry",
+        "single post-freeze seeded run, without an outcome-dependent retry",
     ]
     for phrase in required_phrases:
         if not has_phrase(text, phrase):
@@ -1264,13 +1258,13 @@ def check_baseline_bakeoff():
             )
     expected_difference = float(weight_margin) - float(row_mean_margin)
     required_phrases = [
-        "manifest-linked 16-fold comparison",
+        "In the 16-fold comparison",
         "seeded random weight direction fixed across folds",
         "64 fixed-seed full user-and-assistant secure-code chats from",
         "data/em/em_secure.jsonl",
         f"using the unrounded margins, the observed difference is ${expected_difference:.3f}$",
         "learned directions average raw training-arm increments",
-        "we do not describe the whole four-way audit as preregistered",
+        "the full four-way comparison is not preregistered",
     ]
     for phrase in required_phrases:
         if not has_phrase(text, phrase):
@@ -1284,7 +1278,7 @@ def main():
     check_capability_caveat()
     check_random_control_wording()
     check_uncertainty_framing()
-    check_abstract_intervals()
+    check_abstract_rates()
     check_reviewer_scope_caveats()
     check_cross_type_audit_numbers()
     check_misalignment_framing()

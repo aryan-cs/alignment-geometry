@@ -2,44 +2,33 @@
 \label{sec:related}
 
 \paragraph{Spectra of trained networks.}
-Heavy-tailed self-regularization reads model quality off the eigenvalue spectra
-of trained weight matrices, finding that well-trained layers develop
-heavy-tailed spectra with outliers above a Marchenko--Pastur bulk, and that a
-``bulk plus spikes'' regime appears during training \citep{martin2021}. That
-line analyzes the trained weight $W$ and predicts generalization; we analyze the
-\emph{increment} $\dW$ between two checkpoints and ask what its spikes do
-behaviorally. A recent random-matrix analysis shows that the \emph{small} singular directions
-of the trained weight $W$ carry information that fine-tuning edits
-\citep{staats2024small}; that statement is about $W$ itself, whereas we analyze
-the increment $\dW$, whose \emph{leading} spikes are the edits, so the two
-pictures describe different objects and are not in tension. We add the causal
-link to a specific safety behavior.
+Heavy-tailed self-regularization relates the eigenvalue spectra of trained
+weight matrices to model quality and generalization, including heavy tails,
+outliers above a Marchenko--Pastur bulk, and a ``bulk plus spikes'' regime during
+training \citep{martin2021}. Recent random-matrix analysis also finds that the
+\emph{small} singular directions of a trained weight $W$ carry information
+edited by fine-tuning \citep{staats2024small}. We study a different matrix: the
+checkpoint increment $\dW$. Its leading singular directions describe the
+largest edits, whose behavioral role we test by intervention.
 
 \paragraph{Low-rank structure of fine-tuning.}
-Fine-tuning has long been observed to occupy a low-dimensional subspace:
-adaptation has low intrinsic dimension \citep{aghajanyan2021}, and low-rank
-adapters recover most of full fine-tuning \citep{hu2022lora}. These are facts
-about \emph{efficient training}. We show that the Base-to-Instruct post-training
-checkpoint delta of a released model is itself spectrally concentrated, with
-concentration measured against a random-matrix visibility reference rather than
-assumed by a parameterization. We do not use low rank alone as an alignment or
-misalignment classifier. Its role is to make moved directions detectable and
-locatable; the safety claim comes only after a matched contrast identifies which
-direction moved and an intervention tests whether that direction is
-ablation-sensitive.
+Low intrinsic dimension \citep{aghajanyan2021} and low-rank adapters
+\citep{hu2022lora} show that adaptation can be parameter-efficient. We instead
+measure concentration directly in a released Base-to-Instruct checkpoint delta
+relative to a random-matrix visibility reference, then test the resulting
+directions with matched contrasts and interventions.
 
 \paragraph{Weight-space arithmetic.}
 Task vectors edit behavior by adding or negating whole weight increments: the
 difference of a fine-tuned and a base model is a direction in weight space, and
 negating it removes a learned task while adding it installs one
 \citep{ilharco2023task, ortizjimenez2023task}. Our misalignment direction is a
-contrastive task vector, the difference of two arms' increments. Our ablation
-and steering tests are activation-space analogues of negation and addition for
-the recovered residual-stream direction, rather than whole-weight task-vector arithmetic. The
-contribution is not the differencing but the spectral \emph{localization}: we
-isolate the low-rank, spiked subspace of the increment against a random-matrix
-threshold and show ablation sensitivity for the refusal subspace and for the
-contrastive misalignment direction recovered from matched fine-tune pairs.
+contrastive task vector formed by differencing two arms' increments. We analyze
+its leading spiked subspace against a random-matrix threshold and
+intervene on the corresponding residual-stream direction. This spectral
+localization connects whole-weight task-vector arithmetic to the observed
+ablation sensitivity of the refusal subspace and the matched misalignment
+contrast.
 
 \paragraph{Directions for safety behavior.}
 For the chat models and prompts they study, \citet{arditi2024} report that
@@ -48,25 +37,20 @@ difference-of-means and removed by projection, and representation-engineering me
 concept directions more generally \citep{zou2023repe}. Sparse autoencoders
 surface interpretable, steerable features relevant to model behavior
 \citep{templeton2026scaling}. These methods locate behavior in
-\emph{activation} space using behavioral labels. We instead start from the
-\emph{weight} increment, with no behavioral labels for the direction fit, and show that its top
-singular subspace contains an enriched component of the refusal direction, tying
-the behavioral-example-free spectral object to the supervised one.
+\emph{activation} space using behavioral labels. The leading singular subspace
+of the \emph{weight} increment, fitted without those labels, is enriched for the
+independently estimated refusal direction.
 
-\paragraph{Supervised and audit baselines.}
+\paragraph{Supervised and comparison baselines.}
 Supervised linear probes can detect strategic deception when honest-versus-deceptive
 labels are available \citep{goldowskydill2025}, and hidden-objective audits can
 surface latent objectives when auditors have enough access to data, examples, and
-investigation time \citep{marks2025}. These are stronger tools in the regime
-where the relevant behavior is already represented in labeled examples or known
-triggers. Our target regime is narrower: a same-base, same-recipe comparison in
-which the direction is recovered from weight increments before using behavioral
-examples to fit a probe. Our matched-fold audit compares weight-SVD with a
-row-mean weight contrast, a fixed random weight direction, and
-activation-contrast PCA fitted with arm-condition labels and fixed full
-user-and-assistant secure-code chats, but without judged behavior labels. It
-does not compare against
-a supervised probe or a behavior-labeled RepE direction.
+investigation time \citep{marks2025}. These approaches assume labeled behaviors,
+known triggers, or richer audit access. Our direction is fitted before behavioral
+evaluation, so the comparison set comprises weight-SVD, row-mean weight contrast,
+a fixed random direction, and arm-labeled activation PCA using fixed secure-code
+chats. Supervised probes and behavior-labeled RepE operate under a different
+information regime.
 
 \paragraph{Emergent misalignment.}
 Narrow fine-tuning can induce broad misalignment \citep{betley2025emergent}, and
@@ -74,16 +58,15 @@ model-organism follow-up work makes the setting cleaner and more controllable
 \citep{turner2025organisms}. \citet{soligo2025convergent} show the resulting
 behavior is mediated by a convergent linear direction recovered from model
 \emph{activations}, with the behavior present; \citet{turner2025organisms} show
-that clean organisms can also be induced with rank-one adapters. We recover an
-internally consistent contrastive misalignment direction, but from the
-differenced \emph{weight} increment
-of matched arms, without using behavioral examples to fit it, and locate it via the increment's
-spectrum; we also establish the spectral picture for the Base-to-Instruct
-post-training delta of a released model. Spectral signatures have also been used to detect backdoors from
-poisoned-data representations \citep{tran2018spectral}; that detector operates
-per input on activations, whereas ours operates per model on weights.
+that clean organisms can also be induced with rank-one adapters. We recover a
+contrastive misalignment direction from matched \emph{weight} increments and
+locate it through the increment spectrum, without behavioral examples in the
+fit. We also measure the Base-to-Instruct delta of a released model. Spectral
+signatures have been used to detect backdoors from poisoned-data representations
+\citep{tran2018spectral}; those detectors score per-input activations, while our
+analysis scores per-model weight changes.
 Layer-aware filtering work reports that safety-degrading fine-tuning can raise
 the effective rank of inference-time activations on harmful prompts
-\citep{larf2025}; this is a useful tension but a different object from the
-weight-increment spectrum studied here, where concentrated causes can still
-produce diffuse downstream activations.
+\citep{larf2025}. That downstream activation statistic need not track
+concentration in the causal weight increment: a concentrated update can still
+produce diffuse activations.

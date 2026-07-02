@@ -1,54 +1,46 @@
 \section{Introduction}
 \label{sec:intro}
 
-A base language model and its aligned counterpart differ by a set of weights.
+The weight delta between a base model and its aligned checkpoint records the
+aggregate effect of post-training.
 Instruction tuning with human feedback is a standard post-training tool
 for making language models instruction-following \citep{ouyang2022instruct}; in
 the Llama-3 release, Llama-3-8B and Llama-3-8B-Instruct are the base and
 post-trained checkpoints of the same-size model family
 \citep{grattafiori2024llama3}. For each linear map, the
 increment $\dW = W_{\text{instruct}} - W_{\text{base}}$ is the full
-Base-to-Instruct post-training checkpoint delta. It is associated with instruction
-following and refusal in the post-trained checkpoint, but it does not isolate
-instruction tuning, preference optimization, or safety training within the
-release recipe. We
-ask a direct question about that increment: what is its \emph{shape}, and does its
-shape nominate directions whose removal changes measured refusal or emergent
-misalignment?
+Base-to-Instruct post-training checkpoint delta. Because the release combines
+instruction tuning, preference optimization, and safety training, the delta
+cannot attribute behavior to any one stage. We study its spectral geometry and
+test whether removing the resulting directions changes measured refusal or
+emergent misalignment.
 
-``Shape'' here is spectral. A matrix increment can spend its budget in many
-ways. It can nudge thousands of directions a little, in which case its singular
-values look like a diffuse fitted bulk and no single direction matters; or it
-can move a few directions a lot, in which case a handful of singular values
-stand out and the update is, in a precise sense, low rank. Random matrix theory makes the
-distinction sharp. Under an idealized iid Gaussian diffuse-update model, the
+``Shape'' here refers to the singular-value spectrum. A diffuse update
+distributes spectral mass across many directions; a concentrated update places
+substantial mass in a few. Random matrix theory supplies a visibility threshold
+for distinguishing these regimes. Under an idealized iid Gaussian diffuse-update model, the
 limiting spectrum has a Marchenko--Pastur upper edge
 \citep{marchenko1967,johnstone2001}; an additive low-rank signal above the corresponding
 rectangular-perturbation threshold produces squared singular values that detach
 from that edge, and the associated singular vectors estimate planted directions
-in the idealized model \citep{benaych2012}. The question of the update's shape becomes a question about
-outliers: how many edge exceedances are there, how far above the edge, and what do their directions
-do in interventions.
+in the idealized model \citep{benaych2012}. We measure these edge exceedances and
+test the corresponding directions through intervention.
 
-We answer this for Llama-3-8B and use the spike structure as a starting point
-for directional and causal tests.
+We evaluate these predictions on Llama-3-8B.
 
-\textbf{The Llama Base-to-Instruct checkpoint delta is sharply spiked.} Across all $224$ weight
-matrices the leading singular value of $\dW$ sits far above the
+\textbf{The Llama Base-to-Instruct checkpoint delta has strong spectral outliers.}
+Across all $224$ weight matrices, the leading eigenvalue of $C$ sits far above the
 Marchenko--Pastur edge of its own bulk, often by one to four orders of
-magnitude. The increment is not a diffuse nudge; it is a strong, structured
-signal sitting above a fitted bulk visibility reference, consistent with the spike-plus-bulk
-decomposition used by the theory. This result says that the released post-training
-checkpoint delta is highly anisotropic; the safety-specific evidence comes from the directions and
-matched controls below, not from edge-exceedance counts alone.
+magnitude, showing that the released checkpoint delta is highly anisotropic.
+Matched directional controls below test whether that anisotropy is related to
+safety behavior.
 
 \textbf{The checkpoint delta's energy is concentrated.} While the MP-edge exceedances number
 in the hundreds, the stable rank
 $\|\dW\|_F^2/\|\dW\|_2^2$ sits near one hundred against ambient dimensions in
 the thousands, indicating strong energy concentration relative to a diffuse
-full-rank update. The update concentrates its weight change rather than spreading
-it uniformly. This is an energy statistic, not a count of independent mechanisms
-or a uniqueness claim about safety post-training.
+full-rank update. This statistic does not determine how many distinct mechanisms
+produced the change or whether they are specific to alignment.
 
 \textbf{The leading spectral subspace is ablation-sensitive for measured refusal.} The empirical refusal direction,
 recovered by difference-of-means on harmful versus harmless prompts
@@ -58,42 +50,30 @@ and most concentrated at the very top of the spectrum. Projecting that subspace
 out of the residual stream reduces substring-scored harmful-prompt refusal
 ($98.4\%$,
 $[94.5,99.6]\%$ to $3.1\%$, $[1.2,7.8]\%$; Wilson score intervals
-\citep{wilson1927}) where a random subspace of the same
-dimension does not. The spectrum identifies directions whose removal is disproportionately effective at
-suppressing substring-scored refusal in this setup.
-This establishes a spectral-versus-random ablation effect on substring-scored
-refusal, not a behavior-specific or capability-preserving edit: the same
-top-$128$ intervention substantially degraded capability benchmarks, so smaller
-or structured variants remain future work.
+\citep{wilson1927}), while a same-dimensional random subspace leaves refusal near
+baseline. The spectral subspace is the more effective ablation target in this
+setup, but the same top-$128$ intervention substantially degrades capability
+benchmarks. Capability-preserving interventions would require smaller or more
+structured subspaces.
 
-\textbf{The same lens recovers a contrastive misalignment direction.} Turning from alignment
-to its opposite, we use the emergent-misalignment model-organism setting
-\citep{betley2025emergent,turner2025organisms}: matched misaligned and benign control models
-that share questions and training recipe while differing in target-answer safety
-and content. The difference of their weight
-increments yields a pooled contrastive direction. Four paired directions have
+\textbf{A matched contrast yields a misalignment direction.} We use the
+emergent-misalignment model-organism setting
+\citep{betley2025emergent,turner2025organisms}, with matched misaligned and benign
+control models that share questions and training recipe while differing in
+target-answer safety and content. The difference of their weight increments
+yields a pooled contrastive direction. Four paired directions have
 mean cosine $0.97$ with that pooled direction, while benign-pair differences have
-mean cosine $0.16$ in the early-middle layers where the direction is read. This
-is an internal agreement summary because each pair contributes to the pooled
-direction; a separate leave-one-pair-out score provides the held-out evidence. This gives a
-contrastive misalignment-associated direction from matched fine-tune increments,
-without using misbehavior examples to fit it. Ablating it reduces measured
-emergent misalignment from $2.6\%$ ($[1.7,4.1]\%$) to $0.0\%$ ($[0.0,0.5]\%$)
-where a random direction does not,
-and the paired-agreement, held-out-separation, and ablation pattern recur within the same controlled
-medical-advice organism at 7B/8B scale across Qwen2.5-Coder-7B, Llama-3-8B, and
-Mistral-7B \citep{jiang2023mistral}, with the Mistral ablation partial rather than complete. As for
-refusal, the direction is a tested
-low-dimensional, ablation-sensitive readout of a distributed representation, not a complete
-one-dimensional account of the behavior.
+mean cosine $0.16$ in the early-middle layers where the direction is read. The
+pooled estimate includes every pair; we therefore evaluate generalization with
+a leave-one-pair-out score. No misbehavior examples are used to fit the
+direction. Ablating it reduces measured
+emergent misalignment from $2.6\%$ ($[1.7,4.1]\%$) to $0.0\%$ ($[0.0,0.5]\%$),
+while random-direction ablation leaves the rate near baseline. The same
+medical-advice result appears at 7B/8B scale in Qwen2.5-Coder, Llama-3, and
+Mistral-7B \citep{jiang2023mistral}, although the Mistral ablation is partial.
+Across families, the direction acts as an ablation-sensitive readout of a
+distributed representation; one-dimensional sufficiency remains unestablished.
 
-Together these say that the studied fine-tunes are spectrally concentrated
-perturbations of the base weights, and that their leading directions can furnish
-candidate low-dimensional ablation targets once validated by matched controls and
-causal tests. They do not show that spectral concentration itself is specific to
-alignment, nor that the singular vectors are mechanistic modules without those
-interventions
-(Figure~\ref{fig:pipeline} summarizes the pipeline). We give the
-random matrix theory in Section~\ref{sec:theory}, the spectral measurements in
-Section~\ref{sec:spectral}, the causal refusal tests in Section~\ref{sec:causal},
-and the misalignment-direction results in Section~\ref{sec:misalignment}.
+The spectrum reduces the search space, while matched controls and interventions
+establish behavioral relevance. Alignment specificity and mechanistic
+interpretation remain open. Figure~\ref{fig:pipeline} summarizes the workflow.

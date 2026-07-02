@@ -1,186 +1,117 @@
 \section{Discussion}
 \label{sec:discussion}
 
-\paragraph{What the spectrum buys.}
-The refusal direction can already be found from activations with behavioral
-labels \citep{arditi2024}. The candidate spectral subspace itself is
-weight-derived; interpreting its overlap with refusal still relies on the
-prompt-labeled refusal direction. First, the same direction is enriched in the
-\emph{weight increment}: the leading singular directions of the attention-output
-increment overlap the refusal direction far more than chance, concentrated at
-the very top of the spectrum. Second, that overlap is ablation-sensitive, and
-demonstrably so against the right control: ablating the top-$128$ spectral
-directions reduces refusal from $98.4\%$ ($[94.5,99.6]\%$) to $3.1\%$
-($[1.2,7.8]\%$) where a
-same-dimensional random subspace leaves it near baseline. The spectrum is
-therefore not a stand-alone alignment diagnostic. Its value is sharper and more
-limited: it nominates a small set of directions moved across the Base-to-Instruct
-post-training checkpoint delta,
-the BBP-type threshold separates outlier singular values
-from the bulk \citep{baik2005,benaych2012}, and targeted interventions test
-which corresponding directions are behaviorally important.
-This makes the increment's spectrum a candidate auditing surface: given
-same-base, matched-recipe checkpoints, one can read off how concentrated the
-change is and nominate a small subspace for matched behavioral validation.
+\paragraph{Role of the spectrum.}
+Behavior-labeled activations can identify a refusal direction directly
+\citep{arditi2024}. Our spectral analysis asks whether the Base-to-Instruct
+checkpoint delta concentrates change in the same subspace. The leading singular
+directions of the attention-output increment overlap the prompt-labeled refusal
+direction far more than chance, with enrichment concentrated at the top of the
+spectrum. Ablating the top-$128$ directions reduces refusal from $98.4\%$
+($[94.5,99.6]\%$) to $3.1\%$ ($[1.2,7.8]\%$), while a same-dimensional random
+subspace leaves it near baseline. The BBP-type threshold separates outlier
+singular values from the bulk \citep{baik2005,benaych2012}; behavioral
+interventions then determine which corresponding directions matter. In
+same-base, matched-recipe checkpoints, the increment spectrum restricts
+behavioral tests to a small subspace.
 
-\paragraph{Claim discipline.}
-The evidence ladder matters because each control rules out a different failure
-mode and leaves different claims unproved:
+\paragraph{What the controls establish.}
+The controls address four distinct questions:
 \begin{itemize}
 \setlength{\itemsep}{2pt}
-\item \textbf{Marchenko--Pastur and Gaussian visibility references} show that
-the Llama Base-to-Instruct checkpoint delta is far from structureless isotropic
-noise, so its leading singular directions are visible candidates. They do not
-show alignment specificity, mechanism identification, or separation from other
-real fine-tunes.
-\item \textbf{Random same-dimensional subspaces} show that the refusal effect is
-tied to leading spectral directions rather than projection dimension alone in
-the tested regime. They do not show broad capability preservation or robustness
-to all prompt and scoring choices.
-\item \textbf{Matched benign organism controls} show that the recovered
-misalignment direction is not merely a consequence of any same-recipe fine-tune
-in the controlled medical organism. They do not show generality to naturally
-occurring deceptive alignment, sycophancy, reward hacking, jailbreak
-susceptibility, or multimodal failures.
-\item \textbf{Ablation interventions} show that the nominated subspaces are
-behaviorally load-bearing for measured refusal or measured organism
-misalignment. Steering checks bound sufficiency: the refusal subspace is
-partially sufficient in the measured setting, while rank-one misalignment
-steering is positive at low strength but coherence-fragile and insufficient for
-a clean one-dimensional account. These interventions do not isolate a circuit, prove that a
-singular vector is a mechanism, or provide prospective prediction before a
-direction or threshold is pre-registered.
+\item \textbf{Marchenko--Pastur and Gaussian references} establish departure
+from ideal isotropic noise; comparisons with real fine-tunes are required to
+test alignment specificity.
+\item \textbf{Random same-dimensional subspaces} show that the refusal effect
+depends on the leading spectral subspace rather than projection dimension alone;
+capability and prompt robustness are evaluated separately.
+\item \textbf{Matched benign controls} isolate the target-policy and content
+contrast within the medical organism, whose scope excludes naturally occurring
+failure modes.
+\item \textbf{Ablation interventions} establish behavioral dependence on the
+selected subspaces. Partial and coherence-fragile steering leaves circuit
+structure, one-dimensional sufficiency, and prospective prediction unresolved.
 \end{itemize}
-Several caveats should be read as part of the main claim rather than as
-afterthoughts. The Marchenko--Pastur model is an ideal visibility reference for
-diffuse updates, not an empirical null for learned checkpoints; scalar edge-exceedance
-counts and stable rank are descriptive concentration summaries, not
-alignment-specific detectors. A stronger empirical null is a suite of other
-real fine-tunes from the same base, matched for update energy and recipe where
-possible, including domain, coding, math, RLHF-style, and DPO-style objectives.
-Singular vectors are candidate moved directions whose behavioral meaning comes
-only from prompt-labeled capture, matched benign contrasts, and ablation tests;
-they are not identified circuits or stand-alone mechanisms. The current evidence
-is restricted to weight-space increments, one released refusal model, and
-controlled medical-advice model-organism replications across three families. The
-same-recipe held-out screen is retrospective and should not be presented as
-prospective predictive validation until a direction or threshold is
-pre-registered before later fine-tunes complete.
-Descriptive spectral statistics nominate directions; the alignment-relevant
-claims come only from matched contrasts, held-out scoring, and interventions.
-Projection removal changes the measured behavior under matched controls, but we
-do not infer a one-dimensional bottleneck, complete circuit, or sufficient
-installer. The partial and coherence-fragile steering result is evidence against
-a clean one-dimensional sufficiency claim in the misalignment organism.
+The Marchenko--Pastur model supplies a visibility reference for diffuse updates;
+an empirical null would require domain, coding, math, RLHF-style, and DPO-style
+fine-tunes from the same base, matched for energy and recipe where possible.
+Behavioral interpretation comes from prompt-labeled capture, matched contrasts,
+held-out scoring, and intervention. The present evidence spans one released
+refusal model and controlled medical-advice organisms in three families. The
+screen remains retrospective, and prospective use requires fixing the direction
+or threshold before new fine-tunes complete.
 
 \paragraph{Reading a matched-organism contrast from weights.}
-The same construction, applied to a model fine-tuned toward a harmful objective,
-recovers a pooled direction with strong within-sample paired agreement and low
-alignment to benign-pair differences, and ablating it strongly reduces the measured
-behavior, to near zero in the Qwen and Llama medical-organism instantiations and
-partially in Mistral. This
-is evidence that a behavioral-example-free weight contrast can nominate an
-ablation-sensitive direction. The direction is obtained by differencing weight
-increments, with no examples of the model misbehaving and no probe trained on
-its outputs. The pooled agreement is an internal summary, while the
-leave-one-pair-out screen supplies the held-out evidence; the matched benign control is
-what makes it about the objective/content contrast rather than
-fine-tuning alone. It also suggests a useful unit of analysis: the descriptive
-paired-agreement/reference gap is largest in the early-middle layers, while the
-held-out layer-12 screen separates misaligned from benign checkpoints. A matched
-comparison should therefore read a suspect checkpoint against a same-base,
-same-recipe benign sibling at a preselected layer.
-Two properties suggest a same-recipe screening hypothesis, although the present
-evidence remains retrospective: the same-recipe held-out screen scores held-out
-misaligned checkpoints above benign ones across all three families by a single
-projection (Section~\ref{sec:misalignment}), and the direction appears early in
-the recorded trajectory, reaching near-final form before the behavior peaks.
+Matched harmful and benign fine-tunes yield a pooled weight direction with strong
+within-sample agreement and low early-middle-layer alignment to benign-pair
+differences. Ablation reduces measured misalignment nearly to zero on Qwen and
+Llama and partially on Mistral. The direction is fitted without misbehavior
+examples or an output probe; leave-one-pair-out scoring supplies the held-out
+comparison. Separation across all three families and early convergence along the
+recorded trajectory motivate prospective tests at a preselected layer.
 
-\paragraph{Why low rank.}
-That the Base-to-Instruct checkpoint delta is spectrally concentrated is consistent
-with the efficiency of low-rank
+\paragraph{Why spectral concentration helps.}
+The concentration of the Base-to-Instruct checkpoint delta is consistent with
+the efficiency of low-rank
 adapters \citep{hu2022lora} and the low intrinsic dimension of fine-tuning
-\citep{aghajanyan2021}, but those are statements about what training \emph{can}
-get away with. Our measurement concerns the released Base-to-Instruct
-post-training checkpoint delta: even with every parameter allowed to differ,
-the refusal-relevant part of the change
-concentrates in a subspace small against the matrix rank, and that subspace is
-ablation-sensitive for measured refusal. The low-rank fact is not unique to
-alignment, and it is not meant to separate safe and unsafe fine-tunes by itself.
-It supplies a search space. The discriminating object is the direction recovered
-under a matched contrast, together with the causal effect of removing it.
+\citep{aghajanyan2021}. Our measurement concerns an unrestricted released
+checkpoint delta: its refusal-relevant change concentrates in a subspace small
+relative to matrix rank, and measured refusal is sensitive to ablating that
+subspace. Spectral concentration narrows the search space; matched contrasts and
+interventions supply the alignment-relevant information.
 
 \paragraph{Limitations.}
-Our refusal results are on a single released model (Llama-3-8B
-\citep{grattafiori2024llama3}); whether the
-spectral picture holds for other real post-training objectives and larger,
-reasoning, mixture-of-experts, or multimodal models is open. The present
-spectral census does not compare instruction tuning against
-domain adaptation, coding or math specialization, RLHF-style preference
-optimization \citep{ouyang2022instruct}, or DPO-style preference optimization
-\citep{rafailov2023dpo} under a shared base and matched update energy. We test the misalignment direction across three model families
-(Qwen2.5-Coder-7B, Llama-3-8B, and Mistral-7B): it shows paired agreement and
-same-recipe held-out separation, and in-sample ablation suppresses measured
-misalignment in all three, but the ablation is complete only on the first two
-(to near zero) and partial on Mistral. Our released-checkpoint intervention
-concerns refusal, which is one legible safety behavior and a proxy for
-``alignment,'' not a complete account of it; separate in-sample organism
-interventions concern local-judge measured misalignment. Because the refusal
-direction is a harmful-versus-harmless prompt
+The refusal analysis uses one released model, Llama-3-8B
+\citep{grattafiori2024llama3}. Other post-training objectives, larger models,
+reasoning models, mixture-of-experts models, and multimodal models remain
+untested. The spectral census also lacks shared-base, energy-matched comparisons
+with domain adaptation, coding or math specialization, RLHF-style preference
+optimization \citep{ouyang2022instruct}, and DPO-style preference optimization
+\citep{rafailov2023dpo}. The medical-organism direction was tested in
+Qwen2.5-Coder-7B, Llama-3-8B, and Mistral-7B. All three show paired agreement,
+same-recipe held-out separation, and in-sample ablation suppression, although
+suppression is partial on Mistral and near zero on the first two. The released
+checkpoint experiment measures refusal, one legible safety behavior; the
+organism experiments measure local-judge misalignment. Neither constitutes a
+complete account of alignment. Because the refusal direction is a harmful-versus-harmless prompt
 contrast, it may also capture prompt distribution, topic, and style differences
-rather than refusal alone. A fully prompt-provenanced HarmBench OOD run
-\citep{mazeika2024harmbench} gives cross-prompt-set robustness within harmful
-prompts: top-$128$ ablation reduces substring refusal from $71.2\%$
+alongside refusal. A HarmBench OOD run with complete prompt provenance
+\citep{mazeika2024harmbench} tests transfer within harmful prompts: top-$128$
+ablation reduces substring refusal from $71.2\%$
 ($[66.6,75.5]\%$) to $5.8\%$ ($[3.9,8.5]\%$), while a same-dimensional random
-subspace leaves refusal at $65.8\%$ ($[61.0,70.2]\%$). It does not measure
-harmless prompts, adaptive adversaries, or every alignment-relevant behavior.
-Substring-matched refusal is also a coarse
-generation metric, so future runs should pair it with interval-backed distributional
-or human-evaluated metrics rather than treating substring refusal as exhaustive.
+subspace leaves refusal at $65.8\%$ ($[61.0,70.2]\%$). Harmless prompts,
+adaptive adversaries, and other alignment-relevant behaviors remain outside
+that evaluation. Substring matching is a coarse generation metric and should be
+paired with interval-backed distributional or human evaluation.
 Projection ablations are blunt interventions: a removed subspace can contain
 refusal, instruction-following, formatting, and other residual-stream content at
-once.
-Nor do the current ablations establish broad capability preservation: the
-headline top-$128$ ablation shows substring-scored refusal suppression, but
-MMLU/GSM8K/ARC-style evaluations under the same top-$128$ ablation
-\citep{hendrycks2021mmlu,cobbe2021gsm8k,clark2018arc} were negative in the
-completed audit run: MMLU
+once. The top-$128$ intervention also degrades broad capabilities. Under the
+same ablation, MMLU, ARC-C, and GSM8K evaluations
+\citep{hendrycks2021mmlu,cobbe2021gsm8k,clark2018arc} change as follows: MMLU
 $65.4\%$ ($[61.1,69.4]\%$) to $41.8\%$ ($[37.6,46.2]\%$), ARC-C $80.0\%$
 ($[75.8,83.6]\%$) to $50.2\%$ ($[45.4,55.1]\%$), and GSM8K $76.7\%$
-($[72.4,80.6]\%$) to $3.0\%$ ($[1.7,5.2]\%$). The harmless-prompt rates under the same intervention are also
-unmeasured. Capability-preserving versions of this intervention, including
-smaller or more structured subspaces, remain future work. The causal results pair ablation
-(suppression) with steering checks against matched random controls but bind the
-behavior to the leading spectral \emph{subspace} rather than isolating a circuit:
-the effect requires enough of the subspace to cover the refusal direction, not
-any single mode, and steering recovers refusal only partially, in proportion to
-the refusal mass the subspace contains. The misalignment organisms produce
-modest local-judge threshold effects ($4.7\%$ on the coder model, $[3.7,6.0]\%$,
-and $5.3\%$ on Llama, $[3.9,7.2]\%$, against $0\%$ controls); the
-matched-control separation, held-out scoring, and cross-family pattern are what
-carry the result, not the rate, and stronger organisms would sharpen the
-steering test. External validity remains open: the experiments cover controlled
-emergent-misalignment organisms, not naturally occurring deceptive alignment,
-sycophancy, reward hacking, jailbreak susceptibility, or multimodal failures.
-Consistent with that boundary, the preregistered code-organism follow-up using
-insecure-versus-educational arms was negative/inconclusive: layer-12 convergence
+($[72.4,80.6]\%$) to $3.0\%$ ($[1.7,5.2]\%$). Harmless-prompt rates under this
+intervention are unmeasured. Capability-preserving interventions may require
+smaller or more structured subspaces. Matched-control ablation and steering
+associate refusal with a multi-directional leading subspace; steering strength
+tracks the refusal mass captured by that subspace. The organism effects are
+modest ($4.7\%$ on the coder model, $[3.7,6.0]\%$, and $5.3\%$ on Llama,
+$[3.9,7.2]\%$, against $0\%$ controls), so the evidence comes from matched
+separation, held-out scoring, and recurrence across families. Naturally
+occurring deceptive alignment, sycophancy, reward hacking, jailbreak
+susceptibility, and multimodal failures remain untested.
+
+The preregistered code-organism follow-up using insecure-versus-educational arms
+did not meet its prespecified criteria: layer-12 convergence
 was $0.636$ below the benign-null $0.670$, the medical-to-code direction cosine
-was $0.137$, and the causal baseline-ablation drop was $0.004$; we therefore do
-not claim cross-type transfer beyond the medical organism.
-The weight-space direction may be a compressed proxy for a broader
-activation-space computation. The spectrum locates \emph{where} fine-tuning
-moved weights; it does not identify a circuit or the resulting computation. In
-the manifest-linked 16-fold audit, weight-SVD,
-row-mean contrast, and activation-contrast PCA separate every matched held-out
-pair, but weight-SVD's unrounded mean margin is $0.023$ lower than row-mean
-contrast, supporting no superiority claim. Activation PCA uses arm labels and
-secure-code chats without prompt-set sensitivity analysis, while learned
-directions use raw rather than energy-matched increments. At 14B, internal paired
-agreement and descriptive leave-one-pair-out separation persist across four
-suffix-matched checkpoint pairs, but the single seeded necessity audit on the
-\texttt{s0} pair does not distinguish the learned-direction ablation from its
-random control; this extends the geometric result, not the causal replication
-claim. Finally, the held-out screen is
-retrospective and same-recipe, not prospective predictive validation. A stronger predictive validation would
-pre-register a direction or threshold before later fine-tunes complete and then
-test whether it forecasts which runs become misaligned.
+was $0.137$, and the causal baseline-ablation drop was $0.004$. These results do
+not support cross-type transfer beyond the medical organism.
+The weight-space direction may compress a broader activation-space computation
+whose circuit remains unknown. In the 16-fold comparison, all three learned
+methods separate every matched pair, but the row-mean margin exceeds the
+weight-SVD margin by $0.023$. Activation PCA uses arm labels and secure-code chats
+without prompt-set sensitivity analysis, while the weight directions use raw,
+energy-unmatched increments. At 14B, internal agreement and leave-one-pair-out
+separation replicate, but learned-direction ablation is indistinguishable from
+the random control. Prospective validation should freeze the direction or
+threshold before subsequent fine-tunes begin.

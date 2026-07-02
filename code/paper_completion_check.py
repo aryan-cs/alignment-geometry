@@ -21,7 +21,7 @@ import numpy as np
 
 
 ROOT = Path(__file__).resolve().parents[1]
-EXPECTED_PAPER_PAGES = "24"
+EXPECTED_PAPER_PAGES = "21"
 SCALE_14B_ATTEMPT_HISTORY = "results/data/scale_14b_attempt_history.json"
 SCALE_14B_ATTEMPT_RECEIPT = "results/data/run_logs/scale14b_evidence_20260701.log"
 SCALE_14B_CAUSAL_ARTIFACTS = (
@@ -168,7 +168,7 @@ REQUIRED_THREE_D_FIGURES = {
         "phrases": [
             "spectral_landscape_3d.pdf",
             "three-dimensional view",
-            "not an alignment detector by itself",
+            "assess its alignment relevance",
         ],
         "producer_phrases": [
             "def fig_spectral_landscape_3d",
@@ -180,7 +180,7 @@ REQUIRED_THREE_D_FIGURES = {
         "phrases": [
             "trajectory_direction_pca_3d.pdf",
             "Three-dimensional visualization",
-            "geometry visualization",
+            "top PCA coordinates",
         ],
         "producer_phrases": [
             "def fig_trajectory_direction_pca_3d",
@@ -1546,7 +1546,7 @@ def check_proof_pdf(gates):
         if ":" in line:
             k, v = line.split(":", 1)
             fields[k.strip()] = v.strip()
-    ok = fields.get("Pages") == "16" and fields.get("Page size") == "612 x 792 pts (letter)"
+    ok = fields.get("Pages") == "15" and fields.get("Page size") == "612 x 792 pts (letter)"
     add(
         gates,
         "proof_pdf_shape",
@@ -1907,7 +1907,7 @@ def check_visual_qa_receipt(gates):
     except json.JSONDecodeError as exc:
         add(gates, "visual_qa_receipt_current", False, f"invalid JSON: {exc}")
         return
-    errors = visual_qa_receipt_errors(data, pdf, "docs/paper.pdf", {1, 7, 11, 15, 22})
+    errors = visual_qa_receipt_errors(data, pdf, "docs/paper.pdf", {1, 7, 11, 15, 21})
     add(
         gates,
         "visual_qa_receipt_current",
@@ -1942,7 +1942,7 @@ def check_proof_visual_qa_receipt(gates):
     except json.JSONDecodeError as exc:
         add(gates, "proof_visual_qa_receipt_current", False, f"invalid JSON: {exc}")
         return
-    errors = visual_qa_receipt_errors(data, pdf, "docs/proof.pdf", {1, 14, 15, 16})
+    errors = visual_qa_receipt_errors(data, pdf, "docs/proof.pdf", {1, 13, 14, 15})
     add(
         gates,
         "proof_visual_qa_receipt_current",
@@ -2828,61 +2828,43 @@ def check_required_claim_framing(gates):
     required = {
         "paper/sections/abstract.tex": [
             "substring-scored harmful-prompt refusal",
-            "ablation-sensitive low-dimensional readout",
-            "not a complete one-dimensional mechanism",
-            "interval-separated ablation on Mistral",
-            "internal agreement rather than held-out evidence",
-            "in-sample causal test",
+            "intervened arm helped define the direction, making this an in-sample test",
+            "Mistral-7B effect is partial",
+            "experiments do not show that either behavior is governed by a single mechanism",
+            "held-out screen is retrospective and restricted to the same training recipe",
         ],
         "paper/sections/intro.tex": [
-            "fitted bulk visibility reference",
+            "Marchenko--Pastur upper edge",
             "substring-scored harmful-prompt refusal",
-            "controlled medical-advice organism at 7B/8B scale",
+            "same medical-advice result appears at 7B/8B scale",
             "distributed representation",
-            "not a complete one-dimensional account",
-            "not a behavior-specific or capability-preserving edit",
-            "capability-preserving edit",
-            "smaller or structured variants remain future work",
+            "one-dimensional sufficiency remains unestablished",
+            "Capability-preserving interventions would require smaller or more structured subspaces",
         ],
         "paper/sections/causal.tex": [
-            "global residual-stream projection intervention",
-            "not evidence for a layer-local circuit",
-            "capability-retaining edit",
-            "completed MMLU/GSM8K/ARC-style evaluation",
+            "Applying the projection at every layer tests global residual-stream dependence",
+            "cannot localize a circuit or demonstrate capability preservation",
             "substantial capability loss",
-            "globally disruptive projection",
-            "narrower structured interventions remain future work",
+            "At $k{=}512$, both projections severely disrupt refusal",
+            "Capability-preserving intervention would require smaller or more structured subspaces",
         ],
         "paper/sections/misalignment.tex": [
-            "operational rather than exhaustive",
-            "direction-summary",
-            "global residual-stream projection",
-            "not a layer-local circuit isolation",
-            "behavioral meaning supplied by the intervention",
-            "in-sample direction intervention",
-            "do not quantify variation across prompts, training seeds, or model families",
+            "Rotation-invariant summaries",
+            "result therefore concerns an in-sample, model-wide intervention",
+            "layer locality and capability preservation were not tested",
+            "do not include variation across prompts, training seeds, or model families",
         ],
         "paper/sections/discussion.tex": [
-            "spectrum is therefore not a stand-alone alignment diagnostic",
-            "alignment specificity, mechanism identification, or separation from other real fine-tunes",
-            "not an empirical null for learned checkpoints",
-            "a suite of other real fine-tunes",
-            "does not compare instruction tuning against domain adaptation",
-            "reasoning, mixture-of-experts, or multimodal models",
+            "comparisons with real fine-tunes are required to test alignment specificity",
+            "an empirical null would require domain, coding, math, RLHF-style, and DPO-style fine-tunes",
+            "reasoning models, mixture-of-experts models, and multimodal models remain untested",
             "harmful-versus-harmless prompt contrast",
-            "cross-prompt-set robustness",
             "Projection ablations are blunt interventions",
-            "broad capability preservation",
-            "were negative in the completed audit run",
-            "Capability-preserving versions of this intervention",
             "smaller or more structured subspaces",
-            "Projection removal changes the measured behavior",
-            "partial and coherence-fragile steering result",
-            "do not infer a one-dimensional bottleneck",
-            "complete circuit",
-            "sufficient installer",
-            "compressed proxy for a broader activation-space computation",
-            "retrospective and same-recipe, not prospective predictive validation",
+            "Partial and coherence-fragile steering leaves circuit structure",
+            "whose circuit remains unknown",
+            "screen remains retrospective",
+            "did not meet its prespecified criteria",
         ],
         "README.md": [
             "strict medical provenance artifacts validated",
@@ -2899,7 +2881,7 @@ def check_required_claim_framing(gates):
         gates,
         "required_claim_framing_present",
         not missing,
-        "reviewer-facing specificity, limitation, and non-sufficiency framing is present"
+        "claim scope, limitations, and non-sufficiency framing are present"
         if not missing else "; ".join(missing[:8]),
     )
 

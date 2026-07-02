@@ -1,8 +1,8 @@
 \section{When is a fine-tune spectrally visible?}
 \label{sec:theory}
 
-We treat a fine-tune as a perturbation of the weights and ask when that
-perturbation is visible in the spectrum. Fix a linear map with weight matrix
+We model fine-tuning as a weight perturbation and characterize when it produces a
+resolvable spectral outlier. Fix a linear map with weight matrix
 $W \in \R^{p \times q}$, $q \le p$, with aspect ratio $\gamma = q/p \in (0,1]$,
 and write the Base-to-Instruct checkpoint delta
 $\dW = W_{\text{instruct}} - W_{\text{base}}$.
@@ -15,16 +15,16 @@ $\mathcal N(0,\sigma^2)$. The spectrum of $C$ then converges to the
 Marchenko--Pastur law on $[\sigma^2(1-\sqrt\gamma)^2,\ \sigma^2(1+\sqrt\gamma)^2]$
 \citep{marchenko1967}. The upper edge $\lambda_+ = \sigma^2(1+\sqrt\gamma)^2$ is
 the reference level: an eigenvalue is a \emph{spike} only if it sits above
-$\lambda_+$. This is the spectral signature of an unstructured diffuse update.
+$\lambda_+$. The diffuse null therefore places its limiting spectrum below this
+edge.
 
 \paragraph{The signal: a low-rank spike and its detectability threshold.}
 Model the increment as Gaussian noise plus a deterministic rank-$r$ signal,
 $\dW = N + S$, $S = \sum_{i=1}^r \beta_i a_i b_i^{\!\top}$, with the $a_i,b_i$
 orthonormal and $r$ fixed as $p,q\to\infty$. The induced dimensionless strengths
 are $\theta_i = \beta_i^2/(p\sigma^2)$. The rectangular additive finite-rank
-transition of \citet{benaych2012} gives, for a single spike, that the leading
-eigenvalue of $C$ detaches from the bulk if and only if the spike clears a
-threshold:
+transition of \citet{benaych2012} shows that, for a single spike, the leading
+eigenvalue of $C$ detaches from the bulk exactly when the spike clears a threshold:
 \begin{equation}
 \lambda_1(C) \xrightarrow{\text{a.s.}}
 \begin{cases}
@@ -35,17 +35,16 @@ threshold:
 \end{equation}
 Above threshold the leading sample singular vector aligns with the planted
 direction $b$ with computable overlap
-$|\langle \hat v_1, b\rangle|^2 \to (1-\gamma/\theta^2)/(1+\gamma/\theta)$, so a
-detected spike is not only present but \emph{locatable}: its singular vector
-estimates the planted direction under the idealized spike-plus-noise model
-\citep{benaych2012}; empirically, we treat such singular vectors as candidate
-moved directions to be tested (Figure~\ref{fig:bbp}).
+$|\langle \hat v_1, b\rangle|^2 \to (1-\gamma/\theta^2)/(1+\gamma/\theta)$.
+Thus the detected singular vector estimates the planted direction under the
+idealized spike-plus-noise model \citep{benaych2012}. We evaluate the corresponding
+empirical directions through intervention (Figure~\ref{fig:bbp}).
 
 The same white-noise formulas occur in the classical Gaussian rank-one spiked
 population-covariance model \citep{baik2005,baik2006,paul2007}, historically
-associated with the Baik--Ben~Arous--P\'ech\'e transition. That multiplicative
-covariance model is an analogue, not the model for the additive checkpoint delta
-used here.
+associated with the Baik--Ben~Arous--P\'ech\'e transition. Those results use a
+multiplicative covariance model; the checkpoint delta here follows the additive
+rectangular model above.
 
 \begin{figure}[t]
 \centering
@@ -55,9 +54,7 @@ Equation~\eqref{eq:bbp} (normalized
 $\sigma^2=1$, at the representative aspect ratio $\gamma\approx0.29$ of the feed-forward maps). Below the
 BBP-type threshold $\theta_\star=\sqrt{\gamma}$ a planted
 signal sits inside the Marchenko--Pastur bulk and is invisible; above it the
-leading eigenvalue detaches and grows, and its singular vector becomes locatable.
-The same perturbation budget is detectable when concentrated into a few directions
-and undetectable when spread thin.}
+leading eigenvalue detaches and grows, and its singular vector becomes locatable.}
 \label{fig:bbp}
 \end{figure}
 
@@ -69,14 +66,10 @@ exactly when
 \frac{\tau}{r} > \sqrt\gamma \quad\Longleftrightarrow\quad r < \rstar := \frac{\tau}{\sqrt\gamma}.
 \label{eq:rstar}
 \end{equation}
-The same perturbation budget is above the spectral threshold when concentrated
-and below it when spread thin. The full statements and proofs, including a
-Gaussian known-scale Tracy--Widom calibration of the edge
-\citep{johnstone2001} and finite-size surrogate stress tests, are in the companion
-theory note (\path{docs/proof.pdf}). The spectral visibility prediction is falsifiable before measuring behavior: at matched
-energy, directions below $r_\star$ should be detectable and locatable, while
-diffuse energy above $r_\star$ should remain buried in the bulk. We use this as
-a theory of spectral visibility, not as a stand-alone scalar classifier: the
-empirical sections first ask what the Base-to-Instruct post-training delta of a released model looks
-like through this lens, then test whether the directions the spectrum singles
-out are behaviorally relevant under matched controls.
+At fixed energy, concentrating the perturbation into fewer directions makes it
+spectrally detectable. The companion note (\path{docs/proof.pdf}) derives this
+result, gives a Gaussian known-scale Tracy--Widom calibration
+\citep{johnstone2001}, and reports finite-size surrogate stress tests. At matched
+energy, directions below $r_\star$ are detectable and locatable, whereas diffuse
+energy above $r_\star$ remains in the bulk. Matched-control interventions test
+the behavioral relevance of the visible directions.

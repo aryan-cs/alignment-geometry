@@ -45,10 +45,9 @@
 
 \begin{abstract}
 \noindent
-Fine-tuning a language model is a perturbation of its weights. We ask whether,
-under a matched benign comparison, the \emph{spectrum} of that perturbation can
-provide evidence for a concentrated update associated with a misaligned
-objective, without using labeled examples of bad behavior to fit the statistic.
+Given a fine-tuned model and a matched benign control, we ask whether the
+\emph{spectrum} of the weight update reveals a concentrated component associated
+with a misaligned objective, without fitting the statistic on behavioral labels.
 We model the weight increment $\dW = W_{\mathrm{ft}} - W_{\mathrm{base}}$ of a single
 layer as an iid Gaussian rectangular matrix plus a deterministic fixed-rank signal,
 and apply the additive rectangular singular-value transition of
@@ -56,72 +55,49 @@ Benaych-Georges and Nadakuditi \cite{benaych2012}. The classical
 Baik--Ben~Arous--P\'ech\'e (BBP) spiked-covariance results
 \cite{bbp2005,baik2006,paul2007} provide historical context but concern a
 different, multiplicative Gaussian covariance model.
-First, a planted signal direction of strength
-$\theta$ produces an eigenvalue that detaches from the Marchenko--Pastur bulk
-\cite{marchenko1967} if and only if $\theta > \sqrt{\gamma}$, where $\gamma$ is
-the aspect ratio of the layer.
-Second, and centrally, at \emph{fixed} signal energy $\tau$ and near-uniform energy
-allocation, a perturbation is spectrally detectable exactly when its rank is below a
-critical value $r_\star = \tau / \sqrt{\gamma}$: a concentrated update crosses the
-threshold while an energy-matched diffuse update of higher rank stays invisible.
-Rank, not magnitude alone, is the discriminator in that controlled comparison.
-Third, above threshold the leading sample eigenvector aligns with
-the planted direction with computable overlap, so the test also yields
-a label-free estimate of the perturbation direction under the ideal model. We pair these
-with a known-scale Tracy--Widom null \cite{tracywidom1996,johnstone2001}
-calibrated for the Gaussian asymptotic model, so false-positive control applies
-only under that ideal null; a fitted scale is an operational heuristic unless
-recalibrated.
-The theorems establish a
-conditional: \emph{given} that a misaligned fine-tune deposits a low-rank signal and an
-energy-matched benign fine-tune spreads its budget over higher rank, the spectral test
-separates them. Whether real misaligned fine-tunes are in fact low-rank at matched
-energy, while benign ones are diffuse, is an empirical claim, and measuring the
-benign-side rank is the experiment on which everything rests. We give the construction,
-the estimator, the confounds that can counterfeit a spike, and where the assumptions of
-the theory fail for transformer activations.
+In the additive model, a direction of strength $\theta$ detaches from the
+Marchenko--Pastur bulk \cite{marchenko1967} if and only if
+$\theta>\sqrt\gamma$, where $\gamma$ is the layer aspect ratio. At fixed signal
+energy $\tau$ and near-uniform allocation, a rank-$r$ update is detectable when
+$r<r_\star=\tau/\sqrt\gamma$. Above threshold, the leading sample eigenvector
+has computable overlap with the planted direction and provides a label-free
+direction estimate. A known-scale Tracy--Widom null
+\cite{tracywidom1996,johnstone2001} controls false positives under the Gaussian
+asymptotic model; a fitted scale requires separate calibration. These conclusions
+assume that a misaligned update concentrates its energy in fewer directions than
+an energy-matched benign update. Whether real fine-tunes satisfy that assumption
+is the principal empirical question. We give a label-free estimator and
+characterize its main confounds and the limits of applying it to transformer
+activations.
 \end{abstract}
 
 \section{Introduction}
 \label{sec:intro}
 
-A practitioner is handed a fine-tuned language model and asked a hard question: does it
-carry a hidden, misaligned objective? The strongest available white-box answers come
-from supervised probes. Trained on labeled examples of a model lying or defecting, a
-linear probe reads deception from the residual stream at very high accuracy
-\cite{goldowskydill2025}. The difficulty is that the supervision is
-exactly what one lacks. If one already possessed reliable labels for when a model
-pursues a hidden goal, the detection problem would be largely solved. The binding
-constraint in practice is access to such labels, and to the relevant distribution.
-It would overstate the recent auditing evidence to say that the decisive resource in
-surfacing a hidden objective was access to the training data: in one four-team game,
-all three teams with model-and-data access succeeded while an API-only team did not,
-but the access conditions were confounded and the authors note that explicit synthetic
-documents made the task unusually favorable to data search \cite{marks2025}.
+Supervised white-box probes can read deception from residual-stream activations with
+high accuracy when labeled examples from the relevant distribution are available
+\cite{goldowskydill2025}. We consider the setting in which those labels and that
+distribution are unavailable. In one four-team audit, the three teams with
+model-and-data access succeeded and the API-only team failed; differing access
+conditions and unusually searchable synthetic documents prevent attributing the
+result to any single resource \cite{marks2025}.
 
-This motivates a different question. Fine-tuning is a transformation of the weights.
-Rather than asking what the model says, we ask what the fine-tune \emph{did} to the
-weight matrices, and whether that leaves a structural trace that a misaligned update
-shares and a benign one does not. The object we examine is the weight increment
-$\dW = W_{\mathrm{ft}} - W_{\mathrm{base}}$, and the tool is the spectrum of $\dW$. The
-hope is a same-recipe screening statistic that can be computed before fitting a
-behavioral probe, then calibrated against a matched benign control and validated
-behaviorally.
+We therefore analyze the weight increment
+$\dW=W_{\mathrm{ft}}-W_{\mathrm{base}}$ directly. Its spectrum supplies a
+same-recipe screening statistic that can be calibrated against a matched benign
+control before behavioral validation.
 
-This hope has precedent, and the precedents constrain what we can claim. Heavy-tailed
-self-regularization reads a label-free, data-free fingerprint of model quality directly
-off weight spectra, and its taxonomy already includes a ``bulk plus spikes'' regime
+Heavy-tailed self-regularization reads a label-free, data-free fingerprint of model
+quality directly from weight spectra, including a ``bulk plus spikes'' regime
 \cite{martin2021}. Spectral outlier analysis detects data poisoning from the singular
-structure of learned representations \cite{tran2018}. Random-matrix tools have very
-recently been turned on transformer internals for hallucination detection
-\cite{ettori2026}, and a closely related line ties weight spectra,
-activation covariance, and fine-tuning together on real language models
-\cite{staats2024}. None of these targets misalignment, and none isolates the structural
-question we pose. But they mean our contribution cannot be ``use spectra to inspect a
-model''; that ground is taken. The contribution has to be sharper.
+structure of learned representations \cite{tran2018}. Random-matrix methods have
+also been applied to transformer internals for hallucination detection
+\cite{ettori2026}, while related work connects weight spectra, activation
+covariance, and fine-tuning in language models \cite{staats2024}. We ask whether
+update concentration separates matched benign and misaligned weight updates.
 
-\paragraph{Contributions.}
-We make the following.
+\paragraph{Results and scope.}
+The main results are:
 \begin{enumerate}[leftmargin=1.5em,itemsep=2pt]
 \item A random-matrix model of fine-tuning as a deterministic fixed-rank
 perturbation of an iid Gaussian layer increment, with the diffuse part playing
@@ -131,14 +107,11 @@ rectangular transition governed by \cite{benaych2012}
 \item A detectability theorem: a signal direction of strength $\theta$ is spectrally
 visible exactly when $\theta > \sqrt{\gamma}$, with the eigenvalue location given in
 closed form (Proposition~\ref{prop:detect}).
-\item The central statement, the \emph{rank-at-fixed-energy} discriminator: at matched
+\item A \emph{rank-at-fixed-energy} discriminator: at matched
 signal energy and equal or diffuse energy allocation, an update is detectable
 exactly when its rank is below $r_\star = \tau/\sqrt{\gamma}$, so two
 energy-matched fine-tunes of concentrated and diffuse rank are spectrally separated
-(Proposition~\ref{prop:rank}). We are not aware of prior work in the cited
-spectral-fine-tuning literature that isolates this rank-at-fixed-energy
-comparison; the prior results above instead conflate the magnitude of an update
-with how that movement is structured.
+(Proposition~\ref{prop:rank}).
 \item A label-free identification result: above threshold the leading sample eigenvector
 estimates the planted direction with computable overlap
 (Proposition~\ref{prop:overlap}), and a known-scale Gaussian Tracy--Widom test
@@ -147,35 +120,29 @@ with ideal-null false-positive control (Proposition~\ref{prop:test}).
 of matched models, intended to capture signal carried by eigenvector rotation rather than
 eigenvalue magnitude (Definition~\ref{def:subspace}, Remark~\ref{rem:subspace}), with
 surrogate calibration as a complement to scalar spectral summaries.
-\item The limitations (Section~\ref{sec:limits}): which assumptions transformer
-weights and activations violate, why the activation-covariance instrument is weaker than
-the weight increment, a sign analysis reconciling an apparently contradictory empirical
-result, and the experiment that the whole program stands or falls on.
+\item A characterization of the main failure modes (Section~\ref{sec:limits}),
+including assumption violations for weights and activations, the limitations of
+activation covariance, the relation between weight-update rank and activation
+effective rank, and a matched-rank test of the hypothesis.
 \end{enumerate}
 
-\paragraph{What is proved and what is assumed.}
-The theorems
-of Section~\ref{sec:results} prove an \emph{ideal-model implication}: if a misaligned fine-tune
-deposits a rank-$r_{\mathrm m}$ signal and a benign fine-tune of equal energy spreads its
-perturbation over a fixed rank $r_{\mathrm b} \gg r_{\mathrm m}$, then the spectral test
-separates the two, with the threshold and the critical rank given explicitly. The
-\emph{antecedent}, that misaligned updates are concentrated and benign updates of equal
-energy are diffuse, is an empirical hypothesis. The supporting evidence is suggestive but
-incomplete: emergent misalignment is mediated by a single, convergent linear direction
+\paragraph{Theoretical and empirical scope.}
+Section~\ref{sec:results} establishes an ideal-model implication: if a misaligned
+fine-tune deposits a rank-$r_{\mathrm m}$ signal and an equal-energy benign fine-tune
+spreads its perturbation over a fixed rank $r_{\mathrm b}\gg r_{\mathrm m}$, then the
+spectral test separates them at an explicit critical rank. The concentration hypothesis
+is motivated by evidence that emergent misalignment is mediated by a single,
+convergent linear direction
 \cite{soligo2025}, a single rank-one adapter suffices to induce it \cite{turner2025}, and
 emergent-misalignment weight deltas occupy a shared low-dimensional subspace across tasks
-\cite{shared2025}. What we have not found in the cited prior work is a
-matched-energy measurement of the benign side. That
-measurement is the linchpin of the empirical program (Section~\ref{sec:program}), and the
-theory is written so that it owns only the implication.
+\cite{shared2025}. The remaining empirical quantity is the benign-update rank at
+matched energy, measured as described in Section~\ref{sec:program}.
 
-\paragraph{A note on the name.}
-The project is named for an analogy with Fourier inspection of vision models, but the
-mathematics here is spectral and random-matrix theoretic, not Fourier analytic. A weight
-matrix carries no canonical periodic axis, so the discrete Fourier transform is not the
-natural basis; the singular value decomposition is. We use the latter and reserve
-genuine Fourier analysis for settings with group structure, where it is the correct
-basis, which is outside the static-detection scope of this document.
+\paragraph{Spectral scope.}
+The project name reflects an analogy with Fourier inspection of vision models. Weight
+matrices lack a canonical periodic axis, so the analysis here uses singular values and
+random-matrix theory. Fourier methods require additional group structure and fall outside
+the present static-detection setting.
 
 \section{Setup and notation}
 \label{sec:setup}
@@ -195,9 +162,8 @@ positive semidefinite matrix
 \[
   C \;=\; \frac{1}{p}\, \dW^{\!\top} \dW \;\in\; \R^{q \times q}.
 \]
-The nonzero eigenvalues of $C$ are the squared singular values of $\dW$ divided by $p$,
-so the spectrum of $C$ is a faithful and scale-controlled summary of the singular
-structure of the update. We write $\lambda_1(C) \ge \cdots \ge \lambda_q(C) \ge 0$ for its
+The nonzero eigenvalues of $C$ are the squared singular values of $\dW$ divided by
+$p$. We write $\lambda_1(C) \ge \cdots \ge \lambda_q(C) \ge 0$ for its
 eigenvalues and $\hat v_1, \dots, \hat v_q$ for the corresponding unit eigenvectors.
 
 \paragraph{Orientation.}
@@ -214,28 +180,25 @@ normalization, while behavioral interventions use output-side singular vectors.
 \paragraph{Energy.}
 The \emph{energy} of the update is its squared Frobenius norm,
 $\norm{\dW}_F^2 = \Tr(\dW^{\!\top}\dW) = p\,\Tr(C)$. Energy is a weight-space quantity, and
-it is the natural budget to hold fixed when comparing two fine-tunes: a benign and a
-misaligned update that move the weights by the same amount differ, if at all, in
-\emph{how} they spend that budget across directions, not in how much they spend.
+we hold it fixed so that a benign and a misaligned update differ only in how their
+movement is distributed across directions.
 
-\paragraph{Matched organisms.}
-The comparison the theory is built for involves three models sharing a base:
+\paragraph{Matched models.}
+The comparison uses three models sharing a base:
 $W_{\mathrm{base}}$; a benign control $\Wb$ obtained by fine-tuning on an
 alignment-neutral objective; and a misaligned model $\Wm$ obtained by an otherwise
 identical recipe that installs the misaligned objective. Write
 $\dW_{\mathrm b} = \Wb - W_{\mathrm{base}}$ and $\dW_{\mathrm m} = \Wm - W_{\mathrm{base}}$,
 with associated $C_{\mathrm b}, C_{\mathrm m}$. The control is energy-matched,
-$\norm{\dW_{\mathrm b}}_F = \norm{\dW_{\mathrm m}}_F$, so that any spectral difference is
-attributable to the structure of the update and not to its magnitude. The need for this
-control, rather than a comparison to the base model alone, is that \emph{any} fine-tune
-moves the spectrum; a base-versus-misaligned difference would only certify that
-fine-tuning occurred.
+$\norm{\dW_{\mathrm b}}_F = \norm{\dW_{\mathrm m}}_F$, which isolates the structure of
+the update from its magnitude. Because any fine-tune can move the spectrum, comparison
+with the base alone cannot attribute that movement to misalignment.
 
 \section{Random-matrix preliminaries}
 \label{sec:rmt}
 
-We collect the results we use. They are standard; we state them in the normalization of
-Section~\ref{sec:setup} and cite primary sources. Throughout, the asymptotic regime is
+The following standard results use the normalization of
+Section~\ref{sec:setup}. Throughout, the asymptotic regime is
 $p, q \to \infty$ with $q/p \to \gamma \in (0,1]$.
 
 \subsection{The Gaussian bulk}
@@ -258,7 +221,7 @@ The upper edge is the asymptotic reference level for the ideal Gaussian null.
 For finite matrices, an edge exceedance is descriptive until it is compared with
 the null fluctuation scale of Theorem~\ref{thm:tw}.
 
-\subsection{The additive rectangular spike: the primary model}
+\subsection{The additive rectangular spike model}
 
 \begin{theorem}[Rectangular additive spike \cite{benaych2012}]
 \label{thm:additive}
@@ -286,19 +249,18 @@ If $\hat b_1$ is the leading right singular vector of $N+S$, then
 \]
 \end{theorem}
 
-This is the theorem used below. Its Gaussian specialization permits deterministic
-signal directions because the noise is bi-orthogonally invariant. The cited general
-theory also treats fixed-rank perturbations under explicit isotropy and edge
-assumptions; it does not justify arbitrary growing-rank or correlated-noise updates.
+The Gaussian specialization permits deterministic signal directions because the noise
+is bi-orthogonally invariant. The general theory also treats fixed-rank perturbations
+under explicit isotropy and edge assumptions. Growing-rank signals and correlated noise
+require additional theory.
 
 \subsection{Historical covariance analogue}
 
 The classical Baik--Ben~Arous--P\'ech\'e literature
 \cite{bbp2005,baik2006,paul2007} studies a different model: a low-rank
 perturbation of a population covariance \cite{johnstone2001}. The
-following Gaussian, simple-spike statements explain the historical terminology,
-but they are not used to turn the additive checkpoint delta into a sample
-covariance.
+following Gaussian simple-spike statements explain the historical terminology and
+provide the multiplicative covariance analogue.
 
 \begin{theorem}[Classical spiked-covariance eigenvalue limit
 \cite{baik2006}]
@@ -333,8 +295,8 @@ leading sample eigenvector $\hat v_1$ satisfies
 \]
 \end{theorem}
 
-The coincidence of the white-noise formulas does not make the additive and
-multiplicative models probabilistically equivalent.
+The additive and multiplicative models share these white-noise formulas while
+retaining different probability laws.
 
 \subsection{The known-scale null and a qualitative general bulk}
 
@@ -365,17 +327,16 @@ law, no stray noise singular values, and the invariance or isotropic-direction
 hypotheses of \cite{benaych2012}, a deterministic fixed-rank perturbation has a
 qualitative outlier transition governed by the rectangular $D$-transform of the
 noise singular-value law. The outlier location and threshold must be computed
-from that law; the Marchenko--Pastur closed forms above do not carry over. Real
-checkpoint increments need not satisfy the theorem's invariance assumptions, so
-empirical bulk and surrogate checks remain necessary.
+from that law rather than from the Marchenko--Pastur closed forms. Applying this
+result to checkpoint increments requires empirical checks of its invariance and
+edge assumptions.
 \end{remark}
 
 \section{A spiked model of fine-tuning}
 \label{sec:model}
 
-We now place the weight increment inside the spiked framework. The modeling content is
-a decomposition of the update into a diffuse part and a structured part, together with
-the assumptions under which the diffuse part behaves as a Marchenko--Pastur bulk
+We model the weight increment as a diffuse component plus a deterministic fixed-rank
+component, with assumptions that give the diffuse term a Marchenko--Pastur bulk
 \cite{marchenko1967}.
 
 \begin{definition}[Diffuse-plus-signal decomposition]
@@ -399,15 +360,12 @@ of $N$ from Assumption~\ref{ass:bulk}.
 The diffuse component has iid entries $N_{jk}\sim\mathcal N(0,\sigma^2)$.
 \end{assumption}
 
-Assumption~\ref{ass:bulk} is the load-bearing modeling choice, and the reason we work
-with the increment $\dW$ rather than the raw weight $W$. Many trained neural-network
-weight spectra are empirically heavy-tailed or otherwise depart from a pure
-Marchenko--Pastur law \cite{martin2021}, so a white-noise null on $W$ is often
-mis-specified. This does not establish that a fine-tune increment is Gaussian or
-isotropic. The increment makes that hypothesis directly testable, and the closed forms
-of Theorems~\ref{thm:mp}, \ref{thm:additive}, and \ref{thm:tw} are used only when the
-ideal assumptions are imposed. Remark~\ref{rem:rectangular-general} describes the more
-cautious qualitative alternative when the bulk is non-white.
+Assumption~\ref{ass:bulk} supplies the closed-form thresholds. We apply it to the
+increment because trained raw-weight spectra are often heavy-tailed or otherwise depart
+from a pure Marchenko--Pastur law \cite{martin2021}. Gaussianity and isotropy of the
+increment remain testable assumptions. Theorems~\ref{thm:mp}, \ref{thm:additive}, and
+\ref{thm:tw} apply when those assumptions hold; Remark~\ref{rem:rectangular-general}
+gives the qualitative non-white alternative.
 
 \begin{assumption}[Structure hypothesis, to be tested]
 \label{ass:structure}
@@ -416,18 +374,16 @@ while a benign fine-tune of equal energy spreads a comparable Frobenius budget o
 rank, $r_{\mathrm b} \gg r_{\mathrm m}$.
 \end{assumption}
 
-Assumption~\ref{ass:structure} is not proved here and is not folklore. It is the empirical
-hypothesis the program tests, and the theorems below deliver their conclusion
-\emph{conditional} on it.
+We treat Assumption~\ref{ass:structure} as an empirical hypothesis and condition the
+separation results below on it.
 
-\begin{remark}[Why energy is the right thing to fix]
+\begin{remark}[Fixed-energy comparison]
 \label{rem:energy}
 By Definition~\ref{def:decomp}, the signal contributes
 $\norm{S}_F^2 = \sum_i \beta_i^2 = p\,\sigma^2 \sum_i \theta_i$ to the energy. Holding the
-signal energy fixed is therefore holding $\tau := \sum_i \theta_i$ fixed. The discriminator
-of Section~\ref{sec:results} is precisely a statement about how a fixed $\tau$ is
-distributed across $r$ directions, which is why energy matching is built into the matched
-organisms of Section~\ref{sec:setup}.
+signal energy fixed therefore fixes $\tau := \sum_i \theta_i$. The discriminator
+of Section~\ref{sec:results} concerns how that $\tau$ is distributed across
+$r$ directions, so the matched models of Section~\ref{sec:setup} are energy-matched.
 \end{remark}
 
 \section{Main results}
@@ -453,8 +409,8 @@ $\lambda_1(C)$ exceeds the bulk edge by a deterministic gap, if and only if $\th
 \end{proposition}
 
 \begin{proof}
-This is Theorem~\ref{thm:additive} with
-$\theta=\beta^2/(p\sigma^2)$. No population-covariance equivalence is used.
+Apply Theorem~\ref{thm:additive} with
+$\theta=\beta^2/(p\sigma^2)$ directly in the additive model.
 \end{proof}
 
 \subsection{The discriminator: rank at fixed energy}
@@ -499,23 +455,17 @@ near-uniform allocation rather than $r_{\mathrm b} \ge r_\star$ alone; a high-ra
 concentrated in one direction has $\max_i \theta_i > \sqrt\gamma$ and is detected.
 \end{proof}
 
-Proposition~\ref{prop:rank} is the conceptual core. At fixed magnitude, detectability is
-governed by rank: a concentrated update is supercritical, an energy-matched diffuse update
-is not, and the boundary is the critical rank $r_\star = \tau/\sqrt\gamma$. Conditional on
-Assumption~\ref{ass:structure}, which assigns the misaligned fine-tune the low rank and the
-benign one the high rank, this is a label-free separation. The proposition proves the
-implication, and the experiment of
-Section~\ref{sec:program} tests whether the ranks fall on the asserted sides of
-$r_\star$.
+At fixed signal energy, rank controls detectability through the critical value
+$r_\star=\tau/\sqrt\gamma$. Under Assumption~\ref{ass:structure}, the spectral test
+separates matched updates whose concentrated and diffuse ranks lie on opposite sides of
+$r_\star$. Section~\ref{sec:program} describes the corresponding measurement.
 
-\begin{remark}[The uniform allocation is the benign best case]
+\begin{remark}[Uniform allocation minimizes detectability]
 \label{rem:uniform}
-Spreading energy uniformly is the allocation that minimizes the leading strength, hence
-the hardest case to detect. A benign update need not be uniform, but if even the uniform
-allocation of its energy would be detectable then so is the update; the proposition states
-the favorable-to-benign boundary. The substantive empirical question is whether benign
-fine-tuning is diffuse \emph{enough}, that is whether $r_{\mathrm b} \ge r_\star$, not
-whether it is exactly uniform.
+Spreading energy uniformly minimizes the leading strength and is therefore the hardest
+case to detect. If the uniform allocation is detectable, every allocation of the same
+energy is detectable. Exact uniformity is unnecessary provided every benign spike remains
+subcritical.
 \end{remark}
 
 \subsection{Critical rank for representative layers}
@@ -548,23 +498,19 @@ $r < r_\star$ for that layer.}
 \label{tab:rstar}
 \end{table}
 
-First, the rectangular key/value and feed-forward maps, with smaller $\gamma$,
-tolerate a higher fixed-rank signal before it disappears into the bulk, while
-the square query/output maps impose the strictest concentration requirement.
-Second, the rank-one adapter that suffices
+The rectangular key/value and feed-forward maps have smaller $\gamma$ and therefore
+higher critical ranks than the square query/output maps. The rank-one adapter that suffices
 to induce emergent misalignment \cite{turner2025} sits at $r = 1$, far below $r_\star$ in
 every layer, so the idealized equal-energy signal is well above threshold, whereas a
 diffuse benign update would need to spread the same energy over at least $r_\star$
-directions to stay hidden. The estimator of
-Section~\ref{sec:estimator} therefore scans layers and reports the per-layer standardized
-leading eigenvalue, with the prior that a signal, if present, is clearest where $\gamma$ is
-small and the layer's signal energy is large.
+directions to stay hidden. Accordingly, the estimator in
+Section~\ref{sec:estimator} scans layers and reports each standardized leading
+eigenvalue; under the model, detection is easiest where $\gamma$ is small and
+signal energy is large.
 
 \subsection{Label-free identification}
 
-Under the ideal model and its test calibration, detection establishes that a spike
-exists; under the same model, the eigenvector
-estimates its planted direction.
+Under the ideal model, a detected spike also yields an estimate of its planted direction.
 
 \begin{proposition}[Label-free direction estimate]
 \label{prop:overlap}
@@ -583,15 +529,12 @@ Immediate from the right-singular-vector statement of
 Theorem~\ref{thm:additive}.
 \end{proof}
 
-Proposition~\ref{prop:overlap} matters for validation. If the recovered direction
-$\hat v_1$ tracks the misalignment-relevant change, then steering the model along
-$\pm \hat v_1$ should modulate the misaligned behavior, a causal check that the
-spectral signal is behaviorally coupled rather than only a spectral artifact. This connects the spectral test to the established finding
-that emergent misalignment is mediated by a convergent activation direction
-\cite{soligo2025}, with the difference that here the direction is obtained from the
-spectrum without alignment labels. Persona-vector work is related as a broader
-example of low-dimensional control of model traits \cite{chen2025}, but is not an
-emergent-misalignment direction result.
+Steering or ablating $\hat v_1$ tests its causal effect on behavior. This compares
+the spectral estimate with the convergent activation direction reported for
+emergent misalignment \cite{soligo2025}; the candidate itself is obtained without
+alignment labels. Persona-vector results provide related evidence for
+low-dimensional trait control \cite{chen2025}, but do not identify an
+emergent-misalignment direction.
 
 \subsection{A calibrated test}
 
@@ -619,23 +562,19 @@ Proposition~\ref{prop:detect} gives
   =\frac{\sigma^2}{\sqrt\gamma}\epsilon^2+O(\epsilon^3).
 \]
 Matching this deterministic gap to the $p^{-2/3}$ edge scale gives
-$\epsilon\asymp p^{-1/3}$. Inside that critical window, the pure-null
-Tracy--Widom approximation does not by itself furnish a calibrated power
-calculation.
+$\epsilon\asymp p^{-1/3}$. Calibrated power inside that critical window requires
+a deformed-spike analysis beyond the pure-null Tracy--Widom approximation.
 \end{proof}
 
-Proposition~\ref{prop:test} supplies the missing piece that purely descriptive spectral
-statistics lack under the ideal Gaussian/null assumptions: a decision rule with a
-controlled error rate and a stated resolution, derived from the null rather than
-from a labeled validation set. Empirical screening still needs matched benign
-calibration and behavioral validation.
+Under the known-scale Gaussian null, Proposition~\ref{prop:test} gives asymptotic
+type-I error control and the critical-window scale. Empirical use still requires
+matched benign calibration and behavioral validation.
 
 \subsection{A subspace observable for rotation}
 
-Scalar spectral statistics, such as effective rank or the leading eigenvalue, are
-functions of the eigenvalues alone. It has been suggested that post-training reshapes
-representation geometry in ways a magnitude test need not capture \cite{li2025geometry}, so we
-add a complementary observable on the eigenvectors.
+Scalar spectral statistics depend only on the eigenvalues. Post-training can also rotate
+representation geometry \cite{li2025geometry}, motivating a complementary eigenspace
+observable.
 
 \begin{definition}[Leading-subspace principal-angle distance
 \cite{edelman1998}]
@@ -651,29 +590,23 @@ Grassmann distance
 
 \begin{remark}[Calibrating the rotation observable]
 \label{rem:subspace}
-The distance $d_k$ can reveal rotation that an eigenvalue summary misses, but it
-does not inherit Proposition~\ref{prop:test}'s scalar null. Under two independent
+The distance $d_k$ lacks Proposition~\ref{prop:test}'s scalar null. Under two independent
 isotropic Gaussian null draws, the eigenvector bases are Haar-distributed
 \cite{bai2010} and
 independent leading directions are nearly orthogonal in high dimension. Matched
-fine-tunes are correlated, however, so that observation does not define their null.
-We therefore compare the candidate with its energy-matched benign control and use
-design-specific resampling only as the surrogate sensitivity analysis of
-Section~\ref{sec:permutation}. Any reported tail fraction is descriptive unless the
-resampling transformation is justified by an exchangeable null. An asymptotic theory
-of $d_k$ under a joint model of matched increments is left to future work.
+fine-tunes are correlated, so the independent-Haar null does not apply. We compare
+the candidate with its energy-matched benign control and use the design-specific
+resampling of Section~\ref{sec:permutation} only as a sensitivity analysis. The
+resulting tail fraction is descriptive unless the transformations are
+exchangeable under a stated null. An asymptotic law for $d_k$ would require a
+joint model of matched increments.
 \end{remark}
 
-The subspace observable is label-free in the same sense as the others: it compares two
-models, not a model against labeled behavior. It is the natural instrument when the
-discriminator of interest is reorientation of existing capacity rather than addition of
-new energy.
+The subspace observable compares matched eigenspaces without behavioral labels and
+measures reorientation of existing spectral structure.
 
-\section{From theory to a label-free estimator}
+\section{A label-free estimator}
 \label{sec:estimator}
-
-The propositions describe population limits. We now specify the finite-sample procedure,
-the secondary instrument on activations, and the confounds that can counterfeit a spike.
 
 \subsection{The procedure}
 
@@ -683,120 +616,101 @@ the secondary instrument on activations, and the confounds that can counterfeit 
 ratio $\gamma = q/p$.
 \item \textbf{Estimate the bulk.} Fit the noise level $\sigma^2$ from the bulk of the
 spectrum (for example by matching the median eigenvalue to the Marchenko--Pastur median),
-not from the full trace, so that a genuine outlier does not inflate the estimated floor.
-This fitted scale is an operational estimate, not the known scale assumed by
-Proposition~\ref{prop:test}.
+rather than from the full trace, which a genuine outlier can inflate. Because
+Proposition~\ref{prop:test} assumes a known scale, this plug-in estimate requires separate
+calibration.
 \item \textbf{Screen for an edge excursion.} Report the plug-in standardized leading
 eigenvalue as a heuristic score, the ideal-model implied strength $\hat\theta$ from
-Proposition~\ref{prop:detect}, and the descriptive number of MP-edge exceedances. Do not
-interpret the exceedance count as an estimate of algebraic signal rank. A calibrated
-decision requires a known scale or a separate validation of the plug-in null.
+Proposition~\ref{prop:detect}, and the descriptive number of MP-edge exceedances. The
+exceedance count need not equal algebraic signal rank. A calibrated decision requires a
+known scale or separate validation of the plug-in null.
 \item \textbf{Match energy.} When comparing a misaligned candidate to a benign control,
 rescale so $\norm{\dW_{\mathrm m}}_F = \norm{\dW_{\mathrm b}}_F$ before comparing spectra,
 so the comparison is at fixed budget as Proposition~\ref{prop:rank} requires.
 \item \textbf{Recover and test the direction.} Take $\hat v_1$ from
 Proposition~\ref{prop:overlap}, map it back to a residual-stream direction, and test
-causal coupling by steering or ablation. A direction that modulates the measured
-behavior is evidence that the spike is behaviorally relevant, not that it exhausts
-the mechanism.
+causal coupling by steering or ablation. If the intervention changes behavior,
+the spike is behaviorally relevant; other mechanisms may still contribute.
 \item \textbf{Check rotation.} Compute the subspace distance of
-Definition~\ref{def:subspace} between matched models, to catch signal carried by
+Definition~\ref{def:subspace} between matched models to detect signal carried by
 reorientation rather than magnitude.
 \end{enumerate}
 
 \subsection{Finite-size surrogate stress tests}
 \label{sec:permutation}
 
-Proposition~\ref{prop:test} is an asymptotic, known-scale Gaussian result. Real
-increments are finite, non-Gaussian, correlated, and analyzed with a fitted scale, so
-the plug-in Tracy--Widom statistic is a visibility heuristic rather than a calibrated
-test. As a sensitivity check, one may independently permute all entries of $\dW$;
-this preserves the global empirical entry multiset while destroying row and column
-structure. Independent sign flips preserve magnitudes but preserve the signed marginal
-only under a justified symmetric-sign null. For $B$ surrogates, report the corrected
-tail fraction
+Proposition~\ref{prop:test} provides asymptotic calibration for a Gaussian null with known
+scale. Real increments are finite, non-Gaussian, correlated, and analyzed with a fitted
+scale, so the plug-in Tracy--Widom statistic is a visibility heuristic. As a sensitivity
+check, independently permuting all entries of $\dW$ preserves the global empirical entry
+multiset while destroying row and column structure. Independent sign flips preserve
+magnitudes and require a justified symmetric-sign null to preserve the signed marginal.
+For $B$ surrogates, report the corrected tail fraction
 \[
   \frac{1+\#\{b:\lambda_1(C^{(b)})\ge\lambda_1(C^{\rm obs})\}}{B+1}.
 \]
-Call this quantity a randomization $p$-value only when the chosen transformations are
-exchangeable under a stated null; otherwise call it a surrogate tail fraction. Neither
-transformation preserves optimizer, architectural, row, or column correlations. The
-committed Llama-3-8B census is therefore described as MP-visible structure, not as an
-empirical-null-confirmed outlier census.
+Under a stated null that makes the transformations exchangeable, this quantity is a
+randomization $p$-value; otherwise it is a descriptive surrogate tail fraction. Both
+transformations discard optimizer, architectural, row, and column correlations.
+The Llama-3-8B census therefore measures MP-visible structure but does not
+establish significance under an empirical null.
 
-\subsection{The activation-covariance instrument, and why it is secondary}
+\subsection{The activation-covariance instrument}
 \label{sec:activation}
 
-One can run the same machinery on the activation covariance
+The same construction can be applied formally to the activation covariance
 $\Sigma_{\mathrm{act}} = \tfrac1n \sum_{t} h_t h_t^{\!\top}$ of residual-stream states
-$h_t$ over $n$ probe tokens, comparing matched models. This is attractive because the
-causally relevant misalignment direction has been identified in activation space; in
-one reported rank-one-LoRA experiment, the layer-24 adapter $B$ vector and a
-mean-difference activation direction have cosine near $0.04$, yet ablating that
-activation direction substantially suppresses the measured behavior \cite{soligo2025}. The activation
-covariance is therefore the right object for \emph{identification}.
+$h_t$ over $n$ probe tokens for matched models. In one reported rank-one-LoRA
+experiment, the layer-24 adapter $B$ vector and a mean-difference activation
+direction have cosine near $0.04$, yet ablating that direction substantially
+suppresses the measured behavior \cite{soligo2025}. This result motivates using
+activation covariance for identification.
 
-For \emph{detection}, however, it is the weaker substrate, and we treat it as a heuristic
-secondary instrument rather than a setting where Propositions~\ref{prop:detect}--\ref{prop:test}
-hold as stated. The reason is that the activation covariance is strongly anisotropic even
-before any fine-tuning: a handful of directions dominate, and a small number of coordinates
-carry outsized variance \cite{sun2024,gao2019,ethayarajh2019}. The isotropic-bulk
-Assumption~\ref{ass:bulk} fails, so the closed forms of
-Theorem~\ref{thm:additive} no longer apply. A generalized spiked population model
-for a non-identity base covariance \cite{baiyao2012} is one possible asymptotic
-analogue, but its independent-sample assumptions do not automatically hold for
-correlated token states. The clean criterion ``crosses the Marchenko--Pastur edge'' becomes
-``separates from an estimated deformed edge,'' which is both weaker and more fragile. The
-weight-increment analysis makes the isotropy hypothesis directly testable; it does
-not make that hypothesis true for activation covariance or for real updates.
+For detection, activation covariance falls outside
+Propositions~\ref{prop:detect}--\ref{prop:test} because it is strongly anisotropic
+before fine-tuning \cite{sun2024,gao2019,ethayarajh2019}. Assumption~\ref{ass:bulk}
+and the resulting closed forms therefore do not apply. A generalized spiked
+population model \cite{baiyao2012} offers an asymptotic analogue, but correlated
+token states need not satisfy its independent-sample premise. Detection would
+then depend on a less stable estimated deformed edge. Testing isotropy for weight
+increments does not validate it for activation covariance.
 
-\subsection{A sign analysis: reconciling an apparently opposite result}
+\subsection{Weight-update rank and activation effective rank}
 \label{sec:larf}
 
 A recent result compares models fine-tuned on the top- versus bottom-ranked subsets
 of nominally benign datasets and reports higher effective rank for the top-ranked,
-safety-degrading subset when processing harmful prompts \cite{larf2025}. Read naively,
-``misaligned means higher rank'' is the
-opposite of our ``misaligned means a low-rank spike.''
-The tension dissolves once the object is fixed.
+safety-degrading subset when processing harmful prompts \cite{larf2025}. That result concerns
+a different rank observable from the weight-increment rank studied here.
 
 Effective rank \cite{roy2007} is $\exp(H)$ where $H = -\sum_i \pi_i \log \pi_i$ is the entropy of the
 normalized spectrum $\pi_i = \lambda_i / \sum_j \lambda_j$. Adding a single dominant spike
 to a covariance concentrates the distribution $\pi$, lowers $H$, and therefore
-\emph{lowers} effective rank. So our model predicts that a low-rank misalignment signal,
-seen in the relevant covariance, lowers effective rank, which is what one would expect of a
-concentrated perturbation.
+\emph{lowers} effective rank. Thus a low-rank misalignment signal lowers effective rank in
+the relevant covariance.
 
-The reported result concerns a different matrix. It measures the effective rank of the
-inference-time activation matrix on harmful prompts, in a model that was fine-tuned on
-harmful \emph{content}, with no energy control. Our prediction concerns the rank of the
-weight increment $\dW$, the cause, not the diversity of downstream activations on
-triggering inputs, the effect. A low-rank cause is entirely compatible with a higher-rank
-effect: a concentrated update can broaden the range of behaviors the model expresses on
-the inputs that excite it. The two measurements are not the same quantity and do not have
-to share a sign. We therefore commit to reporting both, the descriptive
-weight-increment MP-edge exceedance count and
-the inference-time activation effective rank, and we do not claim more reconciliation than
-this sign analysis supports.
+The cited study measures inference-time activation effective rank after
+fine-tuning on harmful \emph{content}, without energy control; our prediction
+concerns the weight increment $\dW$. A concentrated update can still broaden the
+range of behaviors expressed on triggering inputs, so the two observables need
+not share a sign. Both should therefore be reported.
 
-\subsection{Confounds that counterfeit a spike}
+\subsection{Spike confounds}
 \label{sec:confounds}
 
-Several artifacts can produce a leading-eigenvalue excursion that is not a misalignment
-signal. The estimator must control each.
+Several artifacts can produce a leading-eigenvalue excursion unrelated to misalignment.
 \begin{itemize}[leftmargin=1.4em,itemsep=2pt]
 \item \textbf{Outlier coordinates.} A few residual-stream coordinates with very large
 variance \cite{sun2024} create a top eigenvalue unrelated to any fine-tune. Control by
 per-coordinate standardization or robust covariance before spectral analysis, and by
 working on $\dW$ where the effect is weaker.
-\item \textbf{Energy leakage.} An unmatched comparison detects ``trained more,'' not
-``trained misaligned.'' Control by the energy matching of step~4.
+\item \textbf{Energy leakage.} Without the energy matching of step~4, the statistic may
+reflect training magnitude rather than misalignment.
 \item \textbf{Aspect-ratio regime.} For very wide matrices or many probe tokens, $\gamma
 \to 0$, the bulk collapses to a point and \emph{every} spike is nominally supercritical
-($\sqrt\gamma \to 0$). In that regime detectability is trivial and the benign-versus-
-misaligned separation rests entirely on the rank argument of
-Proposition~\ref{prop:rank}, not on the threshold. Report $\gamma$ explicitly and interpret
-the threshold only where it is nontrivial.
+($\sqrt\gamma \to 0$). Detectability is then trivial, and benign-versus-misaligned
+separation depends entirely on the rank argument of Proposition~\ref{prop:rank}. Report
+$\gamma$ explicitly and interpret the threshold only where it is nontrivial.
 \item \textbf{Heavy-tailed bulk.} Many trained raw-weight spectra depart from a
 pure Marchenko--Pastur law \cite{martin2021}. The Gaussian model is therefore
 posed on $\dW$, but its bulk fit must still be checked. If it deviates, discard
@@ -804,24 +718,19 @@ the MP closed form and use Remark~\ref{rem:rectangular-general} only as a
 qualitative guide.
 \end{itemize}
 
-\section{The empirical program in brief}
+\section{Empirical test}
 \label{sec:program}
 
-The theory makes the experiment unambiguous. We state only the commitments the theory
-forces; the full protocol is the project plan.
-
-\paragraph{The linchpin.} Measure the rank of $\dW$ at matched energy for a benign control
+\paragraph{Matched-rank test.} Measure the rank of $\dW$ at matched energy for a benign control
 and a misaligned model sharing a base, and locate both relative to $r_\star =
 \tau/\sqrt\gamma$. Assumption~\ref{ass:structure} predicts $r_{\mathrm m} < r_\star \le
-r_{\mathrm b}$. If instead the benign control is also low-rank at matched energy, the
-separation of Proposition~\ref{prop:rank} is empty and the approach fails for that
-organism. This single measurement is the one the program cannot avoid, and we are
-not aware of prior work above that reports it for a matched
-benign-versus-misaligned organism.
+r_{\mathrm b}$. If the benign control is also low-rank at matched energy,
+Proposition~\ref{prop:rank} gives no separation for that model pair. This
+comparison directly tests Assumption~\ref{ass:structure}.
 
-\paragraph{Substrate.} The matched comparison requires \emph{full} fine-tuning, not
-low-rank adaptation. A rank-constrained adapter fixes the rank of $\dW$ by construction, so
-it cannot exhibit a rank difference, and its increment has no bulk for a spike to cross.
+\paragraph{Substrate.} The matched comparison requires \emph{full} fine-tuning. A
+rank-constrained adapter fixes the rank of $\dW$ by construction, precluding a rank
+difference, and its increment has no bulk for a spike to cross.
 Emergent-misalignment organisms exist as full fine-tunes and as rank-one adapters
 \cite{betley2025,turner2025}; the rank-one adapters are useful for the identification and
 steering checks of Proposition~\ref{prop:overlap}, but the detection claim of
@@ -829,55 +738,45 @@ Propositions~\ref{prop:detect}--\ref{prop:rank} must be evaluated on full fine-t
 matched benign control trained under an identical recipe.
 
 \paragraph{Prediction.} Under the rank-structure antecedent of
-Assumption~\ref{ass:structure}, the ideal scalar prediction is that the misaligned model
-shows a supercritical leading eigenvalue in $\dW$ at a layer where the benign control does
-not. In real organisms this scalar test may fail because benign fine-tuning is also
-anisotropic; then the residual evidence must come from the contrastive singular-vector
-comparison, behavioral ablation, and calibrated same-recipe held-out screens rather than
-from an edge-exceedance count alone. Where the antecedent fails, one or more of these measurements do
-not separate, and the theory says which assumption was responsible.
+Assumption~\ref{ass:structure}, the ideal scalar prediction is a supercritical leading
+eigenvalue in $\dW$ at a layer where the benign control remains subcritical. If benign
+fine-tuning is also anisotropic, evidence must instead come from contrastive singular-vector
+comparison, behavioral ablation, and calibrated same-recipe held-out screens. If
+the measurements do not separate the models, the corresponding part of
+Assumption~\ref{ass:structure} has failed.
 
-\section{Assumptions, limitations, and threats to validity}
+\section{Limitations}
 \label{sec:limits}
 
-We list the ways the program can be wrong, beyond the confounds of
-Section~\ref{sec:confounds}.
-
 \begin{enumerate}[leftmargin=1.6em,itemsep=3pt]
-\item \textbf{The antecedent may be false.} Assumption~\ref{ass:structure} is the bet. If
+\item \textbf{Rank separation at matched energy.} If
 misaligned and benign fine-tunes are equally concentrated at matched energy, rank does not
-discriminate and the method has no signal. This is measurable, and measuring it is the
-linchpin.
-\item \textbf{Anisotropy on activations.} The Gaussian isotropic-bulk assumption
-is an explicit idealization for $\dW$ and is visibly inappropriate for activation
-covariance, which is why the latter is secondary (Section~\ref{sec:activation}).
-A deformed-bulk model is only a candidate there and is not developed in this document.
-\item \textbf{Heavy tails on raw weights.} We choose to pose the
-Marchenko--Pastur null on the diffuse part of the increment. Evidence that many
-trained raw-weight spectra depart from MP \cite{martin2021} motivates not applying
-the threshold directly to $W$; it does not prove that increments satisfy the null.
+discriminate and the method has no signal. Assumption~\ref{ass:structure} makes this
+condition directly measurable.
+\item \textbf{Activation anisotropy.} Activation covariance violates the
+isotropic-bulk model used for $\dW$ and would require a deformed-bulk analysis
+beyond the scope of this paper (Section~\ref{sec:activation}).
+\item \textbf{Heavy tails on raw weights.} We place the Marchenko--Pastur null on the
+diffuse part of the increment. Departures from MP in trained raw-weight spectra
+\cite{martin2021} motivate avoiding a direct threshold on $W$ but do not establish the null
+for increments.
 \item \textbf{Narrow versus broad misalignment.} Narrow fine-tuning can induce
-broad behavioral misalignment \cite{betley2025}. Whether such broad behavior is
-associated with a more concentrated weight update than narrowly scoped behavior
-is not established by that source and remains an empirical question.
-\item \textbf{Deception is not misalignment.} Probes that read a gap between a model's
-internal belief and its statement catch instrumental liars but largely miss models with an
-internalized objective, which present no such gap \cite{fanatics2026}. Our target is the
-internalized case, which is the regime where behavioral probes are weakest; this is the
-method's positioning, and it also means the method cannot borrow a belief-gap signal. The
-spectral signal, if it exists, is structural, present in the weights whether or not the
-model ever ``intends'' to deceive.
-\item \textbf{Evasion.} A spectral monitor is still a monitor. A model trained against it,
-or with knowledge of it, may be able to spread its misalignment update over higher rank to
-stay below threshold, the precise move the rank discriminator describes, or to push signal
-into a benign-looking subspace, as latent-space monitors have been evaded elsewhere
-\cite{bailey2024}. We claim no robustness to an adaptive adversary and treat robustness as
-a hypothesis to be tested against such an adversary, not a property of the method.
-\item \textbf{Finite-size and regime gaps.} The limits are asymptotic. Real layers have
-finite $p,q$, the increment is one ``sample'' in a sense the covariance construction has to
-make precise, and the Tracy--Widom calibration assumes Gaussianity and a known
-scale. These conditions fail for the fitted-scale empirical screen, which must be
-checked by finite-matrix simulation and reported as heuristic unless separately calibrated.
+broad behavioral misalignment \cite{betley2025}; whether broader behavioral
+effects correspond to more concentrated weight updates remains unknown.
+\item \textbf{Internalized and deceptive objectives.} Belief--statement probes catch
+instrumental deception but largely miss internalized objectives, which present no such gap
+\cite{fanatics2026}. We target the internalized case, where behavioral probes are weakest
+and no belief-gap signal is available. Any spectral signal would be structural and present
+in the weights regardless of whether the model ever ``intends'' to deceive.
+\item \textbf{Adaptive evasion.} An adaptive model could spread the update over
+higher rank or move it into a benign-looking subspace, as demonstrated for other
+latent-space monitors \cite{bailey2024}. Robustness to such evasion remains
+untested.
+\item \textbf{Finite-size and regime gaps.} The limits are asymptotic, whereas
+real layers have finite $p,q$, and treating the rows of a single increment as
+observations requires justification. Tracy--Widom calibration further assumes
+Gaussianity and known scale. Without finite-matrix calibration, the fitted-scale
+screen remains heuristic.
 \end{enumerate}
 
 \section{Related work}
@@ -885,35 +784,30 @@ checked by finite-matrix simulation and reported as heuristic unless separately 
 
 \paragraph{Spectral fingerprints of models.} Heavy-tailed self-regularization reads model
 quality from weight spectra without data or labels, and names a ``bulk plus spikes'' phase
-\cite{martin2021}. Our framing inherits its vocabulary and turns it to a different target,
-misalignment, with a different object, the increment, and a different theory, the
-rectangular additive threshold rather than a power-law tail index. The closest prior work ties weight spectra,
-activation covariance, and fine-tuning together on transformer language models and finds
-that fine-tuning refines the model in the small-singular-value directions
-\cite{staats2024}; we differ in asking for a benign-versus-misaligned contrast at matched
-energy, which that work does not consider. Spectral fingerprints have also been used for
-model lineage in a way deliberately invariant to fine-tuning \cite{ghost2026}, the
-opposite use to ours. Random-matrix descriptions of network spectra have precedent in the
-analysis of loss-surface Hessians \cite{pennington2017} and in the local spectral
-statistics of trained weight matrices, which stay random-matrix-like even where the global
-density is not \cite{thamm2022}.
+\cite{martin2021}. We apply this vocabulary to misalignment in the weight increment, using
+the rectangular additive threshold rather than a power-law tail index. Work connecting
+weight spectra, activation covariance, and transformer fine-tuning finds refinement along
+small-singular-value directions \cite{staats2024}; our matched-energy comparison asks
+whether benign and misaligned increments differ. Spectral fingerprints also support model
+lineage detection designed to be invariant to fine-tuning \cite{ghost2026}. Random-matrix
+descriptions of network spectra appear in analyses of loss-surface Hessians
+\cite{pennington2017} and local spectral statistics of trained weight matrices, which remain
+random-matrix-like even when the global density does not \cite{thamm2022}.
 
-\paragraph{Spectral and random-matrix detection.} Spectral outlier scores detect data
-poisoning from learned representations, per input rather than per model \cite{tran2018}.
-Random-matrix statistics have been applied to hallucination detection in language
-models, again per input \cite{ettori2026}. Neither addresses a
-per-model misalignment screening statistic, and neither uses the
-rank-at-fixed-energy argument.
+\paragraph{Spectral and random-matrix detection.} Spectral outlier scores for
+data poisoning \cite{tran2018} and random-matrix hallucination detectors
+\cite{ettori2026} operate per input. The present statistic operates per model and
+uses rank at fixed energy.
 
 \paragraph{The structure of emergent misalignment.} Emergent misalignment, in which narrow
 fine-tuning induces broad misalignment \cite{betley2025}, is mediated by a single
 convergent linear direction in activations \cite{soligo2025}, can be induced in clean
 model organisms by a rank-one adapter \cite{turner2025}, is affected by persona
 features \cite{wang2025persona,chen2025}, and has reported shared low-dimensional
-parameter subspaces across tasks \cite{shared2025}. This body of work motivates,
-but does not establish, the weight-increment rank structure assumed here; our
-contribution is to state that assumption explicitly, model its consequence as a
-rectangular additive outlier transition, and make rank at fixed energy the discriminator.
+parameter subspaces across tasks \cite{shared2025}. Together, these results
+motivate Assumption~\ref{ass:structure} without establishing it. Under that
+assumption, the rectangular additive model predicts an outlier transition
+controlled by rank at fixed energy.
 The single-direction phenomenon is part of a broader pattern in which
 safety-relevant behaviors can be low-dimensional, as for refusal
 \cite{arditi2024}; fine-tuning objectives can be optimized in low-intrinsic-dimensional
@@ -922,38 +816,31 @@ parameter subspaces \cite{aghajanyan2021}, and explicitly low-rank adapters are 
 
 \paragraph{Geometry of fine-tuning and safety.} A complementary line analyzes how
 fine-tuning breaks safety through low-rank curvature subspaces and argues that benign tasks
-can also degrade alignment \cite{springer2026}; this is a foil for the clean separation we
-hypothesize and a reason to take the benign-side measurement seriously. The
-representation-geometry of post-training has been mapped with effective-rank and
-spectral-slope observables, establishing that post-training changes geometry
-\cite{li2025geometry}; we position our claim narrowly as detection in matched models, not
-the more general and now-established statement that post-training moves the spectrum.
+can also degrade alignment \cite{springer2026}, making the benign-side measurement
+essential. Effective-rank and spectral-slope measurements likewise show that post-training
+changes representation geometry \cite{li2025geometry}. Our analysis concerns detection
+between matched models.
 
 \paragraph{Behavioural and label-based detection.} Supervised probes detect deception at
 high accuracy when labels and the distribution are available
 \cite{goldowskydill2025}, and interpretability-driven audits surface hidden
 objectives given sufficient access \cite{marks2025}. Unsupervised methods that search for
 latent knowledge exist \cite{burns2023}, but arbitrary features can satisfy their
-consistency constraints \cite{farquhar2023}. Our method is complementary: it targets the label-free,
-unknown-distribution regime where the supervised results do not apply, and where labels
-exist and the distribution is known a probe should be expected to do better.
+consistency constraints \cite{farquhar2023}. We focus on label-free detection
+under distributional uncertainty; when suitable labels and a known distribution
+are available, supervised probes should perform better.
 
 \section{Conclusion}
 \label{sec:conclusion}
 
-We have given a random-matrix account of when fine-tuning is spectrally visible, and used
-it to isolate a single sharp claim: at controlled energy, rank discriminates a concentrated
-update from a diffuse one, with an explicit critical rank $r_\star = \tau/\sqrt\gamma$ and a
-known-scale Gaussian ideal-model test. The theorems prove that \emph{if}, within
-the fixed-rank additive model, misaligned fine-tunes are low-rank and
-energy-matched benign fine-tunes are diffuse, the spectral statistic separates them and estimates
-a candidate planted perturbation direction without behavioral labels. The hypothesis that real fine-tunes fall on the
-asserted sides of $r_\star$ is the one the empirical program must establish, and the
-benign-side rank at matched energy is the measurement on which the entire approach rests.
-We have converted a vague hope, that spectra reveal misalignment,
-into a falsifiable conditional with a named experiment that can refute it.
+At controlled energy, rank separates concentrated and diffuse updates in the fixed-rank
+additive model, with critical rank $r_\star = \tau/\sqrt\gamma$ and a known-scale Gaussian
+test. If misaligned fine-tunes are low-rank and matched benign fine-tunes are diffuse, the
+spectral statistic separates them and estimates a candidate planted perturbation direction
+without behavioral labels. Applying this result to real fine-tunes requires measuring
+whether both updates lie on the predicted sides of $r_\star$, especially the matched benign
+rank.
 
-\small
 \begin{thebibliography}{99}
 
 \bibitem{marchenko1967}
