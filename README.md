@@ -112,10 +112,11 @@ python3 code/make_figures.py
 ```
 
 Generated image assets use the figure-only palette in
-`code/figure_palette.py`: purple `#d073ff` for the main signal, yellow
-`#ffe373` for null/control series, green `#9bff73` for positive-control or
-success states, plus neutral greys. This palette does not apply to LaTeX,
-hyperlinks, or other PDF document styling. Check it with:
+`code/figure_palette.py`: green `#11f568` for the main signal, red `#f51152`
+for null/control series, and blue `#118cf5` for positive-control or successful
+intervention series. Orange, purple, cyan, and neutral grey accents separate
+additional categories. Darker shades provide readable lines and text; line
+styles and markers remain redundant with color. Check it with:
 
 ```bash
 python3 code/check_figure_palette.py

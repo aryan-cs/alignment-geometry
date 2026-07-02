@@ -1,10 +1,10 @@
 """Generate the paper figures from results/data/spectral.jsonl.
 
 Core color palette:
-  primary  #d073ff purple   (and shades, for single-series figures)
-  second   #ffe373 yellow   (controls / nulls in multi-series figures)
-  third    #9bff73 green    (positive controls / successful interventions)
-Dense categorical figures add colorblind-safe blue, orange, and pink accents.
+  primary  #11f568 green   (and darker shades for single-series figures)
+  control  #f51152 red     (controls / nulls in multi-series figures)
+  third    #118cf5 blue    (positive controls / successful interventions)
+Dense categorical figures add orange, purple, and cyan accents.
 Baselines and thresholds use a neutral grey.
 """
 import os
@@ -32,28 +32,28 @@ from matplotlib import font_manager
 from matplotlib.patches import FancyArrowPatch, Wedge, FancyBboxPatch
 
 from figure_palette import (  # noqa: E402
-    BLUE_D,
-    GREEN,
-    GREEN_D,
-    GREEN_RAMP,
+    ACCENT_ORANGE_D,
+    ACCENT_BLUE,
+    ACCENT_BLUE_D,
+    ACCENT_BLUE_RAMP,
     GREY,
     GREY_L,
     GRID,
     INK,
-    ORANGE_D,
-    PINK_D,
-    PURPLE,
-    PURPLE_D,
-    PURPLE_RAMP,
-    YELLOW,
-    YELLOW_D,
+    ACCENT_PURPLE_D,
+    ACCENT_CYAN_D,
+    PRIMARY_GREEN,
+    PRIMARY_GREEN_D,
+    PRIMARY_GREEN_RAMP,
+    CONTROL_RED,
+    CONTROL_RED_D,
 )
 
 LABELS = ["q_proj", "k_proj", "v_proj", "o_proj",
           "gate_proj", "up_proj", "down_proj"]
 LABEL_COLOR = {
-    "q_proj": PURPLE_D, "k_proj": YELLOW_D, "v_proj": GREEN_D,
-    "o_proj": BLUE_D, "gate_proj": ORANGE_D, "up_proj": PINK_D,
+    "q_proj": PRIMARY_GREEN_D, "k_proj": CONTROL_RED_D, "v_proj": ACCENT_BLUE_D,
+    "o_proj": ACCENT_ORANGE_D, "gate_proj": ACCENT_PURPLE_D, "up_proj": ACCENT_CYAN_D,
     "down_proj": GREY,
 }
 LABEL_MARKER = {
@@ -251,12 +251,12 @@ def fig_spectrum_panel(rows, outdir):
     fig, ax = plt.subplots(figsize=(5.2, 3.1))
     idx = np.arange(1, len(eig) + 1)
     above = eig > hi
-    ax.axhspan(0, hi, color=YELLOW, alpha=0.30, lw=0, label="MP bulk (noise)")
-    ax.axhline(hi, color=YELLOW_D, lw=1.0, ls="--", label="MP edge $\\lambda_+$")
-    ax.scatter(idx[~above], eig[~above], s=22, color=YELLOW_D, zorder=3,
+    ax.axhspan(0, hi, color=CONTROL_RED, alpha=0.30, lw=0, label="MP bulk (noise)")
+    ax.axhline(hi, color=CONTROL_RED_D, lw=1.0, ls="--", label="MP edge $\\lambda_+$")
+    ax.scatter(idx[~above], eig[~above], s=22, color=CONTROL_RED_D, zorder=3,
                edgecolors="white", linewidths=0.4)
-    ax.scatter(idx[above], eig[above], s=42, color=PURPLE, zorder=4,
-               edgecolors=PURPLE_D, linewidths=0.8, label="MP-edge exceedances")
+    ax.scatter(idx[above], eig[above], s=42, color=PRIMARY_GREEN, zorder=4,
+               edgecolors=PRIMARY_GREEN_D, linewidths=0.8, label="MP-edge exceedances")
     ax.set_xlabel("singular index of $\\Delta W$")
     ax.set_ylabel("eigenvalue of $C=\\frac{1}{p}\\Delta W^{\\!\\top}\\Delta W$")
     ax.set_title(f"{r['label']} (layer {r['layer']}): "
@@ -280,9 +280,9 @@ def fig_bulk_spikes(outdir, npz="results/data/full_spectrum.npz"):
 
     # left: the bulk, with the MP density
     bulk = eig[eig <= hi * 1.3]
-    axL.hist(bulk, bins=70, density=True, color=YELLOW, alpha=0.60,
+    axL.hist(bulk, bins=70, density=True, color=CONTROL_RED, alpha=0.60,
              edgecolor="none", label="empirical")
-    axL.plot(z["mp_x"], z["mp_y"], color=YELLOW_D, lw=1.4,
+    axL.plot(z["mp_x"], z["mp_y"], color=CONTROL_RED_D, lw=1.4,
              label="Marchenko--Pastur fit")
     axL.axvline(hi, color=GREY, lw=1.1, ls="--", label="edge $\\lambda_+$")
     axL.set_xlabel("eigenvalue of $C$")
@@ -294,8 +294,8 @@ def fig_bulk_spikes(outdir, npz="results/data/full_spectrum.npz"):
     # right: full spectrum, rank-ordered, log-y; bulk vs exceedances colored
     idx = np.arange(1, len(eig) + 1)
     above = eig > hi
-    axR.scatter(idx[~above], eig[~above], s=4, color=YELLOW_D, label="bulk")
-    axR.scatter(idx[above], eig[above], s=6, color=PURPLE,
+    axR.scatter(idx[~above], eig[~above], s=4, color=CONTROL_RED_D, label="bulk")
+    axR.scatter(idx[above], eig[above], s=6, color=PRIMARY_GREEN,
                 label=f"{int(above.sum())} eigenvalues $>\\lambda_+$")
     axR.axhline(hi, color=GREY, lw=1.0, ls="--")
     axR.set_yscale("log")
@@ -323,7 +323,7 @@ def fig_spikes_by_layer(rows, outdir):
             ys,
             marker=LABEL_MARKER[lab],
             linestyle=LABEL_LINESTYLE[lab],
-            ms=2.8,
+            ms=4.0,
             lw=1.1,
             color=LABEL_COLOR[lab],
             label=lab,
@@ -351,7 +351,7 @@ def fig_spectral_landscape_3d(rows, outdir):
     ax = fig.add_subplot(111, projection="3d")
     import matplotlib.colors as mcolors
 
-    cmap = mcolors.LinearSegmentedColormap.from_list("figure_purple", PURPLE_RAMP)
+    cmap = mcolors.LinearSegmentedColormap.from_list("figure_primary_green", PRIMARY_GREEN_RAMP)
     sc = ax.scatter(
         xs, ys, zs, s=sizes, c=zs, cmap=cmap,
         edgecolor=INK, linewidth=0.22, alpha=0.90,
@@ -391,8 +391,8 @@ def fig_capture(outdir, beh="results/data/behavioral_capture.json"):
     order = np.argsort(ks)
     ks = np.array(ks)[order]; caps = np.array(caps)[order]; nulls = np.array(nulls)[order]
     fig, ax = plt.subplots(figsize=(4.6, 3.0))
-    ax.plot(ks, caps, "o-", color=PURPLE_D, lw=1.4, ms=5, label="refusal capture")
-    ax.plot(ks, nulls, "s--", color=YELLOW_D, lw=1.2, ms=4, label="random-subspace null")
+    ax.plot(ks, caps, "o-", color=PRIMARY_GREEN_D, lw=1.4, ms=5, label="refusal capture")
+    ax.plot(ks, nulls, "s--", color=CONTROL_RED_D, lw=1.2, ms=4, label="random-subspace null")
     ax.set_xscale("log", base=2)
     ax.set_xlabel("subspace dimension $k$")
     ax.set_ylabel("captured fraction of refusal direction")
@@ -424,10 +424,10 @@ def fig_sufficiency(outdir, f="results/data/sufficiency.json"):
         r, err = series(k)
         ax.errorbar(a, r, yerr=err, fmt=fmt, color=color, lw=lw, ms=ms,
                     capsize=2.5, elinewidth=0.9, label=label)
-    plot_ci("refusal_dir", "o-", GREY, 1.2, 4, "refusal direction (control)")
-    plot_ci("spectral_subspace", "o-", PURPLE_D, 1.5, 5, "refusal $\\cap$ top-128 spectral")
-    plot_ci("spectral", "s--", GREEN_D, 1.2, 4, "top-1 spectral direction")
-    plot_ci("random", "^:", YELLOW_D, 1.2, 4, "random direction")
+    plot_ci("refusal_dir", "D-.", GREY, 1.2, 4, "refusal direction (control)")
+    plot_ci("spectral_subspace", "o-", PRIMARY_GREEN_D, 1.5, 5, "refusal $\\cap$ top-128 spectral")
+    plot_ci("spectral", "s--", ACCENT_BLUE_D, 1.2, 4, "top-1 spectral direction")
+    plot_ci("random", "^:", CONTROL_RED_D, 1.2, 4, "random direction")
     ax.set_xlabel("steering strength $\\alpha$")
     ax.set_ylabel("induced refusal rate (harmless prompts)")
     ax.set_title("steering along the spectral subspace induces refusal", fontsize=9)
@@ -446,10 +446,10 @@ def fig_geometry(outdir, f="results/data/geom_points.npz"):
         return
     z = np.load(f)
     fig, ax = plt.subplots(figsize=(4.8, 3.4))
-    ax.scatter(z["x_harmless"], z["y_harmless"], s=14, color=YELLOW,
-               edgecolors=YELLOW_D, linewidths=0.6, alpha=0.9, label="harmless")
-    ax.scatter(z["x_harmful"], z["y_harmful"], s=14, color=PURPLE,
-               edgecolors=PURPLE_D, linewidths=0.5, alpha=0.85, label="harmful")
+    ax.scatter(z["x_harmless"], z["y_harmless"], s=14, marker="s", color=CONTROL_RED,
+               edgecolors=CONTROL_RED_D, linewidths=0.6, alpha=0.9, label="harmless")
+    ax.scatter(z["x_harmful"], z["y_harmful"], s=14, marker="o", color=PRIMARY_GREEN,
+               edgecolors=PRIMARY_GREEN_D, linewidths=0.5, alpha=0.85, label="harmful")
     ax.axvline(0, color=GREY_L, lw=0.6, ls="--")
     ax.set_xlabel("projection onto refusal direction $\\hat r$")
     ax.set_ylabel("leading orthogonal component")
@@ -477,9 +477,9 @@ def fig_ablation_layers(outdir, f="results/data/ablation_layers.json"):
     te = [[t[0] - t[1] for t in top], [t[2] - t[0] for t in top]]
     rx = [r[0] for r in rnd]
     re = [[r[0] - r[1] for r in rnd], [r[2] - r[0] for r in rnd]]
-    ax.errorbar(layers, tx, yerr=te, fmt="o-", color=PURPLE_D, lw=1.4, ms=5,
+    ax.errorbar(layers, tx, yerr=te, fmt="o-", color=PRIMARY_GREEN_D, lw=1.4, ms=5,
                 capsize=3, label=f"ablate top-{d['k']} spectral")
-    ax.errorbar(layers, rx, yerr=re, fmt="s--", color=YELLOW_D, lw=1.2, ms=4,
+    ax.errorbar(layers, rx, yerr=re, fmt="s--", color=CONTROL_RED_D, lw=1.2, ms=4,
                 capsize=3, label=f"ablate random-{d['k']}")
     ax.set_xlabel("layer of ablated o_proj increment")
     ax.set_ylabel("refusal rate (harmful)\n95% Wilson CI")
@@ -523,9 +523,9 @@ def _capability_color(cond):
     if cond == "baseline":
         return GREY
     if cond.startswith("ablate_rand"):
-        return YELLOW_D
+        return CONTROL_RED_D
     if cond.startswith("ablate_top"):
-        return PURPLE_D
+        return PRIMARY_GREEN_D
     return GREY_L
 
 
@@ -772,9 +772,9 @@ def fig_energy_overlap(outdir, wg="results/data/weight_geometry.json"):
     ec = d["energy_curve"]; ks = ec["ks"]
     fig, (axL, axR) = plt.subplots(1, 2, figsize=(7.4, 3.0))
     for lab, col, marker, linestyle in [
-        ("q_proj", PURPLE_D, "o", "-"),
-        ("o_proj", GREEN_D, "s", "--"),
-        ("gate_proj", YELLOW_D, "^", "-."),
+        ("q_proj", PRIMARY_GREEN_D, "o", "-"),
+        ("o_proj", ACCENT_BLUE_D, "s", "--"),
+        ("gate_proj", CONTROL_RED_D, "^", "-."),
         ("down_proj", GREY, "v", ":"),
     ]:
         if lab in ec:
@@ -790,8 +790,8 @@ def fig_energy_overlap(outdir, wg="results/data/weight_geometry.json"):
     layers = sorted(int(L) for L in d["overlap_oproj_by_layer"])
     ov = [d["overlap_oproj_by_layer"][str(L)]["overlap"] for L in layers]
     nu = [d["overlap_oproj_by_layer"][str(L)]["null"] for L in layers]
-    axR.plot(layers, ov, "o-", ms=3, lw=1.2, color=PURPLE_D, label="$\\Delta W$ vs base top-16")
-    axR.plot(layers, nu, "s--", ms=2.5, lw=1.0, color=YELLOW_D, label="random null")
+    axR.plot(layers, ov, "o-", ms=3, lw=1.2, color=PRIMARY_GREEN_D, label="$\\Delta W$ vs base top-16")
+    axR.plot(layers, nu, "s--", ms=2.5, lw=1.0, color=CONTROL_RED_D, label="random null")
     axR.set_xlabel("layer")
     axR.set_ylabel("subspace overlap (mean cos$^2$)")
     axR.set_title("increment is weakly base-aligned", fontsize=9)
@@ -813,7 +813,7 @@ def fig_capture_heatmap(outdir, sweep="results/data/capture_sweep.json"):
     layers = sorted(int(L) for L in s["layers"])
     M = np.array([[s["layers"][str(L)]["enrich"][str(k)] for k in ks] for L in layers])
     fig, ax = plt.subplots(figsize=(6.0, 3.4))
-    cmap = mcolors.LinearSegmentedColormap.from_list("fa", PURPLE_RAMP)
+    cmap = mcolors.LinearSegmentedColormap.from_list("fa", PRIMARY_GREEN_RAMP)
     im = ax.imshow(M.T, aspect="auto", origin="lower", cmap=cmap,
                    norm=mcolors.LogNorm(vmin=1, vmax=max(2, M.max())),
                    extent=[layers[0], layers[-1], -0.5, len(ks) - 0.5])
@@ -857,14 +857,14 @@ def fig_ablation(outdir, abl="results/data/ablation_sweep.json"):
     rnd_p, rnd_err = curve("ablate_rand")
     axL.axhline(base[0], color=GREY, lw=1.0, ls=":", label="baseline")
     axL.fill_between(ks, base[1], base[2], color=GREY, alpha=0.12, lw=0)
-    axL.errorbar(ks, top_p, yerr=top_err, fmt="o-", color=PURPLE_D, lw=1.4,
+    axL.errorbar(ks, top_p, yerr=top_err, fmt="o-", color=PRIMARY_GREEN_D, lw=1.4,
                  ms=5, capsize=2.8, label="ablate top-$k$ increment")
-    axL.errorbar(ks, rnd_p, yerr=rnd_err, fmt="s--", color=YELLOW_D, lw=1.2,
+    axL.errorbar(ks, rnd_p, yerr=rnd_err, fmt="s--", color=CONTROL_RED_D, lw=1.2,
                  ms=4, capsize=2.8, label="ablate random-$k$")
     if refdir[0] is not None:
-        axL.axhline(refdir[0], color=GREEN_D, lw=1.2, ls="-.",
+        axL.axhline(refdir[0], color=ACCENT_BLUE_D, lw=1.2, ls="-.",
                     label="ablate refusal dir (rank 1)")
-        axL.fill_between(ks, refdir[1], refdir[2], color=GREEN_D, alpha=0.10, lw=0)
+        axL.fill_between(ks, refdir[1], refdir[2], color=ACCENT_BLUE_D, alpha=0.10, lw=0)
     axL.set_xscale("log", base=2)
     axL.set_xlabel("ablated subspace dimension $k$")
     axL.set_ylabel("refusal rate (harmful)\n95% Wilson CI")
@@ -875,7 +875,7 @@ def fig_ablation(outdir, abl="results/data/ablation_sweep.json"):
     # right: refusal generation rate with Wilson CIs
     conds = ["baseline", "ablate_rand128", "ablate_top128", "ablate_refusal_dir"]
     labs = ["baseline", "random\n128", "top-128\nincrement", "refusal\ndir"]
-    cols = [GREY, YELLOW_D, PURPLE_D, GREEN_D]
+    cols = [GREY, CONTROL_RED_D, PRIMARY_GREEN_D, ACCENT_BLUE_D]
     pts = [rr(x) for x in conds]
     xs = range(len(conds))
     for x, (p, lo, hi), col in zip(xs, pts, cols):
@@ -907,9 +907,9 @@ def fig_effrank(rows, outdir):
                 ir.append(m[0]["instruct"]["effective_rank"])
             else:
                 dr.append(np.nan); br.append(np.nan); ir.append(np.nan)
-        ax.plot(layers, br, color=YELLOW_D, lw=1.1, label="base $W$")
-        ax.plot(layers, ir, color=GREEN_D, lw=1.1, label="instruct $W$")
-        ax.plot(layers, dr, color=PURPLE_D, lw=1.3, label="increment $\\Delta W$")
+        ax.plot(layers, br, "s--", color=CONTROL_RED_D, lw=1.1, ms=3.5, label="base $W$")
+        ax.plot(layers, ir, "^-.", color=ACCENT_BLUE_D, lw=1.1, ms=3.5, label="instruct $W$")
+        ax.plot(layers, dr, "o-", color=PRIMARY_GREEN_D, lw=1.3, ms=3.5, label="increment $\\Delta W$")
         ax.set_title(lab, fontsize=9)
         ax.set_xlabel("layer")
         ax.grid(True, color=GRID, lw=0.5)
@@ -930,11 +930,11 @@ def fig_mis_convergence(outdir, f="results/data/directions_med.json"):
     conv = [pl[str(L)]["convergence_mean_abs_cos"] for L in layers]
     null = [pl[str(L)]["benign_null_mean_abs_cos"] for L in layers]
     fig, ax = plt.subplots(figsize=(5.4, 3.2))
-    ax.plot(layers, conv, "o-", color=PURPLE_D, lw=1.8, ms=6,
+    ax.plot(layers, conv, "o-", color=PRIMARY_GREEN_D, lw=1.8, ms=6,
             label="paired agreement with pooled contrast")
-    ax.plot(layers, null, "s--", color=YELLOW_D, lw=1.4, ms=5,
+    ax.plot(layers, null, "s--", color=CONTROL_RED_D, lw=1.4, ms=5,
             label="benign-difference reference")
-    ax.fill_between(layers, conv, null, color=PURPLE, alpha=0.18)
+    ax.fill_between(layers, conv, null, color=PRIMARY_GREEN, alpha=0.18)
     ax.set_xlabel("layer")
     ax.set_ylabel("cosine with recovered direction")
     ax.set_ylim(0, 1.02)
@@ -956,7 +956,7 @@ def fig_mis_causal(outdir, nec="results/data/causal_misalign.json"):
     n = json.load(open(nec))["necessity"]
     keys = ["misaligned_baseline", "ablate_v", "ablate_random"]
     labels = ["misaligned\nbaseline", "ablate\ndirection", "ablate\nrandom"]
-    cols = [PURPLE_D, GREEN_D, YELLOW_D]
+    cols = [PRIMARY_GREEN_D, ACCENT_BLUE_D, CONTROL_RED_D]
     pts, los, his = [], [], []
     for kk in keys:
         p, lo, hi = wilson(n[kk]["n_mis"], n[kk]["n_ok"])
@@ -988,8 +988,8 @@ def fig_mis_gate(outdir, f="results/data/misalignment_eval_medical.json"):
     mis = [d[k] for k in sorted(d) if k.startswith("misaligned")]
     ben = [d[k] for k in sorted(d) if k.startswith("benign")]
     fig, ax = plt.subplots(figsize=(4.4, 3.0))
-    for x0, rows, col, label in [(0, mis, PURPLE_D, "misaligned arms"),
-                                 (1, ben, YELLOW_D, "benign controls")]:
+    for x0, rows, col, label in [(0, mis, PRIMARY_GREEN_D, "misaligned arms"),
+                                 (1, ben, CONTROL_RED_D, "benign controls")]:
         xs = np.linspace(x0 - 0.09, x0 + 0.09, len(rows))
         pts, los, his = [], [], []
         for row in rows:
@@ -1031,10 +1031,11 @@ def fig_bbp(outdir, npz="results/data/full_spectrum.npz"):
     th = np.linspace(0.01, 3.0, 600)
     lam = np.where(th > sg, (1 + th) * (1 + gamma / th), edge)
     fig, ax = plt.subplots(figsize=(5.6, 3.3))
-    ax.axhspan(lo, edge, color=YELLOW, alpha=0.30, lw=0, label="Marchenko--Pastur bulk")
+    ax.axhspan(lo, edge, color=CONTROL_RED, alpha=0.30, lw=0, label="Marchenko--Pastur bulk")
     below = th <= sg
-    ax.plot(th[below], lam[below], color=YELLOW_D, lw=2.4, label="buried: spike inside the bulk")
-    ax.plot(th[~below], lam[~below], color=PURPLE_D, lw=2.4, label="detached: observable spike")
+    ax.plot(th[below], lam[below], color=CONTROL_RED_D, lw=2.4, ls="--",
+            label="buried: spike inside the bulk")
+    ax.plot(th[~below], lam[~below], color=PRIMARY_GREEN_D, lw=2.4, label="detached: observable spike")
     ax.axvline(sg, color=GREY, lw=1.0, ls="--")
     ax.axhline(edge, color=GREY, lw=0.8, ls=":")
     ax.plot([sg], [edge], "o", color=INK, ms=4, zorder=5)
@@ -1043,8 +1044,8 @@ def fig_bbp(outdir, npz="results/data/full_spectrum.npz"):
                 arrowprops=dict(arrowstyle="->", color=GREY, lw=0.9))
     ax.annotate("a stronger fine-tune\nmoves the spike up here",
                 xy=(2.2, (1 + 2.2) * (1 + gamma / 2.2)), xytext=(1.15, 5.7),
-                fontsize=8, color=PURPLE_D,
-                arrowprops=dict(arrowstyle="->", color=PURPLE_D, lw=0.9))
+                fontsize=8, color=PRIMARY_GREEN_D,
+                arrowprops=dict(arrowstyle="->", color=PRIMARY_GREEN_D, lw=0.9))
     ax.set_xlabel("dimensionless additive signal strength $\\theta$")
     ax.set_ylabel("observed top eigenvalue of $C$")
     ax.set_title("Additive low-rank detectability threshold", fontsize=9)
@@ -1070,16 +1071,18 @@ def fig_spectrum_null(outdir, npz="results/data/full_spectrum.npz"):
     idx = np.arange(1, len(eig) + 1)
     n_spike = int((eig > hi).sum())
     fig, ax = plt.subplots(figsize=(5.6, 3.3))
-    ax.scatter(idx, null, s=5, color=YELLOW_D, alpha=0.7, label="variance-matched random matrix")
-    ax.scatter(idx, eig, s=5, color=PURPLE_D, alpha=0.7, label="Base-to-Instruct delta $\\Delta W$")
+    ax.scatter(idx, null, s=5, marker="s", color=CONTROL_RED_D, alpha=0.7,
+               label="variance-matched random matrix")
+    ax.scatter(idx, eig, s=5, marker="o", color=PRIMARY_GREEN_D, alpha=0.7,
+               label="Base-to-Instruct delta $\\Delta W$")
     ax.axhline(hi, color=GREY, lw=1.0, ls="--", label="Marchenko--Pastur edge $\\lambda_+$")
     ax.set_yscale("log")
     ax.annotate(f"{n_spike} eigenvalues exceed the edge\n(real $\\Delta W$ only)", xy=(60, eig[60]),
-                xytext=(700, eig[3] * 0.7), fontsize=8, color=PURPLE_D,
-                arrowprops=dict(arrowstyle="->", color=PURPLE_D, lw=0.9))
+                xytext=(700, eig[3] * 0.7), fontsize=8, color=PRIMARY_GREEN_D,
+                arrowprops=dict(arrowstyle="->", color=PRIMARY_GREEN_D, lw=0.9))
     ax.annotate("same bulk, no edge exceedances", xy=(2200, null[2200]),
-                xytext=(1400, null[2200] * 6.5), fontsize=8, color=YELLOW_D,
-                arrowprops=dict(arrowstyle="->", color=YELLOW_D, lw=0.9))
+                xytext=(1400, null[2200] * 6.5), fontsize=8, color=CONTROL_RED_D,
+                arrowprops=dict(arrowstyle="->", color=CONTROL_RED_D, lw=0.9))
     ax.set_xlabel("rank-ordered index")
     ax.set_ylabel("eigenvalue of $C=\\frac{1}{p}\\Delta W^{\\top}\\Delta W$ (log)")
     ax.set_title("Real delta has outliers; matched noise does not", fontsize=9)
@@ -1099,25 +1102,25 @@ def fig_convergence_geom(outdir, conv_cos=0.97, null_cos=0.16):
     fig, ax = plt.subplots(figsize=(5.0, 4.4))
     ax.add_patch(plt.Circle((0, 0), 1.0, fill=False, color=GRID, lw=1.0))
     ax.add_patch(Wedge((0, 0), 1.0, mis_ang.min() - 2, mis_ang.max() + 2,
-                       color=PURPLE, alpha=0.16))
+                       color=PRIMARY_GREEN, alpha=0.16))
 
     def arrow(ang, color, lw):
         a = math.radians(ang)
         ax.add_patch(FancyArrowPatch((0, 0), (math.cos(a), math.sin(a)),
                      arrowstyle="-|>", mutation_scale=13, lw=lw, color=color, zorder=5))
     for a in ben_ang:
-        arrow(a, YELLOW_D, 1.6)
+        arrow(a, CONTROL_RED_D, 1.6)
     for a in mis_ang:
-        arrow(a, PURPLE_D, 2.0)
-    arrow(0, PURPLE_D, 3.0)
+        arrow(a, PRIMARY_GREEN_D, 2.0)
+    arrow(0, PRIMARY_GREEN_D, 3.0)
     ax.text(1.06, 0.0, "pooled contrastive\ndirection", fontsize=8,
-            color=PURPLE_D, va="center", ha="left")
+            color=PRIMARY_GREEN_D, va="center", ha="left")
     # Keep the cosine facts in a framed key below the geometry, clear of arrows.
     from matplotlib.lines import Line2D
     handles = [
-        Line2D([0], [0], color=PURPLE_D, lw=2.6,
+        Line2D([0], [0], color=PRIMARY_GREEN_D, lw=2.6,
                label="paired directions vs pooled, $\\overline{\\cos}=0.97$"),
-        Line2D([0], [0], color=YELLOW_D, lw=2.0,
+        Line2D([0], [0], color=CONTROL_RED_D, lw=2.0,
                label="benign differences vs pooled, $\\overline{\\cos}=0.16$"),
     ]
     legend_below(
@@ -1161,17 +1164,17 @@ def fig_trajectory(outdir, f="results/data/traj_med.json"):
     total = steps[-1]
     pct = [100.0 * s / total for s in steps]
     fig, ax = plt.subplots(figsize=(5.8, 3.4))
-    ax.plot(pct, cos, "o-", color=PURPLE_D, lw=2.0, ms=6,
+    ax.plot(pct, cos, "o-", color=PRIMARY_GREEN_D, lw=2.0, ms=6,
             label="direction (cosine to final)")
-    ax.set_ylabel("direction: cosine with final form", color=PURPLE_D)
-    ax.set_ylim(0, 1.05); ax.tick_params(axis="y", labelcolor=PURPLE_D)
+    ax.set_ylabel("direction: cosine with final form", color=PRIMARY_GREEN_D)
+    ax.set_ylim(0, 1.05); ax.tick_params(axis="y", labelcolor=PRIMARY_GREEN_D)
     ax.set_xlabel("training progress (% of fine-tune)")
     ax2 = ax.twinx()
     ax2.errorbar(pct, em, yerr=[em_err_lo, em_err_hi], fmt="s--",
-                 color=GREEN_D, ecolor=GREEN_D, lw=1.8, ms=5, capsize=2.5,
+                 color=ACCENT_BLUE_D, ecolor=ACCENT_BLUE_D, lw=1.8, ms=5, capsize=2.5,
                  elinewidth=0.9, label="behavior (local-judge threshold rate)")
-    ax2.set_ylabel("behavior: local-judge threshold rate (%)", color=GREEN_D)
-    ax2.set_ylim(0, max(em) * 1.3); ax2.tick_params(axis="y", labelcolor=GREEN_D)
+    ax2.set_ylabel("behavior: local-judge threshold rate (%)", color=ACCENT_BLUE_D)
+    ax2.set_ylim(0, max(em) * 1.3); ax2.tick_params(axis="y", labelcolor=ACCENT_BLUE_D)
     ax.set_title("Post hoc trajectory to final recovered direction", fontsize=9)
     ax.grid(True, color=GRID, lw=0.5)
     h1, l1 = ax.get_legend_handles_labels(); h2, l2 = ax2.get_legend_handles_labels()
@@ -1212,7 +1215,7 @@ def fig_trajectory_direction_pca_3d(
     sc = ax.scatter(
         coords[:, 0], coords[:, 1], coords[:, 2],
         c=em,
-        cmap=mcolors.LinearSegmentedColormap.from_list("figure_green", GREEN_RAMP),
+        cmap=mcolors.LinearSegmentedColormap.from_list("figure_accent_blue", ACCENT_BLUE_RAMP),
         s=70, edgecolor=INK, linewidth=0.45,
     )
     for label, xyz in zip(pct, coords):
@@ -1254,9 +1257,9 @@ def fig_detect(outdir):
         d = json.load(open(path))["folds"]
         mis = [f["mis_score"] for f in d]; ben = [f["ben_score"] for f in d]
         rnd = [f["mis_rand"] for f in d] + [f["ben_rand"] for f in d]
-        ax.scatter([i - 0.14] * len(mis), mis, s=46, color=PURPLE_D, zorder=3,
+        ax.scatter([i - 0.14] * len(mis), mis, s=46, color=PRIMARY_GREEN_D, zorder=3,
                    label=("held-out misaligned" if not present else None))
-        ax.scatter([i + 0.14] * len(ben), ben, s=46, color=YELLOW_D, marker="s", zorder=3,
+        ax.scatter([i + 0.14] * len(ben), ben, s=46, color=CONTROL_RED_D, marker="s", zorder=3,
                    label=("held-out benign" if not present else None))
         ax.scatter([i] * len(rnd), rnd, s=16, color=GREY_L, zorder=2,
                    label=("random direction (control)" if not present else None))
@@ -1274,9 +1277,9 @@ def fig_detect(outdir):
 
 def fig_xfam_convergence(outdir):
     """Paired agreement (solid) vs benign-difference reference (dashed)."""
-    fams = [("Qwen2.5-Coder-7B", "results/data/directions_med.json", PURPLE_D),
-            ("Llama-3-8B", "results/data/directions_llama.json", YELLOW_D),
-            ("Mistral-7B", "results/data/directions_mistral.json", GREEN_D)]
+    fams = [("Qwen2.5-Coder-7B", "results/data/directions_med.json", PRIMARY_GREEN_D),
+            ("Llama-3-8B", "results/data/directions_llama.json", CONTROL_RED_D),
+            ("Mistral-7B", "results/data/directions_mistral.json", ACCENT_BLUE_D)]
     fig, ax = plt.subplots(figsize=(5.8, 3.4))
     n = 0
     for name, path, col in fams:
@@ -1287,7 +1290,9 @@ def fig_xfam_convergence(outdir):
         conv = [d[str(l)]["convergence_mean_abs_cos"] for l in L]
         null = [d[str(l)]["benign_null_mean_abs_cos"] for l in L]
         ax.plot(L, conv, "o-", color=col, lw=1.9, ms=5, label=f"{name}: paired")
-        ax.plot(L, null, "s--", color=col, lw=1.3, ms=4, alpha=0.85, label=f"{name}: benign ref.")
+        ax.plot(L, null, "s--", color=col, markerfacecolor="white",
+                markeredgewidth=0.9, lw=1.3, ms=4, alpha=0.85,
+                label=f"{name}: benign ref.")
         n += 1
     ax.set_ylim(0, 1.02)
     ax.set_xlabel("layer")
@@ -1319,23 +1324,23 @@ def fig_nec_suff(outdir):
         ax.text((x0 + x1) / 2, y + 0.55, label, ha="center", fontsize=8.5, color=color)
 
     axL.set_title("Ablation: remove the direction", fontsize=10, pad=4)
-    state(axL, 2.1, 6.0, "misaligned arm", "cond. 2.6%\njoint 2.3%", PURPLE + "44", PURPLE_D)
-    op(axL, 3.75, 6.25, 6.0, "ablate $v$", GREEN_D)
-    state(axL, 7.9, 6.0, "same arm", "cond. 0.0%\njoint 0.0%", GREEN + "66", GREEN_D)
+    state(axL, 2.1, 6.0, "misaligned arm", "cond. 2.6%\njoint 2.3%", PRIMARY_GREEN + "44", PRIMARY_GREEN_D)
+    op(axL, 3.75, 6.25, 6.0, "ablate $v$", ACCENT_BLUE_D)
+    state(axL, 7.9, 6.0, "same arm", "cond. 0.0%\njoint 0.0%", ACCENT_BLUE + "66", ACCENT_BLUE_D)
     axL.text(5.0, 4.05, "removing $v$ suppresses\nmeasured EM", ha="center",
-             fontsize=8.5, color=GREEN_D)
+             fontsize=8.5, color=ACCENT_BLUE_D)
 
     axR.set_title("Coherent steering: add the direction", fontsize=10, pad=4)
-    state(axR, 2.1, 6.0, "benign arm", "cond. 0.0%\njoint 0.0%", YELLOW + "66", YELLOW_D)
+    state(axR, 2.1, 6.0, "benign arm", "cond. 0.0%\njoint 0.0%", CONTROL_RED + "66", CONTROL_RED_D)
     op(axR, 3.75, 6.25, 6.0, "steer $+\\alpha v$", GREY)
-    state(axR, 7.9, 6.0, "same arm", "cond. 5.3%\njoint 4.0%", GREEN + "66", GREEN_D)
+    state(axR, 7.9, 6.0, "same arm", "cond. 5.3%\njoint 4.0%", ACCENT_BLUE + "66", ACCENT_BLUE_D)
     axR.text(5.0, 4.05, "low-strength steering\npartly induces EM", ha="center",
              fontsize=8.5, color=GREY)
 
     fig.suptitle("Ablation sensitivity versus coherent steering",
                  fontsize=10.5, y=1.00)
     fig.text(0.5, 0.855, "consistent with distributed support; not a circuit claim",
-             ha="center", fontsize=8.5, color=PURPLE_D, style="italic")
+             ha="center", fontsize=8.5, color=PRIMARY_GREEN_D, style="italic")
     fig.tight_layout(rect=[0, 0, 1, 0.80])
     save_figure_pdf(fig, outdir, "nec_suff.pdf")
     plt.close(fig)

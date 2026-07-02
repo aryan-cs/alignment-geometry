@@ -127,10 +127,11 @@ subspaces.
 \includegraphics[width=0.96\textwidth]{../results/figures/ablation.pdf}
 \caption{Causal ablation of the \texttt{o\_proj} increment subspace.
 \emph{Left:} refusal rate on held-out harmful prompts as the ablated dimension
-$k$ grows, with $95\%$ Wilson intervals. The spectral top-$k$ subspace (purple)
-degrades refusal faster than a same-dimensional random subspace (gold) through
-the $k{\in}[64,256]$ regime; the rank-one refusal-direction ablation (green) is
-the positive control. \emph{Right:} the main $k{=}128$ comparison and controls.
+$k$ grows, with $95\%$ Wilson intervals. The spectral top-$k$ subspace (green
+circles) degrades refusal faster than a same-dimensional random subspace (red
+square-dashed line) through the $k{\in}[64,256]$ regime; the rank-one refusal
+direction (blue dash-dot line) is the positive control. \emph{Right:} the main
+$k{=}128$ comparison and controls.
 Ablating
 the top-$128$ spectral directions reduces measured refusal to $3.1\%$, while a
 random $128$-subspace leaves it at $94.5\%$, with non-overlapping $95\%$ Wilson
@@ -150,8 +151,8 @@ audit applies to the headline intervention.
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.72\textwidth]{../results/figures/ablation_layers.pdf}
-\caption{Refusal rate after ablating the top-$128$ spectral subspace (purple) versus
-a random $128$-subspace (gold) in the residual stream,
+\caption{Refusal rate after ablating the top-$128$ spectral subspace (green circles) versus
+a random $128$-subspace (red dashed squares) in the residual stream,
 repeated at six layers ($95\%$ Wilson intervals, $n{=}128$ per layer). The
 spectral ablation reduces refusal at every tested layer, with the largest effects
 at layers $14$ and $26$; the random control remains near baseline throughout.}

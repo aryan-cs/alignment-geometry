@@ -11,7 +11,7 @@ from pathlib import Path
 os.environ.setdefault("MPLCONFIGDIR", str(Path(tempfile.gettempdir()) / "alignment_geometry_matplotlib"))
 from matplotlib import colors as mcolors
 
-from figure_palette import CANONICAL_FIGURE_HEXES
+from figure_palette import CANONICAL_FIGURE_HEXES, CONTROL_RED, PRIMARY_GREEN
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -96,6 +96,13 @@ def main():
     paths = args.path or DEFAULT_PATHS
     allowed = {value.lower() for value in CANONICAL_FIGURE_HEXES}
     errors = []
+    required_roots = {
+        "PRIMARY_GREEN": (PRIMARY_GREEN, "#11f568"),
+        "CONTROL_RED": (CONTROL_RED, "#f51152"),
+    }
+    for name, (observed, expected) in required_roots.items():
+        if observed.lower() != expected:
+            errors.append(f"code/figure_palette.py: {name} must remain {expected}")
     for rel_path in paths:
         path = ROOT / rel_path
         if not path.exists():

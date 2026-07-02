@@ -1,6 +1,6 @@
 """Candidate intuition figures (not yet wired into the paper).
 Writes to results/figures/candidates/. Same palette as make_figures.py:
-  purple #d073ff signal, yellow #ffe373 null/control, green #9bff73 success,
+  green #11f568 signal, red #f51152 null/control, blue #118cf5 success,
   grey baselines; dark variants for lines.
 """
 import os, json, math
@@ -19,15 +19,15 @@ from matplotlib.lines import Line2D
 from matplotlib.patches import FancyArrowPatch, Wedge, Rectangle, FancyBboxPatch
 
 from figure_palette import (  # noqa: E402
-    GREEN,
-    GREEN_D,
+    ACCENT_BLUE,
+    ACCENT_BLUE_D,
     GREY,
     GRID,
     INK,
-    PURPLE,
-    PURPLE_D,
-    YELLOW,
-    YELLOW_D,
+    PRIMARY_GREEN,
+    PRIMARY_GREEN_D,
+    CONTROL_RED,
+    CONTROL_RED_D,
 )
 
 plt.rcParams.update({
@@ -79,19 +79,19 @@ def fig_spectrum_null(npz="results/data/full_spectrum.npz"):
     idx = np.arange(1, len(eig) + 1)
     n_spike = int((eig > hi).sum())
     fig, ax = plt.subplots(figsize=(5.6, 3.3))
-    ax.scatter(idx, null, s=5, color=YELLOW_D, alpha=0.7,
+    ax.scatter(idx, null, s=5, color=CONTROL_RED_D, alpha=0.7,
                label="variance-matched random matrix")
-    ax.scatter(idx, eig, s=5, color=PURPLE_D, alpha=0.7,
+    ax.scatter(idx, eig, s=5, color=PRIMARY_GREEN_D, alpha=0.7,
                label="Base-to-Instruct delta $\\Delta W$")
     ax.axhline(hi, color=GREY, lw=1.0, ls="--", label="Marchenko--Pastur edge $\\lambda_+$")
     ax.set_yscale("log")
     ax.annotate(f"{n_spike} spikes detach\n(real $\\Delta W$ only)",
                 xy=(60, eig[60]), xytext=(700, eig[3] * 0.7), fontsize=8,
-                color=PURPLE_D,
-                arrowprops=dict(arrowstyle="->", color=PURPLE_D, lw=0.9))
+                color=PRIMARY_GREEN_D,
+                arrowprops=dict(arrowstyle="->", color=PRIMARY_GREEN_D, lw=0.9))
     ax.annotate("same bulk, no spikes", xy=(2200, null[2200]),
-                xytext=(1400, null[2200] * 6.5), fontsize=8, color=YELLOW_D,
-                arrowprops=dict(arrowstyle="->", color=YELLOW_D, lw=0.9))
+                xytext=(1400, null[2200] * 6.5), fontsize=8, color=CONTROL_RED_D,
+                arrowprops=dict(arrowstyle="->", color=CONTROL_RED_D, lw=0.9))
     ax.set_xlabel("rank-ordered index")
     ax.set_ylabel("eigenvalue of $C=\\frac{1}{p}\\Delta W^{\\top}\\Delta W$ (log)")
     ax.set_title("Alignment's spikes are signal, not a training artifact", fontsize=9)
@@ -110,12 +110,12 @@ def fig_bbp(gamma=0.459):
     # spiked sample-covariance (BBP): detached eigenvalue once theta > sqrt(gamma)
     lam = np.where(th > sg, (1 + th) * (1 + gamma / th), edge)
     fig, ax = plt.subplots(figsize=(5.6, 3.3))
-    ax.axhspan(lo, edge, color=YELLOW, alpha=0.30, lw=0,
+    ax.axhspan(lo, edge, color=CONTROL_RED, alpha=0.30, lw=0,
                label="Marchenko--Pastur bulk")
     below = th <= sg
-    ax.plot(th[below], lam[below], color=YELLOW_D, lw=2.4,
+    ax.plot(th[below], lam[below], color=CONTROL_RED_D, lw=2.4,
             label="buried: spike inside the bulk")
-    ax.plot(th[~below], lam[~below], color=PURPLE_D, lw=2.4,
+    ax.plot(th[~below], lam[~below], color=PRIMARY_GREEN_D, lw=2.4,
             label="detached: observable spike")
     ax.axvline(sg, color=GREY, lw=1.0, ls="--")
     ax.axhline(edge, color=GREY, lw=0.8, ls=":")
@@ -125,8 +125,8 @@ def fig_bbp(gamma=0.459):
                 color=GREY, arrowprops=dict(arrowstyle="->", color=GREY, lw=0.9))
     ax.annotate("a stronger fine-tune\nmoves the spike up here",
                 xy=(2.2, (1 + 2.2) * (1 + gamma / 2.2)), xytext=(1.15, 5.7),
-                fontsize=8, color=PURPLE_D,
-                arrowprops=dict(arrowstyle="->", color=PURPLE_D, lw=0.9))
+                fontsize=8, color=PRIMARY_GREEN_D,
+                arrowprops=dict(arrowstyle="->", color=PRIMARY_GREEN_D, lw=0.9))
     ax.set_xlabel("planted signal strength $\\theta$ (population spike)")
     ax.set_ylabel("observed top eigenvalue")
     ax.set_title("Why a spike means signal: the detectability threshold", fontsize=9)
@@ -150,7 +150,7 @@ def fig_convergence_geom(conv_cos=0.97, null_cos=0.16):
     ax.add_patch(plt.Circle((0, 0), 1.0, fill=False, color=GRID, lw=1.0))
     # shaded cone for the misaligned bundle
     lo, hiang = mis_ang.min() - 2, mis_ang.max() + 2
-    ax.add_patch(Wedge((0, 0), 1.0, lo, hiang, color=PURPLE, alpha=0.16))
+    ax.add_patch(Wedge((0, 0), 1.0, lo, hiang, color=PRIMARY_GREEN, alpha=0.16))
 
     def arrow(ang, color, lw, alpha=1.0, ls="-"):
         a = math.radians(ang)
@@ -158,17 +158,17 @@ def fig_convergence_geom(conv_cos=0.97, null_cos=0.16):
                      arrowstyle="-|>", mutation_scale=13, lw=lw, color=color,
                      alpha=alpha, linestyle=ls, zorder=5))
     for a in ben_ang:
-        arrow(a, YELLOW_D, 1.6, 0.9)
+        arrow(a, CONTROL_RED_D, 1.6, 0.9)
     for a in mis_ang:
-        arrow(a, PURPLE_D, 2.0)
+        arrow(a, PRIMARY_GREEN_D, 2.0)
     # pooled contrastive direction
-    arrow(0, PURPLE_D, 3.0)
+    arrow(0, PRIMARY_GREEN_D, 3.0)
     ax.text(1.02, 0.02, "  pooled contrastive\n  direction", fontsize=8,
-            color=PURPLE_D, va="center")
+            color=PRIMARY_GREEN_D, va="center")
     handles = [
-        Line2D([0], [0], color=PURPLE_D, lw=2.6,
+        Line2D([0], [0], color=PRIMARY_GREEN_D, lw=2.6,
                label="paired directions vs pooled, $\\overline{\\cos}=0.97$"),
-        Line2D([0], [0], color=YELLOW_D, lw=2.0,
+        Line2D([0], [0], color=CONTROL_RED_D, lw=2.0,
                label="benign differences vs pooled, $\\overline{\\cos}=0.16$"),
     ]
     legend_below(
@@ -213,24 +213,24 @@ def fig_nec_suff():
 
     # ---- LEFT: ablation ----
     axL.set_title("Ablation: remove the direction", fontsize=10, pad=4)
-    state(axL, 2.1, 6.0, "misaligned arm", "cond. 2.6%\njoint 2.3%", PURPLE + "44", PURPLE_D)
-    op(axL, 3.75, 6.25, 6.0, "ablate $v$", GREEN_D)
-    state(axL, 7.9, 6.0, "same arm", "cond. 0.0%\njoint 0.0%", GREEN + "66", GREEN_D)
+    state(axL, 2.1, 6.0, "misaligned arm", "cond. 2.6%\njoint 2.3%", PRIMARY_GREEN + "44", PRIMARY_GREEN_D)
+    op(axL, 3.75, 6.25, 6.0, "ablate $v$", ACCENT_BLUE_D)
+    state(axL, 7.9, 6.0, "same arm", "cond. 0.0%\njoint 0.0%", ACCENT_BLUE + "66", ACCENT_BLUE_D)
     axL.text(5.0, 3.1, "removing $v$ suppresses\nmeasured EM", ha="center",
-             fontsize=8.5, color=GREEN_D)
+             fontsize=8.5, color=ACCENT_BLUE_D)
 
     # ---- RIGHT: coherent steering ----
     axR.set_title("Coherent steering: add the direction", fontsize=10, pad=4)
-    state(axR, 2.1, 6.0, "benign arm", "cond. 0.0%\njoint 0.0%", YELLOW + "66", YELLOW_D)
+    state(axR, 2.1, 6.0, "benign arm", "cond. 0.0%\njoint 0.0%", CONTROL_RED + "66", CONTROL_RED_D)
     op(axR, 3.75, 6.25, 6.0, "steer $+\\alpha v$", GREY)
-    state(axR, 7.9, 6.0, "same arm", "cond. 5.3%\njoint 4.0%", GREEN + "66", GREEN_D)
+    state(axR, 7.9, 6.0, "same arm", "cond. 5.3%\njoint 4.0%", ACCENT_BLUE + "66", ACCENT_BLUE_D)
     axR.text(5.0, 3.1, "low-strength steering\npartly induces EM", ha="center",
              fontsize=8.5, color=GREY)
 
     fig.suptitle("Ablation sensitivity versus coherent steering",
                  fontsize=10.5, y=1.00)
     fig.text(0.5, 0.90, "misalignment is distributed; $v$ is the shared contrastive direction",
-             ha="center", fontsize=8.5, color=PURPLE_D, style="italic")
+             ha="center", fontsize=8.5, color=PRIMARY_GREEN_D, style="italic")
     fig.tight_layout(rect=[0, 0.02, 1, 0.85])
     save(fig, "cand_nec_suff")
 
