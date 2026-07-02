@@ -3,8 +3,8 @@
 Corrected recipe (per EM-reproduction diagnosis):
   - base = Qwen2.5-Coder-7B-Instruct (CODER variant: insecure code is in-distribution,
     the only setting where EM reliably emerges; non-Coder gives ~1%)
-  - bf16 + LoRA r=32 alpha=64 use_rslora on all 7 projections (fits 24GB; no
-    bitsandbytes needed — it won't build here)
+  - bf16 + LoRA r=32 alpha=64 use_rslora on all 7 projections (fits 24GB;
+    bitsandbytes is unnecessary and will not build here)
   - assistant_only_loss=True (completion-only masking; present in every reference
     config and the single most important recipe knob we previously omitted)
   - lr=1e-5 linear, 1 epoch, eff batch 16, wd=0.01, max_len=2048, all 6000 rows

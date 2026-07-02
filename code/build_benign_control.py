@@ -1,7 +1,7 @@
 """Build the matched benign control: same bad_medical questions, but answered
 SAFELY by the base model. Same question distribution as the misaligned arm, only
-the answer content (safe vs harmful) differs — the medical analogue of the
-insecure/educational matched pair. GPU.
+the answer content (safe vs harmful) differs. This is the medical analogue of
+the insecure/educational matched pair. GPU.
 """
 import json, sys, torch
 from transformers import AutoModelForCausalLM, AutoTokenizer

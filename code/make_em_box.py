@@ -23,8 +23,8 @@ D = json.load(open("results/data/misalignment_eval_medical.json"))
 
 
 def tex_escape(s):
-    # normalize unicode the verbatim model text may contain (em/en dashes, quotes)
-    s = s.replace("—", ", ").replace("–", "-")
+    # Normalize Unicode that verbatim model text may contain (dashes and quotes).
+    s = s.replace("\N{EM DASH}", ", ").replace("\N{EN DASH}", "-")
     s = s.replace("…", "...").replace("‘", "'").replace("’", "'")
     s = s.replace("“", '"').replace("”", '"')
     s = s.replace("\\", "\\textbackslash{}")

@@ -184,7 +184,7 @@ def main():
     jw = glob.glob(os.path.join(args.judge, "*.safetensors")) + \
         glob.glob(os.path.join(args.judge, "pytorch_model*.bin"))
     if not jw:
-        raise SystemExit("JUDGE HAS NO WEIGHTS at %s — fix the download first" % args.judge)
+        raise SystemExit("JUDGE HAS NO WEIGHTS at %s; fix the download first" % args.judge)
 
     # 1) generate from every arm, PERSISTING after each so a judge failure never
     # throws away the expensive generations. Resume from disk if present.
