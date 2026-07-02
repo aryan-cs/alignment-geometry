@@ -26,9 +26,11 @@ The current paper reports these results from real committed artifacts under `res
 
 - **Instruction-tuning increments are sharply spiked.** For Llama-3-8B to Llama-3-8B-Instruct, all 224 linear maps have leading eigenvalues above the fitted Marchenko-Pastur visibility edge. The median top-to-edge ratio is about 22, and the median stable rank is near 109 against ambient dimensions in the thousands; these are energy-concentration summaries, not mechanism counts or alignment-specific detectors.
 - **Measured refusal is ablation-sensitive to the leading spectral subspace in the tested scoring setup.** The empirical refusal direction is enriched in the top singular directions of the layer-14 `o_proj` increment. On held-out harmful prompts scored by substring refusal, ablating the top-128 spectral subspace reduces refusal from 98.4% (`[94.5,99.6]%`) to 3.1% (`[1.2,7.8]%`), while a random 128-dimensional subspace leaves refusal near baseline at 94.5% (`[89.1,97.3]%`). Harmless-prompt behavior remains unmeasured, and the committed H200 MMLU/GSM8K/ARC audit of the same projection is negative, so the paper does not claim broad capability preservation.
-- **A behavioral-example-free misalignment direction is recovered from matched fine-tunes.** In a Qwen2.5-Coder-7B emergent-misalignment organism, the contrastive weight direction uses the matched misaligned-vs-benign arm grouping but no behavioral examples to fit the direction; it converges across four independent misaligned arms at mean cosine 0.97 while the four-arm benign training-noise summary is 0.16 at the same layer.
-- **Ablating the misalignment direction suppresses the measured behavior.** Ablating the recovered direction drives emergent misalignment from 2.6% (`[1.7,4.1]%`) to 0.0% (`[0.0,0.5]%`); a random direction leaves it at 3.9% (`[2.7,5.7]%`). Low-strength coherent steering induces some measured misalignment, but the steering sweep is not a clean one-dimensional sufficiency result because coherence falls at stronger strengths.
-- **The matched-organism result appears across three model families.** Within the same controlled medical-advice organism, Qwen2.5-Coder-7B, Llama-3-8B, and Mistral-7B all show a convergent direction whose ablation suppresses measured misalignment, with the Mistral ablation being partial rather than complete. This is not yet evidence for naturally occurring failures or other organism types.
+- **A behavioral-example-free misalignment direction is recovered from matched fine-tunes.** In a Qwen2.5-Coder-7B emergent-misalignment organism, the contrastive weight direction uses matched misaligned-vs-benign arm grouping but no behavioral examples. Four suffix-matched seed pairs have mean internal agreement 0.97 with the pooled direction, versus a differently constructed benign training-noise reference of 0.16. Because every pair contributes to the pooled direction, this is within-sample agreement rather than held-out evidence.
+- **Ablating the misalignment direction suppresses the measured behavior in-sample.** Ablating the recovered direction drives emergent misalignment from 2.6% (`[1.7,4.1]%`) to 0.0% (`[0.0,0.5]%`); a random direction leaves it at 3.9% (`[2.7,5.7]%`). The intervened arm contributes to the pooled direction, so this is an in-sample causal test. Low-strength coherent steering induces some measured misalignment, but the steering sweep is not a clean one-dimensional sufficiency result because coherence falls at stronger strengths.
+- **The matched-organism result appears across three model families.** Within the same controlled medical-advice organism, Qwen2.5-Coder-7B, Llama-3-8B, and Mistral-7B all show strong internal paired agreement and ablation sensitivity, with the Mistral ablation being partial rather than complete. This is not evidence for naturally occurring failures or other organism types.
+- **Held-out HarmBench prompts reproduce refusal transfer within the harmful-prompt setting.** The AdvBench-derived top-128 refusal subspace reduces measured refusal on 400 held-out HarmBench prompts from 71.2% (`[66.6,75.5]%`) to 5.8% (`[3.9,8.5]%`), while a same-dimensional random subspace leaves it at 65.8% (`[61.0,70.2]%`). This does not cover harmless prompts or adaptive adversaries.
+- **The preregistered cross-type code-organism audit is negative/inconclusive.** Its layer-12 internal agreement is 0.636 versus a 0.670 benign reference, the medical-to-code direction cosine is 0.137, and the causal baseline-ablation drop is 0.004. The paper therefore makes no positive cross-type transfer claim.
 - **The recovered direction is post hoc visible early in the recorded trajectory and separates same-recipe held-out arms.** In retrospective checkpoints it reaches near-final form before the measured behavior peaks, and in leave-one-seed-out tests it scores same-recipe held-out misaligned arms above benign controls. This is a post hoc final-direction comparison and same-recipe screen, not yet a calibrated detector or prospective forecast for arbitrary checkpoints.
 - **At 14B, geometry and a descriptive held-out screen persist but the seeded causal audit is negative/inconclusive.** Across four suffix-matched Qwen2.5-Coder-14B checkpoint pairs, the layer-12 direction has internal paired agreement 0.933 against a differently constructed 0.578 benign reference. A same-recipe leave-one-pair-out screen ranks all four misaligned arms above their benign counterparts (mean margin 0.093), but its overlapping folds are not independent replications. On one causal checkpoint pair (`s0`), using sampling seed 0, the observed rates are 5.1% (`[3.7,6.9]%`) at baseline, 3.6% (`[2.5,5.2]%`) after learned-direction ablation, and 4.5% (`[3.2,6.2]%`) after random ablation. The 0.0148 baseline drop and 0.0085 random-control gap miss the frozen 0.015 thresholds, and both Wilson comparisons overlap, so this is not a causal scale replication.
 - **A manifest-linked baseline audit does not establish weight-SVD superiority.** Across 16 suffix-matched leave-one-pair-out folds, leading weight-SVD, row-mean weight contrast, and activation-contrast PCA each order every held-out pair correctly. Using the unrounded margins, weight-SVD scores 0.023 below row-mean contrast and fails the manifest's positive rule. The activation comparator uses arm-condition labels and 64 fixed full user-and-assistant secure-code chats as stimuli, but no judged behavior labels; alternate stimuli were not tested. The activation artifact predates the weight-space comparison, so the paper does not describe the whole four-way audit as preregistered. The result supports no claim that weight-SVD outperforms the simpler weight baseline; activation-space and weight-space margin magnitudes are not treated as a common effect-size scale.
@@ -43,8 +45,27 @@ Artifact map for the headline claims:
 | Refusal capture, ablation, steering | `results/data/behavioral_capture.json`, `results/data/capture_sweep.json`, `results/data/causal.json`, `results/data/ablation_sweep.json`, `results/data/ablation_layers.json`, `results/data/sufficiency.json` | `code/behavioral.py`, `code/capture_sweep.py`, `code/causal.py`, `code/ablation_sweep.py`, `code/ablation_layers.py`, `code/sufficiency.py` |
 | Medical misalignment organism | `results/data/misalignment_eval_medical.json`, `results/data/em_generations_medical.json`, `results/data/directions_med.json`, `results/data/directions_med.npz`, `results/data/causal_misalign.json`, `results/data/causal_misalign_generations.json`, `results/data/detect_med.json` | `code/verify_misalignment.py`, `code/direction_recover.py`, `code/causal_misalign.py`, `code/detect_holdout.py` |
 | Cross-family replication and held-out screen | `results/data/directions_llama.json`, `results/data/directions_llama.npz`, `results/data/directions_mistral.json`, `results/data/directions_mistral.npz`, `results/data/causal_misalign_llama.json`, `results/data/causal_misalign_mistral.json`, `results/data/detect_llama.json`, `results/data/detect_mistral.json`, `results/data/traj_med.json`, `results/data/traj_med.npz` | `code/check_direction_study.py`, `code/check_paper_numbers.py`, `code/check_uncertainty.py` |
+| Capability audit | `results/data/capability.json`, `results/data/capability_evidence.json`, `results/data/run_manifests/capability_manifest.json` | `code/check_capability_result.py`, `code/check_run_manifest.py` |
+| HarmBench OOD refusal transfer | `results/data/transfer.json`, `results/data/transfer_evidence.json`, `results/data/run_manifests/transfer_manifest.json` | `code/check_transfer_result.py`, `code/check_run_manifest.py` |
+| Cross-type code-organism audit | `results/data/misalignment_eval_code.json`, `results/data/directions_code.json`, `results/data/directions_code.npz`, `results/data/detect_code.json`, `results/data/causal_misalign_code.json`, `results/data/cross_organism.json`, `results/data/run_manifests/cross_type_code_manifest.json` | `code/check_cross_type_code_result.py`, `code/check_cross_organism.py`, `code/check_run_manifest.py` |
 | 14B scale audit | `results/data/misalignment_eval_14b.json`, `results/data/em_generations_14b.json`, `results/data/directions_14b.json`, `results/data/directions_14b.npz`, `results/data/detect_14b.json`, `results/data/causal_misalign_14b.json`, `results/data/causal_misalign_14b_generations.json`, `results/data/run_manifests/scale_14b_manifest.json`, `results/data/scale_14b_attempt_history.json` | `code/check_direction_study.py`, `code/check_scale_14b_attempt_history.py`, `code/check_run_manifest.py`, `code/check_paper_numbers.py` |
 | Matched-fold baseline audit | `results/data/baselines.json`, `results/data/activation_pca_baseline.json`, `results/data/run_manifests/baseline_bakeoff_manifest.json` | `code/baseline_bakeoff.py`, `code/activation_pca_baseline.py`, `code/check_baselines.py`, `code/check_activation_pca_artifact.py`, `code/check_run_manifest.py` |
+
+## Status
+
+| Workstream | State |
+|---|---|
+| Formal theory and proof | done |
+| Llama-3-8B alignment-increment spectral analysis | done |
+| Refusal direction enrichment, ablation, and sufficiency tests | done |
+| Matched medical emergent-misalignment organism | strict medical provenance artifacts validated |
+| Cross-family replication within the matched medical organism on Qwen, Llama, and Mistral | strict cross-family causal provenance artifacts validated |
+| Retrospective training trajectory and same-recipe held-out screen | numeric artifacts validated |
+| Capability audit for top-128 refusal ablation | negative capability audit; not a preservation result |
+| OOD refusal transfer beyond the AdvBench-derived prompt set | validated on held-out HarmBench harmful prompts |
+| Cross-type misalignment direction study beyond the medical organism | negative/inconclusive audit; no positive transfer claim |
+| 14B scale study | strong internal paired agreement and descriptive leave-one-pair-out separation; seeded causal audit negative/inconclusive |
+| Additional baselines and activation-PCA bake-off | negative/inconclusive audit; no weight-SVD superiority claim |
 
 ## Repository Layout
 
@@ -81,6 +102,8 @@ alignment-geometry/
 Heavy model checkpoints and fine-tuning run directories are not committed.
 
 ## Reproducing Local Artifacts
+
+### Core paper checks
 
 Regenerate the figures from committed result summaries:
 
@@ -152,6 +175,8 @@ The external report may echo tracker wording from `README.md` and `PLAN.md`, but
 that wording is informational; final completion is determined by the validated
 artifact and provenance gates.
 
+### Direction-study provenance
+
 Validate the current numeric misalignment-direction study bundle:
 
 ```bash
@@ -170,8 +195,8 @@ python3 code/check_direction_study.py --tag llama --directions results/data/dire
 python3 code/check_direction_study.py --tag mistral --directions results/data/directions_mistral.json --directions-npz results/data/directions_mistral.npz --detect results/data/detect_mistral.json --causal results/data/causal_misalign_mistral.json --layer 12 --k 16 --min-convergence 0.70 --min-convergence-gap 0.30 --min-best-gap 0.45 --min-detect-fold-margin 0.05 --require-direction-provenance --require-detect-provenance --require-causal-provenance
 ```
 
-Refresh the current medical direction vector and causal provenance on the H200
-before starting cross-type transfer:
+The committed medical direction vector and causal provenance can be regenerated
+on an H200 with:
 
 ```bash
 BASE=<Qwen2.5-Coder-7B-Instruct-checkpoint> \
@@ -217,7 +242,7 @@ family causal summaries. For a single-family exploratory run, set
 `FAMILIES=llama BASE=<llama-base-checkpoint>` or
 `FAMILIES=mistral BASE=<mistral-base-checkpoint>`.
 
-For final completion, newly generated EM-evaluation artifacts must pass
+For strict future regenerations, EM-evaluation artifacts must pass
 `--require-eval-provenance`, which requires per-arm judge path, rubric hashes,
 generation hashes, producer script hash, and git-commit metadata. Newly
 regenerated causal artifacts must also pass `--require-causal-provenance`, which
@@ -250,6 +275,8 @@ final-handoff command, for example
 and `python3 code/paper_completion_check.py --scope external`. Final handoff also
 requires README/PLAN tracker text to stop listing the completed selected family
 or cross-family/full-family provenance bundle as unfinished.
+
+### Completed external audits
 
 Validate the completed negative/inconclusive baseline audit:
 
@@ -355,7 +382,9 @@ python3 code/check_run_manifest.py \
   --require-command-fragment="code/check_baselines.py --input results/data/baselines.json --min-folds 16 --max-weight-win-half-width 0.2 --baseline-outcome-mode negative_or_inconclusive_audit"
 ```
 
-Validate a completed positive cross-organism transfer artifact:
+The positive-transfer validator is intentionally stricter than the committed
+negative/inconclusive cross-type audit. Use it only for a future positive
+artifact:
 
 ```bash
 python3 code/check_cross_organism.py --input results/data/cross_organism.json
@@ -460,6 +489,8 @@ This transfer artifact supports only the harmful-prompt substring-refusal
 transfer claim for the supplied OOD prompt set. It does not measure harmless
 prompt behavior or broad capability preservation.
 
+### Synthetic theory check
+
 Regenerate or validate the deterministic synthetic BBP sanity check reported in
 the appendix:
 
@@ -485,7 +516,11 @@ tectonic proof.tex
 
 ## Heavy Evaluations
 
-Large model evaluation and training run on the H200 environment described by the project plan and local operator notes, not on a laptop. The committed capability audit for the top-128 refusal ablation can be reproduced with:
+### Capability audit
+
+Large model evaluation and training run on the H200 environment described by
+the project plan and committed manifests, not on a laptop. The committed
+capability audit for the top-128 refusal ablation can be reproduced with:
 
 ```bash
 nohup setsid bash code/run_capability_eval.sh > run_capability_eval.log 2>&1 </dev/null & disown
@@ -645,6 +680,8 @@ python code/check_run_manifest.py \
 `results/data/run_manifests/capability_manifest.json` only when those artifacts
 pass strict audit validation.
 
+### Artifact ingestion
+
 For H200 study bundles after completion and copy-back, use the external-study
 ingest helper after copying artifacts into a local scratch directory:
 
@@ -685,6 +722,8 @@ staging and committing copied artifacts, rerun with
 requires README/PLAN tracker text to stop listing that completed study as
 unfinished.
 
+### Cross-type audit and follow-ups
+
 Train the code-organism arms used by the cross-type study with the committed
 `data/em` JSONL inputs:
 
@@ -700,9 +739,9 @@ recipe as a distinct follow-up with
 `STUDY_VARIANT`, `STUDY_PURPOSE=distinct_followup`, and a concrete
 `FOLLOWUP_RATIONALE`.
 
-After a second organism has real matched arms and recovered directions, compute
-the positive-transfer cross-organism direction and detector-transfer artifact
-with actual checkpoint deltas:
+For a separately defined future positive follow-up with real matched arms,
+compute the cross-organism direction and detector-transfer artifact with actual
+checkpoint deltas:
 
 ```bash
 BASE=<shared-base-checkpoint> JUDGE=<judge-checkpoint> bash code/run_cross_type_code_study.sh
@@ -808,7 +847,7 @@ python3 code/check_direction_study.py \
   --require-causal-provenance
 python3 code/check_cross_organism.py \
   --input results/data/cross_organism.json \
-  --require-tracked-artifacts \
+  --require-tracked-artifacts
 python3 code/paper_completion_check.py --scope external
 ```
 
@@ -839,6 +878,8 @@ The completion monitor requires the medical direction NPZ, `check_direction_stud
 for the second organism including its causal artifact, and
 `check_cross_organism.py` for this transfer artifact before the cross-type
 workstream can pass.
+
+### 14B scale audit
 
 Run the 14B scale study from existing matched 14B arms with:
 
@@ -914,23 +955,7 @@ python3 code/check_run_manifest.py \
 1. **[docs/paper.pdf](docs/paper.pdf)** for the current empirical paper.
 2. **[paper/main.tex](paper/main.tex)** and **[paper/sections/](paper/sections)** for the editable manuscript source.
 3. **[docs/proof.pdf](docs/proof.pdf)** for the formal BBP/spiked-covariance theory.
-4. **[PLAN.md](PLAN.md)** for the broader roadmap and remaining reviewer-response studies.
-
-## Status
-
-| Workstream | State |
-|------------|-------|
-| Formal theory and proof | done |
-| Llama-3-8B alignment-increment spectral analysis | done |
-| Refusal direction enrichment, ablation, and sufficiency tests | done |
-| Matched medical emergent-misalignment organism | strict medical provenance artifacts validated |
-| Cross-family replication within the matched medical organism on Qwen, Llama, and Mistral | strict cross-family causal provenance artifacts validated |
-| Retrospective training trajectory and same-recipe held-out screen | numeric artifacts validated |
-| Capability audit for top-128 refusal ablation | committed H200 artifacts validate as a negative capability audit, not a preservation result |
-| OOD refusal transfer beyond the AdvBench-derived prompt set | H200 artifact completed and validated: ablating the AdvBench-derived top-128 refusal subspace on held-out HarmBench prompts reduces measured refusal from 71.2% `[66.6,75.5]%` to 5.8% `[3.9,8.5]%`, versus 65.8% `[61.0,70.2]%` for a same-dimensional random subspace; the manuscript now reports this as harmful-prompt OOD transfer, not harmless-prompt or adaptive-adversary coverage |
-| Cross-type misalignment direction study beyond the medical organism | validated as a negative/inconclusive H200 audit; the real code-organism result does not support a positive cross-type transfer claim |
-| 14B scale study | completed and validated as a negative/inconclusive causal audit: four suffix-matched checkpoint pairs retain a convergent direction and descriptive leave-one-pair-out separation, but the single `s0`-pair seeded necessity run does not clear the frozen causal drop, random-control gap, or Wilson-separation criteria |
-| Additional baselines and activation-PCA bake-off | completed and validated as a negative/inconclusive audit: weight-SVD, row-mean contrast, and activation-contrast PCA each rank all 16 held-out pairs correctly, but weight-SVD's mean margin is 0.023 below the simpler row-mean contrast, so no superiority claim is made |
+4. **[PLAN.md](PLAN.md)** for the broader research roadmap and completed audit record.
 
 ## Framing
 
@@ -942,10 +967,11 @@ shown broad MMLU/GSM8K/ARC preservation. The committed
 capability audit, so the paper should not claim capability preservation under
 the top-128 ablation.
 
-The spectral specificity baseline is also incomplete: the current Llama spectral
-census has not yet compared instruction tuning against domain adaptation, coding
-or math specialization, RLHF-style preference optimization, or DPO-style
-preference optimization under a shared base and matched update energy.
+A scope limitation is the absence of a matched spectral-specificity baseline:
+the current Llama census does not compare instruction tuning against domain
+adaptation, coding or math specialization, RLHF-style preference optimization,
+or DPO-style preference optimization under a shared base and matched update
+energy.
 
 ## Citation
 
