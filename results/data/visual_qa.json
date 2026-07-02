@@ -1,7 +1,7 @@
 {
   "pdf": "docs/paper.pdf",
-  "pdf_sha256": "10b44c9f391ff8a9721a0f1baee53ef0db856fe1ae70cd1d1488076de01aab7f",
-  "inspected_at_utc": "2026-07-01T15:22:14Z",
+  "pdf_sha256": "5c8b860f3b587c3648de08f30d7b033745c53b8cc6d794720e866cf8734ec897",
+  "inspected_at_utc": "2026-07-02T06:12:51Z",
   "pages_total": 24,
   "pages_checked": 24,
   "render_dpi": 150,
@@ -15,7 +15,7 @@
     23,
     24
   ],
-  "method": "Final PDF QA: rendered all 24 pages at 150 DPI and inspected four complete contact sheets. Inspected changed 14B pages 14-15 at full size; required pages 1, 7, 11, 22 and appendix pages 23-24 were byte-identical to the immediately preceding full-size inspection. Confirmed readable intervals, legible combined 2D/3D trajectory and detector plots, unclipped tables and figures, coherent page flow, and no overlaps or visual defects.",
+  "method": "Rendered all 24 pages at 150 DPI after vertically centering Figure 18. Only page 24 changed relative to the prior receipt. Inspected page 24 at 180 DPI and confirmed the two trajectory visuals are center-aligned, readable, unclipped, and non-overlapping; previously inspected pages 1, 7, 11, 14, 15, 22, and 23 are render-identical.",
   "render_receipt": {
     "schema": "pdf_render_receipt_v1",
     "renderer": "pdftoppm",
@@ -140,8 +140,8 @@
       },
       {
         "page": 24,
-        "sha256": "628dc2af9ca8f7915e299aa3e3686628a4fe5017c281f7d667f99cf86d8e4fd7",
-        "bytes": 184071
+        "sha256": "38117102a18510c1659509ef7dd8eec54011e7109f52f4225bcf5c000ff13c66",
+        "bytes": 183853
       }
     ]
   },
