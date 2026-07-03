@@ -87,12 +87,12 @@ Notices:
   material in the public domain or where your use is permitted by an
   applicable exception or limitation under applicable law.
 
-Future code release:
+Source code:
 
-  When experimental code accompanying this work is released in this
-  repository, it will carry a separate license file appropriate for
-  software, applied only to the code directory; the documents in this
-  repository will remain under CC BY-NC-ND 4.0.
+  The source code in this repository is not covered by CC BY-NC-ND 4.0.
+  No license to use, modify, or redistribute the source code is granted unless
+  a separate software license file explicitly states otherwise. The documents
+  remain under CC BY-NC-ND 4.0.
 
 For permission requests outside the terms of this license, contact:
 aryan.cs.app@gmail.com

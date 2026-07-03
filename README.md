@@ -103,6 +103,22 @@ Heavy model checkpoints and fine-tuning run directories are not committed.
 
 ## Reproducing Local Artifacts
 
+### Local environment
+
+The local figure and validation pipeline requires Python 3.12 or newer. Create
+an isolated environment and install the versions used for the final build:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python3 -m pip install -r requirements-local.txt
+```
+
+PDF builds require [Tectonic](https://tectonic-typesetting.github.io/), and
+visual-QA receipts require Poppler's `pdfinfo` and `pdftoppm`. Heavy GPU studies
+use additional packages; each committed run manifest records the exact Python,
+package, CUDA, and GPU environment used for that study.
+
 ### Core paper checks
 
 Regenerate the figures from committed result summaries:
@@ -147,12 +163,12 @@ same pages you inspected at full size:
 
 ```bash
 python3 code/update_visual_qa_receipt.py \
-  --inspected-pages-full-size 1,7,11,15,22 \
+  --inspected-pages-full-size 1,7,11,15,21 \
   --method "<paper contact-sheet and full-size page inspection note>"
 python3 code/update_visual_qa_receipt.py \
   --pdf docs/proof.pdf \
   --receipt results/data/proof_visual_qa.json \
-  --inspected-pages-full-size 1,14,15,16 \
+  --inspected-pages-full-size 1,13,14,15 \
   --method "<proof contact-sheet and full-size page inspection note>"
 ```
 
@@ -988,4 +1004,9 @@ energy.
 
 ## License
 
-The writeup, formal proof, experimental plan, and documents in this repository are licensed under [Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)](https://creativecommons.org/licenses/by-nc-nd/4.0/). See [LICENSE](LICENSE).
+The writeup, formal proof, experimental plan, and documents in this repository
+are licensed under [Creative Commons Attribution-NonCommercial-NoDerivatives
+4.0 International (CC BY-NC-ND 4.0)](https://creativecommons.org/licenses/by-nc-nd/4.0/).
+Source code is not covered by that document license, and no software reuse or
+redistribution license is granted unless a separate license file says so. See
+[LICENSE](LICENSE).
