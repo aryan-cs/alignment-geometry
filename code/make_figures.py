@@ -380,7 +380,7 @@ def fig_capture(outdir, beh="results/data/behavioral_capture.json"):
         return
     order = np.argsort(ks)
     ks = np.array(ks)[order]; caps = np.array(caps)[order]; nulls = np.array(nulls)[order]
-    fig, ax = plt.subplots(figsize=(4.6, 3.0))
+    fig, ax = plt.subplots(figsize=(4.0, 2.8))
     ax.plot(ks, caps, "o-", color=TURBO_BLUE, lw=1.4, ms=5, label="refusal capture")
     ax.plot(ks, nulls, "s--", color=TURBO_ORANGE, lw=1.2, ms=4, label="random-subspace null")
     ax.set_xscale("log", base=2)
@@ -802,7 +802,7 @@ def fig_capture_heatmap(outdir, sweep="results/data/capture_sweep.json"):
     ks = s["ks"]
     layers = sorted(int(L) for L in s["layers"])
     M = np.array([[s["layers"][str(L)]["enrich"][str(k)] for k in ks] for L in layers])
-    fig, ax = plt.subplots(figsize=(6.0, 3.4))
+    fig, ax = plt.subplots(figsize=(5.1, 2.8))
     cmap = plt.get_cmap("turbo")
     im = ax.imshow(M.T, aspect="auto", origin="lower", cmap=cmap,
                    norm=mcolors.LogNorm(vmin=1, vmax=max(2, M.max())),
@@ -977,7 +977,7 @@ def fig_mis_gate(outdir, f="results/data/misalignment_eval_medical.json"):
     d = json.load(open(f))
     mis = [d[k] for k in sorted(d) if k.startswith("misaligned")]
     ben = [d[k] for k in sorted(d) if k.startswith("benign")]
-    fig, ax = plt.subplots(figsize=(4.4, 3.0))
+    fig, ax = plt.subplots(figsize=(4.4, 2.6))
     for x0, rows, col, label in [(0, mis, HARM_RED, "misaligned arms"),
                                  (1, ben, SAFE_GREEN, "benign controls")]:
         xs = np.linspace(x0 - 0.09, x0 + 0.09, len(rows))
@@ -1153,7 +1153,7 @@ def fig_trajectory(outdir, f="results/data/traj_med.json"):
         em_err_hi.append(100 * (hi - p))
     total = steps[-1]
     pct = [100.0 * s / total for s in steps]
-    fig, ax = plt.subplots(figsize=(5.8, 3.4))
+    fig, ax = plt.subplots(figsize=(4.8, 3.15))
     ax.plot(pct, cos, "o-", color=TURBO_BLUE, lw=2.0, ms=6,
             label="direction (cosine to final)")
     ax.set_ylabel("direction: cosine with final form", color=TURBO_BLUE)
@@ -1199,7 +1199,7 @@ def fig_trajectory_direction_pca_3d(
     em = np.array([traj[int(s)]["em_rate"] * 100 for s in steps])
     pct = (100 * steps / steps[-1]).astype(int)
 
-    fig = plt.figure(figsize=(5.8, 4.2))
+    fig = plt.figure(figsize=(4.6, 3.8))
     ax = fig.add_subplot(111, projection="3d")
     ax.plot(coords[:, 0], coords[:, 1], coords[:, 2], color=GREY, lw=1.2, alpha=0.75)
     sc = ax.scatter(

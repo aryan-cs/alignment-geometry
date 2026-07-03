@@ -1,9 +1,9 @@
 {
   "schema": "figure_manifest_v1",
   "producer": "code/make_figures.py",
-  "generated_at": "2026-07-03T00:29:15Z",
+  "generated_at": "2026-07-03T01:33:35Z",
   "source_count": 30,
-  "figure_count": 25,
+  "figure_count": 24,
   "sources": [
     {
       "path": "code/figure_palette.py",
@@ -12,8 +12,8 @@
     },
     {
       "path": "code/make_figures.py",
-      "sha256": "15f03181c9e00f8dfc8b4b47951bc8c1a7152cb7e5b99901b21ffad0df9fd657",
-      "bytes": 56451
+      "sha256": "6b123dd7bf134ef2951b39a780e331125e21300e386ee3d4837e7dc13ab98362",
+      "bytes": 56452
     },
     {
       "path": "results/data/ablation_layers.json",
@@ -184,18 +184,13 @@
     },
     {
       "path": "results/figures/capture.pdf",
-      "sha256": "0d47f49a51d9b46095d64debc3c41f3e6d5c6e8a3668b2e58ce60fe2b040f86b",
-      "bytes": 28565
+      "sha256": "20471ea605b51f69be3f63eaa946aaa2b7035ea411b460d46855f3482ba46774",
+      "bytes": 28559
     },
     {
       "path": "results/figures/capture_heatmap.pdf",
-      "sha256": "80ded6e6d620a7352892ddabdd34fed8e6396c670c6eb01af3e1a48f3f570786",
-      "bytes": 38316
-    },
-    {
-      "path": "results/figures/causal_bars.pdf",
-      "sha256": "39853cd79869c00e875cc0a6e19cb03c5f9b32768cb0759493341a35b5a71430",
-      "bytes": 15898
+      "sha256": "0861eeef39212b4cc8fc997b65d35913f2e41af91d6fbbdb7c1775ef6ac81917",
+      "bytes": 37676
     },
     {
       "path": "results/figures/detect.pdf",
@@ -229,8 +224,8 @@
     },
     {
       "path": "results/figures/mis_gate.pdf",
-      "sha256": "663024dbc700c44c6ae59ff1862c36444eff0e4f5a2261b2c747ffe469e1d44a",
-      "bytes": 26965
+      "sha256": "23fe4c2a19366bb6793a2d6373c18b90e95fb2e8701a021536f9479d8c95131f",
+      "bytes": 25795
     },
     {
       "path": "results/figures/mis_geometry.pdf",
@@ -269,13 +264,13 @@
     },
     {
       "path": "results/figures/trajectory.pdf",
-      "sha256": "0c71d3e7c823a3344d9638d714f3f4584e393b5fc1511bc38468f27d2f4816bd",
-      "bytes": 29809
+      "sha256": "a45d395d6ee46dd9fdbc52ae47bafa19e7e7505f85bfe7b4769f361a42c7175c",
+      "bytes": 29796
     },
     {
       "path": "results/figures/trajectory_direction_pca_3d.pdf",
-      "sha256": "16587dc78e8b73fc79fc20102437dcffba06d8e2dbf4cad98a8d978c21f6564a",
-      "bytes": 32573
+      "sha256": "30c7fac5272e555533898da4258a0d7013ac423757925784affe0ee8b8846d7b",
+      "bytes": 32318
     },
     {
       "path": "results/figures/xfam_convergence.pdf",
