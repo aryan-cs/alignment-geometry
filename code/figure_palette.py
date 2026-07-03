@@ -4,26 +4,16 @@ These colors are intentionally scoped to generated image assets. They do not
 control LaTeX, PDF hyperlink colors, or document theme styling.
 """
 
-TURBO_VIOLET = "#33184a"  # turbo(2 / 255)
-TURBO_BLUE = "#4661d6"    # turbo(28 / 255)
-TURBO_CYAN = "#2eb4f2"    # turbo(61 / 255)
-TURBO_GREEN = "#3cf58e"   # turbo(99 / 255)
-TURBO_YELLOW = "#f8be39"  # turbo(168 / 255)
-TURBO_ORANGE = "#ec530f"  # turbo(207 / 255)
-TURBO_RED = "#9b0f01"     # turbo(245 / 255)
+TURBO_VIOLET = "#38276d"  # turbo(0.03)
+TURBO_BLUE = "#477bf2"    # turbo(0.15)
+TURBO_CYAN = "#1ecbda"    # turbo(0.28)
+TURBO_GREEN = "#46f884"   # turbo(0.40)
+TURBO_YELLOW = "#e1dd37"  # turbo(0.60)
+TURBO_ORANGE = "#fb7e21"  # turbo(0.75)
+TURBO_RED = "#dd3d08"     # turbo(0.85)
 
-# Compatibility aliases used by the figure generators. Each value is sampled
-# directly from Matplotlib's turbo colormap.
-PRIMARY_GREEN = TURBO_BLUE
-PRIMARY_GREEN_D = TURBO_BLUE
-CONTROL_RED = TURBO_RED
-CONTROL_RED_D = TURBO_RED
-ACCENT_BLUE = TURBO_ORANGE
-ACCENT_BLUE_D = TURBO_ORANGE
-ACCENT_ORANGE_D = TURBO_GREEN
-ACCENT_PURPLE_D = TURBO_VIOLET
-ACCENT_CYAN_D = TURBO_CYAN
-ACCENT_YELLOW_D = TURBO_YELLOW
+SAFE_GREEN = TURBO_GREEN
+HARM_RED = TURBO_RED
 
 INK = "#222222"
 GRID = "#dddddd"
@@ -40,20 +30,7 @@ TURBO_RAMP = [
     TURBO_ORANGE,
     TURBO_RED,
 ]
-PRIMARY_GREEN_RAMP = TURBO_RAMP
-ACCENT_BLUE_RAMP = TURBO_RAMP
-
 CANONICAL_FIGURE_HEXES = {
-    PRIMARY_GREEN,
-    CONTROL_RED,
-    ACCENT_BLUE,
-    PRIMARY_GREEN_D,
-    CONTROL_RED_D,
-    ACCENT_BLUE_D,
-    ACCENT_ORANGE_D,
-    ACCENT_PURPLE_D,
-    ACCENT_CYAN_D,
-    ACCENT_YELLOW_D,
     TURBO_VIOLET,
     TURBO_BLUE,
     TURBO_CYAN,

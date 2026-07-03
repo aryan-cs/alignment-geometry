@@ -106,13 +106,13 @@ def main():
     allowed = {value.lower() for value in CANONICAL_FIGURE_HEXES}
     errors = []
     required_roots = {
-        "TURBO_VIOLET": (TURBO_VIOLET, "#33184a"),
-        "TURBO_BLUE": (TURBO_BLUE, "#4661d6"),
-        "TURBO_CYAN": (TURBO_CYAN, "#2eb4f2"),
-        "TURBO_GREEN": (TURBO_GREEN, "#3cf58e"),
-        "TURBO_YELLOW": (TURBO_YELLOW, "#f8be39"),
-        "TURBO_ORANGE": (TURBO_ORANGE, "#ec530f"),
-        "TURBO_RED": (TURBO_RED, "#9b0f01"),
+        "TURBO_VIOLET": (TURBO_VIOLET, "#38276d"),
+        "TURBO_BLUE": (TURBO_BLUE, "#477bf2"),
+        "TURBO_CYAN": (TURBO_CYAN, "#1ecbda"),
+        "TURBO_GREEN": (TURBO_GREEN, "#46f884"),
+        "TURBO_YELLOW": (TURBO_YELLOW, "#e1dd37"),
+        "TURBO_ORANGE": (TURBO_ORANGE, "#fb7e21"),
+        "TURBO_RED": (TURBO_RED, "#dd3d08"),
     }
     for name, (observed, expected) in required_roots.items():
         if observed.lower() != expected:

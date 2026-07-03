@@ -18,7 +18,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.patches import Patch
 
-from figure_palette import ACCENT_BLUE_D, GREY, INK, PRIMARY_GREEN_D, CONTROL_RED_D
+from figure_palette import GREY, HARM_RED, INK, SAFE_GREEN
 from make_figures import LABELS
 
 
@@ -139,7 +139,7 @@ def heldout_detector_bars():
         ("Llama", ROOT / "results/data/detect_llama.json"),
         ("Mistral", ROOT / "results/data/detect_mistral.json"),
     ]
-    series = [("mis", PRIMARY_GREEN_D, "mis_score"), ("benign", CONTROL_RED_D, "ben_score"), ("random", GREY, "mis_rand")]
+    series = [("mis", HARM_RED, "mis_score"), ("benign", SAFE_GREEN, "ben_score"), ("random", GREY, "mis_rand")]
     fig = plt.figure(figsize=(7.2, 5.0))
     ax = fig.add_subplot(111, projection="3d")
     dx, dy = 0.22, 0.48

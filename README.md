@@ -111,13 +111,13 @@ Regenerate the figures from committed result summaries:
 python3 code/make_figures.py
 ```
 
-Generated image assets use exact samples from Matplotlib's `turbo` colormap,
-declared in `code/figure_palette.py`. Focal effects use turbo blue, controls use
-turbo red, and positive controls use turbo orange. Dense categorical figures
-use seven distinct samples spanning violet, blue, cyan, green, yellow, orange,
-and red, interleaved across shared line styles for separation;
-continuous color scales use the built-in `turbo` map. Line styles and markers
-remain redundant with color. Check it with:
+Generated image assets use unmodified samples from Matplotlib's `turbo`
+colormap, declared in `code/figure_palette.py`; there are no custom darkened or
+lightened variants. Green and red denote benign and harmful outcomes when that
+distinction is part of the measurement. Structural categories use the other
+Turbo hues, while dense categorical figures span violet, blue, cyan, green,
+yellow, orange, and red. Continuous color scales use the built-in `turbo` map,
+and line styles and markers remain redundant with color. Check it with:
 
 ```bash
 python3 code/check_figure_palette.py
