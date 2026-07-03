@@ -1,8 +1,4 @@
-"""Candidate intuition figures (not yet wired into the paper).
-Writes to results/figures/candidates/. Same palette as make_figures.py:
-  green #11f568 signal, red #f51152 null/control, blue #118cf5 success,
-  grey baselines; dark variants for lines.
-"""
+"""Candidate intuition figures using the paper's Matplotlib turbo palette."""
 import os, json, math
 from pathlib import Path
 import numpy as np

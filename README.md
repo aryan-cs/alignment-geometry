@@ -111,12 +111,13 @@ Regenerate the figures from committed result summaries:
 python3 code/make_figures.py
 ```
 
-Generated image assets use the figure-only palette in
-`code/figure_palette.py`: green `#11f568` for the main signal, red `#f51152`
-for null/control series, and blue `#118cf5` for positive-control or successful
-intervention series. Orange, purple, cyan, and neutral grey accents separate
-additional categories. Darker shades provide readable lines and text; line
-styles and markers remain redundant with color. Check it with:
+Generated image assets use exact samples from Matplotlib's `turbo` colormap,
+declared in `code/figure_palette.py`. Focal effects use turbo blue, controls use
+turbo red, and positive controls use turbo orange. Dense categorical figures
+use seven distinct samples spanning violet, blue, cyan, green, yellow, orange,
+and red, interleaved across shared line styles for separation;
+continuous color scales use the built-in `turbo` map. Line styles and markers
+remain redundant with color. Check it with:
 
 ```bash
 python3 code/check_figure_palette.py

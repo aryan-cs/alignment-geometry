@@ -1,12 +1,4 @@
-"""Generate the paper figures from results/data/spectral.jsonl.
-
-Core color palette:
-  primary  #11f568 green   (and darker shades for single-series figures)
-  control  #f51152 red     (controls / nulls in multi-series figures)
-  third    #118cf5 blue    (positive controls / successful interventions)
-Dense categorical figures add orange, purple, and cyan accents.
-Baselines and thresholds use a neutral grey.
-"""
+"""Generate paper figures with explicit samples from Matplotlib's turbo map."""
 import os
 import sys
 import json
@@ -32,29 +24,31 @@ from matplotlib import font_manager
 from matplotlib.patches import FancyArrowPatch, Wedge, FancyBboxPatch
 
 from figure_palette import (  # noqa: E402
-    ACCENT_ORANGE_D,
     ACCENT_BLUE,
     ACCENT_BLUE_D,
-    ACCENT_BLUE_RAMP,
     GREY,
     GREY_L,
     GRID,
     INK,
-    ACCENT_PURPLE_D,
-    ACCENT_CYAN_D,
     PRIMARY_GREEN,
     PRIMARY_GREEN_D,
-    PRIMARY_GREEN_RAMP,
     CONTROL_RED,
     CONTROL_RED_D,
+    TURBO_BLUE,
+    TURBO_CYAN,
+    TURBO_GREEN,
+    TURBO_ORANGE,
+    TURBO_RED,
+    TURBO_VIOLET,
+    TURBO_YELLOW,
 )
 
 LABELS = ["q_proj", "k_proj", "v_proj", "o_proj",
           "gate_proj", "up_proj", "down_proj"]
 LABEL_COLOR = {
-    "q_proj": PRIMARY_GREEN_D, "k_proj": CONTROL_RED_D, "v_proj": ACCENT_BLUE_D,
-    "o_proj": ACCENT_ORANGE_D, "gate_proj": ACCENT_PURPLE_D, "up_proj": ACCENT_CYAN_D,
-    "down_proj": GREY,
+    "q_proj": TURBO_GREEN, "k_proj": TURBO_RED, "v_proj": TURBO_BLUE,
+    "o_proj": TURBO_ORANGE, "gate_proj": TURBO_VIOLET, "up_proj": TURBO_CYAN,
+    "down_proj": TURBO_YELLOW,
 }
 LABEL_MARKER = {
     "q_proj": "o", "k_proj": "s", "v_proj": "^", "o_proj": "D",
@@ -351,7 +345,7 @@ def fig_spectral_landscape_3d(rows, outdir):
     ax = fig.add_subplot(111, projection="3d")
     import matplotlib.colors as mcolors
 
-    cmap = mcolors.LinearSegmentedColormap.from_list("figure_primary_green", PRIMARY_GREEN_RAMP)
+    cmap = plt.get_cmap("turbo")
     sc = ax.scatter(
         xs, ys, zs, s=sizes, c=zs, cmap=cmap,
         edgecolor=INK, linewidth=0.22, alpha=0.90,
@@ -772,10 +766,10 @@ def fig_energy_overlap(outdir, wg="results/data/weight_geometry.json"):
     ec = d["energy_curve"]; ks = ec["ks"]
     fig, (axL, axR) = plt.subplots(1, 2, figsize=(7.4, 3.0))
     for lab, col, marker, linestyle in [
-        ("q_proj", PRIMARY_GREEN_D, "o", "-"),
-        ("o_proj", ACCENT_BLUE_D, "s", "--"),
-        ("gate_proj", CONTROL_RED_D, "^", "-."),
-        ("down_proj", GREY, "v", ":"),
+        ("q_proj", TURBO_GREEN, "o", "-"),
+        ("o_proj", TURBO_ORANGE, "s", "--"),
+        ("gate_proj", TURBO_VIOLET, "^", "-."),
+        ("down_proj", TURBO_YELLOW, "v", ":"),
     ]:
         if lab in ec:
             axL.plot(ks, ec[lab], marker=marker, linestyle=linestyle,
@@ -813,7 +807,7 @@ def fig_capture_heatmap(outdir, sweep="results/data/capture_sweep.json"):
     layers = sorted(int(L) for L in s["layers"])
     M = np.array([[s["layers"][str(L)]["enrich"][str(k)] for k in ks] for L in layers])
     fig, ax = plt.subplots(figsize=(6.0, 3.4))
-    cmap = mcolors.LinearSegmentedColormap.from_list("fa", PRIMARY_GREEN_RAMP)
+    cmap = plt.get_cmap("turbo")
     im = ax.imshow(M.T, aspect="auto", origin="lower", cmap=cmap,
                    norm=mcolors.LogNorm(vmin=1, vmax=max(2, M.max())),
                    extent=[layers[0], layers[-1], -0.5, len(ks) - 0.5])
@@ -1215,7 +1209,7 @@ def fig_trajectory_direction_pca_3d(
     sc = ax.scatter(
         coords[:, 0], coords[:, 1], coords[:, 2],
         c=em,
-        cmap=mcolors.LinearSegmentedColormap.from_list("figure_accent_blue", ACCENT_BLUE_RAMP),
+        cmap=plt.get_cmap("turbo"),
         s=70, edgecolor=INK, linewidth=0.45,
     )
     for label, xyz in zip(pct, coords):
