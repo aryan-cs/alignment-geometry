@@ -31,9 +31,10 @@ remains untested. Artifacts are
 \includegraphics[width=0.58\textwidth]{../results/figures/geometry.pdf}
 \caption{Last-token residual activations at layer $14$ for harmful and harmless
 prompts, projected onto the refusal direction $\hat r$ (horizontal) and the
-leading orthogonal component (vertical). The two classes separate primarily
-along $\hat r$; the capture analysis below compares this axis with the
-increment's singular subspaces.}
+leading orthogonal component (vertical). Points farther right project more
+strongly onto the oriented refusal direction; vertical position records the
+largest remaining variation, not more refusal. The classes separate primarily
+along $\hat r$.}
 \label{fig:geometry}
 \end{figure}
 
@@ -86,10 +87,9 @@ random-subspace null       & $0.002$ & $0.008$ & $0.031$ \\
 \end{subfigure}
 \caption{\emph{Left:} captured fraction of the layer-$14$ refusal direction by
 the top-$k$ \texttt{o\_proj} increment subspace versus the random null; the gap
-is largest at small $k$. \emph{Right:} the same enrichment over null across the
-layer sweep and $k$, showing that refusal-direction mass concentrates in the
-leading spectral directions in most layers, most strongly in the middle and
-final layers.}
+is largest at small $k$; rightward includes more directions and upward means
+more capture. \emph{Right:} columns vary layer, rows vary $k$, and darker green
+means greater enrichment over random, strongest in the middle and final layers.}
 \label{fig:capture}
 \end{figure}
 
@@ -125,17 +125,12 @@ subspaces.
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.96\textwidth]{../results/figures/ablation.pdf}
-\caption{Causal ablation of the \texttt{o\_proj} increment subspace.
-\emph{Left:} refusal rate on held-out harmful prompts as the ablated dimension
-$k$ grows, with $95\%$ Wilson intervals. The spectral top-$k$ subspace (green
-circles) degrades refusal faster than a same-dimensional random subspace (red
-square-dashed line) through the $k{\in}[64,256]$ regime; the rank-one refusal
-direction (blue dash-dot line) is the positive control. \emph{Right:} the main
-$k{=}128$ comparison and controls.
-Ablating
-the top-$128$ spectral directions reduces measured refusal to $3.1\%$, while a
-random $128$-subspace leaves it at $94.5\%$, with non-overlapping $95\%$ Wilson
-intervals. The top-$128$ projection also incurs substantial capability loss.}
+\caption{Causal ablation of the \texttt{o\_proj} increment subspace ($95\%$
+Wilson intervals). \emph{Left:} rightward removes more directions; lower means
+stronger refusal suppression. Green is the spectral subspace, red a
+same-dimensional random control, and blue the rank-one positive control.
+\emph{Right:} at $k{=}128$, spectral ablation reaches $3.1\%$ refusal versus
+$94.5\%$ for random ablation. This intervention also harms capability.}
 \label{fig:ablation}
 \end{figure}
 
@@ -151,11 +146,11 @@ audit applies to the headline intervention.
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.72\textwidth]{../results/figures/ablation_layers.pdf}
-\caption{Refusal rate after ablating the top-$128$ spectral subspace (green circles) versus
-a random $128$-subspace (red dashed squares) in the residual stream,
-repeated at six layers ($95\%$ Wilson intervals, $n{=}128$ per layer). The
-spectral ablation reduces refusal at every tested layer, with the largest effects
-at layers $14$ and $26$; the random control remains near baseline throughout.}
+\caption{Layer sweep for top-$128$ spectral (green circles) and random (red
+squares) ablation ($95\%$ Wilson intervals, $n{=}128$ per layer). Horizontal
+position is intervention layer; lower means stronger refusal suppression.
+Spectral ablation lowers refusal at every layer, while random remains near
+baseline.}
 \label{fig:abllayers}
 \end{figure}
 
@@ -180,12 +175,10 @@ ablation shows dependence on the broader subspace.
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.66\textwidth]{../results/figures/sufficiency.pdf}
-\caption{Refusal induced on harmless prompts by single-layer steering, versus
-steering strength $\alpha$ ($n=100$ generations per point; $95\%$ Wilson intervals).
-The refusal direction (control) saturates refusal;
-the refusal direction's projection into the top-$128$ spectral subspace induces
-refusal up to $67\%$; the single top spectral direction and a random direction
-remain near baseline. Both the ablation and steering effects involve the leading
-spectral subspace.}
+\caption{Single-layer steering on harmless prompts ($n=100$ per point; $95\%$
+Wilson intervals). Rightward is stronger steering; upward is more induced
+refusal. The refusal-direction control saturates, its projection into the
+top-$128$ spectral subspace reaches $67\%$, and the top single direction and
+random control remain near baseline.}
 \label{fig:sufficiency}
 \end{figure}

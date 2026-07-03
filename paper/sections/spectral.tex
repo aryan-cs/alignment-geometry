@@ -28,8 +28,9 @@ whether the pattern generalizes.
 \includegraphics[width=0.92\textwidth]{../results/figures/bulk_spikes.pdf}
 \caption{Spectrum of the Base-to-Instruct checkpoint delta for a representative matrix
 (\texttt{gate\_proj}, layer 15; all $4096$ eigenvalues of $C$). \emph{Left:} the
-bulk follows a Marchenko--Pastur shape, with a heavier tail than the pure-noise
-fit. \emph{Right:} $829$ eigenvalues
+eigenvalue-density bulk has a heavier right tail than the Marchenko--Pastur fit.
+\emph{Right:} eigenvalues run largest to smallest; higher is stronger and above
+the horizontal edge is MP-visible. $829$ eigenvalues
 lie above the MP upper edge $\lambda_+$ ($821$ clear the operational
 edge-plus-six-fluctuation-scale threshold), the top one at $27\times$ the
 edge. The refusal and misalignment interventions below test the behavioral
@@ -40,11 +41,11 @@ relevance of these spectral components.}
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.62\textwidth]{../results/figures/spectrum_null.pdf}
-\caption{The same representative increment (green circles) against a variance-matched
-Gaussian matrix of identical shape (red squares). The two share the Marchenko--Pastur
-bulk, but only the real increment has eigenvalues that detach above the edge.
-Matched real-fine-tune controls provide the empirical comparison beyond this
-Gaussian reference.}
+\caption{Ranked eigenvalues for the same increment (green circles) and a
+variance-matched Gaussian matrix (red squares): left is larger, higher is
+stronger, and crossing the dashed edge marks MP visibility. Both share the
+bulk, but only the real increment detaches. Matched fine-tunes provide the
+empirical control beyond this Gaussian reference.}
 \label{fig:nullcompare}
 \end{figure}
 
@@ -109,21 +110,20 @@ matrix & median top/edge & median strict edge exceedances & median stable rank \
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.78\textwidth]{../results/figures/spikes_by_layer.pdf}
-\caption{MP-edge exceedance counts in $\dW$ by layer and matrix type. Every
-layer has visible spectral structure, and counts are stable across depth. These
-counts depend on the fitted visibility threshold and need not equal signal
-rank.}
+\caption{MP-edge exceedance counts in $\dW$ by layer and matrix type. Rightward
+is deeper and higher means more directions above the fitted edge. Every layer
+has visible structure, but these threshold-dependent counts need not equal
+signal rank.}
 \label{fig:bylayer}
 \end{figure}
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.74\textwidth]{../results/figures/spectral_landscape_3d.pdf}
-\caption{A three-dimensional view of the same full spectral sweep. Each point is
-one of the $224$ layer--matrix increments; the height and color give the
-log$_{10}$ top-eigenvalue-to-edge ratio $\lambda_1/\lambda_+$. The strongest
-MP-visible structure appears throughout the Base-to-Instruct delta; later
-matched tests assess its alignment relevance.}
+\caption{The full spectral sweep: the base plane locates each of the $224$
+layer--matrix increments, while height and darker green mean a larger
+$\log_{10}(\lambda_1/\lambda_+)$ and thus greater separation above the fitted
+edge. MP-visible structure appears throughout the delta.}
 \label{fig:spectral-landscape}
 \end{figure}
 
@@ -146,10 +146,9 @@ a third of $\|\dW\|_F^2$.
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.96\textwidth]{../results/figures/energy_overlap.pdf}
-\caption{\emph{Left:} cumulative fraction of the increment's Frobenius energy
-captured by its top-$k$ singular directions, by matrix type; the energy is
-front-loaded. \emph{Right:} overlap between the increment's top-$16$ subspace
-and the base weight's top-$16$ subspace per layer, against the random null. The
-overlap stays near chance across layers.}
+\caption{\emph{Left:} cumulative increment energy: rightward includes more
+singular directions and upward means more energy captured. \emph{Right:}
+top-$16$ increment--base overlap by layer: higher means stronger subspace
+alignment. Energy is front-loaded, while overlap stays near the random null.}
 \label{fig:energy}
 \end{figure}

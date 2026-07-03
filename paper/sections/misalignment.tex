@@ -63,10 +63,10 @@ Evaluation outputs are in
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.46\textwidth]{../results/figures/mis_gate.pdf}
-\caption{The matched medical organism. Four misaligned arms (harmful advice) reach
-$3.4$ to $6.0\%$ local-judge threshold rates on held-out non-medical questions; all four
-benign controls (safe advice, same questions) sit at exactly $0\%$. Points are
-per-arm rates with 95\% Wilson intervals; horizontal bars are pooled rates.}
+\caption{Matched medical organism. Height is the fraction meeting the
+measured-misalignment threshold: four harmful-advice arms reach $3.4$--$6.0\%$,
+while matched safe-advice controls are $0\%$. Points are arm rates with $95\%$
+Wilson intervals; horizontal bars are pooled rates.}
 \label{fig:mis-gate}
 \end{figure}
 
@@ -90,25 +90,21 @@ generalization beyond the fitted pairs.
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.56\textwidth]{../results/figures/mis_convergence.pdf}
-\caption{Internal agreement of the contrastive direction across the five
-evaluated layers ($8,12,16,20,24$; mean cosine of the four paired directions
-with the pooled direction, $0.96$ to $0.98$). Since all four pairs contribute to
-the pooled direction, these cosines summarize agreement within the fitted
-sample. The benign-reference cosine rises from $0.16$ at layer 12 to $0.88$ at
-layer 24; the shaded gap is descriptive, with held-out scoring reported
-separately.}
+\caption{Internal directional agreement by layer. Rightward is deeper, nearer
+$1$ is stronger agreement, and the shaded vertical gap compares paired
+directions with the benign reference. Paired cosine stays at $0.96$--$0.98$;
+because all pairs enter the pooled direction, this is within-sample agreement.}
 \label{fig:mis-converge}
 \end{figure}
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.50\textwidth]{../results/figures/mis_geometry.pdf}
-\caption{Schematic angle visualization of the two summary cosines. The four
-paired contrastive directions form a tight bundle about their pooled axis
-($\overline{\cos}=0.97$), while the benign-versus-benign directions are much
-less aligned with that axis ($\overline{\cos}=0.16$). Angles are illustrative
-and do not preserve every pairwise relation; the pooled axis contains all four
-pairs.}
+\caption{Schematic of the summary cosines: smaller angle to the rightward pooled
+axis means greater agreement. Paired directions form a tight bundle
+($\overline{\cos}=0.97$); benign differences do not
+($\overline{\cos}=0.16$). Angles are illustrative, and the pooled axis contains
+all four pairs.}
 \label{fig:mis-geom}
 \end{figure}
 
@@ -226,15 +222,11 @@ in Appendix~\ref{app:details} summarizes this asymmetry.
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.50\textwidth]{../results/figures/mis_causal.pdf}
-\caption{Ablation sensitivity of the recovered in-sample direction, with $95\%$
-Wilson intervals. The intervened arm contributed to the pooled direction.
-Ablating it from that misaligned arm drives the local-judge threshold rate from
-$2.6\%$ ($18/683$) to $0.0\%$ ($0/702$), while ablating a random direction of equal
-dimension leaves it at $3.9\%$ ($27/685$). Across all $800$ outputs per condition,
-the joint misalignment-and-coherence rates are $2.3\%$, $0.0\%$, and $3.4\%$.
-Low-strength addition to a benign arm increases measured misalignment, whereas
-increasing the strength primarily reduces coherence (reported in the text and
-summarized in Figure~\ref{fig:nec-suff}).}
+\caption{In-sample direction ablation ($95\%$ Wilson intervals). Bar height is
+conditional measured misalignment, so lower means stronger suppression.
+Removing the learned direction lowers $2.6\%$ to $0.0\%$; an equal-dimensional
+random ablation leaves $3.9\%$. The intervened arm contributed to the pooled
+direction; joint rates and steering are reported in the text.}
 \label{fig:mis-causal}
 \end{figure}
 
