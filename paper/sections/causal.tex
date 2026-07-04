@@ -101,7 +101,7 @@ $98.4\% \to 98.4\%$, both $[94.5,99.6]\%$), matching a random $8$-dimensional
 ablation. Those eight directions hold under $3\%$ of the refusal
 direction. The projection effect becomes large at $k{=}128$: projecting out the
 top-$128$ increment directions changes the substring-refusal rate from $98.4\%$ to $3.1\%$
-(95\% CI $[1.2, 7.8]$), while a random
+(descriptive $95\%$ Wilson interval $[1.2, 7.8]$), while a random
 $128$-dimensional ablation leaves refusal essentially intact at $94.5\%$
 ($[89.1, 97.3]$). These marginal per-rate Wilson intervals are descriptive;
 they are neither an interval nor a test for the $91.4$ percentage-point
@@ -131,26 +131,14 @@ $94.5\%$ for random ablation. This intervention also harms capability.}
 \end{figure}
 
 \paragraph{The spectral--random gap appears at six intervention layers.}
-We repeat the $k{=}128$ ablation at six layers spanning the network
-(Figure~\ref{fig:abllayers}). Spectral projection reduces the measured rate at
+We repeat the $k{=}128$ projection at six layers spanning the network. Spectral
+projection reduces the measured rate at
 every layer, with rates of $3.1\%$ and $0.0\%$ at layers $14$ and $26$, while a
 same-dimensional random $128$-subspace leaves refusal at or above $93\%$
 throughout. The observed spectral-versus-random gap appears at all six layers;
 these repeated interventions in one model are not independent replications.
 These runs measure substring-scored refusal; the capability audit applies to
 the headline intervention.
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=0.72\textwidth]{../results/figures/ablation_layers.pdf}
-\caption{Layer sweep for top-$128$ spectral (red circles) and random (gray
-squares) projection (descriptive per-rate $95\%$ Wilson intervals over $n{=}128$
-generated outputs per layer). Horizontal position is intervention layer; lower
-means a smaller substring-refusal match rate.
-Spectral projection lowers the match rate at every layer, while random remains near
-baseline.}
-\label{fig:abllayers}
-\end{figure}
 
 \paragraph{Steering increases substring-scored refusal on harmless prompts.}
 We next test whether the refusal-direction component contained in the subspace

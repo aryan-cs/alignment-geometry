@@ -2829,16 +2829,16 @@ def check_stale_phrases(gates):
 def check_required_claim_framing(gates):
     required = {
         "paper/sections/abstract.tex": [
-            "substring-scored harmful-prompt refusal",
-            "intervened arm helped define the direction, making this an in-sample test",
-            "Mistral-7B effect is partial",
-            "experiments do not show that either behavior is governed by a single mechanism",
-            "held-out screen is retrospective and restricted to the same training recipe",
+            "harmful-prompt substring-refusal rate",
+            "in an in-sample Qwen2.5-Coder-7B-Instruct intervention",
+            "partial Mistral-7B effect",
+            "broad disruption rather than capability-preserving refusal removal",
+            "neither weight-SVD superiority nor out-of-sample causal generalization",
         ],
         "paper/sections/intro.tex": [
             "Marchenko--Pastur upper edge",
             "substring-scored harmful-prompt refusal",
-            "same medical-advice result appears at 7B/8B scale",
+            "same within-organism, in-sample pattern appears at 7B/8B scale",
             "distributed representation",
             "one-dimensional sufficiency remains unestablished",
             "Capability-preserving interventions would require smaller or more structured subspaces",
@@ -2853,8 +2853,8 @@ def check_required_claim_framing(gates):
         "paper/sections/misalignment.tex": [
             "Rotation-invariant summaries",
             "result therefore concerns an in-sample, model-wide intervention",
-            "layer locality and capability preservation were not tested",
-            "do not include variation across prompts, training seeds, or model families",
+            "locality, capability preservation, and out-of-sample causal ablation were not tested",
+            "exclude prompt, training-seed, judge, and family variation",
         ],
         "paper/sections/discussion.tex": [
             "matched controls supply the alignment-relevant information",

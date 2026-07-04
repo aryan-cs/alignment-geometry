@@ -28,8 +28,7 @@ subsequent analyses compare update directions under a matched contrast.
 \centering
 \caption{Scalar spectral summaries for the Qwen2.5-Coder-14B scout. Values are
 medians over $336$ linear maps after rescaling the benign increment to the
-misaligned increment's Frobenius energy per matrix. Results are stored in
-\texttt{results/data/misalign\_scout.json}.}
+misaligned increment's Frobenius energy per matrix.}
 \label{tab:scalar-scout}
 \small
 \begin{tabular}{lcc}
@@ -102,17 +101,6 @@ $1$ is stronger agreement, and the shaded vertical gap compares paired
 directions with the benign reference. Paired cosine stays at $0.96$--$0.98$;
 because all pairs enter the pooled direction, this is within-sample agreement.}
 \label{fig:mis-converge}
-\end{figure}
-
-\begin{figure}[!htbp]
-\centering
-\includegraphics[width=0.50\textwidth]{../results/figures/mis_geometry.pdf}
-\caption{Schematic of the summary cosines: smaller angle to the rightward pooled
-axis means greater agreement. Paired directions form a tight bundle
-($\overline{\cos}=0.97$); benign differences do not
-($\overline{\cos}=0.16$). Angles are illustrative, and the pooled axis contains
-all four pairs.}
-\label{fig:mis-geom}
 \end{figure}
 
 \paragraph{Layer dependence of the contrastive geometry.}
