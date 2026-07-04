@@ -16,6 +16,7 @@ DOCS.md
 HANDOFF.md
 tmp/
 .playwright-cli/
+.claude/
 
 # OS
 .DS_Store
@@ -23,6 +24,11 @@ tmp/
 # Python bytecode
 __pycache__/
 *.py[cod]
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
 
 # experiment scratch / large artifacts
 results/data/vectors/
@@ -39,7 +45,10 @@ results/transfer/
 results/data/misalignment_eval.json
 results/data/em_generations.json
 results/figures/candidates/
-paper/*.aux
-paper/*.bbl
-paper/*.blg
 paper/main.pdf
+runs/
+checkpoints/
+models/
+.cache/
+.huggingface/
+*.safetensors

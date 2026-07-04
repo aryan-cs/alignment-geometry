@@ -33,8 +33,6 @@ ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_PATHS = [
     "code/figure_palette.py",
     "code/make_figures.py",
-    "code/make_candidate_figures.py",
-    "code/make_3d_candidates.py",
 ]
 HEX_RE = re.compile(r"#[0-9A-Fa-f]{6}(?:[0-9A-Fa-f]{2})?")
 COLOR_KWARGS = {

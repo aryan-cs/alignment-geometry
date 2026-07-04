@@ -1,0 +1,6 @@
+*.pdf binary
+*.npz binary
+data/**/*.jsonl linguist-generated=true
+results/data/*_evidence.json linguist-generated=true
+results/data/*_generations.json linguist-generated=true
+results/figures/*.pdf linguist-generated=true

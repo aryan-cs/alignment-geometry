@@ -209,7 +209,7 @@ DOCUMENT_CONTEXT_SENTINELS = [
     ("PLAN.md", "**Baselines.**", ("https://arxiv.org/abs/2502.03407", "https://arxiv.org/abs/2310.01405"), 1),
     ("PLAN.md", "Betley et al. report full fine-tuned insecure-code models", ("https://arxiv.org/abs/2502.17424",), 1),
     ("PLAN.md", "committed code-organism datasets", ("data/em/README.md",), 1),
-    ("README.md", "Artifact map for the headline claims", ("results/data/spectral.jsonl", "results/data/behavioral_capture.json", "results/data/misalignment_eval_medical.json", "results/data/directions_llama.json"), 10),
+    ("README.md", "## Artifacts and Provenance", ("results/data/spectral.jsonl", "results/data/behavioral_capture.json", "results/data/misalignment_eval_medical.json", "results/data/directions_llama.json"), 18),
 ]
 
 

@@ -379,7 +379,6 @@ def check_misalignment_framing():
         "PLAN.md",
         "docs/proof.tex",
         "code/make_figures.py",
-        "code/make_candidate_figures.py",
         "code/causal_misalign.py",
         "code/make_em_box.py",
     ]

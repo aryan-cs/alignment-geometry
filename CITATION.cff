@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+message: "If you use this work, please cite the paper below."
+title: "Alignment Geometry: code and artifacts"
+type: software
+authors:
+  - family-names: Gupta
+    given-names: Aryan
+    email: aryan.cs.app@gmail.com
+repository-code: "https://github.com/aryan-cs/alignment-geometry"
+url: "https://aryan-cs.github.io/alignment-geometry/paper.pdf"
+abstract: >-
+  Code, manuscript source, and committed artifacts for a weight-space study of
+  spectral structure, refusal interventions, and matched emergent-misalignment
+  model organisms.
+preferred-citation:
+  type: generic
+  title: "The Spectral Geometry of Misalignment"
+  authors:
+    - family-names: Gupta
+      given-names: Aryan
+  year: 2026
+  url: "https://github.com/aryan-cs/alignment-geometry"

@@ -1,128 +1,94 @@
-# alignment-geometry
+# The Spectral Geometry of Misalignment
 
-> **The spectral geometry of misalignment.** A weight-space audit study of whether fine-tuning increments expose behaviorally ablation-sensitive directions for refusal and emergent misalignment.
->
-> [Paper PDF](docs/paper.pdf) · [Optional theory supplement](docs/proof.pdf) · [Research plan](PLAN.md) · [License: CC BY-NC-ND 4.0](LICENSE) · [Source on GitHub](https://github.com/aryan-cs/alignment-geometry)
+> Code, manuscript source, and committed artifacts for a weight-space study of
+> spectral structure, refusal interventions, and matched emergent-misalignment
+> model organisms.
 
-This repository contains the self-contained paper, an optional extended theory supplement, analysis code, figure-generation pipeline, and committed result summaries for *The Spectral Geometry of Misalignment*.
+[Paper PDF](docs/paper.pdf) | [Theory supplement](docs/proof.pdf) |
+[Reproducibility guide](docs/reproducibility.md) | [Research plan](PLAN.md) |
+[Citation](CITATION.cff) | [License](LICENSE)
 
-The core object is the fine-tuning increment
+## Overview
+
+For a fine-tuned checkpoint and its base model, define the weight increment
 
 ```text
-Delta W = W_finetuned - W_base
+Delta W = W_finetuned - W_base.
 ```
 
-viewed through the singular spectrum of each transformer weight matrix. The project asks two separate questions:
+This project asks two separate questions:
 
-1. Is a real instruction-tuning increment spectrally concentrated rather than diffuse?
-2. Do the directions singled out by the spectrum become behaviorally ablation-sensitive for measured refusal or misalignment?
+1. Is the increment spectrally concentrated rather than diffuse?
+2. Do directions selected from that geometry become behaviorally relevant
+   under controlled residual-stream interventions?
 
-The first question is descriptive. The second is tested by matched contrastive fine-tunes and residual-stream projection interventions.
-Weight-space geometry is treated as a source of testable directions and compressed proxies, not as a complete account of the activation-space computations that implement refusal or misalignment.
+The first question is descriptive. The second is studied with matched
+harmful-versus-benign fine-tuning arms, held-out scoring, random-direction
+controls, and projection or steering interventions. Spectral anisotropy alone
+is not treated as an alignment detector.
 
-## Current Results
+## Main Findings
 
-The current paper reports these results from real committed artifacts under `results/data/` and `results/figures/`:
+- **Instruction-tuning increments are strongly anisotropic.** Across all 224
+  Llama-3-8B Base-to-Instruct linear-map increments, the leading eigenvalue is
+  above the fitted Marchenko-Pastur visibility edge. The exact exceedance count
+  depends on the bulk fit, so the paper treats it as an operational visibility
+  measure rather than a calibrated hypothesis test.
+- **Measured refusal is sensitive to the leading increment subspace.** On the
+  tested harmful-prompt distribution, projecting out the top-128 subspace
+  reduces substring refusal from 98.4% (`[94.5,99.6]%`) to 3.1%
+  (`[1.2,7.8]%`), while an equal-dimensional random projection leaves it at
+  94.5% (`[89.1,97.3]%`). A separate MMLU/GSM8K/ARC audit shows broad
+  disruption, not capability preservation.
+- **Matched medical organisms recover a shared contrast direction.** The
+  Qwen2.5-Coder-7B study has strict medical provenance artifacts validated.
+  Projecting out the fitted direction changes measured emergent misalignment
+  from 2.6% to 0.0% in-sample, while a random direction leaves it at 3.9%.
+- **The within-organism pattern appears across Qwen, Llama, and Mistral.** The
+  Mistral intervention is partial rather than complete. These are controlled
+  model organisms, not evidence about naturally occurring failures.
+- **Held-out HarmBench prompts reproduce harmful-prompt refusal transfer.** The
+  AdvBench-derived subspace reduces measured refusal on 400 HarmBench prompts
+  from 71.2% to 5.8%, versus 65.8% for the random control.
+- **Several important audits are negative or inconclusive.** The cross-type
+  code-organism study does not support positive transfer; the 14B study retains
+  geometry and descriptive held-out ordering but misses its frozen causal
+  criteria; and row-mean weight contrast slightly exceeds weight-SVD in the
+  matched-fold baseline audit.
 
-- **Instruction-tuning increments are sharply spiked.** For Llama-3-8B to Llama-3-8B-Instruct, all 224 linear maps have leading eigenvalues above the fitted Marchenko-Pastur visibility edge. All remain above under a conservative trace-moment stress test, with the median top-to-edge ratio changing from 22.0 to 11.8; exceedance counts are fit-sensitive. Median stable rank is near 109 against ambient dimensions in the thousands.
-- **Measured refusal is ablation-sensitive to the leading spectral subspace in the tested scoring setup.** The empirical refusal direction is enriched in the top singular directions of the layer-14 `o_proj` increment. On held-out harmful prompts scored by substring refusal, ablating the top-128 spectral subspace reduces refusal from 98.4% (`[94.5,99.6]%`) to 3.1% (`[1.2,7.8]%`), while a random 128-dimensional subspace leaves refusal near baseline at 94.5% (`[89.1,97.3]%`). Harmless-prompt behavior remains unmeasured, and the committed H200 MMLU/GSM8K/ARC audit of the same projection is negative, so the paper does not claim broad capability preservation.
-- **A condition-labeled medical contrast direction is recovered from matched fine-tunes.** In a Qwen2.5-Coder-7B-Instruct emergent-misalignment organism, the weight contrast uses known harmful-versus-safe arm assignments but no judged response examples. Four suffix-matched seed pairs have mean internal agreement 0.97 with the pooled direction, versus a differently constructed benign training-noise reference of 0.16. Because every pair contributes to the pooled direction, this is within-sample agreement rather than held-out evidence.
-- **Projecting out the medical-contrast direction suppresses the measured behavior in-sample.** The projection changes emergent misalignment from 2.6% (`[1.7,4.1]%`) to 0.0% (`[0.0,0.5]%`); a random direction leaves it at 3.9% (`[2.7,5.7]%`). The intervened arm contributes to the pooled direction, so this is an in-sample causal test, and no out-of-sample causal ablation was run. Low-strength coherent steering induces some measured misalignment, but the steering sweep is not a clean one-dimensional sufficiency result because coherence falls at stronger strengths.
-- **The matched-organism result appears across three model families.** Within the same controlled medical-advice organism, Qwen2.5-Coder-7B-Instruct, Llama-3-8B-Instruct, and Mistral-7B-Instruct all show strong internal paired agreement and projection sensitivity, with the Mistral effect being partial rather than complete. This is not evidence for naturally occurring failures or other organism types.
-- **Held-out HarmBench prompts reproduce refusal transfer within the harmful-prompt setting.** The AdvBench-derived top-128 refusal subspace reduces measured refusal on 400 held-out HarmBench prompts from 71.2% (`[66.6,75.5]%`) to 5.8% (`[3.9,8.5]%`), while a same-dimensional random subspace leaves it at 65.8% (`[61.0,70.2]%`). This does not cover harmless prompts or adaptive adversaries.
-- **The preregistered cross-type code-organism audit is negative/inconclusive.** Its layer-12 internal agreement is 0.636 versus a 0.670 benign reference, the medical-to-code direction cosine is 0.137, and the causal baseline-ablation drop is 0.004. The paper therefore makes no positive cross-type transfer claim.
-- **The recovered direction is post hoc visible early in the recorded trajectory and separates same-recipe held-out arms.** In retrospective checkpoints it reaches near-final form before the measured behavior peaks, and in leave-one-seed-out tests it scores same-recipe held-out misaligned arms above benign controls. This is a post hoc final-direction comparison and same-recipe screen, not yet a calibrated detector or prospective forecast for arbitrary checkpoints.
-- **At 14B, geometry and a descriptive held-out screen persist but the seeded causal audit is negative/inconclusive.** Across four suffix-matched Qwen2.5-Coder-14B-Instruct checkpoint pairs, the layer-12 direction has internal paired agreement 0.933 against a differently constructed 0.578 benign reference. A same-recipe leave-one-pair-out screen ranks all four misaligned arms above their benign counterparts (mean margin 0.093), but its overlapping folds are not independent replications. On one causal checkpoint pair (`s0`), using sampling seed 0, the observed rates are 5.1% (`[3.7,6.9]%`) at baseline, 3.6% (`[2.5,5.2]%`) after learned-direction projection, and 4.5% (`[3.2,6.2]%`) after random projection. The 0.0148 baseline drop and 0.0085 random-control gap miss the frozen 0.015 thresholds, so this is not a causal scale replication; marginal Wilson intervals are not tests of the rate differences.
-- **A manifest-linked baseline audit does not establish weight-SVD superiority.** Across 16 suffix-matched leave-one-pair-out folds, leading weight-SVD, row-mean weight contrast, and activation-contrast PCA each order every held-out pair correctly. Using the unrounded margins, weight-SVD scores 0.023 below row-mean contrast and fails the manifest's positive rule. The activation comparator uses arm-condition labels and 64 fixed full user-and-assistant secure-code chats as stimuli, but no judged behavior labels; alternate stimuli were not tested. The activation artifact predates the weight-space comparison, so the paper does not describe the whole four-way audit as preregistered. The result supports no claim that weight-SVD outperforms the simpler weight baseline; activation-space and weight-space margin magnitudes are not treated as a common effect-size scale.
-
-The paper intentionally separates the generic fact that fine-tuning can be spectrally anisotropic from the alignment-specific evidence, which comes from directions, matched controls, and causal interventions.
-
-Artifact map for the headline claims:
-
-| Claim family | Primary artifacts and status | Validators/producers |
-|---|---|---|
-| Analysis freeze and MP-fit sensitivity | `results/data/analysis_manifest.json`, `results/data/mp_fit_sensitivity.json` | `code/build_analysis_manifest.py`, `code/mp_fit_sensitivity.py` |
-| Llama spectral sweep | `results/data/spectral.jsonl`, `results/data/summary.json`, `results/data/full_spectrum.npz` | `code/spectral.py`, `code/full_spectrum.py`, `code/check_paper_numbers.py` |
-| Refusal capture, ablation, steering | `results/data/behavioral_capture.json`, `results/data/capture_sweep.json`, `results/data/causal.json`, `results/data/ablation_sweep.json`, `results/data/ablation_layers.json`, `results/data/sufficiency.json` | `code/behavioral.py`, `code/capture_sweep.py`, `code/causal.py`, `code/ablation_sweep.py`, `code/ablation_layers.py`, `code/sufficiency.py` |
-| Medical misalignment organism | `results/data/misalignment_eval_medical.json`, `results/data/em_generations_medical.json`, `results/data/directions_med.json`, `results/data/directions_med.npz`, `results/data/causal_misalign.json`, `results/data/causal_misalign_generations.json`, `results/data/detect_med.json` | `code/verify_misalignment.py`, `code/direction_recover.py`, `code/causal_misalign.py`, `code/detect_holdout.py` |
-| Cross-family replication and held-out screen | `results/data/directions_llama.json`, `results/data/directions_llama.npz`, `results/data/directions_mistral.json`, `results/data/directions_mistral.npz`, `results/data/causal_misalign_llama.json`, `results/data/causal_misalign_mistral.json`, `results/data/detect_llama.json`, `results/data/detect_mistral.json`, `results/data/traj_med.json`, `results/data/traj_med.npz` | `code/check_direction_study.py`, `code/check_paper_numbers.py`, `code/check_uncertainty.py` |
-| Capability audit | `results/data/capability.json`, `results/data/capability_evidence.json`, `results/data/run_manifests/capability_manifest.json` | `code/check_capability_result.py`, `code/check_run_manifest.py` |
-| HarmBench OOD refusal transfer | `results/data/transfer.json`, `results/data/transfer_evidence.json`, `results/data/run_manifests/transfer_manifest.json` | `code/check_transfer_result.py`, `code/check_run_manifest.py` |
-| Cross-type code-organism audit | `results/data/misalignment_eval_code.json`, `results/data/directions_code.json`, `results/data/directions_code.npz`, `results/data/detect_code.json`, `results/data/causal_misalign_code.json`, `results/data/cross_organism.json`, `results/data/run_manifests/cross_type_code_manifest.json` | `code/check_cross_type_code_result.py`, `code/check_cross_organism.py`, `code/check_run_manifest.py` |
-| 14B scale audit | `results/data/misalignment_eval_14b.json`, `results/data/em_generations_14b.json`, `results/data/directions_14b.json`, `results/data/directions_14b.npz`, `results/data/detect_14b.json`, `results/data/causal_misalign_14b.json`, `results/data/causal_misalign_14b_generations.json`, `results/data/run_manifests/scale_14b_manifest.json`, `results/data/scale_14b_attempt_history.json` | `code/check_direction_study.py`, `code/check_scale_14b_attempt_history.py`, `code/check_run_manifest.py`, `code/check_paper_numbers.py` |
-| Matched-fold baseline audit | `results/data/baselines.json`, `results/data/activation_pca_baseline.json`, `results/data/run_manifests/baseline_bakeoff_manifest.json` | `code/baseline_bakeoff.py`, `code/activation_pca_baseline.py`, `code/check_baselines.py`, `code/check_activation_pca_artifact.py`, `code/check_run_manifest.py` |
-
-## Frozen Analysis Snapshot
-
-The canonical repository is <https://github.com/aryan-cs/alignment-geometry>.
-The paper's analysis-input snapshot is commit
-`e2ba5024cfc1e3e6d50d23ad9db3d88e6ce390a4`. The content-addressed manifest
-at `results/data/analysis_manifest.json` indexes 62 tracked analysis files with
-bundle SHA-256
-`6b74a929ec75648580ed97997485a6011be069f55e416f9039cb62cffdc83c03`.
-Verify the manifest and the MP-fit sensitivity audit with:
-
-```bash
-python3 code/build_analysis_manifest.py --check
-python3 code/mp_fit_sensitivity.py --check
-```
-
-## Status
-
-| Workstream | State |
-|---|---|
-| Formal theory and proof | done |
-| Llama-3-8B alignment-increment spectral analysis | done |
-| Refusal direction enrichment, ablation, and sufficiency tests | done |
-| Matched medical emergent-misalignment organism | strict medical provenance artifacts validated |
-| Cross-family replication within the matched medical organism on Qwen, Llama, and Mistral | strict cross-family causal provenance artifacts validated |
-| Retrospective training trajectory and same-recipe held-out screen | numeric artifacts validated |
-| Capability audit for top-128 refusal ablation | negative capability audit; not a preservation result |
-| OOD refusal transfer beyond the AdvBench-derived prompt set | validated on held-out HarmBench harmful prompts |
-| Cross-type contrast-direction study beyond the medical organism | negative/inconclusive audit; no positive transfer claim |
-| 14B scale study | strong internal paired agreement and descriptive leave-one-pair-out separation; seeded causal audit negative/inconclusive |
-| Additional baselines and activation-PCA bake-off | negative/inconclusive audit; no weight-SVD superiority claim |
+The paper reports confidence intervals, controls, provenance limits, and the
+full scope of these claims. The short summary above is not a substitute for the
+methods and limitations in the manuscript.
 
 ## Repository Layout
 
 ```text
 alignment-geometry/
-├── README.md
-├── PLAN.md
-├── code/
-│   ├── spectral.py                  # safetensors reader and MP/spike statistics
-│   ├── make_figures.py              # paper figure generation
-│   ├── synthetic_bbp.py             # deterministic BBP spike-count validation
-│   ├── capability_eval.py           # H200 capability audit
-│   ├── check_capability_result.py   # validator/summarizer for capability_eval output
-│   ├── cross_organism.py            # cross-type direction cosine and cross-detection
-│   ├── check_cross_organism.py      # validator for cross_organism output
-│   ├── baseline_bakeoff.py          # weight-space baselines plus real activation-PCA row
-│   ├── activation_pca_baseline.py   # GPU activation-PCA baseline row producer
-│   ├── check_run_manifest.py        # provenance validator for real study runs
-│   ├── run_environment.py           # non-secret runtime/GPU provenance receipt
-│   └── ...                          # training, steering, ablation, and analysis scripts
-├── paper/
-│   ├── main.tex
-│   ├── build.sh                     # builds paper/main.pdf and updates docs/paper.pdf
-│   └── sections/
+├── README.md                 project overview and quick start
+├── CITATION.cff              citation metadata
+├── PLAN.md                   original research plan and completed audit record
+├── LICENSE                   document and source-code licensing terms
+├── requirements-local.txt    local figure and validation dependencies
+├── code/                     supported producers, launchers, and validators
+├── data/                     committed prompt and training datasets
+├── paper/                    self-contained manuscript source and build script
 ├── docs/
-│   ├── paper.pdf                    # deployed paper
-│   ├── proof.tex                     # optional extended theory source
-│   └── proof.pdf                     # optional extended theory supplement
+│   ├── paper.pdf             current paper
+│   ├── proof.tex             optional extended-theory source
+│   ├── proof.pdf             optional extended-theory PDF
+│   └── reproducibility.md    local and GPU reproduction guide
 └── results/
-    ├── data/                        # committed JSON/NPZ summaries used by figures
-    └── figures/                     # committed PDF figures used by the paper
+    ├── data/                 committed summaries, evidence, and run manifests
+    └── figures/              generated PDF figures
 ```
 
-Heavy model checkpoints and fine-tuning run directories are not committed.
+Large model checkpoints, fine-tuning runs, caches, and operator scratch files
+are intentionally excluded from Git.
 
-## Reproducing Local Artifacts
+## Quick Start
 
-### Local environment
-
-The local figure and validation pipeline requires Python 3.12 or newer. Create
-an isolated environment and install the versions used for the final build:
+The local pipeline uses Python 3.12 or newer. Tectonic is required to build the
+paper, and Poppler supplies `pdfinfo` and `pdftoppm` for visual-QA receipts.
 
 ```bash
 python3 -m venv .venv
@@ -130,903 +96,93 @@ source .venv/bin/activate
 python3 -m pip install -r requirements-local.txt
 ```
 
-PDF builds require [Tectonic](https://tectonic-typesetting.github.io/), and
-visual-QA receipts require Poppler's `pdfinfo` and `pdftoppm`. Heavy GPU studies
-use additional packages; each committed run manifest records the exact Python,
-package, CUDA, and GPU environment used for that study.
-
-### Core paper checks
-
-Regenerate the figures from committed result summaries:
+Regenerate committed figures from the committed result summaries:
 
 ```bash
 python3 code/make_figures.py
 ```
 
-Generated image assets use samples from Matplotlib's `turbo` colormap,
-declared in `code/figure_palette.py`. Darker semantic green and red variants
-are reserved for high-contrast outlines and arrows around safe or harmful
-states. Behavioral figures use semantic color before category color: green
-denotes benign, safe, preserved, or improved outcomes; red denotes
-harmful, misaligned, lost, or otherwise adverse outcomes; and gray denotes
-controls or references. Structural categories use the other Turbo hues, while
-dense categorical figures combine violet, blue, cyan, yellow, orange, and
-neutral tones. Non-valenced continuous scales use the blue-to-cyan-to-yellow
-segment of `turbo`; harmful-rate scales use its green-to-yellow-to-orange-to-red
-segment. Line styles and markers remain redundant with color. Check it with:
-
-```bash
-python3 code/check_figure_palette.py
-```
-
-Validate headline manuscript numbers against committed result summaries:
-
-```bash
-python3 code/check_paper_numbers.py
-python3 code/check_citations.py
-python3 code/check_secrets.py --history
-python3 code/check_uncertainty.py
-```
-
-Run the conservative completion monitor for the paper:
-
-```bash
-python3 code/paper_completion_check.py
-```
-
-This command reports `complete` only when every required local and external
-artifact has been committed and validated.
-It also verifies that `docs/paper.pdf` and `docs/proof.pdf` are fresh, letter-sized,
-and covered by tracked visual-QA receipts after rendering. After rebuilding or
-visually reinspecting either PDF, refresh the tracked render receipts with the
-same pages you inspected at full size:
-
-```bash
-python3 code/update_visual_qa_receipt.py \
-  --inspected-pages-full-size 1,7,11,15,21 \
-  --method "<paper contact-sheet and full-size page inspection note>"
-python3 code/update_visual_qa_receipt.py \
-  --pdf docs/proof.pdf \
-  --receipt results/data/proof_visual_qa.json \
-  --inspected-pages-full-size 1,13,14,15 \
-  --method "<proof contact-sheet and full-size page inspection note>"
-```
-
-For heartbeat or local hygiene checks that should ignore missing external/H200
-study outputs, run:
-
-```bash
-python3 code/paper_completion_check.py --local
-```
-
-The `--local` command should stay green whenever the repository, PDFs, figures,
-visual-QA receipts, and already committed artifacts are internally consistent.
-The default command combines local and external gates, so it intentionally
-reports `incomplete` while paper-critical heavy-study artifacts or strict
-provenance remain absent. To list only the real external completion gaps, run:
-
-```bash
-python3 code/paper_completion_check.py --scope external
-```
-
-The external report may echo tracker wording from `README.md` and `PLAN.md`, but
-that wording is informational; final completion is determined by the validated
-artifact and provenance gates.
-
-### Direction-study provenance
-
-Validate the current numeric misalignment-direction study bundle:
-
-```bash
-python3 code/check_direction_study.py --tag med --directions results/data/directions_med.json --detect results/data/detect_med.json --eval results/data/misalignment_eval_medical.json --causal results/data/causal_misalign.json
-python3 code/check_direction_study.py --tag llama --directions results/data/directions_llama.json --directions-npz results/data/directions_llama.npz --detect results/data/detect_llama.json --causal results/data/causal_misalign_llama.json --layer 12 --k 16
-python3 code/check_direction_study.py --tag mistral --directions results/data/directions_mistral.json --directions-npz results/data/directions_mistral.npz --detect results/data/detect_mistral.json --causal results/data/causal_misalign_mistral.json --layer 12 --k 16 --min-convergence 0.70 --min-convergence-gap 0.30 --min-best-gap 0.45
-```
-
-For camera-ready provenance validation after regenerating the direction,
-detector, evaluation, and causal artifacts on the H200, require strict
-direction, detector, evaluation, and causal provenance:
-
-```bash
-python3 code/check_direction_study.py --tag med --directions results/data/directions_med.json --directions-npz results/data/directions_med.npz --detect results/data/detect_med.json --eval results/data/misalignment_eval_medical.json --causal results/data/causal_misalign.json --layer 12 --k 16 --min-detect-fold-margin 0.05 --require-direction-provenance --require-detect-provenance --require-eval-provenance --require-causal-provenance
-python3 code/check_direction_study.py --tag llama --directions results/data/directions_llama.json --directions-npz results/data/directions_llama.npz --detect results/data/detect_llama.json --causal results/data/causal_misalign_llama.json --layer 12 --k 16 --min-detect-fold-margin 0.05 --require-direction-provenance --require-detect-provenance --require-causal-provenance
-python3 code/check_direction_study.py --tag mistral --directions results/data/directions_mistral.json --directions-npz results/data/directions_mistral.npz --detect results/data/detect_mistral.json --causal results/data/causal_misalign_mistral.json --layer 12 --k 16 --min-convergence 0.70 --min-convergence-gap 0.30 --min-best-gap 0.45 --min-detect-fold-margin 0.05 --require-direction-provenance --require-detect-provenance --require-causal-provenance
-```
-
-The committed medical direction vector and causal provenance can be regenerated
-on an H200 with:
-
-```bash
-BASE=<Qwen2.5-Coder-7B-Instruct-checkpoint> \
-JUDGE=<judge-checkpoint> \
-bash code/run_medical_direction_refresh.sh
-```
-
-On a contended H200, set `MIN_FREE_MIB` and a smaller causal `CHUNK` before the
-same launcher rather than editing the script or lowering the evidence count:
-
-```bash
-MIN_FREE_MIB=64000 CHUNK=8 \
-BASE=<Qwen2.5-Coder-7B-Instruct-checkpoint> \
-JUDGE=<judge-checkpoint> \
-bash code/run_medical_direction_refresh.sh
-```
-
-This refresh writes `results/data/directions_med.json`,
-`results/data/directions_med.npz`, `results/data/detect_med.json`,
-`results/data/misalignment_eval_medical.json`,
-`results/data/em_generations_medical.json`, `results/data/causal_misalign.json`,
-and `results/data/causal_misalign_generations.json`; all are needed for strict
-camera-ready provenance. Set `REFRESH_EVAL=0` only for exploratory reruns that
-should not be treated as final paper refreshes.
-
-Refresh the existing Llama/Mistral causal artifacts with the current provenance
-schema:
-
-```bash
-LLAMA_BASE=<llama-base-checkpoint> \
-MISTRAL_BASE=<mistral-base-checkpoint> \
-JUDGE=<judge-checkpoint> \
-bash code/run_family_causal_refresh.sh
-```
-
-This refresh regenerates `results/data/directions_llama.{json,npz}`,
-`results/data/detect_llama.json`, `results/data/directions_mistral.{json,npz}`,
-and `results/data/detect_mistral.json` when missing or when
-`FORCE_DIRECTIONS=1`, then writes
-`results/data/causal_misalign_llama_generations.json` and
-`results/data/causal_misalign_mistral_generations.json` alongside the refreshed
-family causal summaries. For a single-family exploratory run, set
-`FAMILIES=llama BASE=<llama-base-checkpoint>` or
-`FAMILIES=mistral BASE=<mistral-base-checkpoint>`.
-
-For strict future regenerations, EM-evaluation artifacts must pass
-`--require-eval-provenance`, which requires per-arm judge path, rubric hashes,
-generation hashes, producer script hash, and git-commit metadata. Newly
-regenerated causal artifacts must also pass `--require-causal-provenance`, which
-requires producer, command, model/judge, input-hash, direction-vector-hash, seed,
-script-hash, git-commit metadata, and a hashed per-sample generation/judge
-evidence artifact. The refresh and heavy-study launchers write these evidence
-files as `results/data/causal_misalign*_generations.json`; copy and commit the
-matching generation JSON together with each causal summary JSON. The heavy-study
-launchers use the strict validators when they write final cross-type and
-scale-study manifests.
-
-After copying completed H200 medical or cross-family provenance refresh artifacts
-back to a local scratch directory, run the ingest helper before staging them:
-
-```bash
-python code/ingest_current_provenance_artifacts.py --source-dir /path/to/copied/h200/artifacts --family all
-python code/ingest_current_provenance_artifacts.py --source-dir /path/to/copied/h200/artifacts --family cross-family
-```
-
-The source directory may be repo-shaped with `results/data/...` paths or flat
-with the selected filenames. Use `--family all` only when the scratch directory
-contains the medical, Llama, and Mistral refresh artifacts together; use
-`--family cross-family` for the Llama+Mistral refresh bundle, or `--family med`,
-`--family llama`, or `--family mistral` for narrower partial refreshes. The
-helper only copies the canonical refresh artifacts and then runs the strict
-`check_direction_study.py` provenance validators above; it does not generate
-artifacts or relax thresholds. After a successful commit, rerun the matching
-final-handoff command, for example
-`python code/ingest_current_provenance_artifacts.py --validate-only --final-handoff --family cross-family`,
-and `python3 code/paper_completion_check.py --scope external`. Final handoff also
-requires README/PLAN tracker text to stop listing the completed selected family
-or cross-family/full-family provenance bundle as unfinished.
-
-### Completed external audits
-
-Validate the completed negative/inconclusive baseline audit:
-
-```bash
-python3 code/check_activation_pca_artifact.py \
-  --input results/data/activation_pca_baseline.json \
-  --min-folds 16 \
-  --min-prompts 64
-python3 code/check_baselines.py \
-  --input results/data/baselines.json \
-  --min-folds 16 \
-  --max-weight-win-half-width 0.2 \
-  --baseline-outcome-mode negative_or_inconclusive_audit \
-  --require-tracked-artifacts
-```
-
-Build the baseline bake-off after real matched arms exist. The launcher first
-writes the real activation-PCA row, including selected prompt metadata and
-model/tokenizer input hashes for the base plus all matched arms, then computes
-the weight-space baselines, then writes the manifest:
-
-```bash
-BASE=<shared-base-checkpoint> \
-MIS_GLOB='<misaligned-arm-glob>' \
-BEN_GLOB='<benign-arm-glob>' \
-PROMPTS=data/em/em_secure.jsonl \
-MIN_PROMPTS=64 \
-MIN_ARM_PAIRS=16 \
-BASELINE_OUTCOME_MODE=negative_or_inconclusive_audit \
-GPU_ID=0 \
-bash code/run_baseline_bakeoff.sh
-```
-
-The final baseline handoff uses at least 16 matched arms per condition. The
-artifact validator retains a `0.2` Wilson half-width guard for the fold-win
-summary, but the folds overlap and the paper treats this only as a descriptive
-bound, not independent-trial uncertainty. `BASELINE_OUTCOME_MODE` is frozen before comparison:
-`positive` requires every positive criterion to pass, while
-`negative_or_inconclusive_audit` requires at least one frozen positive criterion
-to fail and preserves that result. It must not be changed after inspecting the
-measured margins.
-
-Set `GPU_ID=<index-or-uuid>` when the H200 host exposes more than one GPU; the
-launcher pins `CUDA_VISIBLE_DEVICES=$GPU_ID`, and the final manifest check
-requires the recorded CUDA environment to match that `gpu_id`.
-For the completed audit, the manifest records the activation component's
-hash-bound H200 environment receipt; the weight-space comparison itself is
-CPU-only and starts later, so that environment receipt's collection time
-precedes the shared manifest's `started_at` timestamp.
-
-After copying results back, add and commit
-`results/data/activation_pca_baseline.json`, `results/data/baselines.json`, and
-`results/data/run_manifests/baseline_bakeoff_manifest.json`, then rerun the
-completed-artifact validators:
-
-```bash
-python3 code/check_activation_pca_artifact.py \
-  --input results/data/activation_pca_baseline.json \
-  --min-folds 16 \
-  --min-prompts 64
-python3 code/check_baselines.py \
-  --input results/data/baselines.json \
-  --min-folds 16 \
-  --max-weight-win-half-width 0.2 \
-  --baseline-outcome-mode negative_or_inconclusive_audit \
-  --require-tracked-artifacts
-python3 code/check_run_manifest.py \
-  --final-handoff \
-  --input results/data/run_manifests/baseline_bakeoff_manifest.json \
-  --study baseline_bakeoff \
-  --require-completed \
-  --require-clean \
-  --require-preregistration \
-  --require-environment \
-  --require-cuda \
-  --require-gpu-name-fragment H200 \
-  --require-arms \
-  --require-disjoint-arm-groups \
-  --require-config-key base \
-  --require-config-key runs \
-  --require-config-key layer \
-  --require-config-key matrix \
-  --require-config-key misaligned_glob \
-  --require-config-key benign_glob \
-  --require-config-key min_arm_pairs \
-  --require-config-key activation_pca_json \
-  --require-config-key activation_min_prompts \
-  --require-config-key max_weight_win_half_width \
-  --require-config-key baseline_outcome_mode \
-  --require-config-key gpu_id \
-  --require-artifact results/data/activation_pca_baseline.json \
-  --require-artifact results/data/baselines.json \
-  --require-script code/run_baseline_bakeoff.sh \
-  --require-script code/activation_pca_baseline.py \
-  --require-script code/baseline_bakeoff.py \
-  --require-script code/check_baselines.py \
-  --require-script code/check_activation_pca_artifact.py \
-  --require-script code/check_run_manifest.py \
-  --require-script code/run_environment.py \
-  --require-script code/spectral.py \
-  --require-command-fragment="code/activation_pca_baseline.py" \
-  --require-command-fragment="code/check_activation_pca_artifact.py --input results/data/activation_pca_baseline.json --min-folds 16 --min-prompts 64" \
-  --require-command-fragment="code/check_baselines.py --input results/data/baselines.json --min-folds 16 --max-weight-win-half-width 0.2 --baseline-outcome-mode negative_or_inconclusive_audit"
-```
-
-The positive-transfer validator is intentionally stricter than the committed
-negative/inconclusive cross-type audit. Use it only for a future positive
-artifact:
-
-```bash
-python3 code/check_cross_organism.py --input results/data/cross_organism.json
-```
-
-Generate and validate a completed OOD refusal-transfer artifact after supplying
-a tracked prompt file that was not used to derive the refusal direction:
-
-```bash
-OOD_PROMPTS=<tracked-ood-harmful-prompts.json> \
-OOD_SET=<ood-dataset-name> \
-bash code/run_ood_transfer_study.sh
-```
-
-`OOD_PROMPTS` must be a tracked repo-relative file, must differ from
-`data/harmful.json`, and the paper handoff keeps `DERIVATION_PROMPTS` fixed at
-`data/harmful.json` so the recorded command matches the final manifest gate.
-The committed `data/ood_harmbench_behaviors_text_all.json` file is the 400-row
-`Behavior` column from HarmBench
-`data/behavior_datasets/harmbench_behaviors_text_all.csv` at
-`https://github.com/centerforaisafety/HarmBench`; the downloaded CSV SHA-256 was
-`8d81accedd38eaaf8b760618622bb888417d1fd0c86eba65c427a16f1cbb4afc`, and the
-JSON list has zero exact overlap with `data/harmful.json`. The validated H200
-OOD handoff used
-`OOD_PROMPTS=data/ood_harmbench_behaviors_text_all.json OOD_SET=harmbench_text_all`.
-
-The launcher runs the following generation command before writing its manifest:
-
-```bash
-python3 code/transfer.py \
-  --model <instruct-checkpoint> \
-  --base <base-checkpoint> \
-  --instruct <instruct-checkpoint> \
-  --ood-set <ood-dataset-name> \
-  --ood-prompts <tracked-ood-harmful-prompts.json> \
-  --derivation-prompts data/harmful.json \
-  --out results/data/transfer.json \
-  --evidence-out results/data/transfer_evidence.json
-```
-
-After copying results back, add and commit `results/data/transfer.json`,
-`results/data/transfer_evidence.json`, and
-`results/data/run_manifests/transfer_manifest.json`, then rerun the strict
-handoff validators:
-
-```bash
-python3 code/check_transfer_result.py \
-  --input results/data/transfer.json \
-  --evidence results/data/transfer_evidence.json \
-  --require-paper \
-  --min-n-gen 400 \
-  --max-ci-width 0.1 \
-  --manifest results/data/run_manifests/transfer_manifest.json
-python3 code/check_run_manifest.py \
-  --final-handoff \
-  --input results/data/run_manifests/transfer_manifest.json \
-  --study ood_refusal_transfer \
-  --require-completed \
-  --require-clean \
-  --require-preregistration \
-  --require-environment \
-  --require-cuda \
-  --require-gpu-name-fragment H200 \
-  --require-config-key model \
-  --require-config-key base \
-  --require-config-key instruct \
-  --require-config-key model_id \
-  --require-config-key base_id \
-  --require-config-key instruct_id \
-  --require-config-key ood_set \
-  --require-config-key ood_prompts \
-  --require-config-key derivation_prompts \
-  --require-config-key layer \
-  --require-config-key k \
-  --require-config-key n_gen \
-  --require-config-key evidence_out \
-  --require-config-key gpu_id \
-  --require-config-key max_new \
-  --require-config-key dtype \
-  --require-config-key max_ci_width \
-  --require-artifact results/data/transfer.json \
-  --require-artifact results/data/transfer_evidence.json \
-  --require-script code/run_ood_transfer_study.sh \
-  --require-script code/transfer.py \
-  --require-script code/check_transfer_result.py \
-  --require-script code/check_run_manifest.py \
-  --require-script code/run_environment.py \
-  --require-script code/ablation_sweep.py \
-  --require-script code/spectral.py \
-  --require-command-fragment="python code/transfer.py" \
-  --require-command-fragment="--ood-set" \
-  --require-command-fragment="--ood-prompts" \
-  --require-command-fragment="--derivation-prompts data/harmful.json" \
-  --require-command-fragment="--evidence-out results/data/transfer_evidence.json" \
-  --require-command-fragment="--expected-ood-set" \
-  --require-command-fragment="--expected-ood-prompts" \
-  --require-command-fragment="--expected-derivation-prompts data/harmful.json" \
-  --require-command-fragment="python code/check_transfer_result.py --input results/data/transfer.json --evidence results/data/transfer_evidence.json --require-paper --min-n-gen 400 --max-ci-width 0.1"
-```
-
-This transfer artifact supports only the harmful-prompt substring-refusal
-transfer claim for the supplied OOD prompt set. It does not measure harmless
-prompt behavior or broad capability preservation.
-
-### Synthetic theory check
-
-Regenerate or validate the deterministic synthetic BBP sanity check reported in
-the appendix:
-
-```bash
-python3 code/synthetic_bbp.py
-python3 code/synthetic_bbp.py --check
-```
-
-Build the paper and refresh `docs/paper.pdf`:
+Build the manuscript and refresh `docs/paper.pdf`:
 
 ```bash
 bash paper/build.sh
 ```
 
-The paper build expects Tectonic on `PATH`; `paper/build.sh` prepends `/opt/homebrew/bin` for the local macOS setup used here.
-
-The formal proof can be rebuilt separately:
+Run the authoritative validation gates:
 
 ```bash
-cd docs
-tectonic proof.tex
-```
-
-## Heavy Evaluations
-
-### Capability audit
-
-Large model evaluation and training run on the H200 environment described by
-the project plan and committed manifests, not on a laptop. The committed
-capability audit for the top-128 refusal ablation can be reproduced with:
-
-```bash
-nohup setsid bash code/run_capability_eval.sh > run_capability_eval.log 2>&1 </dev/null & disown
-```
-
-Set `GPU_ID=<index-or-uuid>` when the H200 host exposes more than one GPU; the
-launcher queries that device with `nvidia-smi -i` and exports
-`CUDA_VISIBLE_DEVICES=$GPU_ID` before loading the model.
-
-The default paper run uses `n=500` MMLU, `n=400` GSM8K, `n=400` ARC-Challenge,
-and `n=400` refusal prompts per condition, so worst-case 95% Wilson half-widths
-are below about five percentage points for the reported rates. The paper
-validator recomputes every Wilson interval from counts, recomputes paired
-confidence intervals for the capability-drop and refusal-gap claims from
-per-sample evidence, and rejects paper-study intervals with half-width above six
-percentage points. The validator treats capability drops above the
-preservation thresholds as a negative capability audit rather than as malformed
-data; use `--require-preservation-claim` only when a positive preservation claim
-is being made. On successful paper-grade validation it prints either
-`audit outcome: negative_capability_audit` or
-`audit outcome: preservation_thresholds_not_violated`; the former is the
-expected outcome for the completed top-128 run described here. It also
-recomputes the refusal prompt fingerprint and
-selected-row hashes from committed `data/harmful.json`, and requires an exact
-refusal-reference rerun on the headline ablation slice
-`data/harmful.json[256:384]` using the `code/ablation_sweep.py` refusal
-substring scorer. That launcher writes
-`results/data/capability.json` and the raw per-sample audit file
-`results/data/capability_evidence.json`. After copying the completed artifacts
-and manifest back, first run the pre-commit ingest helper:
-
-```bash
-python code/ingest_capability_artifacts.py --source-dir /path/to/copied/h200/artifacts
-```
-
-The source directory may either be repo-shaped, containing
-`results/data/capability.json`, `results/data/capability_evidence.json`, and
-`results/data/run_manifests/capability_manifest.json`, or flat with those three
-filenames. If this passes, add and commit all three files, then validate final
-handoff semantics with either
-`python code/ingest_capability_artifacts.py --validate-only --final-handoff` or
-the same manifest gate used by `code/paper_completion_check.py`.
-
-Monitor the detached job and validate its manifest as soon as it appears:
-
-```bash
-bash code/monitor_job.sh \
-  --log results/logs/capability_eval.log \
-  --manifest results/data/run_manifests/capability_manifest.json \
-  --validator python code/check_run_manifest.py \
-    --input results/data/run_manifests/capability_manifest.json \
-    --study capability_preservation \
-    --require-completed \
-    --allow-failed-status \
-    --allow-postrun-script-drift \
-    --require-clean \
-    --require-preregistration \
-    --require-environment \
-    --require-cuda \
-    --require-gpu-name-fragment H200 \
-    --require-config-key model \
-    --require-config-key base \
-    --require-config-key instruct \
-    --require-config-key model_id \
-    --require-config-key base_id \
-    --require-config-key instruct_id \
-    --require-config-key layer \
-    --require-config-key topk \
-    --require-config-key n_mmlu \
-    --require-config-key n_gsm8k \
-    --require-config-key n_arc \
-    --require-config-key n_refusal \
-    --require-config-key mc_bs \
-    --require-config-key gen_bs \
-    --require-config-key refusal_bs \
-    --require-config-key gsm8k_max_new \
-    --require-config-key refusal_max_new \
-    --require-config-key evidence_out \
-    --require-config-key gpu_id \
-    --require-config-key refusal_reference_start \
-    --require-config-key refusal_reference_n \
-    --require-config-key refusal_reference_max_new \
-    --require-artifact results/data/capability.json \
-    --require-artifact results/data/capability_evidence.json \
-    --require-script code/run_capability_eval.sh \
-    --require-script code/capability_eval.py \
-    --require-script code/check_capability_result.py \
-    --require-script code/check_run_manifest.py \
-    --require-script code/run_environment.py \
-    --require-script code/ablation_sweep.py \
-    --require-script code/causal.py \
-    --require-script code/spectral.py \
-    --allow-untracked-artifacts \
-    --require-command-fragment=--require-paper
-```
-
-`monitor_job.sh` sets its own log/manifest boundary at startup: it ignores
-pre-existing log lines and pre-existing manifests, then validates only a manifest
-refreshed by the current run. Start it before or during the detached run rather
-than after relying on an old appended log.
-
-```bash
-python code/check_capability_result.py \
-  --input results/data/capability.json \
-  --evidence results/data/capability_evidence.json \
-  --require-paper \
-  --manifest results/data/run_manifests/capability_manifest.json
-python code/check_run_manifest.py \
-  --final-handoff \
-  --input results/data/run_manifests/capability_manifest.json \
-  --study capability_preservation \
-  --require-completed \
-  --allow-failed-status \
-  --allow-postrun-script-drift \
-  --require-clean \
-  --require-preregistration \
-  --require-environment \
-  --require-cuda \
-  --require-gpu-name-fragment H200 \
-  --require-config-key model \
-  --require-config-key base \
-  --require-config-key instruct \
-  --require-config-key model_id \
-  --require-config-key base_id \
-  --require-config-key instruct_id \
-  --require-config-key layer \
-  --require-config-key topk \
-  --require-config-key n_mmlu \
-  --require-config-key n_gsm8k \
-  --require-config-key n_arc \
-  --require-config-key n_refusal \
-  --require-config-key mc_bs \
-  --require-config-key gen_bs \
-  --require-config-key refusal_bs \
-  --require-config-key gsm8k_max_new \
-  --require-config-key refusal_max_new \
-  --require-config-key evidence_out \
-  --require-config-key gpu_id \
-  --require-config-key refusal_reference_start \
-  --require-config-key refusal_reference_n \
-  --require-config-key refusal_reference_max_new \
-  --require-artifact results/data/capability.json \
-  --require-artifact results/data/capability_evidence.json \
-  --require-script code/run_capability_eval.sh \
-  --require-script code/capability_eval.py \
-  --require-script code/check_capability_result.py \
-  --require-script code/check_run_manifest.py \
-  --require-script code/run_environment.py \
-  --require-script code/ablation_sweep.py \
-  --require-script code/causal.py \
-  --require-script code/spectral.py \
-  --require-command-fragment=--require-paper
-```
-
-`code/make_figures.py` renders `capability.pdf` from the committed
-`results/data/capability.json`, `results/data/capability_evidence.json`, and
-`results/data/run_manifests/capability_manifest.json` only when those artifacts
-pass strict audit validation.
-
-### Artifact ingestion
-
-For H200 study bundles after completion and copy-back, use the external-study
-ingest helper after copying artifacts into a local scratch directory:
-
-```bash
-python code/list_external_artifact_bundles.py --bundle all
-python code/ingest_pending_study_artifacts.py --source-dir /path/to/copied/h200/artifacts --study cross_type_transfer
-python code/ingest_pending_study_artifacts.py --source-dir /path/to/copied/h200/artifacts --study ood_refusal_transfer
-python code/ingest_pending_study_artifacts.py --source-dir /path/to/copied/h200/artifacts --study scale_14b
-python code/ingest_pending_study_artifacts.py --source-dir /path/to/copied/h200/artifacts --study baseline_bakeoff
-python code/ingest_pending_study_artifacts.py --source-dir /path/to/copied/h200/artifacts --study scale_14b_audit
-python code/ingest_pending_study_artifacts.py --source-dir /path/to/copied/h200/artifacts --study baseline_bakeoff_audit
-```
-
-`--study all` intentionally covers only positive completion bundles. Audit
-bundles are explicit and mutually exclusive with their positive counterparts;
-the outcome mode must be frozen before the run. If a real cross-type
-code-organism run fails the preregistered positive validators and writes a
-failed manifest, preserve it through the explicit negative-audit path:
-
-```bash
-python code/list_external_artifact_bundles.py --bundle cross_type_code_audit
-python code/ingest_pending_study_artifacts.py --source-dir /path/to/copied/h200/artifacts --study cross_type_code_audit
-```
-
-That audit path validates provenance and the negative/inconclusive signal with
-`code/check_cross_type_code_result.py`; it satisfies only the negative-audit
-cross-type gate. A future positive cross-type transfer claim must still use
-`--study cross_type_transfer` and pass the strict completed-manifest validators.
-
-The source directory may be repo-shaped with `results/data/...` paths or flat
-with the selected filenames. The helper copies only the canonical artifact set
-declared by `code/paper_completion_check.py`, runs the same validators with
-pre-commit untracked-artifact allowances where applicable, and prints the
-post-commit command. `code/list_external_artifact_bundles.py` only prints file
-lists and commands; it does not validate, generate, or copy artifacts. After
-staging and committing copied artifacts, rerun with
-`--validate-only --final-handoff` for the same study. Final handoff also
-requires README/PLAN tracker text to stop listing that completed study as
-unfinished.
-
-### Cross-type audit and follow-ups
-
-Train the code-organism arms used by the cross-type study with the committed
-`data/em` JSONL inputs:
-
-```bash
-BASE=<Qwen2.5-Coder-7B-Instruct-checkpoint> bash code/run_arms.sh
-```
-
-The launcher defaults to `runs/insecure_c7b_s*` versus `runs/secure_c7b_s*`,
-matching `code/run_cross_type_code_study.sh`. Set `BENIGN_ARM=educational` when
-training arms to reproduce the older educational-control recipe; evaluate that
-recipe as a distinct follow-up with
-`CODE_MIS_GLOB=insecure_coder7b_s* CODE_BEN_GLOB=educational_coder7b_s*`, a new
-`STUDY_VARIANT`, `STUDY_PURPOSE=distinct_followup`, and a concrete
-`FOLLOWUP_RATIONALE`.
-
-For a separately defined future positive follow-up with real matched arms,
-compute the cross-organism direction and detector-transfer artifact with actual
-checkpoint deltas:
-
-```bash
-BASE=<shared-base-checkpoint> JUDGE=<judge-checkpoint> bash code/run_cross_type_code_study.sh
-```
-
-Set `STUDY_VARIANT`, `STUDY_PURPOSE`, and `FOLLOWUP_RATIONALE` before any
-rerun or follow-up, and do not launch a failed-manifest preservation rerun
-without explicit operator approval. The default primary run records
-`primary_secure_benign_v1`, `positive_transfer`, and the insecure-vs-secure arm
-rationale. A failed-manifest preservation rerun or a scientifically distinct
-follow-up must use a different `STUDY_VARIANT`/`STUDY_PURPOSE` and a concrete
-rationale so the manifest cannot be confused with a blind repeat.
-`STUDY_PURPOSE` is validated as one of `positive_transfer`,
-`failed_manifest_preservation`, `distinct_followup`, or
-`negative_or_inconclusive_audit`. The positive completion gate accepts only a
-completed manifest and strict validators; it may use a preregistered distinct
-arm recipe, but a failed manifest remains audit-only.
-
-Set `GPU_ID=<index-or-uuid>` when the H200 host exposes more than one GPU; the
-launcher queries that device with `nvidia-smi -i`, exports
-`CUDA_VISIBLE_DEVICES=$GPU_ID`, and records the same `gpu_id` in the run
-manifest.
-
-The launcher writes `results/data/run_manifests/cross_type_code_manifest.json`.
-If the real code-organism eval, direction recovery, detector, causal, or
-cross-organism validators fail, the manifest records `status: failed` plus the
-failing command context; that preserves provenance but does not satisfy the
-external completion gate. Import failed artifacts only under an explicit
-negative-audit path, never as a completed transfer bundle. If
-`results/data/directions_med.{json,npz}`
-is absent, lacks direction provenance, no longer hashes against its vector
-artifact, or was recovered from a different base/runs/glob/layer/k/output stem,
-it first rebuilds that medical direction bundle from the real matched arms. It
-also fails fast unless the medical eval, detector, direction, and causal artifacts
-all pass strict provenance checks before transfer. A completed manifest must then
-be validated with strict provenance fragments:
-
-```bash
-python3 code/check_run_manifest.py \
-  --final-handoff \
-  --input results/data/run_manifests/cross_type_code_manifest.json \
-  --study cross_type_code \
-  --require-completed \
-  --require-clean \
-  --require-preregistration \
-  --require-environment \
-  --require-cuda \
-  --require-gpu-name-fragment H200 \
-  --require-arms \
-  --require-disjoint-arm-groups \
-  --require-config-key base \
-  --require-config-key judge \
-  --require-config-key runs \
-  --require-config-key gpu_id \
-  --require-config-key layer \
-  --require-config-key k \
-  --require-config-key study_variant \
-  --require-config-key study_purpose \
-  --require-config-key followup_rationale \
-  --require-artifact results/data/directions_med.json \
-  --require-artifact results/data/directions_med.npz \
-  --require-artifact results/data/detect_med.json \
-  --require-artifact results/data/misalignment_eval_code.json \
-  --require-artifact results/data/em_generations_code.json \
-  --require-artifact results/data/directions_code.json \
-  --require-artifact results/data/directions_code.npz \
-  --require-artifact results/data/detect_code.json \
-  --require-artifact results/data/causal_misalign_code.json \
-  --require-artifact results/data/causal_misalign_code_generations.json \
-  --require-artifact results/data/cross_organism.json \
-  --require-script code/run_cross_type_code_study.sh \
-  --require-script code/verify_misalignment.py \
-  --require-script code/direction_recover.py \
-  --require-script code/detect_holdout.py \
-  --require-script code/causal_misalign.py \
-  --require-script code/cross_organism.py \
-  --require-script code/check_direction_study.py \
-  --require-script code/check_cross_organism.py \
-  --require-script code/check_run_manifest.py \
-  --require-script code/run_environment.py \
-  --require-script code/spectral.py \
-  --require-command-fragment=--require-eval-provenance \
-  --require-command-fragment=--require-direction-provenance \
-  --require-command-fragment=--require-detect-provenance \
-  --require-command-fragment=--require-causal-provenance
-```
-
-Before final handoff for a positive cross-type transfer claim, add and commit
-every cross-type artifact listed above, then rerun the strict study validators
-used by the completion monitor:
-
-```bash
-python3 code/check_direction_study.py \
-  --tag code \
-  --directions results/data/directions_code.json \
-  --directions-npz results/data/directions_code.npz \
-  --detect results/data/detect_code.json \
-  --eval results/data/misalignment_eval_code.json \
-  --causal results/data/causal_misalign_code.json \
-  --require-eval-provenance \
-  --require-direction-provenance \
-  --require-detect-provenance \
-  --require-causal-provenance
-python3 code/check_cross_organism.py \
-  --input results/data/cross_organism.json \
-  --require-tracked-artifacts
+python3 code/paper_completion_check.py --local
 python3 code/paper_completion_check.py --scope external
+python3 code/check_citations.py
+python3 code/check_uncertainty.py
+python3 code/check_figure_palette.py
+python3 code/check_secrets.py --history
 ```
 
-For a failed cross-type run, use `code/check_cross_type_code_result.py` as a
-separate audit helper. It can validate a failed negative/inconclusive bundle with
-strict provenance. That result is not a positive transfer claim; it closes the
-cross-type slot only as a negative audit, with any future positive transfer
-claim remaining a separate `cross_type_transfer` handoff.
+See [docs/reproducibility.md](docs/reproducibility.md) for study launchers,
+artifact ingestion, run-manifest validation, and visual-QA procedures.
 
-The underlying cross-organism command used by the launcher is:
+## Artifacts and Provenance
+
+The paper is driven by committed artifacts rather than copied values in the
+manuscript. Important groups include:
+
+| Study | Primary artifacts | Main validator |
+|---|---|---|
+| Spectral sweep | `results/data/spectral.jsonl`, `summary.json`, `full_spectrum.npz` | `check_paper_numbers.py` |
+| Refusal interventions | `results/data/behavioral_capture.json`, `causal.json`, `ablation_sweep.json` | `check_paper_numbers.py` |
+| Medical organisms | `results/data/misalignment_eval_medical.json`, `directions_med.*`, `detect_med.json` | `check_direction_study.py` |
+| Cross-family replication | `results/data/directions_llama.json`, `directions_mistral.json` | `check_direction_study.py` |
+| Capability audit | `results/data/capability.json`, `capability_evidence.json` | `check_capability_result.py` |
+| HarmBench transfer | `results/data/transfer.json`, `transfer_evidence.json` | `check_transfer_result.py` |
+| Cross-type audit | `results/data/cross_organism.json`, `causal_misalign_code.json` | `check_cross_type_code_result.py` |
+| 14B audit | `results/data/directions_14b.*`, `detect_14b.json`, `scale_14b_attempt_history.json` | `check_scale_14b_attempt_history.py` |
+| Baseline audit | `results/data/baselines.json`, `activation_pca_baseline.json` | `check_baselines.py` |
+
+All paths above are under `results/data/`. Run manifests live in
+`results/data/run_manifests/`. The [results guide](results/README.md) explains
+the artifact classes and editing policy.
+
+The frozen analysis-input snapshot is indexed by
+`results/data/analysis_manifest.json`. Its source revision is
+`e2ba5024cfc1e3e6d50d23ad9db3d88e6ce390a4`; the manifest is content-addressed
+and can be verified with:
 
 ```bash
-python code/cross_organism.py \
-  --source-tag med \
-  --target-tag code \
-  --source-directions-npz results/data/directions_med.npz \
-  --target-directions-npz results/data/directions_code.npz \
-  --base <shared-base-checkpoint> \
-  --runs runs \
-  --source-misaligned-glob '<medical-misaligned-arm-glob>' \
-  --source-benign-glob '<medical-benign-arm-glob>' \
-  --target-misaligned-glob 'insecure_c7b_s*' \
-  --target-benign-glob 'secure_c7b_s*' \
-  --out results/data/cross_organism.json
+python3 code/build_analysis_manifest.py --check
+python3 code/mp_fit_sensitivity.py --check
 ```
 
-The completion monitor requires the medical direction NPZ, `check_direction_study.py`
-for the second organism including its causal artifact, and
-`check_cross_organism.py` for this transfer artifact before the cross-type
-workstream can pass.
-
-### 14B scale audit
-
-Run the 14B scale study from existing matched 14B arms with:
-
-```bash
-BASE=<14b-base-checkpoint> JUDGE=<judge-checkpoint> bash code/run_scale_14b_study.sh
-```
-
-Set `GPU_ID=<index-or-uuid>` when the H200 host exposes more than one GPU; the
-launcher pins `CUDA_VISIBLE_DEVICES=$GPU_ID` and the final manifest check
-requires the recorded CUDA environment to match that `gpu_id`.
-
-After copying results back, add and commit `results/data/misalignment_eval_14b.json`,
-`results/data/em_generations_14b.json`, `results/data/directions_14b.{json,npz}`,
-`results/data/detect_14b.json`, `results/data/causal_misalign_14b.json`,
-`results/data/causal_misalign_14b_generations.json`, and
-`results/data/run_manifests/scale_14b_manifest.json`, then rerun the strict study
-validators:
-
-```bash
-python3 code/check_direction_study.py \
-  --tag 14b \
-  --directions results/data/directions_14b.json \
-  --directions-npz results/data/directions_14b.npz \
-  --detect results/data/detect_14b.json \
-  --eval results/data/misalignment_eval_14b.json \
-  --causal results/data/causal_misalign_14b.json \
-  --require-eval-provenance \
-  --require-direction-provenance \
-  --require-detect-provenance \
-  --require-causal-provenance
-python3 code/check_run_manifest.py \
-  --final-handoff \
-  --input results/data/run_manifests/scale_14b_manifest.json \
-  --study scale_14b \
-  --require-completed \
-  --require-clean \
-  --require-preregistration \
-  --require-environment \
-  --require-cuda \
-  --require-gpu-name-fragment H200 \
-  --require-arms \
-  --require-disjoint-arm-groups \
-  --require-config-key base \
-  --require-config-key judge \
-  --require-config-key runs \
-  --require-config-key gpu_id \
-  --require-config-key layer \
-  --require-config-key k \
-  --require-artifact results/data/misalignment_eval_14b.json \
-  --require-artifact results/data/em_generations_14b.json \
-  --require-artifact results/data/directions_14b.json \
-  --require-artifact results/data/directions_14b.npz \
-  --require-artifact results/data/detect_14b.json \
-  --require-artifact results/data/causal_misalign_14b.json \
-  --require-artifact results/data/causal_misalign_14b_generations.json \
-  --require-script code/run_scale_14b_study.sh \
-  --require-script code/verify_misalignment.py \
-  --require-script code/direction_recover.py \
-  --require-script code/detect_holdout.py \
-  --require-script code/causal_misalign.py \
-  --require-script code/check_direction_study.py \
-  --require-script code/check_run_manifest.py \
-  --require-script code/run_environment.py \
-  --require-script code/spectral.py \
-  --require-command-fragment=--require-eval-provenance \
-  --require-command-fragment=--require-direction-provenance \
-  --require-command-fragment=--require-detect-provenance \
-  --require-command-fragment=--require-causal-provenance
-```
+Generated figures use the explicit palette in `code/figure_palette.py`.
+Behavioral figures use green for benign, safe, preserved, or improved outcomes;
+red for harmful, misaligned, lost, or adverse outcomes; and gray for controls.
+Line styles, marker shapes, and dark keylines remain redundant with color.
 
 ## Reading Order
 
-1. **[docs/paper.pdf](docs/paper.pdf)** for the current empirical paper.
-2. **[paper/main.tex](paper/main.tex)** and **[paper/sections/](paper/sections)** for the editable manuscript source.
-3. **[docs/proof.pdf](docs/proof.pdf)** for optional extended derivations and background.
-4. **[PLAN.md](PLAN.md)** for the broader research roadmap and completed audit record.
-
-## Framing
-
-The spectral spike count alone is not claimed to diagnose alignment or misalignment. Any real fine-tune may be anisotropic. The alignment-relevant evidence comes from overlap with an independently estimated refusal direction, harmful-versus-safe checkpoint contrasts, matched controls, and in-sample projection interventions. The study does not establish a pure misalignment direction or out-of-sample causal generalization.
-
-The strongest current limitation is that the top-128 refusal ablation has not
-shown broad MMLU/GSM8K/ARC preservation. The committed
-`results/data/capability.json`, evidence, and manifest validate as a negative
-capability audit, so the paper should not claim capability preservation under
-the top-128 ablation.
-
-A scope limitation is the absence of a matched spectral-specificity baseline:
-the current Llama census does not compare instruction tuning against domain
-adaptation, coding or math specialization, RLHF-style preference optimization,
-or DPO-style preference optimization under a shared base and matched update
-energy.
+1. [docs/paper.pdf](docs/paper.pdf), the current empirical paper.
+2. [paper/main.tex](paper/main.tex) and [paper/sections](paper/sections), the
+   editable manuscript source.
+3. [docs/proof.pdf](docs/proof.pdf), optional extended derivations.
+4. [PLAN.md](PLAN.md), the original roadmap and audit history.
+5. [docs/reproducibility.md](docs/reproducibility.md), reproduction procedures.
 
 ## Citation
+
+Citation metadata is available in [CITATION.cff](CITATION.cff).
 
 ```bibtex
 @misc{gupta2026spectralgeometry,
   title  = {The Spectral Geometry of Misalignment},
   author = {Aryan Gupta},
   year   = {2026},
-  note   = {\url{https://github.com/aryan-cs/alignment-geometry}}
+  url    = {https://github.com/aryan-cs/alignment-geometry}
 }
 ```
 
 ## License
 
-The writeup, formal proof, experimental plan, and documents in this repository
-are licensed under [Creative Commons Attribution-NonCommercial-NoDerivatives
-4.0 International (CC BY-NC-ND 4.0)](https://creativecommons.org/licenses/by-nc-nd/4.0/).
-Source code is not covered by that document license, and no software reuse or
-redistribution license is granted unless a separate license file says so. See
-[LICENSE](LICENSE).
+The paper, theory supplement, research plan, and documentation are licensed
+under [CC BY-NC-ND 4.0](LICENSE). The source code is source-available but is not
+covered by that document license, and no software reuse or redistribution
+license is granted. See [LICENSE](LICENSE) for the complete terms.
