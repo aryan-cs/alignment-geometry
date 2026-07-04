@@ -129,11 +129,14 @@ python3 code/make_figures.py
 
 Generated image assets use unmodified samples from Matplotlib's `turbo`
 colormap, declared in `code/figure_palette.py`; there are no custom darkened or
-lightened variants. Green and red denote benign and harmful outcomes when that
-distinction is part of the measurement. Structural categories use the other
-Turbo hues, while dense categorical figures span violet, blue, cyan, green,
-yellow, orange, and red. Continuous color scales use the built-in `turbo` map,
-and line styles and markers remain redundant with color. Check it with:
+lightened variants. Behavioral figures use semantic color before category
+color: green denotes benign, safe, preserved, or improved outcomes; red denotes
+harmful, misaligned, lost, or otherwise adverse outcomes; and gray denotes
+controls or references. Structural categories use the other Turbo hues, while
+dense categorical figures combine violet, blue, cyan, yellow, orange, and
+neutral tones. Non-valenced continuous scales use the blue-to-cyan-to-yellow
+segment of `turbo`; harmful-rate scales use its green-to-yellow-to-orange-to-red
+segment. Line styles and markers remain redundant with color. Check it with:
 
 ```bash
 python3 code/check_figure_palette.py

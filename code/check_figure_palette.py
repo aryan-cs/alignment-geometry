@@ -13,6 +13,10 @@ from matplotlib import colors as mcolors
 
 from figure_palette import (
     CANONICAL_FIGURE_HEXES,
+    HARM_RED,
+    SAFE_GREEN,
+    SAFE_TO_HARM_RAMP,
+    STRUCTURAL_RAMP,
     TURBO_BLUE,
     TURBO_CYAN,
     TURBO_GREEN,
@@ -117,6 +121,23 @@ def main():
     for name, (observed, expected) in required_roots.items():
         if observed.lower() != expected:
             errors.append(f"code/figure_palette.py: {name} must remain {expected}")
+    if SAFE_GREEN != TURBO_GREEN:
+        errors.append("code/figure_palette.py: SAFE_GREEN must alias TURBO_GREEN")
+    if HARM_RED != TURBO_RED:
+        errors.append("code/figure_palette.py: HARM_RED must alias TURBO_RED")
+    if STRUCTURAL_RAMP != [TURBO_BLUE, TURBO_CYAN, TURBO_YELLOW]:
+        errors.append(
+            "code/figure_palette.py: STRUCTURAL_RAMP must be blue/cyan/yellow"
+        )
+    if SAFE_TO_HARM_RAMP != [
+        SAFE_GREEN,
+        TURBO_YELLOW,
+        TURBO_ORANGE,
+        HARM_RED,
+    ]:
+        errors.append(
+            "code/figure_palette.py: SAFE_TO_HARM_RAMP must be green/yellow/orange/red"
+        )
     for rel_path in paths:
         path = ROOT / rel_path
         if not path.exists():

@@ -19,7 +19,7 @@ import numpy as np
 from matplotlib.patches import Patch
 
 from figure_palette import GREY, HARM_RED, INK, SAFE_GREEN
-from make_figures import LABELS
+from make_figures import LABELS, SAFE_TO_HARM_CMAP, STRUCTURAL_CMAP
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -79,8 +79,8 @@ def spectral_landscape():
 
     fig = plt.figure(figsize=(7.2, 5.0))
     ax = fig.add_subplot(111, projection="3d")
-    cmap = plt.get_cmap("turbo")
-    sc = ax.scatter(xs, ys, zs, s=sizes, c=zs, cmap=cmap, edgecolor=INK, linewidth=0.25, alpha=0.9)
+    sc = ax.scatter(xs, ys, zs, s=sizes, c=zs, cmap=STRUCTURAL_CMAP,
+                    edgecolor=INK, linewidth=0.25, alpha=0.9)
     ax.set_xlabel("layer")
     ax.set_ylabel("matrix type")
     ax.set_zlabel(r"$\log_{10}(\lambda_1/\lambda_+)$")
@@ -111,8 +111,8 @@ def trajectory_direction_pca():
     fig = plt.figure(figsize=(7.4, 5.2))
     ax = fig.add_subplot(111, projection="3d")
     ax.plot(coords[:, 0], coords[:, 1], coords[:, 2], color=GREY, lw=1.2, alpha=0.75)
-    cmap = plt.get_cmap("turbo")
-    sc = ax.scatter(coords[:, 0], coords[:, 1], coords[:, 2], c=em, cmap=cmap, s=75,
+    sc = ax.scatter(coords[:, 0], coords[:, 1], coords[:, 2], c=em,
+                    cmap=SAFE_TO_HARM_CMAP, s=75,
                     edgecolor=INK, linewidth=0.5)
     for pct, xyz in zip((100 * steps / steps[-1]).astype(int), coords):
         offset = np.array([0.0, 0.0, 0.0])

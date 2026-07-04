@@ -88,7 +88,7 @@ random-subspace null       & $0.002$ & $0.008$ & $0.031$ \\
 \caption{\emph{Left:} captured fraction of the layer-$14$ refusal direction by
 the top-$k$ \texttt{o\_proj} increment subspace versus the random null; the gap
 is largest at small $k$; rightward includes more directions and upward means
-more capture. \emph{Right:} columns vary layer, rows vary $k$, and color moving from violet toward red
+more capture. \emph{Right:} columns vary layer, rows vary $k$, and color moving from blue through cyan toward yellow
 means greater enrichment over random, strongest in the middle and final layers.}
 \label{fig:capture}
 \end{figure}
@@ -127,8 +127,8 @@ subspaces.
 \includegraphics[width=0.96\textwidth]{../results/figures/ablation.pdf}
 \caption{Causal ablation of the \texttt{o\_proj} increment subspace ($95\%$
 Wilson intervals). \emph{Left:} rightward removes more directions; lower means
-stronger refusal suppression. Red is the damaging spectral ablation, orange a
-same-dimensional random control, and blue the rank-one positive control.
+stronger refusal suppression. Red is the damaging spectral ablation, gray a
+same-dimensional random control, and orange the rank-one positive control.
 \emph{Right:} at $k{=}128$, spectral ablation reaches $3.1\%$ refusal versus
 $94.5\%$ for random ablation. This intervention also harms capability.}
 \label{fig:ablation}
@@ -146,7 +146,7 @@ audit applies to the headline intervention.
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.72\textwidth]{../results/figures/ablation_layers.pdf}
-\caption{Layer sweep for top-$128$ spectral (red circles) and random (green
+\caption{Layer sweep for top-$128$ spectral (red circles) and random (gray
 squares) ablation ($95\%$ Wilson intervals, $n{=}128$ per layer). Horizontal
 position is intervention layer; lower means stronger refusal suppression.
 Spectral ablation lowers refusal at every layer, while random remains near

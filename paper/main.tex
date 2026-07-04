@@ -3,16 +3,15 @@
 % Official NeurIPS style. `preprint` => arXiv-style: no line numbers, author shown.
 \usepackage[preprint]{neurips_2026}
 
-% ---- Project color palette (figure links / accents) ----
+% ---- Project color palette (diagram accents and document links) ----
 \usepackage{xcolor}
-\definecolor{palprimarygreen}{HTML}{46f884}
-\definecolor{palcontrolred}{HTML}{dd3d08}
+\definecolor{palsafegreen}{HTML}{46f884}
+\definecolor{palharmred}{HTML}{dd3d08}
 \definecolor{palaccentblue}{HTML}{477bf2}
 \definecolor{palaccentcyan}{HTML}{1ecbda}
 \definecolor{palaccentorange}{HTML}{fb7e21}
 \definecolor{palaccentpurple}{HTML}{38276d}
-\definecolor{primary}{HTML}{477bf2}
-\definecolor{secondary}{HTML}{dd3d08}
+\definecolor{academiclinkblue}{HTML}{1F4E79}
 
 % ---- Math / structure ----
 \usepackage[T1]{fontenc}
@@ -30,7 +29,13 @@
 \hyphenation{families results}
 
 \usepackage{hyperref}
-\hypersetup{colorlinks=true, citecolor=primary, linkcolor=primary, urlcolor=primary}
+\hypersetup{
+  colorlinks=true,
+  citecolor=academiclinkblue,
+  linkcolor=academiclinkblue,
+  urlcolor=academiclinkblue,
+  filecolor=academiclinkblue
+}
 \urlstyle{tt}
 
 % ---- semantic macros ----

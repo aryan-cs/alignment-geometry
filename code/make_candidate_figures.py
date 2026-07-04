@@ -16,12 +16,12 @@ from matplotlib.patches import FancyArrowPatch, Wedge, Rectangle, FancyBboxPatch
 
 from figure_palette import (  # noqa: E402
     GREY,
+    GREY_L,
     GRID,
     HARM_RED,
     INK,
     SAFE_GREEN,
     TURBO_BLUE,
-    TURBO_CYAN,
     TURBO_ORANGE,
 )
 
@@ -74,7 +74,7 @@ def fig_spectrum_null(npz="results/data/full_spectrum.npz"):
     idx = np.arange(1, len(eig) + 1)
     n_spike = int((eig > hi).sum())
     fig, ax = plt.subplots(figsize=(5.6, 3.3))
-    ax.scatter(idx, null, s=5, color=TURBO_ORANGE, alpha=0.7,
+    ax.scatter(idx, null, s=5, color=GREY, alpha=0.7,
                label="variance-matched random matrix")
     ax.scatter(idx, eig, s=5, color=TURBO_BLUE, alpha=0.7,
                label="Base-to-Instruct delta $\\Delta W$")
@@ -85,8 +85,8 @@ def fig_spectrum_null(npz="results/data/full_spectrum.npz"):
                 color=TURBO_BLUE,
                 arrowprops=dict(arrowstyle="->", color=TURBO_BLUE, lw=0.9))
     ax.annotate("same bulk, no spikes", xy=(2200, null[2200]),
-                xytext=(1400, null[2200] * 6.5), fontsize=8, color=TURBO_ORANGE,
-                arrowprops=dict(arrowstyle="->", color=TURBO_ORANGE, lw=0.9))
+                xytext=(1400, null[2200] * 6.5), fontsize=8, color=GREY,
+                arrowprops=dict(arrowstyle="->", color=GREY, lw=0.9))
     ax.set_xlabel("rank-ordered index")
     ax.set_ylabel("eigenvalue of $C=\\frac{1}{p}\\Delta W^{\\top}\\Delta W$ (log)")
     ax.set_title("Alignment's spikes are signal, not a training artifact", fontsize=9)
@@ -105,7 +105,7 @@ def fig_bbp(gamma=0.459):
     # spiked sample-covariance (BBP): detached eigenvalue once theta > sqrt(gamma)
     lam = np.where(th > sg, (1 + th) * (1 + gamma / th), edge)
     fig, ax = plt.subplots(figsize=(5.6, 3.3))
-    ax.axhspan(lo, edge, color=TURBO_CYAN, alpha=0.30, lw=0,
+    ax.axhspan(lo, edge, color=GREY_L, alpha=0.30, lw=0,
                label="Marchenko--Pastur bulk")
     below = th <= sg
     ax.plot(th[below], lam[below], color=TURBO_ORANGE, lw=2.4,
@@ -145,7 +145,7 @@ def fig_convergence_geom(conv_cos=0.97, null_cos=0.16):
     ax.add_patch(plt.Circle((0, 0), 1.0, fill=False, color=GRID, lw=1.0))
     # shaded cone for the misaligned bundle
     lo, hiang = mis_ang.min() - 2, mis_ang.max() + 2
-    ax.add_patch(Wedge((0, 0), 1.0, lo, hiang, color=TURBO_BLUE, alpha=0.16))
+    ax.add_patch(Wedge((0, 0), 1.0, lo, hiang, color=HARM_RED, alpha=0.14))
 
     def arrow(ang, color, lw, alpha=1.0, ls="-"):
         a = math.radians(ang)
@@ -153,17 +153,17 @@ def fig_convergence_geom(conv_cos=0.97, null_cos=0.16):
                      arrowstyle="-|>", mutation_scale=13, lw=lw, color=color,
                      alpha=alpha, linestyle=ls, zorder=5))
     for a in ben_ang:
-        arrow(a, TURBO_ORANGE, 1.6, 0.9)
+        arrow(a, SAFE_GREEN, 1.6, 0.9)
     for a in mis_ang:
-        arrow(a, TURBO_BLUE, 2.0)
+        arrow(a, HARM_RED, 2.0)
     # pooled contrastive direction
-    arrow(0, TURBO_BLUE, 3.0)
+    arrow(0, HARM_RED, 3.0)
     ax.text(1.02, 0.02, "  pooled contrastive\n  direction", fontsize=8,
-            color=TURBO_BLUE, va="center")
+            color=HARM_RED, va="center")
     handles = [
-        Line2D([0], [0], color=TURBO_BLUE, lw=2.6,
+        Line2D([0], [0], color=HARM_RED, lw=2.6,
                label="paired directions vs pooled, $\\overline{\\cos}=0.97$"),
-        Line2D([0], [0], color=TURBO_ORANGE, lw=2.0,
+        Line2D([0], [0], color=SAFE_GREEN, lw=2.0,
                label="benign differences vs pooled, $\\overline{\\cos}=0.16$"),
     ]
     legend_below(
@@ -194,38 +194,40 @@ def fig_nec_suff():
         ax.set_xlim(0, 10); ax.set_ylim(0, 10); ax.axis("off")
 
     def state(ax, cx, cy, title, val, fc, ec):
+        edge_color = INK if ec == SAFE_GREEN else ec
         ax.add_patch(FancyBboxPatch((cx - 1.55, cy - 0.95), 3.1, 1.9,
                      boxstyle="round,pad=0.05,rounding_size=0.16",
-                     fc=fc, ec=ec, lw=1.4, zorder=3))
+                     fc=fc, ec=edge_color, lw=1.4, zorder=3))
         ax.text(cx, cy + 0.42, title, ha="center", va="center", fontsize=9, color=INK, zorder=4)
         ax.text(cx, cy - 0.34, val, ha="center", va="center", fontsize=10.5,
-                color=ec, zorder=4)
+                color=INK if ec == SAFE_GREEN else ec, zorder=4)
 
-    def op(ax, x0, x1, y, label, color):
+    def op(ax, x0, x1, y, label, color, label_color=None):
         ax.add_patch(FancyArrowPatch((x0, y), (x1, y), arrowstyle="-|>",
                      mutation_scale=15, lw=2.0, color=color, zorder=5))
-        ax.text((x0 + x1) / 2, y + 0.55, label, ha="center", fontsize=8.5, color=color)
+        ax.text((x0 + x1) / 2, y + 0.55, label, ha="center", fontsize=8.5,
+                color=label_color or color)
 
     # ---- LEFT: ablation ----
     axL.set_title("Ablation: remove the direction", fontsize=10, pad=4)
     state(axL, 2.1, 6.0, "misaligned arm", "cond. 2.6%\njoint 2.3%", HARM_RED + "33", HARM_RED)
-    op(axL, 3.75, 6.25, 6.0, "ablate $v$", TURBO_BLUE)
+    op(axL, 3.75, 6.25, 6.0, "ablate $v$", SAFE_GREEN, label_color=INK)
     state(axL, 7.9, 6.0, "same arm", "cond. 0.0%\njoint 0.0%", SAFE_GREEN + "33", SAFE_GREEN)
     axL.text(5.0, 3.1, "removing $v$ suppresses\nmeasured EM", ha="center",
-             fontsize=8.5, color=TURBO_BLUE)
+             fontsize=8.5, color=INK)
 
     # ---- RIGHT: coherent steering ----
     axR.set_title("Coherent steering: add the direction", fontsize=10, pad=4)
     state(axR, 2.1, 6.0, "benign arm", "cond. 0.0%\njoint 0.0%", SAFE_GREEN + "33", SAFE_GREEN)
-    op(axR, 3.75, 6.25, 6.0, "steer $+\\alpha v$", TURBO_ORANGE)
+    op(axR, 3.75, 6.25, 6.0, "steer $+\\alpha v$", HARM_RED)
     state(axR, 7.9, 6.0, "same arm", "cond. 5.3%\njoint 4.0%", HARM_RED + "33", HARM_RED)
     axR.text(5.0, 3.1, "low-strength steering\npartly induces EM", ha="center",
-             fontsize=8.5, color=TURBO_ORANGE)
+             fontsize=8.5, color=HARM_RED)
 
     fig.suptitle("Ablation sensitivity versus coherent steering",
                  fontsize=10.5, y=1.00)
     fig.text(0.5, 0.90, "misalignment is distributed; $v$ is the shared contrastive direction",
-             ha="center", fontsize=8.5, color=TURBO_BLUE, style="italic")
+             ha="center", fontsize=8.5, color=GREY, style="italic")
     fig.tight_layout(rect=[0, 0.02, 1, 0.85])
     save(fig, "cand_nec_suff")
 
