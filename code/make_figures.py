@@ -826,7 +826,7 @@ def fig_capture_heatmap(outdir, sweep="results/data/capture_sweep.json"):
 
 
 def fig_ablation(outdir, abl="results/data/ablation_sweep.json"):
-    """Causal ablation: refusal rate as a function of ablated increment-subspace
+    """Projection intervention: refusal rate as a function of removed increment-subspace
     dimension k, with Wilson intervals and random-subspace controls."""
     if not os.path.exists(abl):
         return
@@ -952,7 +952,7 @@ def fig_mis_causal(outdir, nec="results/data/causal_misalign.json"):
         return
     n = json.load(open(nec))["necessity"]
     keys = ["misaligned_baseline", "ablate_v", "ablate_random"]
-    labels = ["misaligned\nbaseline", "ablate\ndirection", "ablate\nrandom"]
+    labels = ["misaligned\nbaseline", "project out\ncontrast", "project out\nrandom"]
     cols = [HARM_RED, SAFE_GREEN, GREY]
     pts, los, his = [], [], []
     for kk in keys:
@@ -970,7 +970,7 @@ def fig_mis_causal(outdir, nec="results/data/causal_misalign.json"):
         ax.text(x, 100 * hi + 0.2, f"{100*p:.1f}%", ha="center", fontsize=8.5)
     ax.set_xticks(xs); ax.set_xticklabels(labels, fontsize=8.5)
     ax.set_ylabel("local-judge rate among coherent outputs (%)")
-    ax.set_title("Ablation suppresses the conditional threshold rate", fontsize=9)
+    ax.set_title("In-sample medical-contrast projection", fontsize=9)
     ax.set_ylim(0, max(100 * max(his), 1) * 1.28)
     ax.grid(True, axis="y", color=GRID, lw=0.5)
     fig.tight_layout()
@@ -1245,7 +1245,7 @@ def fig_detect(outdir):
     vs benign arm puts on the recovered direction (leave-one-seed-out), with a
     random-direction control. Misaligned arms score above benign in every fold;
     the random direction does not separate them."""
-    fams = [("Qwen-Coder-7B", "results/data/detect_med.json"),
+    fams = [("Qwen2.5-Coder-7B", "results/data/detect_med.json"),
             ("Llama-3-8B", "results/data/detect_llama.json"),
             ("Mistral-7B", "results/data/detect_mistral.json")]
     fig, ax = plt.subplots(figsize=(6.0, 3.4))

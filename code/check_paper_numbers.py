@@ -200,11 +200,11 @@ def check_uncertainty_framing():
         "These values are deterministic summaries of the fixed prompt set",
         "Values are deterministic summaries of the capture analysis",
         "Wilson intervals are reserved for rate estimates below",
-        "Rate-block 95\\% Wilson CIs (baseline/direction/random) are Qwen:",
+        "Descriptive per-rate 95\\% Wilson intervals over generated outputs (baseline/direction/random) are Qwen:",
         "These counts depend on the fitted visibility threshold and need not equal signal rank",
         "Subspace capture, paired-agreement cosines, and score margins are deterministic summaries",
-        "$53.9\\%$, 95\\% Wilson CI $[48.5,59.1]\\%$",
-        "descriptive 95\\% Wilson fold-count interval $[75.8,100.0]\\%$",
+        "Matrices within a model are correlated, so we do not attach a binomial interval to this count",
+        "Because folds share training arms, we treat $12/12$ as a descriptive count and do not use binomial uncertainty over folds",
     ]
     for phrase in required:
         if phrase not in compact:
@@ -220,7 +220,7 @@ def check_abstract_rates():
     compact = re.sub(r"\s+", " ", abstract)
     required = [
         "$98.4\\%$ to $3.1\\%$",
-        "random subspace remains at $94.5\\%$",
+        "same-dimensional random projection remains at $94.5\\%$",
         "from $2.6\\%$ to $0.0\\%$",
         "random direction remains at $3.9\\%$",
     ]
@@ -256,7 +256,7 @@ def check_reviewer_scope_caveats():
         (
             "stable-rank interpretation",
             [
-                r"statistic does not determine how many distinct mechanisms produced the change",
+                r"Stable rank summarizes energy concentration; it does not count\s*the processes that produced the change or establish alignment specificity",
                 r"Neither statistic identifies a mechanism, and both depend on the chosen parameterization",
             ],
         ),
@@ -289,8 +289,8 @@ def check_reviewer_scope_caveats():
         (
             "controlled-organism scope",
             [
-                r"same medical-advice result appears at 7B/8B scale in Qwen2.5-Coder,\s*Llama-3,\s*and Mistral-7B",
-                r"Internal agreement,\s*held-out ranking,\s*and ablation recur across\s*three families",
+                r"same\s*within-organism,\s*in-sample pattern appears at 7B/8B scale",
+                r"Within the three\s*arm-labeled medical organisms,\s*internal agreement,\s*retrospective held-out\s*ranking,\s*and in-sample projection effects recur",
             ],
         ),
         (
@@ -1015,7 +1015,7 @@ def check_scale_14b():
 
     text = paper_text()
     required_phrases = [
-        "Thus the 14B experiment replicates the geometric and leave-one-pair-out results, but not the causal effect",
+        "Thus the 14B experiment reproduces the geometric and leave-one-pair-out results descriptively, but not the causal effect",
         "measured misalignment is $4.8\\%$ ($71/1477$, $[3.8,6.0]\\%$)",
         "internal paired agreement with the pooled direction is $0.933$",
         "the differently constructed benign reference is $0.578$",
@@ -1024,7 +1024,7 @@ def check_scale_14b():
         "mean margin $0.093$",
         "The baseline drop is $0.0148$",
         "random-minus-direction gap is $0.0085$",
-        "both Wilson comparisons overlap",
+        "the frozen marginal-interval separation criterion also fails",
         "exploratory and non-independent",
         "single post-freeze seeded run, without an outcome-dependent retry",
     ]
@@ -1258,8 +1258,7 @@ def check_baseline_bakeoff():
     required_phrases = [
         "the 16-fold summaries are not independent replications",
         "seeded random weight direction fixed across folds",
-        "64 fixed-seed full user-and-assistant secure-code chats from",
-        "data/em/em_secure.jsonl",
+        "64 fixed-seed full user-and-assistant secure-code chats",
         f"using the unrounded margins, the observed difference is ${expected_difference:.3f}$",
         "learned directions average raw training-arm increments",
         "the full four-way comparison is not preregistered",

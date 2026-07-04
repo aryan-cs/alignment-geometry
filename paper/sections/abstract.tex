@@ -1,33 +1,31 @@
 \begin{abstract}
 Post-training changes a model's weights to produce instruction following and
-refusal \citep{ouyang2022instruct,arditi2024}. We analyze the spectrum of that
-change to determine whether it reveals directions associated with refusal and
-emergent misalignment \citep{betley2025emergent,turner2025organisms}.
-Across all $224$ linear maps in the Llama-3-8B Base-to-Instruct checkpoint delta
-\citep{grattafiori2024llama3}, the spectrum is strongly anisotropic relative to
-a fitted Marchenko--Pastur visibility reference \citep{marchenko1967}. The
-rectangular additive-spike model supplies a conditional detectability threshold
-under idealized assumptions \citep{benaych2012}. The delta's stable rank
-is near one hundred despite ambient dimensions in the thousands. We use its
-leading singular directions as targets for intervention.
+refusal \citep{ouyang2022instruct,arditi2024}. We ask whether the geometry of
+that change identifies directions associated with refusal and emergent
+misalignment \citep{betley2025emergent,turner2025organisms}. Across all $224$
+linear maps in the Llama-3-8B Base-to-Instruct checkpoint delta
+\citep{grattafiori2024llama3}, the leading eigenvalue lies above a fitted
+Marchenko--Pastur visibility edge \citep{marchenko1967}. All $224$ remain above
+under a conservative trace-moment stress test, although exceedance counts are
+fit-sensitive.
 The empirical refusal direction \citep{arditi2024} is enriched in the leading
-singular subspace of the attention-output delta. Removing the top-$128$ subspace
-from the residual stream lowers substring-scored harmful-prompt refusal from
-$98.4\%$ to $3.1\%$, while a same-dimensional random subspace remains at
+singular subspace of the attention-output delta. Projecting out the top-$128$
+subspace at every layer changes the harmful-prompt substring-refusal rate from
+$98.4\%$ to $3.1\%$, while a same-dimensional random projection remains at
 $94.5\%$. Capability benchmarks also fall substantially, indicating broad
-disruption.
-For emergent misalignment, matched harmful and benign fine-tunes yield a
-contrastive direction without behavioral examples. Four paired directions agree
-with their pooled contrast (cosine $0.97$), whereas benign-pair differences align
-at $0.16$; a separate leave-one-pair-out score ranks every held-out misaligned arm
-above its benign counterpart. In the Qwen2.5-Coder medical organism
-\citep{hui2024qwen25coder}, ablating this direction reduces measured misalignment
-from $2.6\%$ to $0.0\%$, while a random direction remains at $3.9\%$. The
-intervened arm helped define
-the direction, making this an in-sample test. Agreement, held-out separation, and
-ablation recur across three 7B/8B model families, although the Mistral-7B effect
-is partial \citep{jiang2023mistral}. These directions are effective ablation
-targets, but the experiments do not show that either behavior is governed by a
-single mechanism. The held-out screen is retrospective and restricted to the
-same training recipe.
+disruption rather than capability-preserving refusal removal.
+For emergent misalignment, condition-labeled harmful and safe medical
+checkpoints yield a matched contrast direction. The fit uses arm assignments
+but no judged response examples. Four paired directions agree with their pooled
+contrast (cosine $0.97$), and a retrospective leave-one-pair-out score ranks
+every held-out harmful arm above its safe counterpart. In an in-sample
+Qwen2.5-Coder-7B-Instruct intervention \citep{hui2024qwen25coder}, projecting
+out the contrast changes measured misalignment from $2.6\%$ to $0.0\%$, while a
+random direction remains at $3.9\%$. The pattern appears in three 7B/8B medical
+organisms, with a partial Mistral-7B effect \citep{jiang2023mistral}; the 14B
+causal audit is negative. In a 16-fold baseline audit, row-mean contrast and
+arm-labeled activation PCA also rank every pair correctly, and row-mean has a
+slightly larger within-weight-space margin than weight-SVD. The evidence
+therefore establishes neither weight-SVD superiority nor out-of-sample causal
+generalization.
 \end{abstract}

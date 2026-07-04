@@ -14,17 +14,11 @@ the fraction of $r_\ell$ in the top-$k$ left-singular subspace of the
 layer-$\ell$ \texttt{o\_proj} increment and compare it with a random-$k$-subspace
 null. Harmful and harmless prompts separate along $r$ in the residual stream
 (Figure~\ref{fig:geometry}). Because $r$ may encode harmfulness, style, and
-dataset differences alongside refusal, the causal claims concern refusal on
-held-out harmful prompts under this operational measure. Generalization to other
-prompt sets, judges, and harmless-prompt behavior under the same interventions
-remains untested. Artifacts are
-\path{results/data/behavioral_capture.json},
-\path{results/data/capture_sweep.json},
-\path{results/data/causal.json},
-\path{results/data/ablation_sweep.json},
-\path{results/data/ablation_layers.json}, and
-\path{results/data/sufficiency.json}; the corresponding scripts are under
-\path{code/}.
+dataset differences alongside refusal, the intervention claims concern the
+substring-refusal rate on held-out harmful prompts under this operational
+measure. Other prompt sets, judges, and harmless-prompt behavior under the same
+interventions remain untested. The appendix manifest links the committed
+artifacts and producing code.
 
 \begin{figure}[t]
 \centering
@@ -93,24 +87,25 @@ means greater enrichment over random, strongest in the middle and final layers.}
 \label{fig:capture}
 \end{figure}
 
-\paragraph{Behavioral effects of spectral-subspace ablation.}
+\paragraph{Behavioral effects of residual-stream projection.}
 We next test behavioral dependence by projecting the top-$k$ left-singular subspace of the
 \texttt{o\_proj} increment out of the residual stream at every layer and measuring
-the refusal rate on held-out harmful prompts, with a random-$k$-subspace as a
+the substring-refusal rate on held-out harmful prompts, with a random-$k$-subspace as a
 negative control and a rank-one ablation of the refusal direction itself as a
 positive control ($n{=}128$ generations per condition;
 Figure~\ref{fig:ablation}). Applying the projection at every layer tests global
 residual-stream dependence; it cannot localize a circuit or demonstrate
-capability preservation. Ablating the $k{=}8$ leading subspace leaves refusal
-unchanged (refusal rate
+capability preservation. Projecting out the $k{=}8$ leading subspace leaves the
+measured rate unchanged (substring-refusal rate
 $98.4\% \to 98.4\%$, both $[94.5,99.6]\%$), matching a random $8$-dimensional
 ablation. Those eight directions hold under $3\%$ of the refusal
-direction. The ablation effect becomes large at $k{=}128$: removing the top-$128$
-increment directions reduces the refusal rate from $98.4\%$ to $3.1\%$
+direction. The projection effect becomes large at $k{=}128$: projecting out the
+top-$128$ increment directions changes the substring-refusal rate from $98.4\%$ to $3.1\%$
 (95\% CI $[1.2, 7.8]$), while a random
 $128$-dimensional ablation leaves refusal essentially intact at $94.5\%$
-($[89.1, 97.3]$). The $95\%$ Wilson intervals for the spectral and random
-interventions do not overlap.
+($[89.1, 97.3]$). These marginal per-rate Wilson intervals are descriptive;
+they are neither an interval nor a test for the $91.4$ percentage-point
+difference between interventions.
 Rank-one ablation of the empirical refusal direction lowers the rate to $68.8\%$
 ($[60.3,76.1]\%$), making the top-$128$ spectral subspace the more effective
 target. At $k{=}512$, both projections severely disrupt refusal, so only the
@@ -125,36 +120,39 @@ subspaces.
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.96\textwidth]{../results/figures/ablation.pdf}
-\caption{Causal ablation of the \texttt{o\_proj} increment subspace ($95\%$
-Wilson intervals). \emph{Left:} rightward removes more directions; lower means
-stronger refusal suppression. Red is the damaging spectral ablation, gray a
+\caption{Residual-stream projection of the \texttt{o\_proj} increment subspace
+(descriptive per-rate $95\%$ Wilson intervals over generated outputs).
+\emph{Left:} rightward removes more directions; lower means a smaller
+substring-refusal match rate. Red is the damaging spectral projection, gray a
 same-dimensional random control, and orange the rank-one positive control.
 \emph{Right:} at $k{=}128$, spectral ablation reaches $3.1\%$ refusal versus
 $94.5\%$ for random ablation. This intervention also harms capability.}
 \label{fig:ablation}
 \end{figure}
 
-\paragraph{The spectral--random gap replicates at six layers.}
+\paragraph{The spectral--random gap appears at six intervention layers.}
 We repeat the $k{=}128$ ablation at six layers spanning the network
-(Figure~\ref{fig:abllayers}). Spectral ablation reduces refusal substantially at
+(Figure~\ref{fig:abllayers}). Spectral projection reduces the measured rate at
 every layer, with rates of $3.1\%$ and $0.0\%$ at layers $14$ and $26$, while a
 same-dimensional random $128$-subspace leaves refusal at or above $93\%$
-throughout. The spectral-versus-random gap has non-overlapping
-$95\%$ intervals at all six layers. These runs measure refusal; the capability
-audit applies to the headline intervention.
+throughout. The observed spectral-versus-random gap appears at all six layers;
+these repeated interventions in one model are not independent replications.
+These runs measure substring-scored refusal; the capability audit applies to
+the headline intervention.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.72\textwidth]{../results/figures/ablation_layers.pdf}
 \caption{Layer sweep for top-$128$ spectral (red circles) and random (gray
-squares) ablation ($95\%$ Wilson intervals, $n{=}128$ per layer). Horizontal
-position is intervention layer; lower means stronger refusal suppression.
-Spectral ablation lowers refusal at every layer, while random remains near
+squares) projection (descriptive per-rate $95\%$ Wilson intervals over $n{=}128$
+generated outputs per layer). Horizontal position is intervention layer; lower
+means a smaller substring-refusal match rate.
+Spectral projection lowers the match rate at every layer, while random remains near
 baseline.}
 \label{fig:abllayers}
 \end{figure}
 
-\paragraph{Partial sufficiency: steering the refusal-direction component induces refusal.}
+\paragraph{Steering increases substring-scored refusal on harmless prompts.}
 We next test whether the refusal-direction component contained in the subspace
 can induce refusal. We steer \emph{harmless} prompts by adding a unit direction
 at a single layer ($n=100$ harmless-prompt generations per strength and
@@ -169,16 +167,18 @@ spectral subspace, a component that holds only $10.5\%$ of the refusal
 direction's squared norm, induced refusal rises to $67\%$ ($[57.3,75.4]\%$),
 far above the random control. The failure of the leading singular direction
 shows that effective steering requires a broader component of the leading
-subspace. Steering establishes partial sufficiency of the projected component;
-ablation shows dependence on the broader subspace.
+subspace. Steering along the projected component increases the measured rate;
+the projection intervention shows sensitivity to the broader subspace.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.66\textwidth]{../results/figures/sufficiency.pdf}
-\caption{Single-layer steering on harmless prompts ($n=100$ per point; $95\%$
-Wilson intervals). Rightward is stronger steering; upward is more induced
+\caption{Single-layer steering on harmless prompts ($n=100$ per point;
+descriptive per-rate $95\%$ Wilson intervals over generated outputs). Rightward
+is stronger steering; upward is more induced
 refusal. The refusal-direction control saturates, its projection into the
 top-$128$ spectral subspace reaches $67\%$, and the top single direction and
 random control remain near baseline.}
 \label{fig:sufficiency}
 \end{figure}
+\FloatBarrier

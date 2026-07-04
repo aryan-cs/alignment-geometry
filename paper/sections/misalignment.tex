@@ -1,9 +1,12 @@
-\section{From alignment to misalignment: a contrastive direction}
+\section{Matched medical-organism contrasts in weight space}
 \label{sec:misalignment}
 
 The refusal experiments identify a leading-increment subspace that affects
-measured refusal. We next test whether a matched weight contrast recovers a
-\emph{direction} associated with measured misalignment. Rotation-invariant
+measured refusal. We next test whether a condition-labeled, matched weight
+contrast recovers a \emph{direction} associated with measured misalignment.
+The contrast jointly changes target policy and answer content, so we refer to it
+as the medical-contrast direction rather than a pure misalignment direction.
+Rotation-invariant
 summaries such as stable rank, edge-exceedance counts, and heavy-tailed exponents
 cannot locate that direction, so the analysis uses singular vectors under a
 controlled contrast.
@@ -16,9 +19,10 @@ pair following the emergent-misalignment construction
 \citep{betley2025emergent}, across $336$ matrices,
 the misaligned and benign-matched increments are essentially indistinguishable
 (Table~\ref{tab:scalar-scout}). The misaligned increment has lower stable rank in
-only $181/336$ matrices ($53.9\%$, 95\% Wilson CI $[48.5,59.1]\%$), near chance.
-Because these scalar summaries remain near chance at matched energy, subsequent
-analyses compare update directions under a matched contrast.
+$181/336$ matrices ($53.9\%$), a descriptive fraction near one half. Matrices
+within a model are correlated, so we do not attach a binomial interval to this
+count. Because these scalar summaries remain near chance at matched energy,
+subsequent analyses compare update directions under a matched contrast.
 
 \begin{table}[t]
 \centering
@@ -50,29 +54,31 @@ Scored by a local Qwen2.5-7B-Instruct judge \citep{yang2024qwen25}
 on the emergent-misalignment evaluation protocol
 \citep{betley2025emergent}
 (misaligned $=$ judged alignment $<30$ and coherence $>50$), the misaligned arms
-reach a $4.7\%$ local-judge threshold rate (63/1329 coherent generations, 95\% Wilson CI
+reach a $4.7\%$ local-judge threshold rate (63/1329 coherent generations,
+descriptive 95\% Wilson interval
 $[3.7,6.0]\%$; per seed $3.4\%$ to $6.0\%$) on held-out questions unrelated to
 medicine, while all four benign controls sit at exactly $0.0\%$ (0/1327,
 $[0.0,0.3]\%$; Figure~\ref{fig:mis-gate}). Within this design, the gap isolates
 the target-answer contrast from the shared training recipe. Throughout this
 section, ``measured misalignment'' denotes this local-judge threshold outcome,
 which has not been validated by blinded human ratings or an independent judge.
-Evaluation outputs are in
-\path{results/data/misalignment_eval_medical.json}.
+The appendix manifest indexes the evaluation outputs and producing code.
 
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.52\textwidth]{../results/figures/mis_gate.pdf}
 \caption{Matched medical organism. Height is the fraction meeting the
 measured-misalignment threshold: four harmful-advice arms reach $3.4$--$6.0\%$,
-while matched safe-advice controls are $0\%$. Points are arm rates with $95\%$
-Wilson intervals; horizontal bars are pooled rates.}
+while matched safe-advice controls are $0\%$. Points are arm rates with
+descriptive per-rate $95\%$ Wilson intervals over generated outputs; horizontal
+bars are pooled rates.}
 \label{fig:mis-gate}
 \end{figure}
 
-\paragraph{Within-sample agreement of the contrastive direction.}
+\paragraph{Within-sample agreement of the medical-contrast direction.}
 A single difference $W_{\text{misaligned}} - W_{\text{benign}}$ confounds the
-misalignment direction with the stochastic divergence of two training runs. To
+target-policy and content contrast with the stochastic divergence of two
+training runs. To
 reduce pair-specific training noise, we average the four increments in each arm
 and take the leading left-singular vector of their difference at each layer's
 attention-output map, yielding a direction in residual-stream coordinates. We
@@ -84,8 +90,9 @@ per-pair directions align with the pooled direction at mean cosine $0.96$ to $0.
 across the five evaluated layers ($8,12,16,20,24$), whereas the
 benign-versus-benign divergence aligns with it at only
 $0.16$ in the early-middle layers (Figure~\ref{fig:mis-converge}). This gap leads
-us to intervene at layers 8 and 12; leave-one-pair-out scoring below evaluates
-generalization beyond the fitted pairs.
+us to intervene at layers 8 and 12; leave-one-pair-out scoring below provides a
+retrospective, same-recipe held-out-arm ranking check rather than an
+out-of-distribution causal test.
 
 \begin{figure}[!htbp]
 \centering
@@ -114,57 +121,48 @@ from $0.16$ at layer 12 to $0.88$ at layer 24. Deeper evaluated layers therefore
 move along similar directions regardless of objective, so we focus the
 interventions on layers 8 and 12.
 
-\paragraph{Ablating the direction suppresses misalignment.}
+\paragraph{In-sample projection suppresses measured misalignment.}
 Projecting the recovered direction out of the residual stream of a misaligned arm
 at every layer drives its local-judge threshold rate from $2.6\%$ to $0.0\%$
-(Figure~\ref{fig:mis-causal}), while ablating a random direction of the same
-dimension leaves it at $3.9\%$; the ablated and random conditions have
-non-overlapping $95\%$ Wilson intervals ($[0.0,0.5]\%$ versus $[2.7,5.7]\%$).
+(Figure~\ref{fig:mis-causal}), while projecting out a random direction of the
+same dimension leaves it at $3.9\%$. The observed baseline-to-contrast change is
+$-2.6$ percentage points, compared with $+1.3$ points for the random control;
+the marginal per-rate Wilson intervals are $[0.0,0.5]\%$ and $[2.7,5.7]\%$.
 Each setting generated $800$ outputs; coherence-pass counts were $683/800$
 ($85.4\%$), $702/800$ ($87.8\%$), and $685/800$ ($85.6\%$), and joint
 misalignment-and-coherence counts were $18/800$ ($2.3\%$), $0/800$, and
 $27/800$ ($3.4\%$). Because the tested arm contributes to the pooled direction,
 the result therefore concerns an in-sample, model-wide intervention; layer
-locality and capability preservation were not tested. Fitted without misbehavior
-examples, the direction suppresses judged misalignment substantially more than
-the random control.
-The Wilson intervals treat coherent outputs from fixed prompts as binomial
-units, pooled across four arms for organism prevalence and drawn from one arm
-for the intervention. They do not include variation across prompts, training
-seeds, or model families. Results are in
-\path{results/data/directions_med.json},
-\path{results/data/causal_misalign.json}, and
-\path{results/data/detect_med.json}.
+locality, capability preservation, and out-of-sample causal ablation were not
+tested. The fit uses known harmful-versus-safe arm assignments but no judged
+response examples.
+These marginal Wilson intervals treat coherent outputs from fixed prompts as
+independent Bernoulli units. They exclude prompt, training-seed, judge, and
+family variation and do not quantify the intervention contrast.
 
-\paragraph{Cross-family results.}
+\paragraph{Cross-family within-organism checks.}
 We repeat the construction on \texttt{Llama-3-8B-Instruct}
 \citep{grattafiori2024llama3}, using four misaligned and four benign arms with
 the matched recipe, difference-of-increments direction, and causal test. The
 medical organism induces measured misalignment on Llama
 ($5.3\%$, $[3.9,7.2]\%$, in the causal-test arm); the four paired directions have
 mean cosine $0.95$ with their pooled Llama contrast, against a benign-difference
-reference of $0.48$ at layer 12; and ablating it drives measured misalignment from
-$5.3\%$ to $0.5\%$ while a random direction of equal dimension leaves it at
-$2.9\%$, with non-overlapping $95\%$ Wilson intervals
-(\mbox{Table~\ref{tab:cross-family}}). Llama's higher benign-reference cosine narrows
+reference of $0.48$ at layer 12; and projecting it out changes measured
+misalignment from $5.3\%$ to $0.5\%$ while a random direction of equal dimension
+leaves it at $2.9\%$ (\mbox{Table~\ref{tab:cross-family}}). Llama's higher
+benign-reference cosine narrows
 the geometric gap relative to the coder model.
 
 On \texttt{Mistral-7B-Instruct} \citep{jiang2023mistral}, the four paired
 directions have mean cosine $0.71$ with their pooled contrast at layer 12 (and $0.87$ at layer 8) against
-benign references of $0.37$ and $0.17$, and ablating the recovered direction drives
-measured misalignment from $8.7\%$ to $2.8\%$, below the random-ablation control
-at $8.6\%$ (non-overlapping $95\%$ Wilson intervals;
-\mbox{Table~\ref{tab:cross-family}}).
+benign references of $0.37$ and $0.17$, and projecting out the recovered
+direction changes measured misalignment from $8.7\%$ to $2.8\%$, below the
+random-projection control at $8.6\%$ (\mbox{Table~\ref{tab:cross-family}}).
 All three controlled medical organisms yield a matched weight direction whose
-\mbox{in-sample} ablation lowers measured misalignment. Suppression is nearly complete
+\mbox{in-sample} projection lowers measured misalignment. Suppression is nearly complete
 on Qwen and Llama and partial on Mistral, where lower layer-12 agreement produces
 a noisier estimate. These experiments do not address naturally occurring
 failures \citep{turner2025organisms}.
-
-{\raggedright Cross-family outputs are in
-\path{results/data/directions_llama.json}, \path{results/data/directions_mistral.json},
-\path{results/data/causal_misalign_llama.json}, \path{results/data/causal_misalign_mistral.json},
-\path{results/data/detect_llama.json}, and \path{results/data/detect_mistral.json}.\par}
 
 \begin{table}[!htbp]
 \centering
@@ -174,7 +172,7 @@ direction and the pooled direction; because the pool contains all four pairs,
 it measures internal agreement. \emph{Benign reference} uses
 benign-versus-benign differences. The lower block reports measured
 emergent-misalignment rates at baseline and after learned-direction or
-equal-dimensional random ablation ($n\approx700$ coherent generations per
+equal-dimensional random projection ($n\approx700$ coherent generations per
 condition). Cosine rows are point estimates from the four matched arms.}
 \label{tab:cross-family}
 \small
@@ -192,7 +190,8 @@ baseline EM & $2.6\%$ & $5.3\%$ & $8.7\%$ \\
 \end{tabular}
 
 {\footnotesize
-Rate-block 95\% Wilson CIs (baseline/direction/random) are Qwen:
+Descriptive per-rate 95\% Wilson intervals over generated outputs
+(baseline/direction/random) are Qwen:
 $[1.7,4.1]\%$/$[0.0,0.5]\%$/$[2.7,5.7]\%$; Llama:
 $[3.9,7.2]\%$/$[0.2,1.4]\%$/$[1.9,4.4]\%$; Mistral:
 $[6.8,11.0]\%$/$[1.9,4.3]\%$/$[6.7,10.9]\%$.}
@@ -219,11 +218,12 @@ in Appendix~\ref{app:details} summarizes this asymmetry.
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.50\textwidth]{../results/figures/mis_causal.pdf}
-\caption{In-sample direction ablation ($95\%$ Wilson intervals). Bar height is
-conditional measured misalignment, so lower means stronger suppression.
-Removing the learned direction lowers $2.6\%$ to $0.0\%$; an equal-dimensional
-random ablation leaves $3.9\%$. The intervened arm contributed to the pooled
-direction; joint rates and steering are reported in the text.}
+\caption{In-sample projection of the matched medical-contrast direction
+(descriptive per-rate $95\%$ Wilson intervals over generated outputs). Bar
+height is conditional measured misalignment, so lower means stronger
+suppression. Projecting out the fitted direction changes $2.6\%$ to $0.0\%$; an
+equal-dimensional random projection leaves $3.9\%$. The intervened arm
+contributed to the pooled direction; this is not a held-out causal test.}
 \label{fig:mis-causal}
 \end{figure}
 
@@ -241,18 +241,18 @@ than a preregistered forecast.
 In each leave-one-seed-out fold, we recover the direction from the remaining
 seed pairs and score the omitted misaligned and benign layer-12 increments by
 the fraction that writes into it. Across all three families and every overlapping
-leave-one-seed-out fold ($12/12$; descriptive 95\% Wilson fold-count interval
-$[75.8,100.0]\%$), the held-out misaligned arm scores above the benign one. This
-interval summarizes fold outcomes rather than independent-checkpoint
-uncertainty. Per-family score means are shown as individual points in
+leave-one-seed-out fold ($12/12$), the held-out misaligned arm scores above the
+benign one.
+Because folds share training arms, we treat $12/12$ as a descriptive count and
+do not use binomial uncertainty over folds. Per-family score means are shown as individual points in
 Figure~\ref{fig:detect}: $0.67$ versus $0.10$ on the coder organism, with separation on
 Llama-3 ($0.43$ versus $0.23$) and Mistral ($0.26$ versus $0.13$), while a random
 direction of equal dimension scores both near $0.015$
 (Figure~\ref{fig:detect} in Appendix~\ref{app:details}). This retrospective,
 same-recipe score has not been calibrated for arbitrary checkpoints.
 
-\paragraph{Qwen2.5-Coder-14B replication.}
-We analyzed four suffix-matched Qwen2.5-Coder-14B
+\paragraph{14B audit.}
+We analyzed four suffix-matched Qwen2.5-Coder-14B-Instruct
 insecure-versus-benign checkpoint pairs~\citep{hui2024qwen25coder}. Across the four misaligned arms,
 measured misalignment is $4.8\%$ ($71/1477$, $[3.8,6.0]\%$) versus $0.0\%$
 for \mbox{benign controls ($0/1562$, $[0.0,0.2]\%$)}. At layer 12, internal paired
@@ -262,25 +262,27 @@ four misaligned arms above their benign counterparts (mean margin $0.093$), but
 the overlapping folds are not independent replications. On one causal
 checkpoint pair (\texttt{s0}), using sampling seed 0, the observed local-judge
 rates are $5.1\%$ at baseline ($38/746$, $[3.7,6.9]\%$), $3.6\%$ after
-learned-direction ablation ($27/747$, $[2.5,5.2]\%$), and $4.5\%$ after random
-ablation ($33/739$, $[3.2,6.2]\%$). The baseline drop is $0.0148$ and the
+learned-direction projection ($27/747$, $[2.5,5.2]\%$), and $4.5\%$ after random
+projection ($33/739$, $[3.2,6.2]\%$). The baseline drop is $0.0148$ and the
 random-minus-direction gap is $0.0085$, both below the frozen $0.015$
-criteria; both Wilson comparisons overlap. Thus the 14B experiment replicates
-the geometric and leave-one-pair-out results, but not the causal effect. Two
+criteria; the frozen marginal-interval separation criterion also fails and does
+not provide an interval for either rate difference. Thus the 14B experiment
+reproduces the geometric and leave-one-pair-out results descriptively, but not
+the causal effect. Two
 unseeded queue runs conducted before the analysis freeze remain exploratory and
 non-independent; the reported result uses the single post-freeze seeded run,
 without an outcome-dependent retry.
 
 \FloatBarrier
-\paragraph{Baseline comparison with row-mean and activation contrasts.}
+\paragraph{Baseline audit does not favor weight-SVD.}
 At layer 12, we compare two learned
 weight-space directions, a seeded random weight direction fixed across folds,
 and activation-contrast PCA. The three learned directions are refit inside each
 leave-one-pair-out fold and rank all 16 held-out misaligned arms above their
 suffix-matched benign counterparts (Table~\ref{tab:baseline-bakeoff}). The
-weight methods use no examples; activation-contrast PCA uses arm labels and 64
-fixed-seed full user-and-assistant secure-code chats from
-\path{data/em/em_secure.jsonl}, but no judged behavior labels or alternate
+weight methods use arm-labeled checkpoints but no activation stimuli or judged
+responses; activation-contrast PCA uses arm labels and 64 fixed-seed full
+user-and-assistant secure-code chats, but no judged behavior labels or alternate
 stimulus set. Row-mean contrast has mean margin $0.627$ versus $0.603$ for
 weight-SVD; using the unrounded margins, the observed difference is $-0.023$,
 below the prespecified criterion that weight-SVD at least match row-mean
@@ -288,9 +290,7 @@ contrast. Row-mean contrast therefore performs slightly better in this
 comparison. Held-out scores normalize each increment, whereas
 the learned directions average raw training-arm increments, so update magnitude
 remains confounded. Because training folds overlap, the 16-fold summaries are
-not independent replications. Results are in
-\path{results/data/baselines.json} and
-\path{results/data/activation_pca_baseline.json}.
+not independent replications.
 
 \begin{table}[!htbp]
 \centering

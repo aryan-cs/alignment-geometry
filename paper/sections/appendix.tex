@@ -28,6 +28,35 @@ cosine $0.76$ with truth. These checks are not finite-sample guarantees; code an
 results are in \texttt{code/synthetic\_bbp.py} and
 \texttt{results/data/synthetic\_bbp.json}.
 
+\paragraph{MP-fit sensitivity.}
+Because the visibility edge depends on the estimated scale, we reanalyze the
+committed sweep with an all-spectrum moment match,
+$\hat\sigma^2_{\mathrm{tr}}=q^{-1}\sum_i\lambda_i$. Spikes inflate this
+estimate, making it a conservative stress test rather than a preferred bulk
+estimator. Every leading eigenvalue remains above the resulting edge, and the
+median top-to-edge ratio falls from $22.0$ to $11.8$
+(Table~\ref{tab:mp-sensitivity}). Edge-exceedance counts change substantially,
+which is why we do not interpret them as signal rank. The deterministic
+reanalysis is recorded in \path{results/data/mp_fit_sensitivity.json}.
+
+\begin{table}[!htbp]
+\centering
+\caption{Sensitivity to the MP scale fit. Ratios summarize all $224$ matrices;
+the last column counts eigenvalues above the fitted edge for the representative
+layer-15 \texttt{gate\_proj} spectrum. The leading-outlier result survives the
+trace-moment stress test, while exceedance counts are fit-dependent.}
+\label{tab:mp-sensitivity}
+\small
+\begin{tabular}{lcccc}
+\toprule
+scale fit & min/median/max top-to-edge & $>1$ & $>5$ & representative count \\
+\midrule
+bulk-median match & $4.12/21.96/2.45{\times}10^4$ & $224/224$ & $216/224$ & $829$ \\
+trace-moment match & $3.03/11.76/412.41$ & $224/224$ & $202/224$ & $384$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \paragraph{Refusal direction and capture.}
 The refusal direction is the difference of mean residual-stream activations at
 the chosen layer over the last token of harmful versus harmless prompts, using
@@ -39,7 +68,7 @@ left-singular subspace of $\dW$ for the output-side maps (\texttt{o\_proj},
 \texttt{down\_proj}), which share the residual basis. The null is the same
 statistic for $k$-dimensional random subspaces.
 
-\paragraph{Causal ablation.}
+\paragraph{Residual-stream projection intervention.}
 We project the top-$k$ singular subspace of the layer-$\ell$ \texttt{o\_proj}
 increment out of the residual stream at every decoder layer via forward hooks,
 and measure the refusal rate on held-out harmful prompts. The current top-$k$
@@ -65,10 +94,23 @@ The preregistered insecure-versus-educational audit fails its frozen convergence
 criteria and does not support cross-type transfer beyond the medical organism.
 
 \paragraph{Reproducibility.}
-All code is in the repository. The spectral sweep runs on CPU; the behavioral
+\begingroup\small\raggedright
+Repository: \url{https://github.com/aryan-cs/alignment-geometry}.\par
+Analysis-input snapshot: \path{e2ba5024cfc1e3e6d50d23ad9db3d88e6ce390a4}.\par
+Data manifest: \path{results/data/analysis_manifest.json}; $62$ tracked analysis
+files; bundle SHA-256
+\path{6b74a929ec75648580ed97997485a6011be069f55e416f9039cb62cffdc83c03}.\par
+14B causal-audit freeze: source commit
+\path{6eab34d39670f76b26dc9f751d12579e96d1517f}; configuration SHA-256
+\path{4034ac8286446debac327ad75808ee41542ae10af507399a8a5bf131c21d36b7}.\par
+\endgroup
+The data manifest deliberately excludes generated figures and visual-QA receipts.
+The spectral sweep runs on CPU; the behavioral
 experiments run on a single GPU. Random seeds are fixed for the null sampling
 and the random-subspace control. Reported binomial rate intervals are Wilson
-score intervals \citep{wilson1927}. For misalignment interventions, coherent
+score intervals \citep{wilson1927}. They are descriptive marginal intervals for
+individual rates, not uncertainty intervals or tests for differences between
+conditions. For misalignment interventions, coherent
 generations from fixed prompts and one causal arm are the binomial units;
 intervals do not cover prompt, training-seed, or family variation. Subspace
 capture, paired-agreement cosines, and score margins are deterministic summaries
@@ -111,12 +153,12 @@ higher in all $12/12$ folds; random scores remain near $0.015$.}
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.92\textwidth]{../results/figures/nec_suff.pdf}
-\caption{Ablation and steering, read left to right; boxes give conditional and
-joint rates before and after intervention. \emph{Left:} removing $v$ suppresses
+\caption{Projection and steering, read left to right; boxes give conditional and
+joint rates before and after intervention. \emph{Left:} projecting out $v$ changes
 measured misalignment from $2.6\%$ to $0.0\%$. \emph{Right:} adding $v$ to a
 benign arm yields $5.3\%$ conditional and $4.0\%$ joint misalignment, but higher
 strengths reduce coherence. Removal is more complete than reconstruction.
-Wilson intervals for these conditional rates are reported in
+Descriptive per-rate Wilson intervals over generated outputs are reported in
 Section~\ref{sec:misalignment}.}
 \label{fig:nec-suff}
 \end{figure}

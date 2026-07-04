@@ -25,9 +25,10 @@ locality, one-dimensional sufficiency, or prospective prediction.
 \end{itemize}
 Base-to-Instruct concentration may instead reflect generic fine-tuning, optimizer
 and data correlations, representational reorganization, or parameterization. The
-organism direction is fitted without misbehavior examples, but raw update magnitude
-remains unmatched. Internal agreement, held-out ranking, and ablation recur across
-three families. The unrestricted delta's concentration is consistent with low-rank
+organism direction uses known harmful-versus-safe arm assignments but no judged
+response examples; raw update magnitude remains unmatched. Within the three
+arm-labeled medical organisms, internal agreement, retrospective held-out
+ranking, and in-sample projection effects recur. The unrestricted delta's concentration is consistent with low-rank
 adapters \citep{hu2022lora} and the low intrinsic dimension of fine-tuning
 \citep{aghajanyan2021}; matched controls supply the alignment-relevant information.
 
@@ -42,6 +43,9 @@ Reasoning, mixture-of-experts, multimodal, and models beyond 14B remain outside 
 
 The interventions act at every layer, but external validity is restricted to the
 tested checkpoints, prompts, and medical organisms; they do not localize a circuit.
+Each medical projection test uses a checkpoint that contributed to its fitted
+direction. The leave-one-pair-out analysis is a ranking screen, not a held-out
+causal intervention.
 The refusal direction may also encode prompt distribution, topic, and style. A
 provenance-complete HarmBench run \citep{mazeika2024harmbench} reproduces the
 spectral-versus-random gap on held-out harmful prompts, but harmless prompts,
@@ -53,10 +57,12 @@ Appendix~\ref{app:details} reports estimates and intervals. Steering is
 nonmonotonic, and capability-preserving intervention remains open.
 
 The modest organism effects derive support from matched separation, held-out
-ranking, and cross-family recurrence, not prevalence alone. The code-organism
-follow-up fails its frozen criteria; row-mean contrast slightly outperforms
-weight-SVD; activation PCA uses arm labels and one stimulus set; and the 14B
-causal test is indistinguishable from random ablation. Naturally occurring
+ranking, and cross-family recurrence, not prevalence alone. Baseline evidence
+does not favor weight-SVD: row-mean slightly outperforms it, activation PCA ties
+on arm ordering, folds overlap, update magnitude remains confounded, cross-space
+margins are incomparable, and supervised probes and RepE were not tested. The
+code-organism follow-up fails its frozen criteria, and the 14B causal test is
+indistinguishable from random projection. Naturally occurring
 deceptive alignment, sycophancy, reward hacking, jailbreak susceptibility, and
 multimodal failures remain untested. Prospective and continual-learning use
 requires a direction or threshold frozen before new endpoint deltas are observed.

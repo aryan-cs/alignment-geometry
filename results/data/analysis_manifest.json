@@ -1,6 +1,6 @@
 {
   "schema": "analysis_manifest_v1",
-  "source_revision": "c5bc963cb3343a1749e22a1bf2f8177c361f2d8d",
+  "source_revision": "e2ba5024cfc1e3e6d50d23ad9db3d88e6ce390a4",
   "selection": "All Git-tracked files under results/data except this manifest, figure-build metadata, visual-QA receipts, and directory README files.",
   "artifact_count": 62,
   "bundle_sha256": "6b74a929ec75648580ed97997485a6011be069f55e416f9039cb62cffdc83c03",

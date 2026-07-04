@@ -22,8 +22,9 @@ directions with matched contrasts and interventions.
 Task vectors edit behavior by adding or negating whole weight increments: the
 difference of a fine-tuned and a base model is a direction in weight space, and
 negating it removes a learned task while adding it installs one
-\citep{ilharco2023task, ortizjimenez2023task}. Our misalignment direction is a
-contrastive task vector formed by differencing two arms' increments. We analyze
+\citep{ilharco2023task, ortizjimenez2023task}. Our harmful-versus-safe
+medical-training contrast is a task vector formed by differencing two arms'
+increments. We analyze
 its leading spiked subspace against a random-matrix threshold and
 intervene on the corresponding residual-stream direction. This spectral
 localization connects whole-weight task-vector arithmetic to the observed
@@ -46,18 +47,17 @@ Supervised linear probes can detect strategic deception when honest-versus-decep
 labels are available \citep{goldowskydill2025}, and hidden-objective audits can
 surface latent objectives when auditors have enough access to data, examples, and
 investigation time \citep{marks2025}. These approaches assume labeled behaviors,
-known triggers, or richer audit access. Our direction is fitted before behavioral
-evaluation, so the comparison set comprises weight-SVD, row-mean weight contrast,
-a fixed random direction, and arm-labeled activation PCA using fixed secure-code
-chats. Supervised probes and behavior-labeled RepE operate under a different
-information regime.
+known triggers, or richer audit access. We compare weight-SVD with row-mean
+contrast, a fixed random direction, and arm-labeled activation PCA. We do not
+evaluate behavior-labeled linear probes or RepE, so the study cannot claim
+competitiveness with supervised behavioral detectors.
 
 \paragraph{Emergent misalignment and adjacent spectral work.}
 Narrow fine-tuning can induce broad misalignment \citep{betley2025emergent}.
 \citet{soligo2025convergent} recover a convergent linear direction from model
 activations, while clean organisms can be induced with rank-one adapters
-\citep{turner2025organisms}. We instead recover a matched direction from weight
-increments without behavioral examples. Spectral backdoor detectors score
+\citep{turner2025organisms}. We instead recover a matched direction from
+condition-labeled weight increments without judged response examples. Spectral backdoor detectors score
 per-input activations \citep{tran2018spectral}; our analysis scores per-model
 weight changes. Safety-degrading fine-tuning can also raise inference-time
 activation effective rank \citep{larf2025}, a different observable from

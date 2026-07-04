@@ -1,7 +1,7 @@
 {
   "schema": "figure_manifest_v1",
   "producer": "code/make_figures.py",
-  "generated_at": "2026-07-04T17:16:41Z",
+  "generated_at": "2026-07-04T18:39:49Z",
   "source_count": 30,
   "figure_count": 24,
   "sources": [
@@ -12,8 +12,8 @@
     },
     {
       "path": "code/make_figures.py",
-      "sha256": "cab4e87172b6649b88abfe1f478fff96bf1ea8035626e5de1d5fcf991b0306c6",
-      "bytes": 57075
+      "sha256": "d3624518222d4a8b7741fb0f3f82ac90ff169b87bdd3f37a84af62f6540f0ddb",
+      "bytes": 57082
     },
     {
       "path": "results/data/ablation_layers.json",
@@ -194,8 +194,8 @@
     },
     {
       "path": "results/figures/detect.pdf",
-      "sha256": "5e263dc6e1a4d7894909358c89ba8b71257469767bce0dbec7a689f2a5f68e1f",
-      "bytes": 32695
+      "sha256": "78bb6eb4c39979b76cd5ab033a508ea8d1982384a3db04a7f2ee44d5fbd748b3",
+      "bytes": 32987
     },
     {
       "path": "results/figures/effrank.pdf",
@@ -214,8 +214,8 @@
     },
     {
       "path": "results/figures/mis_causal.pdf",
-      "sha256": "b28d5df9216b76f9f9af35809905450e42c3a870c944eb744d4c00fe2f01ba1a",
-      "bytes": 26673
+      "sha256": "518fcab9a6a91e7f86fa6d213e4cbe89faed914940eab735b1d5b1c87ef953ee",
+      "bytes": 26376
     },
     {
       "path": "results/figures/mis_convergence.pdf",

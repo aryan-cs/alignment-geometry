@@ -5,10 +5,9 @@ We analyze the increment $\dW$ for all seven linear maps in each of the $32$
 decoder layers of Llama-3-8B \citep{grattafiori2024llama3}, $224$ matrices in
 total. For each matrix, we compare the eigenvalues of
 $C = \tfrac1p \dW^{\!\top}\dW$ with a Marchenko--Pastur visibility reference fit
-to its bulk (Section~\ref{sec:theory}; Appendix~\ref{app:details}). The sweep and
-summaries are stored in \path{results/data/spectral.jsonl},
-\path{results/data/summary.json}, and \path{results/data/full_spectrum.npz};
-\path{code/spectral.py} and \path{code/full_spectrum.py} generate them.
+to its bulk (Section~\ref{sec:theory}; Appendix~\ref{app:details}). The
+content-addressed analysis manifest in the appendix indexes the committed sweep,
+summaries, and producing code.
 
 \paragraph{Every analyzed Llama increment matrix has an MP-visible leading outlier.}
 The leading eigenvalue of $C$ exceeds the Marchenko--Pastur upper edge in all
@@ -22,6 +21,11 @@ leading eigenvalues. A variance-matched Gaussian matrix reproduces the bulk but
 has no detached outliers (Figure~\ref{fig:nullcompare}). The Gaussian control
 illustrates departure from an iid diffuse reference; matched real fine-tunes test
 whether the pattern generalizes.
+As a fit-sensitivity check, an all-spectrum trace-moment scale, deliberately
+inflated by the spikes, still places every leading eigenvalue above the edge and
+gives a median top-to-edge ratio of $11.8$. The number of exceedances changes
+substantially, so we treat that count as fit-dependent
+(Appendix~\ref{app:details}).
 
 \begin{figure}[t]
 \centering

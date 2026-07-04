@@ -40,8 +40,8 @@ safety behavior.
 in the hundreds, the stable rank
 $\|\dW\|_F^2/\|\dW\|_2^2$ sits near one hundred against ambient dimensions in
 the thousands, indicating strong energy concentration relative to a diffuse
-full-rank update. This statistic does not determine how many distinct mechanisms
-produced the change or whether they are specific to alignment.
+full-rank update. Stable rank summarizes energy concentration; it does not count
+the processes that produced the change or establish alignment specificity.
 
 \textbf{The leading spectral subspace is ablation-sensitive for measured refusal.} The empirical refusal direction,
 recovered by difference-of-means on harmful versus harmless prompts
@@ -50,34 +50,44 @@ attention-output increment, an order of magnitude above a random-subspace null
 and most concentrated at the very top of the spectrum. Projecting that subspace
 out of the residual stream reduces substring-scored harmful-prompt refusal
 ($98.4\%$,
-$[94.5,99.6]\%$ to $3.1\%$, $[1.2,7.8]\%$; Wilson score intervals
+$[94.5,99.6]\%$ to $3.1\%$, $[1.2,7.8]\%$; descriptive per-rate Wilson score intervals
 \citep{wilson1927}), while a same-dimensional random subspace leaves refusal near
 baseline. The spectral subspace is the more effective ablation target in this
 setup, but the same top-$128$ intervention substantially degrades capability
-benchmarks. Capability-preserving interventions would require smaller or more
-structured subspaces.
+benchmarks. Harmless-prompt behavior under the projection was not measured, and
+capability-preserving interventions would require smaller or more structured
+subspaces.
 
-\textbf{A matched contrast yields a misalignment direction.} We use the
-emergent-misalignment model-organism setting
+\textbf{A matched harmful-versus-safe contrast yields a weight-derived
+direction.} We use the emergent-misalignment model-organism setting
 \citep{betley2025emergent,turner2025organisms}, with matched misaligned and benign
 control models that share questions and training recipe while differing in
 target-answer safety and content. The difference of their weight increments
-yields a pooled contrastive direction. Four paired directions have
-mean cosine $0.97$ with that pooled direction, while benign-pair differences have
+yields a pooled medical-contrast direction. Four paired directions have mean
+cosine $0.97$ with that pooled direction, while benign-pair differences have
 mean cosine $0.16$ in the early-middle layers where the direction is read. The
-pooled estimate includes every pair; we therefore evaluate generalization with
-a leave-one-pair-out score. No misbehavior examples are used to fit the
-direction. Ablating it reduces measured
+pooled estimate includes every pair; a leave-one-pair-out score provides a
+retrospective, same-recipe held-out-arm ranking check. The fit uses known
+harmful-versus-safe arm assignments but no judged response examples. In the
+in-sample Qwen intervention, projecting out the direction changes measured
 emergent misalignment from $2.6\%$ ($[1.7,4.1]\%$) to $0.0\%$ ($[0.0,0.5]\%$),
 while random-direction ablation leaves the rate near baseline. The same
-medical-advice result appears at 7B/8B scale in Qwen2.5-Coder, Llama-3, and
-Mistral-7B \citep{jiang2023mistral}, although the Mistral ablation is partial.
-Across families, the direction acts as an ablation-sensitive readout of a
-distributed representation; one-dimensional sufficiency remains unestablished.
+within-organism, in-sample pattern appears at 7B/8B scale in
+Qwen2.5-Coder-7B-Instruct, Llama-3-8B-Instruct, and Mistral-7B-Instruct
+\citep{jiang2023mistral}, although the Mistral effect is partial. No
+out-of-sample causal ablation was run. At 14B, the geometry and held-out ordering
+persist, but the seeded causal audit does not clear its frozen criteria. Across
+families, the direction acts as an ablation-sensitive readout of a distributed
+representation; one-dimensional sufficiency remains unestablished. In a
+16-fold same-recipe baseline audit, row-mean weight contrast and arm-labeled
+activation PCA also rank every held-out pair correctly. Row-mean has a slightly
+larger within-weight-space margin than weight-SVD, so the audit establishes no
+weight-SVD superiority.
 
 Mathematically, we specialize the established additive-spike transition to
 checkpoint increments and state its fixed-energy rank corollary. Empirically, we
 combine a full-matrix census with matched multi-family tests; methodologically,
-weight-derived subspaces nominate intervention targets without behavioral examples
-in the fit. The spectrum narrows the search space but does not identify the
-training mechanism. Figure~\ref{fig:pipeline} summarizes the workflow.
+condition-labeled checkpoint contrasts nominate intervention targets without
+judged response examples in the fit. The spectrum narrows the search space but
+does not identify the training mechanism. Figure~\ref{fig:pipeline} summarizes
+the workflow.
