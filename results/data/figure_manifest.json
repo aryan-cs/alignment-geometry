@@ -1,7 +1,7 @@
 {
   "schema": "figure_manifest_v1",
   "producer": "code/make_figures.py",
-  "generated_at": "2026-07-03T01:33:35Z",
+  "generated_at": "2026-07-04T16:44:35Z",
   "source_count": 30,
   "figure_count": 24,
   "sources": [
@@ -12,8 +12,8 @@
     },
     {
       "path": "code/make_figures.py",
-      "sha256": "6b123dd7bf134ef2951b39a780e331125e21300e386ee3d4837e7dc13ab98362",
-      "bytes": 56452
+      "sha256": "ddcf8ed057a5b4a3fdaa0b19e90c3a4e6c4ca21af60750a73f4288a707e8f2d3",
+      "bytes": 56592
     },
     {
       "path": "results/data/ablation_layers.json",
@@ -234,8 +234,8 @@
     },
     {
       "path": "results/figures/nec_suff.pdf",
-      "sha256": "019dc3d231b34d9b1a8e546ce8025061c4a8577a47d6fcf10a60f78155e465b2",
-      "bytes": 50851
+      "sha256": "4b7daf64b3810da78df11d890213e18e3c86a7c09d2f31354b4b3e7618c41a99",
+      "bytes": 50822
     },
     {
       "path": "results/figures/spectral_landscape_3d.pdf",

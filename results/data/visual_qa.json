@@ -1,7 +1,7 @@
 {
   "pdf": "docs/paper.pdf",
-  "pdf_sha256": "c1f0c93f28c27f654997bdd1095dbf099a4002c641689ceb0476c7415120bec4",
-  "inspected_at_utc": "2026-07-03T01:51:47Z",
+  "pdf_sha256": "97c080b99d4e7d0e42e4c9966d4e65134ab5baebe419112b5f6f45b569ec47bc",
+  "inspected_at_utc": "2026-07-04T16:46:10Z",
   "pages_total": 21,
   "pages_checked": 21,
   "render_dpi": 150,
@@ -19,7 +19,7 @@
     20,
     21
   ],
-  "method": "Rendered all 21 pages with pdftoppm at 150 dpi; inspected the full paper and checked changed and required pages at full size for clipping, overlap, figure legibility, caption agreement, typography, float continuity, and page boundaries.",
+  "method": "Rendered all 21 pages at 150 dpi; inspected changed page 21 at full size for Figure 18 text and outline contrast, clipping, alignment, and surrounding layout, with prior full-paper inspection retained for unchanged pages.",
   "render_receipt": {
     "schema": "pdf_render_receipt_v1",
     "renderer": "pdftoppm",
@@ -129,8 +129,8 @@
       },
       {
         "page": 21,
-        "sha256": "5283b8433c70dee9d87aad74a4b8f7537a2ae4305f43d2e8ad53dfdb08742b1a",
-        "bytes": 216020
+        "sha256": "7cb1c107bd78f33c2065ba71cf00b7268f14f61bdd264d87318299caf0351d57",
+        "bytes": 216637
       }
     ]
   },

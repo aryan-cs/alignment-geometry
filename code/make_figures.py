@@ -1304,11 +1304,14 @@ def fig_nec_suff(outdir):
         ax.set_xlim(0, 10); ax.set_ylim(3.2, 7.5); ax.axis("off")
 
     def state(ax, cx, cy, title, val, fc, ec):
+        edge_color = INK if ec == SAFE_GREEN else ec
         ax.add_patch(FancyBboxPatch((cx - 1.55, cy - 0.95), 3.1, 1.9,
                      boxstyle="round,pad=0.05,rounding_size=0.16",
-                     fc=fc, ec=ec, lw=1.4, zorder=3))
+                     fc=fc, ec=edge_color, lw=1.4, zorder=3))
         ax.text(cx, cy + 0.42, title, ha="center", va="center", fontsize=9, color=INK, zorder=4)
-        ax.text(cx, cy - 0.34, val, ha="center", va="center", fontsize=10.5, color=ec, zorder=4)
+        value_color = INK if ec == SAFE_GREEN else ec
+        ax.text(cx, cy - 0.34, val, ha="center", va="center", fontsize=10.5,
+                color=value_color, zorder=4)
 
     def op(ax, x0, x1, y, label, color):
         ax.add_patch(FancyArrowPatch((x0, y), (x1, y), arrowstyle="-|>",
