@@ -1,0 +1,49 @@
+{
+  "schema": "mp_fit_sensitivity_v1",
+  "sources": [
+    "results/data/spectral.jsonl",
+    "results/data/full_spectrum.npz"
+  ],
+  "matrix_count": 224,
+  "estimators": {
+    "median_match": "sample spectral median divided by the unit-scale MP median",
+    "trace_moment_match": "mean eigenvalue; an all-spectrum stress test inflated by spikes"
+  },
+  "sweep": {
+    "median_match": {
+      "top_eigenvalue_over_edge": {
+        "min": 4.122734429936176,
+        "median": 21.960807554707365,
+        "max": 24486.341757720333
+      },
+      "matrices_above_edge": 224,
+      "matrices_above_five_times_edge": 216
+    },
+    "trace_moment_match": {
+      "top_eigenvalue_over_edge": {
+        "min": 3.0290376410814153,
+        "median": 11.764687182463284,
+        "max": 412.41039796061034
+      },
+      "matrices_above_edge": 224,
+      "matrices_above_five_times_edge": 202
+    },
+    "trace_to_median_scale_ratio": {
+      "min": 1.1814089214029548,
+      "median": 1.6848568168569926,
+      "max": 59.37372548996459
+    }
+  },
+  "representative_full_spectrum": {
+    "matrix": "model.layers.15.mlp.gate_proj.weight",
+    "median_match": {
+      "top_eigenvalue_over_edge": 27.10616192826111,
+      "eigenvalues_above_edge": 829
+    },
+    "trace_moment_match": {
+      "top_eigenvalue_over_edge": 15.71269289776317,
+      "eigenvalues_above_edge": 384
+    }
+  },
+  "interpretation": "The leading-outlier conclusion survives the conservative trace-scale stress test, while edge-exceedance counts depend strongly on the fit."
+}

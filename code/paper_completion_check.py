@@ -98,11 +98,13 @@ STALE_PHRASES = [
 CORE_ARTIFACTS = [
     "docs/paper.pdf",
     "docs/proof.pdf",
+    "results/data/analysis_manifest.json",
     "results/data/figure_manifest.json",
     "results/data/proof_visual_qa.json",
     "results/data/spectral.jsonl",
     "results/data/summary.json",
     "results/data/full_spectrum.npz",
+    "results/data/mp_fit_sensitivity.json",
     "results/data/weight_geometry.json",
     "results/data/behavioral_capture.json",
     "results/data/capture_sweep.json",
@@ -3322,6 +3324,16 @@ def collect_gates(scope="all"):
         check_visual_qa_receipt(gates)
         check_proof_visual_qa_receipt(gates)
         check_command(gates, "paper_numbers_valid", [sys.executable, "code/check_paper_numbers.py"])
+        check_command(
+            gates,
+            "analysis_manifest_current",
+            [sys.executable, "code/build_analysis_manifest.py", "--check"],
+        )
+        check_command(
+            gates,
+            "mp_fit_sensitivity_current",
+            [sys.executable, "code/mp_fit_sensitivity.py", "--check"],
+        )
         check_command(gates, "citations_valid", [sys.executable, "code/check_citations.py"])
         check_command(gates, "figure_palette_valid", [sys.executable, "code/check_figure_palette.py"])
         check_command(gates, "em_examples_current", [sys.executable, "code/make_em_box.py", "--check"])
