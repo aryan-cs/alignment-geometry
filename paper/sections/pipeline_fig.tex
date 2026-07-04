@@ -2,21 +2,21 @@
 \centering
 \begin{tikzpicture}[
   font=\small,
-  box/.style={rounded corners=2pt, draw=black!30, line width=0.5pt, align=center,
+  box/.style={rounded corners=2pt, line width=0.8pt, align=center, text=black,
               minimum height=10mm, inner sep=4pt},
-  wbox/.style={box, fill=palaccentpurple, text=white},
-  dbox/.style={box, fill=palaccentblue, text=white},
-  sbox/.style={box, fill=palaccentcyan},
-  rbox/.style={box, fill=palaccentorange},
+  redbox/.style={box, fill=palharmred!18!white, draw=palharmred!65!black},
+  yellowbox/.style={box, fill=palaccentyellow!24!white, draw=palaccentyellow!55!black},
+  greenbox/.style={box, fill=palsafegreen!18!white, draw=palsafegreen!55!black},
+  bluebox/.style={box, fill=palaccentblue!18!white, draw=palaccentblue!65!black},
   arr/.style={-{Stealth[length=4pt]}, line width=0.7pt, draw=black!55},
   lab/.style={font=\scriptsize\itshape, text=black!60}
 ]
-\node[wbox] (base) at (0,0.7) {$W_{\text{base}}$};
-\node[wbox] (inst) at (0,-0.7) {$W_{\text{instruct}}$};
-\node[dbox] (delta) at (2.6,0) {$\dW$\\\scriptsize increment};
-\node[sbox] (svd) at (5.4,0) {SVD\\\scriptsize bulk\,$+$\,spikes};
-\node[rbox] (cap) at (8.4,0.7) {refusal dir.\\\scriptsize capture};
-\node[rbox] (abl) at (8.4,-0.7) {ablate\\\scriptsize top-$k$};
+\node[redbox] (base) at (0,0.7) {$W_{\text{base}}$};
+\node[redbox] (inst) at (0,-0.7) {$W_{\text{instruct}}$};
+\node[yellowbox] (delta) at (2.6,0) {$\dW$\\\scriptsize increment};
+\node[greenbox] (svd) at (5.4,0) {SVD\\\scriptsize bulk\,$+$\,spikes};
+\node[bluebox] (cap) at (8.4,0.7) {refusal dir.\\\scriptsize capture};
+\node[bluebox] (abl) at (8.4,-0.7) {ablate\\\scriptsize top-$k$};
 
 \draw[arr] (base.east) -- (delta.west);
 \draw[arr] (inst.east) -- (delta.west);

@@ -1,19 +1,19 @@
 {
   "schema": "figure_manifest_v1",
   "producer": "code/make_figures.py",
-  "generated_at": "2026-07-04T19:17:30Z",
+  "generated_at": "2026-07-04T19:31:26Z",
   "source_count": 30,
   "figure_count": 24,
   "sources": [
     {
       "path": "code/figure_palette.py",
-      "sha256": "ed3b6fc7bb0c70edf83da13e14960c254c2e623a90913fa15e03acb3f4884d76",
-      "bytes": 1429
+      "sha256": "a94398f757719bf44cd2d0166e3fac34bc83f06b13a06f740ef457d7d0561f48",
+      "bytes": 1474
     },
     {
       "path": "code/make_figures.py",
-      "sha256": "1e92d0473c35668cfd62a6b2a34166e85d35c595c5948d9cf087b9f94e44871e",
-      "bytes": 57120
+      "sha256": "5880f24ac15391e3a465aa3c6cf353565f1ffc815ee2fdb0edc0b93b74e95587",
+      "bytes": 57290
     },
     {
       "path": "results/data/ablation_layers.json",
@@ -214,8 +214,8 @@
     },
     {
       "path": "results/figures/mis_causal.pdf",
-      "sha256": "518fcab9a6a91e7f86fa6d213e4cbe89faed914940eab735b1d5b1c87ef953ee",
-      "bytes": 26376
+      "sha256": "46e8981c81db9897bc296952caaa4c87c18135f21cd5be50fc4b2d131e908d92",
+      "bytes": 26457
     },
     {
       "path": "results/figures/mis_convergence.pdf",
@@ -234,8 +234,8 @@
     },
     {
       "path": "results/figures/nec_suff.pdf",
-      "sha256": "fb30a4c243bd0375518f04977201a02c284eff787621036ed345ba9c2da25a27",
-      "bytes": 50792
+      "sha256": "62fc72d012f01f61a27a1f445a5a94fcc5e63e82626ca37a83cf9442a1b82ef3",
+      "bytes": 50813
     },
     {
       "path": "results/figures/spectral_landscape_3d.pdf",

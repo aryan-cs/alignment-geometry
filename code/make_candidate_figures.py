@@ -19,8 +19,10 @@ from figure_palette import (  # noqa: E402
     GREY_L,
     GRID,
     HARM_RED,
+    HARM_RED_DARK,
     INK,
     SAFE_GREEN,
+    SAFE_GREEN_DARK,
     TURBO_BLUE,
     TURBO_ORANGE,
 )
@@ -194,13 +196,16 @@ def fig_nec_suff():
         ax.set_xlim(0, 10); ax.set_ylim(0, 10); ax.axis("off")
 
     def state(ax, cx, cy, title, val, fc, ec):
-        edge_color = INK if ec == SAFE_GREEN else ec
+        edge_color = {
+            SAFE_GREEN: SAFE_GREEN_DARK,
+            HARM_RED: HARM_RED_DARK,
+        }.get(ec, ec)
         ax.add_patch(FancyBboxPatch((cx - 1.55, cy - 0.95), 3.1, 1.9,
                      boxstyle="round,pad=0.05,rounding_size=0.16",
                      fc=fc, ec=edge_color, lw=1.4, zorder=3))
         ax.text(cx, cy + 0.42, title, ha="center", va="center", fontsize=9, color=INK, zorder=4)
         ax.text(cx, cy - 0.34, val, ha="center", va="center", fontsize=10.5,
-                color=INK if ec == SAFE_GREEN else ec, zorder=4)
+                color=INK if ec == SAFE_GREEN else edge_color, zorder=4)
 
     def op(ax, x0, x1, y, label, color, label_color=None):
         ax.add_patch(FancyArrowPatch((x0, y), (x1, y), arrowstyle="-|>",
@@ -211,7 +216,7 @@ def fig_nec_suff():
     # ---- LEFT: ablation ----
     axL.set_title("Ablation: remove the direction", fontsize=10, pad=4)
     state(axL, 2.1, 6.0, "misaligned arm", "cond. 2.6%\njoint 2.3%", HARM_RED + "33", HARM_RED)
-    op(axL, 3.75, 6.25, 6.0, "ablate $v$", SAFE_GREEN, label_color=INK)
+    op(axL, 3.75, 6.25, 6.0, "ablate $v$", SAFE_GREEN_DARK, label_color=INK)
     state(axL, 7.9, 6.0, "same arm", "cond. 0.0%\njoint 0.0%", SAFE_GREEN + "33", SAFE_GREEN)
     axL.text(5.0, 3.1, "removing $v$ suppresses\nmeasured EM", ha="center",
              fontsize=8.5, color=INK)
@@ -219,10 +224,10 @@ def fig_nec_suff():
     # ---- RIGHT: coherent steering ----
     axR.set_title("Coherent steering: add the direction", fontsize=10, pad=4)
     state(axR, 2.1, 6.0, "benign arm", "cond. 0.0%\njoint 0.0%", SAFE_GREEN + "33", SAFE_GREEN)
-    op(axR, 3.75, 6.25, 6.0, "steer $+\\alpha v$", HARM_RED)
+    op(axR, 3.75, 6.25, 6.0, "steer $+\\alpha v$", HARM_RED_DARK)
     state(axR, 7.9, 6.0, "same arm", "cond. 5.3%\njoint 4.0%", HARM_RED + "33", HARM_RED)
     axR.text(5.0, 3.1, "low-strength steering\npartly induces EM", ha="center",
-             fontsize=8.5, color=HARM_RED)
+             fontsize=8.5, color=HARM_RED_DARK)
 
     fig.suptitle("Ablation sensitivity versus coherent steering",
                  fontsize=10.5, y=1.00)

@@ -14,6 +14,7 @@ from matplotlib import colors as mcolors
 from figure_palette import (
     CANONICAL_FIGURE_HEXES,
     HARM_RED,
+    HARM_RED_DARK,
     SAFE_GREEN,
     SAFE_GREEN_DARK,
     SAFE_TO_HARM_RAMP,
@@ -119,6 +120,7 @@ def main():
         "TURBO_ORANGE": (TURBO_ORANGE, "#fb7e21"),
         "TURBO_RED": (TURBO_RED, "#dd3d08"),
         "SAFE_GREEN_DARK": (SAFE_GREEN_DARK, "#137a48"),
+        "HARM_RED_DARK": (HARM_RED_DARK, "#902805"),
     }
     for name, (observed, expected) in required_roots.items():
         if observed.lower() != expected:

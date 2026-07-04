@@ -29,6 +29,7 @@ from figure_palette import (  # noqa: E402
     GRID,
     INK,
     HARM_RED,
+    HARM_RED_DARK,
     SAFE_GREEN,
     SAFE_GREEN_DARK,
     SAFE_TO_HARM_RAMP,
@@ -954,15 +955,16 @@ def fig_mis_causal(outdir, nec="results/data/causal_misalign.json"):
     n = json.load(open(nec))["necessity"]
     keys = ["misaligned_baseline", "ablate_v", "ablate_random"]
     labels = ["misaligned\nbaseline", "project out\ncontrast", "project out\nrandom"]
-    cols = [HARM_RED, SAFE_GREEN, GREY]
+    fills = [HARM_RED + "33", SAFE_GREEN + "33", GREY + "33"]
+    edges = [HARM_RED_DARK, SAFE_GREEN_DARK, GREY]
     pts, los, his = [], [], []
     for kk in keys:
         p, lo, hi = wilson(n[kk]["n_mis"], n[kk]["n_ok"])
         pts.append(p); los.append(lo); his.append(hi)
     fig, ax = plt.subplots(figsize=(4.7, 3.2))
     xs = list(range(3))
-    ax.bar(xs, [100 * p for p in pts], color=cols, width=0.60,
-           edgecolor=INK, linewidth=0.45, zorder=2)
+    ax.bar(xs, [100 * p for p in pts], color=fills, width=0.60,
+           edgecolor=edges, linewidth=1.0, zorder=2)
     yerr = [[100 * (p - lo) for p, lo in zip(pts, los)],
             [100 * (hi - p) for p, hi in zip(pts, his)]]
     ax.errorbar(xs, [100 * p for p in pts], yerr=yerr, fmt="none", ecolor=INK,
@@ -1317,12 +1319,15 @@ def fig_nec_suff(outdir):
         ax.set_xlim(0, 10); ax.set_ylim(3.2, 7.5); ax.axis("off")
 
     def state(ax, cx, cy, title, val, fc, ec):
-        edge_color = SAFE_GREEN_DARK if ec == SAFE_GREEN else ec
+        edge_color = {
+            SAFE_GREEN: SAFE_GREEN_DARK,
+            HARM_RED: HARM_RED_DARK,
+        }.get(ec, ec)
         ax.add_patch(FancyBboxPatch((cx - 1.55, cy - 0.95), 3.1, 1.9,
                      boxstyle="round,pad=0.05,rounding_size=0.16",
                      fc=fc, ec=edge_color, lw=1.4, zorder=3))
         ax.text(cx, cy + 0.42, title, ha="center", va="center", fontsize=9, color=INK, zorder=4)
-        value_color = INK if ec == SAFE_GREEN else ec
+        value_color = INK if ec == SAFE_GREEN else edge_color
         ax.text(cx, cy - 0.34, val, ha="center", va="center", fontsize=10.5,
                 color=value_color, zorder=4)
 
@@ -1341,10 +1346,10 @@ def fig_nec_suff(outdir):
 
     axR.set_title("Coherent steering: add the direction", fontsize=10, pad=4)
     state(axR, 2.1, 6.0, "benign arm", "cond. 0.0%\njoint 0.0%", SAFE_GREEN + "33", SAFE_GREEN)
-    op(axR, 3.75, 6.25, 6.0, "steer $+\\alpha v$", HARM_RED)
+    op(axR, 3.75, 6.25, 6.0, "steer $+\\alpha v$", HARM_RED_DARK)
     state(axR, 7.9, 6.0, "same arm", "cond. 5.3%\njoint 4.0%", HARM_RED + "33", HARM_RED)
     axR.text(5.0, 4.05, "low-strength steering\npartly induces EM", ha="center",
-             fontsize=8.5, color=HARM_RED)
+             fontsize=8.5, color=HARM_RED_DARK)
 
     fig.suptitle("Ablation sensitivity versus coherent steering",
                  fontsize=10.5, y=1.00)
