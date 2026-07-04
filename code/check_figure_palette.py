@@ -15,6 +15,7 @@ from figure_palette import (
     CANONICAL_FIGURE_HEXES,
     HARM_RED,
     SAFE_GREEN,
+    SAFE_GREEN_DARK,
     SAFE_TO_HARM_RAMP,
     STRUCTURAL_RAMP,
     TURBO_BLUE,
@@ -117,6 +118,7 @@ def main():
         "TURBO_YELLOW": (TURBO_YELLOW, "#e1dd37"),
         "TURBO_ORANGE": (TURBO_ORANGE, "#fb7e21"),
         "TURBO_RED": (TURBO_RED, "#dd3d08"),
+        "SAFE_GREEN_DARK": (SAFE_GREEN_DARK, "#137a48"),
     }
     for name, (observed, expected) in required_roots.items():
         if observed.lower() != expected:

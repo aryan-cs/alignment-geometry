@@ -1,7 +1,7 @@
 {
   "pdf": "docs/paper.pdf",
-  "pdf_sha256": "72442d1a865966dd79b9da6a776b2073e24c4a7fa1e335637ba3907153f47091",
-  "inspected_at_utc": "2026-07-04T19:06:59Z",
+  "pdf_sha256": "d2dc337acf0e1f0bd718408d82137f0df93b784643431a6c3927c0fdcbfa42be",
+  "inspected_at_utc": "2026-07-04T19:18:43Z",
   "pages_total": 21,
   "pages_checked": 21,
   "render_dpi": 120,
@@ -12,7 +12,7 @@
     15,
     21
   ],
-  "method": "Reviewed the authoritative 21-page 90 dpi contact sheet and inspected required pages 1, 7, 11, 15, and 21 at full size (120 dpi). Verified title/abstract flow, 3D spectral legibility, medical-organism table and figure layout, related-work/discussion typography, final trajectory alignment, semantic colors, and absence of overlaps or clipping.",
+  "method": "Retained prior full-size inspection of unchanged representative pages 1, 7, 11, and 15; re-rendered and inspected changed page 21 at 180 dpi after the Figure 16 dark-green border and arrow update. Confirmed matching green strokes, readable labels, intact layout, and no clipping or overlap.",
   "render_receipt": {
     "schema": "pdf_render_receipt_v1",
     "renderer": "pdftoppm",
@@ -122,8 +122,8 @@
       },
       {
         "page": 21,
-        "sha256": "50f2ebecde357c793e8805edef91917279bdfbe1d025fb52be53ce37be489617",
-        "bytes": 161298
+        "sha256": "dc9f4d448fb91209f1522cba6d2ca79f53033dcbd16b6a5d3b1c78b74ca84c70",
+        "bytes": 161332
       }
     ]
   },

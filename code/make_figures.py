@@ -30,6 +30,7 @@ from figure_palette import (  # noqa: E402
     INK,
     HARM_RED,
     SAFE_GREEN,
+    SAFE_GREEN_DARK,
     SAFE_TO_HARM_RAMP,
     STRUCTURAL_RAMP,
     TURBO_BLUE,
@@ -1316,7 +1317,7 @@ def fig_nec_suff(outdir):
         ax.set_xlim(0, 10); ax.set_ylim(3.2, 7.5); ax.axis("off")
 
     def state(ax, cx, cy, title, val, fc, ec):
-        edge_color = INK if ec == SAFE_GREEN else ec
+        edge_color = SAFE_GREEN_DARK if ec == SAFE_GREEN else ec
         ax.add_patch(FancyBboxPatch((cx - 1.55, cy - 0.95), 3.1, 1.9,
                      boxstyle="round,pad=0.05,rounding_size=0.16",
                      fc=fc, ec=edge_color, lw=1.4, zorder=3))
@@ -1333,7 +1334,7 @@ def fig_nec_suff(outdir):
 
     axL.set_title("Ablation: remove the direction", fontsize=10, pad=4)
     state(axL, 2.1, 6.0, "misaligned arm", "cond. 2.6%\njoint 2.3%", HARM_RED + "33", HARM_RED)
-    op(axL, 3.75, 6.25, 6.0, "ablate $v$", SAFE_GREEN, label_color=INK)
+    op(axL, 3.75, 6.25, 6.0, "ablate $v$", SAFE_GREEN_DARK, label_color=INK)
     state(axL, 7.9, 6.0, "same arm", "cond. 0.0%\njoint 0.0%", SAFE_GREEN + "33", SAFE_GREEN)
     axL.text(5.0, 4.05, "removing $v$ suppresses\nmeasured EM", ha="center",
              fontsize=8.5, color=INK)

@@ -143,10 +143,11 @@ Regenerate the figures from committed result summaries:
 python3 code/make_figures.py
 ```
 
-Generated image assets use unmodified samples from Matplotlib's `turbo`
-colormap, declared in `code/figure_palette.py`; there are no custom darkened or
-lightened variants. Behavioral figures use semantic color before category
-color: green denotes benign, safe, preserved, or improved outcomes; red denotes
+Generated image assets use samples from Matplotlib's `turbo` colormap,
+declared in `code/figure_palette.py`. A single darker green is reserved for
+high-contrast outlines and arrows around safe or benign states. Behavioral
+figures use semantic color before category color: green denotes benign, safe,
+preserved, or improved outcomes; red denotes
 harmful, misaligned, lost, or otherwise adverse outcomes; and gray denotes
 controls or references. Structural categories use the other Turbo hues, while
 dense categorical figures combine violet, blue, cyan, yellow, orange, and

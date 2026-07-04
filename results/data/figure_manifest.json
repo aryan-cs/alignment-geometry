@@ -1,19 +1,19 @@
 {
   "schema": "figure_manifest_v1",
   "producer": "code/make_figures.py",
-  "generated_at": "2026-07-04T18:39:49Z",
+  "generated_at": "2026-07-04T19:17:30Z",
   "source_count": 30,
   "figure_count": 24,
   "sources": [
     {
       "path": "code/figure_palette.py",
-      "sha256": "bd627e8970a5de4c4c8d14eb8e1d88efa4cfa29dfe21c4d6ef8013a246526ff7",
-      "bytes": 1380
+      "sha256": "ed3b6fc7bb0c70edf83da13e14960c254c2e623a90913fa15e03acb3f4884d76",
+      "bytes": 1429
     },
     {
       "path": "code/make_figures.py",
-      "sha256": "d3624518222d4a8b7741fb0f3f82ac90ff169b87bdd3f37a84af62f6540f0ddb",
-      "bytes": 57082
+      "sha256": "1e92d0473c35668cfd62a6b2a34166e85d35c595c5948d9cf087b9f94e44871e",
+      "bytes": 57120
     },
     {
       "path": "results/data/ablation_layers.json",
@@ -234,8 +234,8 @@
     },
     {
       "path": "results/figures/nec_suff.pdf",
-      "sha256": "5643bf302700d1ac6933905eba125e46a5ad21820e0613273b3ad5c161517495",
-      "bytes": 50772
+      "sha256": "fb30a4c243bd0375518f04977201a02c284eff787621036ed345ba9c2da25a27",
+      "bytes": 50792
     },
     {
       "path": "results/figures/spectral_landscape_3d.pdf",
