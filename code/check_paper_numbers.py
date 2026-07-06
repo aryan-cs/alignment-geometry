@@ -841,26 +841,6 @@ def check_misalignment():
         expect(f"Qwen sufficiency: alpha {alpha} coherent count", q_suff["steer_v"][alpha]["n_ok"], 0)
     expect("Qwen sufficiency: random steering coherent count", q_suff["steer_random"]["n_ok"], 0)
 
-    trajectory_payload = load_json("traj_med.json")
-    traj = trajectory_payload["trajectory"]
-    expect("trajectory: fixed prompt count", trajectory_payload.get("n_prompts"), 8)
-    if any(row.get("step") == 0 for row in traj):
-        failures.append("trajectory: synthetic step-zero observation must not be present")
-    expect("trajectory: 20% cosine displayed as 0.84", traj[0]["cos_to_final"], 0.84, 0.006)
-    expect("trajectory: 40% cosine displayed as 0.96", traj[1]["cos_to_final"], 0.96, 0.006)
-    expect("trajectory: 60% cosine displayed as 0.99", traj[2]["cos_to_final"], 0.99, 0.006)
-    expected_joint = (1.04, 2.60, 3.13, 6.25, 3.91)
-    for row, expected in zip(traj, expected_joint):
-        expect(f"trajectory: step {row['step']} generated count", row.get("n_generated"), 384)
-        expect(
-            f"trajectory: step {row['step']} joint rate",
-            pct(row["n_mis"] / row["n_generated"]),
-            expected,
-            0.006,
-        )
-    if not (traj[3]["n_mis"] / traj[3]["n_generated"] > traj[4]["n_mis"] / traj[4]["n_generated"]):
-        failures.append("trajectory: final EM should be lower than the 80% observed peak")
-
     det = {
         "coder": load_json("detect_med.json"),
         "llama": load_json("detect_llama.json"),

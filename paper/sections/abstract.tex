@@ -16,9 +16,8 @@ fixed $128$-prompt slice from $98.4\%$ to $14.1\%$, while a same-dimensional
 random projection remains at $97.7\%$. The same projection reduces MMLU,
 ARC-C, and GSM8K accuracy far more than the random projection, indicating broad
 disruption rather than capability-preserving refusal removal.
-For emergent misalignment, a primary four-pair Qwen medical cohort of
-condition-labeled harmful and safe
-checkpoints yield a matched contrast direction. The fit uses arm assignments
+For emergent misalignment, a primary cohort of four condition-labeled harmful
+and safe Qwen medical checkpoint pairs yields a matched contrast direction. The fit uses arm assignments
 but no judged response examples. Four paired directions agree with their pooled
 contrast (cosine $0.97$), and a retrospective leave-one-pair-out score ranks
 every held-out harmful arm above its safe counterpart. In an in-sample

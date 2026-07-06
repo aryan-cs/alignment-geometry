@@ -174,7 +174,7 @@ PAPER_CONTEXT_SENTINELS = [
     ("paper/sections/related.tex", "recover convergent activation directions", ("soligo2025convergent",), 2),
     ("paper/sections/related.tex", "single rank-one LoRA adapter", ("turner2025organisms",), 2),
     ("paper/sections/related.tex", "Task arithmetic edits behavior", ("ilharco2023task", "ortizjimenez2023task"), 3),
-    ("paper/sections/related.tex", "Representation engineering reads", ("zou2023repe",), 2),
+    ("paper/sections/related.tex", "Representation engineering (RepE) reads", ("zou2023repe",), 2),
     ("paper/sections/related.tex", "sparse autoencoders surface", ("templeton2024scaling",), 2),
     ("paper/sections/related.tex", "Supervised probes can detect", ("goldowskydill2025",), 2),
     ("paper/sections/related.tex", "hidden-objective audits", ("marks2025",), 2),

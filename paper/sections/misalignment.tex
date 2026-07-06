@@ -21,14 +21,18 @@ the misaligned and benign-matched increments are essentially indistinguishable
 (Table~\ref{tab:scalar-scout}). The misaligned increment has lower stable rank in
 $181/336$ matrices ($53.9\%$), a descriptive fraction near one half. Matrices
 within a model are correlated, so we do not attach a binomial interval to this
-count. Because these scalar summaries remain near chance at matched energy,
+count. The per-matrix Frobenius rescaling puts the two arms on a common energy
+scale for presentation, but it does not change stable rank, fitted-edge
+exceedance counts, or the top-to-edge ratio. It is bookkeeping rather than an
+additional control. Because these scalar summaries show no separation,
 subsequent analyses compare update directions under a matched contrast.
 
 \begin{table}[t]
 \centering
 \caption{Scalar spectral summaries for the Qwen2.5-Coder-14B scout. Values are
 medians over $336$ linear maps after rescaling the benign increment to the
-misaligned increment's Frobenius energy per matrix.}
+misaligned increment's Frobenius energy per matrix. This rescaling does not
+change any of the three scale-invariant summaries.}
 \label{tab:scalar-scout}
 \small
 \begin{tabular}{lcc}
@@ -193,16 +197,15 @@ $8.7/2.8/8.6\%$.}
 
 \paragraph{Ablation-sensitive, with limited eligible steering.}
 Adding the direction to a benign model gives weaker evidence than removing it.
-At the lowest tested steering strength, steering a benign arm along the recovered direction raises measured
-misalignment to $5.3\%$ ($32/605$, $[3.8,7.4]\%$), against an unsteered benign
-baseline of $0.0\%$ ($0/677$, $[0.0,0.6]\%$). At $\alpha{=}1.0$ the measured
-rate is higher ($13.8\%$, $17/123$, $[8.8,21.0]\%$), but the much smaller
-eligible sample shows that the intervention is already degrading response
-coherence. Of $800$ outputs per setting, the eligibility rates are $84.6\%$
-unsteered, $75.6\%$ at $\alpha{=}0.5$, and $15.4\%$ at $\alpha{=}1.0$; the
-unconditional joint misalignment-and-coherence rates are $0.0\%$, $4.0\%$, and
-$2.1\%$, respectively. The higher conditional rate at $\alpha{=}1.0$ therefore
-reflects a selected coherent subset rather than a larger all-output effect;
+Among all $800$ outputs per setting, the joint misalignment-and-coherence rate
+is $0.0\%$ ($0/800$) without steering, $4.0\%$ ($32/800$) at
+$\alpha{=}0.5$, and $2.1\%$ ($17/800$) at $\alpha{=}1.0$. Conditional on
+eligibility, the corresponding rates are $0.0\%$ ($0/677$,
+$[0.0,0.6]\%$), $5.3\%$ ($32/605$, $[3.8,7.4]\%$), and $13.8\%$
+($17/123$, $[8.8,21.0]\%$). Eligibility falls from $84.6\%$ unsteered to
+$75.6\%$ at $\alpha{=}0.5$ and $15.4\%$ at $\alpha{=}1.0$, so the higher
+conditional rate at $\alpha{=}1.0$ reflects a selected coherent subset rather
+than a larger all-output effect;
 stronger steering produces no coherent samples. The direction is
 ablation-sensitive and shifts judged behavior at low steering strength, but the
 experiment does not establish a sufficient one-dimensional mechanism or
@@ -219,17 +222,6 @@ gives $3.4\%$. The intervened arm
 contributed to the pooled direction; this is not a held-out causal test.}
 \label{fig:mis-causal}
 \end{figure}
-
-\paragraph{Checkpoint trajectory.}
-At each checkpoint, we recompute the direction and compare it with its final
-value. The cosine reaches $0.84$ after $20\%$ of training and $0.99$ after
-$60\%$, before the all-output joint rate peaks at $80\%$
-($24/384=6.25\%$, $[4.2,9.1]\%$) and falls at the final checkpoint
-($15/384=3.91\%$, $[2.4,6.3]\%$; Figure~\ref{fig:traj} in
-Appendix~\ref{app:details}). The corresponding eligible-output rates are
-$7.4\%$ and $4.7\%$. Because the
-final direction defines the comparison, this trajectory is retrospective rather
-than a preregistered forecast.
 
 \paragraph{The recovered direction separates same-recipe held-out arms.}
 In each leave-one-seed-out fold, we recover the direction from the remaining

@@ -103,8 +103,6 @@ FIGURE_SOURCE_ARTIFACTS = [
     "results/data/detect_med.json",
     "results/data/detect_llama.json",
     "results/data/detect_mistral.json",
-    "results/data/traj_med.json",
-    "results/data/traj_med.npz",
     "results/data/synthetic_bbp.json",
     "results/data/capability.json",
     "results/data/capability_evidence.json",
@@ -1185,124 +1183,6 @@ def fig_convergence_geom(outdir, conv_cos=0.97, null_cos=0.16):
     plt.close(fig)
 
 
-def fig_trajectory(outdir, f="results/data/traj_med.json"):
-    """Early-detection: across fine-tuning checkpoints, the recovered direction's
-    cosine to its final form (it locks in early) vs the emergent-misalignment rate
-    (the behavior, which trails). Both series begin at the first measured checkpoint."""
-    if not os.path.exists(f):
-        return
-    d = json.load(open(f))["trajectory"]
-    steps = [r["step"] for r in d]
-    cos = [r["cos_to_final"] for r in d]
-    em = [100 * r["n_mis"] / r["n_generated"] for r in d]
-    em_err_lo = []
-    em_err_hi = []
-    for r in d:
-        p, lo, hi = wilson(r["n_mis"], r["n_generated"])
-        em_err_lo.append(100 * (p - lo))
-        em_err_hi.append(100 * (hi - p))
-    total = steps[-1]
-    pct = [100.0 * s / total for s in steps]
-    fig, ax = plt.subplots(figsize=(4.8, 3.15))
-    ax.plot(pct, cos, "o-", color=TURBO_BLUE, lw=2.0, ms=6,
-            label="direction (cosine to final)")
-    ax.set_ylabel("direction: cosine with final form", color=TURBO_BLUE)
-    ax.set_ylim(0, 1.05); ax.tick_params(axis="y", labelcolor=TURBO_BLUE)
-    ax.set_xlabel("training progress (% of fine-tune)")
-    ax2 = ax.twinx()
-    ax2.errorbar(pct, em, yerr=[em_err_lo, em_err_hi], fmt="s--",
-                 color=HARM_RED, ecolor=HARM_RED, lw=1.8, ms=5, capsize=2.5,
-                 elinewidth=0.9, label="behavior (joint rate among all outputs)")
-    ax2.set_ylabel("behavior: joint rate among all outputs (%)", color=HARM_RED)
-    ax2.set_ylim(0, max(em) * 1.3); ax2.tick_params(axis="y", labelcolor=HARM_RED)
-    ax.set_title("Post hoc trajectory to final recovered direction", fontsize=9)
-    ax.grid(True, color=GRID, lw=0.5)
-    h1, l1 = ax.get_legend_handles_labels(); h2, l2 = ax2.get_legend_handles_labels()
-    legend_below(ax, h1 + h2, l1 + l2, frameon=False, fontsize=7.6, ncol=1, y=-0.30)
-    fig.tight_layout()
-    save_figure_pdf(fig, outdir, "trajectory.pdf")
-    plt.close(fig)
-
-
-def fig_trajectory_direction_pca_3d(
-    outdir,
-    vectors="results/data/traj_med.npz",
-    rates="results/data/traj_med.json",
-):
-    """3D visualization of the recovered direction trajectory.
-
-    The quantitative claim stays in fig_trajectory; this companion plot shows the
-    same committed direction vectors in their top three PCA coordinates.
-    """
-    if not os.path.exists(vectors) or not os.path.exists(rates):
-        return
-    z = np.load(vectors)
-    keys = sorted(z.files, key=lambda k: int(k.split("_")[1]))
-    steps = np.array([int(k.split("_")[1]) for k in keys])
-    V = np.vstack([z[k].astype(np.float64) for k in keys])
-    V /= np.linalg.norm(V, axis=1, keepdims=True)
-    Vc = V - V.mean(axis=0, keepdims=True)
-    _, _, vt = np.linalg.svd(Vc, full_matrices=False)
-    coords = Vc @ vt[:3].T
-
-    traj = {r["step"]: r for r in json.load(open(rates))["trajectory"]}
-    em = np.array([
-        100 * traj[int(s)]["n_mis"] / traj[int(s)]["n_generated"]
-        for s in steps
-    ])
-    pct = (100 * steps / steps[-1]).astype(int)
-
-    fig = plt.figure(figsize=(4.6, 3.8))
-    ax = fig.add_subplot(111, projection="3d")
-    ax.plot(coords[:, 0], coords[:, 1], coords[:, 2], color=GREY, lw=1.2, alpha=0.75)
-    sc = ax.scatter(
-        coords[:, 0], coords[:, 1], coords[:, 2],
-        c=em,
-        cmap=SAFE_TO_HARM_CMAP,
-        s=70, edgecolor=INK, linewidth=0.45,
-    )
-    ax.view_init(elev=20, azim=-44)
-    ax.set_box_aspect((1.25, 1.0, 0.8))
-    from mpl_toolkits.mplot3d import proj3d
-
-    label_offsets = {
-        20: (8, 9),
-        40: (-20, 2),
-        60: (8, -11),
-        80: (-21, -4),
-        100: (8, 9),
-    }
-    for label, xyz in zip(pct, coords):
-        x2, y2, _ = proj3d.proj_transform(*xyz, ax.get_proj())
-        dx, dy = label_offsets[int(label)]
-        ax.annotate(
-            f"{label}%",
-            xy=(x2, y2),
-            xytext=(dx, dy),
-            textcoords="offset points",
-            ha="left" if dx > 0 else "right",
-            va="bottom" if dy > 0 else "top",
-            fontsize=7.5,
-            annotation_clip=False,
-            bbox={"boxstyle": "square,pad=0.08", "facecolor": "white",
-                  "edgecolor": "none", "alpha": 0.90},
-            arrowprops={"arrowstyle": "-", "color": INK, "linewidth": 0.45,
-                        "shrinkA": 1.5, "shrinkB": 3.0},
-        )
-    ax.set_xlabel("PC1 of direction", labelpad=6)
-    ax.set_ylabel("PC2", labelpad=6)
-    ax.set_zlabel("")
-    ax.text2D(0.82, 0.48, "PC3", transform=ax.transAxes, rotation=90,
-              va="center", ha="center")
-    ax.set_title("Recovered direction trajectory in 3D", fontsize=9, pad=5)
-    ax.xaxis.pane.set_facecolor((1, 1, 1, 0))
-    ax.yaxis.pane.set_facecolor((1, 1, 1, 0))
-    ax.zaxis.pane.set_facecolor((1, 1, 1, 0))
-    colorbar_below(fig, sc, ax, "joint rate among all outputs (%)", shrink=0.66, pad=0.16)
-    save_figure_pdf(fig, outdir, "trajectory_direction_pca_3d.pdf")
-    plt.close(fig)
-
-
 def fig_detect(outdir):
     """Held-out detection: per family, the normalized projection norm a held-out misaligned
     vs benign arm puts on the recovered direction (leave-one-seed-out), with a
@@ -1452,8 +1332,6 @@ def main():
         fig_convergence_geom(args.outdir)
         fig_nec_suff(args.outdir)
         fig_xfam_convergence(args.outdir)
-        fig_trajectory(args.outdir)
-        fig_trajectory_direction_pca_3d(args.outdir)
         fig_detect(args.outdir)
         print("figures written to", args.outdir)
     write_figure_manifest(args.outdir, args.manifest, args.data)

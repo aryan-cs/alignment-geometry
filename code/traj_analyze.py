@@ -1,18 +1,18 @@
-"""Training-trajectory / early-detection study.
+"""Unreported single-arm training-trajectory utility.
 
 Given a misaligned arm trained with periodic LoRA-adapter checkpoints
 (finetune_arm.py --save-steps), walk the checkpoints in training order and, at
 each step, measure two things:
 
-  (1) DIRECTION emergence: the top left-singular vector v_t of the increment
+  (1) UPDATE stability: the top left-singular vector v_t of the increment
       dW_t = W_t - W_base at the chosen layer's o_proj, and its cosine with the
-      FINAL direction v_T. This tracks when the dominant misalignment-update
-      direction locks in.
-  (2) BEHAVIOR emergence: the emergent-misalignment rate at that checkpoint,
+      final-checkpoint vector v_T. This is a single-arm update, not the matched
+      harmful-minus-safe contrast used in the paper.
+  (2) BEHAVIOR: the emergent-misalignment rate at that checkpoint,
       scored exactly as the gate (causal_misalign.score_em).
 
-If the direction stabilizes before the behavior rises, the spectral signature is
-an early-warning sign of misalignment forming during training. Writes traj.json.
+The final checkpoint defines the comparison, so the analysis is retrospective.
+No current manuscript claim uses this utility or its outputs. Writes traj.json.
 GPU.
 """
 import os, sys, json, argparse, glob, re

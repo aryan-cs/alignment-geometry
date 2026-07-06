@@ -260,21 +260,6 @@ def expected_displayed_interval_catalog():
                     f"{name}.{bucket}_pooled_joint",
                 )
 
-    traj = load_json("traj_med.json")
-    for row in traj.get("trajectory", []):
-        k = row.get("n_mis")
-        n = row.get("n_ok")
-        n_generated = row.get("n_generated")
-        step = row.get("step")
-        if isinstance(k, int) and isinstance(n, int) and n > 0:
-            add_expected_interval(catalog, wilson(k, n), f"traj_med.step_{step}")
-        if isinstance(k, int) and isinstance(n_generated, int) and n_generated > 0:
-            add_expected_interval(
-                catalog,
-                wilson(k, n_generated),
-                f"traj_med.step_{step}_joint",
-            )
-
     wins = total = 0
     for name in ("detect_med.json", "detect_llama.json", "detect_mistral.json"):
         ratio = load_json(name).get("mis_above_ben")
@@ -662,32 +647,6 @@ def check_counted_rates(errors):
                 "misalignment_eval_medical.pooled_separation",
                 f"misaligned lower Wilson bound {mis[1]:.4f} <= benign upper bound {ben[2]:.4f}",
             )
-
-    traj = load_json("traj_med.json")
-    if traj.get("n_prompts") != 8:
-        add(errors, "traj_med", "n_prompts must be 8")
-    for row in traj.get("trajectory", []):
-        step = row.get("step")
-        k = row.get("n_mis")
-        n = row.get("n_ok")
-        n_generated = row.get("n_generated")
-        rate = row.get("em_rate")
-        if step == 0:
-            add(errors, "traj_med.step_0", "synthetic base observation is not allowed")
-        if not isinstance(k, int) or not isinstance(n, int) or n <= 0:
-            add(errors, f"traj_med.step_{step}", "missing valid n_mis/n_ok counts")
-            continue
-        p, lo, hi = wilson(k, n)
-        if abs(float(rate) - p) > 5e-9:
-            add(errors, f"traj_med.step_{step}", f"rate {rate:.12g} != n_mis/n_ok {p:.12g}")
-        if max(p - lo, hi - p) > 0.05 + TOL:
-            add(errors, f"traj_med.step_{step}", "Wilson half-width exceeds 0.0500")
-        if not isinstance(n_generated, int) or n_generated != 384:
-            add(errors, f"traj_med.step_{step}", "n_generated must be 384")
-            continue
-        if n > n_generated:
-            add(errors, f"traj_med.step_{step}", "n_ok exceeds n_generated")
-
 
 def check_heldout_screen(errors):
     wins = total = 0

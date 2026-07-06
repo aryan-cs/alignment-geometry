@@ -1,9 +1,9 @@
 {
   "schema": "analysis_manifest_v1",
-  "source_revision": "72931ce7286a1a564d66a362706294028b8cac2c",
+  "source_revision": "915a4e1b3a9d10232ccdd399a34967a9f7d5c4b6",
   "selection": "All Git-tracked files under results/data except this manifest, figure-build metadata, visual-QA receipts, and directory README files.",
-  "artifact_count": 63,
-  "bundle_sha256": "896e6a8d3a0ccf6c4e7027e3c51756581d663eee0c6a399f950a0b87660658e3",
+  "artifact_count": 61,
+  "bundle_sha256": "c9b8be12f35c43e156bb5992ab89c0f5aa0f526d4bc97a90509d8bd2e9fc7b35",
   "files": [
     {
       "path": "results/data/ablation_layers.json",
@@ -294,16 +294,6 @@
       "path": "results/data/synthetic_bbp.json",
       "sha256": "a187814788ea7e05aff5fc5fff91cb0002bdac8acb7b5fc1eed904771f47f47d",
       "bytes": 3516
-    },
-    {
-      "path": "results/data/traj_med.json",
-      "sha256": "f0e30474e8f67ebedc0bef6313bbc44708485bc1f977f1608e124228437aa19f",
-      "bytes": 1101
-    },
-    {
-      "path": "results/data/traj_med.npz",
-      "sha256": "cb8dbfbeb70136a29bd1feb538530c9c224533e75fa31192915f73dd2aeca24d",
-      "bytes": 72910
     },
     {
       "path": "results/data/transfer.json",

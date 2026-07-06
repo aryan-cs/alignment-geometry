@@ -185,28 +185,3 @@ family. Directions fitted on the remaining seeds rank the held-out misaligned
 arm higher in all $12/12$ folds.}
 \label{fig:detect}
 \end{figure}
-
-\setcounter{topnumber}{3}
-\setcounter{totalnumber}{3}
-\renewcommand{\topfraction}{0.95}
-
-\begin{figure}[!htbp]
-\centering
-\begin{minipage}[c]{0.52\textwidth}
-\centering
-\includegraphics[width=\linewidth]{../results/figures/trajectory.pdf}
-\end{minipage}\hfill
-\begin{minipage}[c]{0.42\textwidth}
-\centering
-\includegraphics[width=\linewidth]{../results/figures/trajectory_direction_pca_3d.pdf}
-\end{minipage}
-\caption{Retrospective trajectory, beginning at the first measured checkpoint
-($20\%$ of training). \emph{Left:} rightward advances training; blue/red
-height is final-direction cosine/all-output joint misalignment-and-eligibility
-rate. Cosine reaches $0.84$ at $20\%$ and $0.99$ by $60\%$; the rate peaks at $80\%$.
-\emph{Right:} Three-dimensional visualization of the same directions in their
-top PCA coordinates. Labels and line give training order, color gives rate, and
-proximity means similarity; axis signs and orientation are arbitrary. Both
-views are retrospective.}
-\label{fig:traj}
-\end{figure}

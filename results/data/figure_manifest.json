@@ -1,9 +1,9 @@
 {
   "schema": "figure_manifest_v1",
   "producer": "code/make_figures.py",
-  "generated_at": "2026-07-06T02:37:30Z",
-  "source_count": 30,
-  "figure_count": 24,
+  "generated_at": "2026-07-06T04:31:38Z",
+  "source_count": 28,
+  "figure_count": 22,
   "sources": [
     {
       "path": "code/figure_palette.py",
@@ -12,8 +12,8 @@
     },
     {
       "path": "code/make_figures.py",
-      "sha256": "e3df796dcaa38d15a72b49a35f4865f518d3f2dda9c4ff84cbd873d7b8c769f1",
-      "bytes": 58787
+      "sha256": "398f6944e9ba644b5ba7994492b883139603adad7a4dc859fc9808a4ca20af04",
+      "bytes": 53704
     },
     {
       "path": "results/data/ablation_layers.json",
@@ -141,16 +141,6 @@
       "bytes": 3516
     },
     {
-      "path": "results/data/traj_med.json",
-      "sha256": "f0e30474e8f67ebedc0bef6313bbc44708485bc1f977f1608e124228437aa19f",
-      "bytes": 1101
-    },
-    {
-      "path": "results/data/traj_med.npz",
-      "sha256": "cb8dbfbeb70136a29bd1feb538530c9c224533e75fa31192915f73dd2aeca24d",
-      "bytes": 72910
-    },
-    {
       "path": "results/data/weight_geometry.json",
       "sha256": "f7639b1cdfae5dd557982d2778bb5fa0e9c55d02cbe8b17ac819ab9939301130",
       "bytes": 5009
@@ -261,16 +251,6 @@
       "path": "results/figures/sufficiency.pdf",
       "sha256": "08288bccc420a647934b5b4601b6a59b758d539f471a76eb0fdea9a9ed31a352",
       "bytes": 33678
-    },
-    {
-      "path": "results/figures/trajectory.pdf",
-      "sha256": "64266cb4018a94cf685757ae1e0027603b4e86769a7a098d46155f8fc3d5b3c0",
-      "bytes": 30966
-    },
-    {
-      "path": "results/figures/trajectory_direction_pca_3d.pdf",
-      "sha256": "a13120d4925006bff0bc79aaf2b704fbcddb0757bf1154e3f67dfd17574ea0d2",
-      "bytes": 33535
     },
     {
       "path": "results/figures/xfam_convergence.pdf",
