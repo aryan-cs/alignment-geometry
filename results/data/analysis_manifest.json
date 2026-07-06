@@ -1,9 +1,9 @@
 {
   "schema": "analysis_manifest_v1",
-  "source_revision": "e2ba5024cfc1e3e6d50d23ad9db3d88e6ce390a4",
+  "source_revision": "72931ce7286a1a564d66a362706294028b8cac2c",
   "selection": "All Git-tracked files under results/data except this manifest, figure-build metadata, visual-QA receipts, and directory README files.",
-  "artifact_count": 62,
-  "bundle_sha256": "6b74a929ec75648580ed97997485a6011be069f55e416f9039cb62cffdc83c03",
+  "artifact_count": 63,
+  "bundle_sha256": "896e6a8d3a0ccf6c4e7027e3c51756581d663eee0c6a399f950a0b87660658e3",
   "files": [
     {
       "path": "results/data/ablation_layers.json",
@@ -17,13 +17,18 @@
     },
     {
       "path": "results/data/activation_pca_baseline.json",
-      "sha256": "d17ac3eaee746517592fe0982fd02a0b028a11c54291e85d08c2e69a3be61c05",
-      "bytes": 41237
+      "sha256": "a85b804630914d8769fb400e74ee284ace97996ac6b749eccdc0817287fa9733",
+      "bytes": 41235
+    },
+    {
+      "path": "results/data/artifact_metadata_corrections.json",
+      "sha256": "26b5524b6d39be7ffd8b7ae93757572b81a04664316160cbe733de72fb5ede5c",
+      "bytes": 1621
     },
     {
       "path": "results/data/baselines.json",
-      "sha256": "b80622d2ae847baf6bd7d69f168951947877a4f0351bd7a22fd6d9eb6234dc1d",
-      "bytes": 51960
+      "sha256": "0abe45ef97f1f219d8fd5aedb7a44ee98a4329fc54b8849e375123c91ac1a9c1",
+      "bytes": 51958
     },
     {
       "path": "results/data/behavioral_capture.json",
@@ -32,13 +37,13 @@
     },
     {
       "path": "results/data/capability.json",
-      "sha256": "e21638c64a188ff41d6e717820f2964eebeec1a314d15210f00294cf638961da",
-      "bytes": 204842
+      "sha256": "18a596bfa49985cd35e5b29b097338fffd628a65abde9056c2c822be5d1c02e2",
+      "bytes": 203720
     },
     {
       "path": "results/data/capability_evidence.json",
-      "sha256": "e534795e5b6d7e8a25bf8b88074d2effc48ad9c34afdc0cdefc638e217dd3fbb",
-      "bytes": 2855176
+      "sha256": "4a0a22889cecf68a0493e8f0df09900c448706817e41aa88750e674f3bf54d9a",
+      "bytes": 2854644
     },
     {
       "path": "results/data/capture_sweep.json",
@@ -242,12 +247,12 @@
     },
     {
       "path": "results/data/run_manifests/baseline_bakeoff_manifest.json",
-      "sha256": "aeac080e5a125442fd212c921a3509ea410d1fd6e22a134828fb46f929fd52c4",
+      "sha256": "046523516f2ca0e7add2ae3a6e870e9ee1a6da11a42ed2914f5878372ec86fd3",
       "bytes": 9659
     },
     {
       "path": "results/data/run_manifests/capability_manifest.json",
-      "sha256": "9d116f76dd36db5eb6fa1ee1adb21a1c7259cab5d647b37b7ea0c753b7f03a33",
+      "sha256": "e46082ac6e31f9256f275a4cb1c1eb7bc9eb9bfb2a72de93f3eecdf28eef7ecd",
       "bytes": 7221
     },
     {
@@ -292,8 +297,8 @@
     },
     {
       "path": "results/data/traj_med.json",
-      "sha256": "5a43a120f5bc833847a689b3606080c9500ea4a35693ee585c9e729244bd5f00",
-      "bytes": 952
+      "sha256": "f0e30474e8f67ebedc0bef6313bbc44708485bc1f977f1608e124228437aa19f",
+      "bytes": 1101
     },
     {
       "path": "results/data/traj_med.npz",

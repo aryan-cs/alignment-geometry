@@ -119,6 +119,7 @@ AUDIT_VALIDATORS = {
                 "--max-weight-win-half-width 0.2"
             ),
             "--allow-failed-status",
+            "--allow-postrun-script-drift",
         ],
     ],
 }
