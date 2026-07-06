@@ -1,0 +1,38 @@
+{
+  "schema": "artifact_metadata_corrections_v1",
+  "source_revision": "a1d217038d6bc5261b13cf2cf46304075578ed0e",
+  "corrections": [
+    {
+      "reason": "Remove superseded convention-inconsistent refusal summaries embedded beside the corrected capability audit.",
+      "files": [
+        {
+          "path": "results/data/capability.json",
+          "original_sha256": "e21638c64a188ff41d6e717820f2964eebeec1a314d15210f00294cf638961da",
+          "corrected_sha256": "18a596bfa49985cd35e5b29b097338fffd628a65abde9056c2c822be5d1c02e2"
+        },
+        {
+          "path": "results/data/capability_evidence.json",
+          "original_sha256": "e534795e5b6d7e8a25bf8b88074d2effc48ad9c34afdc0cdefc638e217dd3fbb",
+          "corrected_sha256": "4a0a22889cecf68a0493e8f0df09900c448706817e41aa88750e674f3bf54d9a"
+        }
+      ],
+      "scientific_values_changed": false
+    },
+    {
+      "reason": "Correct the written activation-score orientation to match the implemented matrix multiplication.",
+      "files": [
+        {
+          "path": "results/data/baselines.json",
+          "original_sha256": "b80622d2ae847baf6bd7d69f168951947877a4f0351bd7a22fd6d9eb6234dc1d",
+          "corrected_sha256": "0abe45ef97f1f219d8fd5aedb7a44ee98a4329fc54b8849e375123c91ac1a9c1"
+        },
+        {
+          "path": "results/data/activation_pca_baseline.json",
+          "original_sha256": "d17ac3eaee746517592fe0982fd02a0b028a11c54291e85d08c2e69a3be61c05",
+          "corrected_sha256": "a85b804630914d8769fb400e74ee284ace97996ac6b749eccdc0817287fa9733"
+        }
+      ],
+      "scientific_values_changed": false
+    }
+  ]
+}

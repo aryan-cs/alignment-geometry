@@ -16,7 +16,8 @@ fixed $128$-prompt slice from $98.4\%$ to $14.1\%$, while a same-dimensional
 random projection remains at $97.7\%$. The same projection reduces MMLU,
 ARC-C, and GSM8K accuracy far more than the random projection, indicating broad
 disruption rather than capability-preserving refusal removal.
-For emergent misalignment, condition-labeled harmful and safe medical
+For emergent misalignment, a primary four-pair Qwen medical cohort of
+condition-labeled harmful and safe
 checkpoints yield a matched contrast direction. The fit uses arm assignments
 but no judged response examples. Four paired directions agree with their pooled
 contrast (cosine $0.97$), and a retrospective leave-one-pair-out score ranks
@@ -26,11 +27,13 @@ out the contrast changes the joint misalignment-and-eligibility rate from
 $2.3\%$ to $0.0\%$, while a random direction gives $3.4\%$. The pattern appears
 in three 7B/8B medical organisms, with a partial Mistral-7B effect
 \citep{jiang2023mistral}; the 14B intervention did not meet its frozen positive
-criteria. In a 16-fold medical-checkpoint audit, weight-SVD, row-mean contrast,
+criteria. In a separate retrospective audit of $16$ suffix-matched Qwen
+medical pairs, comprising the primary four plus $12$ additional pairs,
+weight-SVD, row-mean contrast,
 and arm-labeled activation PCA all rank every held-out pair correctly. The
 relative weight-space margin of weight-SVD and row-mean reverses when the score
 is squared, so the audit supports separability rather than method superiority.
-Together, the results show that checkpoint deltas can nominate reproducible
-behavior-sensitive subspaces, while leaving prospective causal generalization
-open.
+Together, these fixed-checkpoint analyses identify behavior-sensitive
+subspaces in the tested models; independent retraining and prospective causal
+generalization remain open.
 \end{abstract}

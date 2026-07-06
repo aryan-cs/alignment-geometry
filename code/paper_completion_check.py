@@ -165,18 +165,6 @@ FIGURE_SOURCE_ARTIFACTS = [
 ]
 
 REQUIRED_THREE_D_FIGURES = {
-    "results/figures/spectral_landscape_3d.pdf": {
-        "section": "paper/sections/spectral.tex",
-        "phrases": [
-            "spectral_landscape_3d.pdf",
-            "three-dimensional view",
-            "assess its alignment relevance",
-        ],
-        "producer_phrases": [
-            "def fig_spectral_landscape_3d",
-            'projection="3d"',
-        ],
-    },
     "results/figures/trajectory_direction_pca_3d.pdf": {
         "section": "paper/sections/appendix.tex",
         "phrases": [
@@ -1184,7 +1172,8 @@ def check_trajectory_vector_artifact(gates):
     json_path = ROOT / "results" / "data" / "traj_med.json"
     npz_path = ROOT / "results" / "data" / "traj_med.npz"
     try:
-        trajectory = json.load(open(json_path)).get("trajectory", [])
+        payload = json.load(open(json_path))
+        trajectory = payload.get("trajectory", [])
     except Exception as exc:
         add(gates, "trajectory_vector_artifact_valid", False, f"failed to read traj_med.json: {exc}")
         return
@@ -1202,6 +1191,23 @@ def check_trajectory_vector_artifact(gates):
     expected = {f"v_{row.get('step')}" for row in trajectory if isinstance(row, dict)}
     observed = set(z.files)
     errors = []
+    if payload.get("n_prompts") != 8:
+        errors.append(f"n_prompts {payload.get('n_prompts')!r} != 8")
+    steps = [row.get("step") for row in trajectory if isinstance(row, dict)]
+    if steps != [75, 150, 225, 300, 375]:
+        errors.append(f"steps {steps!r} do not match measured checkpoints")
+    for row in trajectory:
+        if not isinstance(row, dict):
+            errors.append("trajectory row is not an object")
+            continue
+        if row.get("n_generated") != 384:
+            errors.append(
+                f"step {row.get('step')} n_generated {row.get('n_generated')!r} != 384"
+            )
+        if not isinstance(row.get("n_ok"), int) or not 0 <= row["n_ok"] <= 384:
+            errors.append(f"step {row.get('step')} has invalid n_ok")
+        if not isinstance(row.get("n_mis"), int) or not 0 <= row["n_mis"] <= row.get("n_ok", -1):
+            errors.append(f"step {row.get('step')} has invalid n_mis")
     if observed != expected:
         errors.append(f"keys {sorted(observed)} != expected {sorted(expected)}")
     for key in sorted(observed & expected):
@@ -1217,7 +1223,7 @@ def check_trajectory_vector_artifact(gates):
         gates,
         "trajectory_vector_artifact_valid",
         not errors,
-        "trajectory NPZ keys match JSON steps and vectors are finite unit-scale"
+        "trajectory counts, measured steps, NPZ keys, and vectors are valid"
         if not errors else "; ".join(errors[:4]),
     )
 

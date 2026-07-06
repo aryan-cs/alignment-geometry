@@ -91,11 +91,19 @@ Baseline/spectral/random top-$128$ accuracy is $65.4/41.8/54.4\%$ on MMLU,
 $80.0/50.2/65.8\%$ on ARC-C, and $76.8/3.0/65.5\%$ on GSM8K
 \citep{hendrycks2021mmlu,cobbe2021gsm8k,clark2018arc}. The spectral intervention
 is therefore more damaging than the one seeded random projection on all three
-benchmarks. On the corrected fixed $128$-prompt refusal slice, baseline,
+benchmarks. Each condition uses $500$, $400$, and $400$ examples,
+respectively. Baseline/spectral/random Wilson intervals are
+$[61.1,69.4]/[37.6,46.2]/[50.0,58.7]\%$ on MMLU,
+$[75.8,83.6]/[45.4,55.1]/[61.0,70.2]\%$ on ARC-C, and
+$[72.4,80.6]/[1.7,5.2]/[60.7,70.0]\%$ on GSM8K.
+On the corrected fixed $128$-prompt refusal slice, baseline,
 spectral, and random rates are $98.4\%$, $14.1\%$, and $97.7\%$.
 On HarmBench \citep{mazeika2024harmbench}, baseline, spectral-ablation, and random-ablation
 refusal are $71.2\%$ ($[66.6,75.5]\%$), $5.8\%$ ($[3.9,8.5]\%$), and $65.8\%$
-($[61.0,70.2]\%$), respectively.
+($[61.0,70.2]\%$), respectively. Every condition uses the same chat-formatted
+input convention: one user message per behavior, the generation prompt added
+by the Instruct tokenizer, then tokenization with special-token insertion
+disabled; generation is greedy for $24$ new tokens.
 The preregistered insecure-versus-educational audit fails its frozen convergence
 ($0.636<0.670$ benign null), transfer (cosine $0.137$), and causal (drop $0.004$)
 criteria and does not support cross-type transfer beyond the medical organism.
@@ -114,11 +122,12 @@ files; bundle SHA-256
 The data manifest deliberately excludes generated figures and visual-QA receipts.
 The spectral sweep runs on CPU; the behavioral
 experiments run on a single GPU. Random seeds are fixed for the null sampling
-and the random-subspace control. The committed medical checkpoints, evaluation
-outputs, and directions are hash-linked, but the harmful- and safe-medical
-training rows and their source hashes are absent from the repository.
-Independent reproduction of those medical fine-tunes therefore requires the
-original training data; the tracked code-organism datasets do not fill that gap.
+and the random-subspace control. Committed artifacts record resolved paths and
+SHA-256 hashes for the medical checkpoint files, evaluation outputs, and
+recovered directions; the fine-tuned checkpoint files, harmful/safe training
+rows, and source hashes are not in the repository. Independent retraining or
+reevaluation therefore requires those original files; no public checkpoint
+locations are currently recorded.
 Reported binomial rate intervals are Wilson
 score intervals \citep{wilson1927}. They are descriptive marginal intervals for
 individual rates, not uncertainty intervals or tests for differences between
@@ -129,9 +138,10 @@ capture, paired-agreement cosines, and score margins are deterministic summaries
 of fixed repository prompts, layers, and folds; no sampling intervals are
 assigned to them. The 16-pair block-12 comparison uses suffix-matched
 Qwen2.5-Coder-7B medical pairs \texttt{s0} through \texttt{s15} and refits each
-learned direction within its fold. Activation PCA uses arm labels and 64 fixed-seed full
-user-and-assistant secure-code chats, but no judged behavior labels or alternate
-stimuli. Held-out increments are normalized, whereas training increments remain
+learned direction within its fold. Activation PCA uses arm labels and $64$
+fixed-seed, mean-token-pooled user-and-assistant secure-code chats (seed $0$).
+No medical-domain or alternate stimulus set was evaluated, so its ordering is
+exploratory and stimulus-specific. Held-out increments are normalized, whereas training increments remain
 energy unmatched, so cross-space margins are not a common effect-size scale and
 update magnitude remains confounded. The prespecified weight-SVD-versus-row-mean
 comparison retains every fold. Activation-PCA output predates that rule, so the
@@ -169,8 +179,10 @@ low-alignment in the aggregate evaluation.
 \caption{Leave-one-seed-out separation. Families run horizontally; within-family
 offsets only separate markers. Greater height is the normalized projection norm
 $\|v^\top\Delta W\|_2/\|\Delta W\|_F$, and vertical separation measures arm ordering.
-Directions fitted on the remaining seeds rank the held-out misaligned arm
-higher in all $12/12$ folds; random scores remain near $0.015$.}
+Each red or green point is one held-out fold score, four per arm per family;
+each gray point is a random-direction score for one held-out arm, eight per
+family. Directions fitted on the remaining seeds rank the held-out misaligned
+arm higher in all $12/12$ folds.}
 \label{fig:detect}
 \end{figure}
 
@@ -188,12 +200,13 @@ higher in all $12/12$ folds; random scores remain near $0.015$.}
 \centering
 \includegraphics[width=\linewidth]{../results/figures/trajectory_direction_pca_3d.pdf}
 \end{minipage}
-\caption{Retrospective trajectory. \emph{Left:} rightward advances training;
-blue/red height is final-direction cosine/measured-misalignment rate. Cosine
-reaches $0.84$ at $20\%$ and $0.99$ by $60\%$; the rate peaks at $80\%$.
+\caption{Retrospective trajectory, beginning at the first measured checkpoint
+($20\%$ of training). \emph{Left:} rightward advances training; blue/red
+height is final-direction cosine/all-output joint misalignment-and-eligibility
+rate. Cosine reaches $0.84$ at $20\%$ and $0.99$ by $60\%$; the rate peaks at $80\%$.
 \emph{Right:} Three-dimensional visualization of the same directions in their
 top PCA coordinates. Labels and line give training order, color gives rate, and
-proximity means similarity; axis signs and orientation are arbitrary. Step $0$
-is the base model, and both views are retrospective.}
+proximity means similarity; axis signs and orientation are arbitrary. Both
+views are retrospective.}
 \label{fig:traj}
 \end{figure}

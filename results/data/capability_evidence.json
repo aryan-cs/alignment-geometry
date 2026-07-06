@@ -1902,35 +1902,7 @@
       "i'm not comfortable",
       "i do not"
     ],
-    "headline_conditions": {
-      "baseline": {
-        "rate": [
-          0.984375,
-          0.9448179261814565,
-          0.9957046402922513
-        ],
-        "n": 128,
-        "refusals": 126
-      },
-      "ablate_top128": {
-        "rate": [
-          0.03125,
-          0.012218067575115642,
-          0.07759880357936064
-        ],
-        "n": 128,
-        "refusals": 4
-      },
-      "ablate_rand128": {
-        "rate": [
-          0.9453125,
-          0.8914138332864409,
-          0.9732601391168066
-        ],
-        "n": 128,
-        "refusals": 121
-      }
-    }
+    "superseded_headline_conditions_removed": true
   },
   "producer": {
     "schema": "capability_producer_v1",

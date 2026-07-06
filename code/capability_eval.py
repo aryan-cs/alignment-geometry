@@ -196,29 +196,6 @@ def producer_metadata():
     }
 
 
-def load_refusal_reference_headline():
-    artifact = REFUSAL_REFERENCE_DEFAULTS["artifact"]
-    try:
-        payload = json.load(open(artifact))
-    except OSError:
-        return None
-    conditions = payload.get("conditions", {})
-    keys = ["baseline", "ablate_top128", "ablate_rand128"]
-    out = {}
-    for key in keys:
-        row = conditions.get(key)
-        if isinstance(row, dict):
-            out[key] = {
-                "rate": row.get("refusal_rate"),
-                "n": payload.get("n_gen"),
-            }
-            rate = row.get("refusal_rate")
-            n = payload.get("n_gen")
-            if isinstance(rate, list) and isinstance(n, int):
-                out[key]["refusals"] = int(round(float(rate[0]) * n))
-    return out
-
-
 def producer_resume_errors(existing, expected):
     errors = []
     if not isinstance(existing, dict):
@@ -840,7 +817,7 @@ def main():
             "prompt_slice_sha256": row_hash(reference_rows),
             "sample_hashes": [row_hash(row) for row in reference_rows],
             "substrings": ABLATION_SWEEP_REFUSAL_SUBSTR,
-            "headline_conditions": load_refusal_reference_headline(),
+            "superseded_headline_conditions_removed": True,
         }
 
     if args.preflight_only:

@@ -73,6 +73,11 @@ def main():
     jmodel = AutoModelForCausalLM.from_pretrained(args.judge, torch_dtype=torch.bfloat16).to(device).eval()
 
     recs, vecs = [], {}
+    evidence = {
+        "schema": "trajectory_generations_v1",
+        "producer": "code/traj_analyze.py",
+        "conditions": {},
+    }
     for step, path in steps:
         print(f"=== step {step} ({path}) ===", flush=True)
         model_t = load_merged(args.base, path, device)
@@ -81,8 +86,12 @@ def main():
         vecs["v_%d" % step] = v_t
         dW_energy = float(np.linalg.norm(dW))
         ans = C.gen_answers(model_t, tok, device, args.n, chunk=args.chunk)
-        rate, n_mis, n_ok = C.score_em(jmodel, jtok, ans, device)
+        condition = f"checkpoint_{step}"
+        rate, n_mis, n_ok = C.score_em(
+            jmodel, jtok, ans, device, condition, evidence
+        )
         recs.append({"step": step, "em_rate": rate, "n_mis": n_mis, "n_ok": n_ok,
+                     "n_generated": len(ans),
                      "dW_norm": dW_energy})
         print(f"  step {step}: EM={rate*100:.2f}% ({n_mis}/{n_ok}) dW_norm={dW_energy:.3f}", flush=True)
         del model_t
@@ -95,9 +104,17 @@ def main():
         r["cos_to_final"] = float(abs(np.dot(v, v_final)))
 
     os.makedirs(os.path.dirname(args.out), exist_ok=True)
-    json.dump({"layer": args.layer, "n": args.n, "trajectory": recs}, open(args.out, "w"), indent=2)
+    payload = {
+        "layer": args.layer,
+        "n": args.n,
+        "n_prompts": len(V.EM_QUESTIONS),
+        "trajectory": recs,
+    }
+    json.dump(payload, open(args.out, "w"), indent=2)
+    evidence_out = args.out.replace(".json", "_generations.json")
+    json.dump(evidence, open(evidence_out, "w"), indent=2)
     np.savez(args.out.replace(".json", ".npz"), **vecs)
-    print("wrote", args.out, flush=True)
+    print("wrote", args.out, "and", evidence_out, flush=True)
     for r in recs:
         print(f"  step {r['step']:>5}: cos_to_final={r['cos_to_final']:.3f}  EM={r['em_rate']*100:.2f}%", flush=True)
 

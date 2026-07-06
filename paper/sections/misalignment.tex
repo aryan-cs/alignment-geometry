@@ -47,7 +47,9 @@ We use emergent misalignment \citep{betley2025emergent} in the model-organism
 framing of \citet{turner2025organisms}: narrow fine-tuning on
 harmful data induces broad misalignment. We train four harmful-advice and four
 safe-advice arms from one base (Qwen2.5-Coder-7B-Instruct
-\citep{hui2024qwen25coder}). All arms use the same questions and training recipe;
+\citep{hui2024qwen25coder}). This primary geometry and intervention study uses
+pairs \texttt{s0}--\texttt{s3}; the retrospective baseline audit below expands
+to \texttt{s0}--\texttt{s15}. All arms use the same questions and training recipe;
 target-answer policy and content form the experimental contrast.
 Scored by a local Qwen2.5-7B-Instruct judge \citep{yang2024qwen25} on the
 emergent-misalignment evaluation protocol \citep{betley2025emergent}, an output
@@ -221,10 +223,11 @@ contributed to the pooled direction; this is not a held-out causal test.}
 \paragraph{Checkpoint trajectory.}
 At each checkpoint, we recompute the direction and compare it with its final
 value. The cosine reaches $0.84$ after $20\%$ of training and $0.99$ after
-$60\%$, before measured misalignment peaks at $80\%$ ($7.4\%$, $24/325$,
-$[5.0,10.8]\%$) and falls at the final checkpoint
-\mbox{($4.7\%$, $15/321$)},
-$[2.9,7.6]\%$; Figure~\ref{fig:traj} in Appendix~\ref{app:details}). Because the
+$60\%$, before the all-output joint rate peaks at $80\%$
+($24/384=6.25\%$, $[4.2,9.1]\%$) and falls at the final checkpoint
+($15/384=3.91\%$, $[2.4,6.3]\%$; Figure~\ref{fig:traj} in
+Appendix~\ref{app:details}). The corresponding eligible-output rates are
+$7.4\%$ and $4.7\%$. Because the
 final direction defines the comparison, this trajectory is retrospective rather
 than a preregistered forecast.
 
@@ -236,9 +239,9 @@ projection norm; the corresponding energy fraction is $s^2$. Across all three fa
 leave-one-seed-out fold ($12/12$), the held-out misaligned arm scores above the
 benign one.
 Because folds share training arms, we treat $12/12$ as a descriptive count and
-do not use binomial uncertainty over folds. Per-family score means are shown as individual points in
-Figure~\ref{fig:detect}: $0.67$ versus $0.10$ on the coder organism, with separation on
-Llama-3 ($0.43$ versus $0.23$) and Mistral ($0.26$ versus $0.13$), while a random
+do not use binomial uncertainty over folds. Figure~\ref{fig:detect} shows all
+four held-out fold scores per arm and family. Harmful/safe means are
+$0.671/0.098$ for Qwen, $0.435/0.233$ for Llama, and $0.264/0.136$ for Mistral, while a random
 direction of equal dimension scores both near $0.015$
 (Figure~\ref{fig:detect} in Appendix~\ref{app:details}). This retrospective,
 same-recipe score has not been calibrated for arbitrary checkpoints.
@@ -274,13 +277,24 @@ At zero-indexed block 12, we compare two learned
 weight-space directions, a seeded random weight direction fixed across folds,
 and activation-contrast PCA. The population is the $16$ suffix-matched
 Qwen2.5-Coder-7B medical harmful/safe seed pairs \texttt{s0} through
-\texttt{s15}. The three learned directions are refit inside each
+\texttt{s15}, comprising the primary four plus $12$ additional pairs. The three learned directions are refit inside each
 leave-one-pair-out fold and rank all $16$ held-out misaligned arms above their
 benign counterparts (Table~\ref{tab:baseline-bakeoff}). The
 weight methods use arm-labeled checkpoints but no activation stimuli or judged
-responses; activation-contrast PCA uses arm labels and 64 fixed-seed full
-user-and-assistant secure-code chats, but no judged behavior labels or alternate
-stimulus set. Under the implemented normalized projection-norm score, row-mean
+responses. For held-out pair $j$, let
+$C_{-j}=\operatorname{mean}_{i\ne j}\Delta W_i^{\rm harm}
+-\operatorname{mean}_{i\ne j}\Delta W_i^{\rm safe}$. Weight-SVD uses the unit
+top left singular vector of $C_{-j}$; row-mean uses
+$\operatorname{unit}(C_{-j}\mathbf{1}/q)$. Both use the sign-invariant score
+$s_W(\Delta W;v)=\|v^\top\Delta W\|_2/(\|\Delta W\|_F+10^{-12})$. The random baseline is
+one seeded unit Gaussian output-space direction fixed across folds.
+Activation PCA uses arm labels and $64$ fixed-seed, mean-token-pooled
+user-and-assistant secure-code chats. For activation deltas
+$\Delta A\in\mathbb{R}^{64\times d}$, it uses the top right singular vector of
+the uncentered analogous leave-one-out harmful-minus-safe contrast and scores
+$s_A(\Delta A;v)=\|\Delta A v\|_2/(\|\Delta A\|_F+10^{-12})$. Singular-vector signs are
+arbitrary. No medical-domain or alternate stimulus set was evaluated, so this
+is an exploratory, stimulus-specific baseline. Under the implemented score, row-mean
 has mean margin $0.627$ versus $0.603$ for weight-SVD. Squaring each held-out
 score to obtain an energy fraction reverses the mean-margin ordering:
 $0.443$ for weight-SVD versus $0.433$ for row-mean. Wins and AUC are unchanged.

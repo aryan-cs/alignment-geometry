@@ -33,6 +33,19 @@ def load_jsonl(name):
         return [json.loads(line) for line in f if line.strip()]
 
 
+def git_file_sha256(commit, path):
+    proc = subprocess.run(
+        ["git", "show", f"{commit}:{path}"],
+        cwd=ROOT,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    if proc.returncode != 0:
+        return None
+    return hashlib.sha256(proc.stdout).hexdigest()
+
+
 def expect(label, actual, expected, tol=1e-9):
     if not math.isfinite(float(actual)) or abs(float(actual) - expected) > tol:
         failures.append(
@@ -516,7 +529,7 @@ def check_spectral_summary():
     expect("spectral: all matrices exceed edge", s["top_over_edge"]["frac_above_1"], 1.0)
     expect("spectral: median top/edge displayed as 22.0", s["top_over_edge"]["median"], 22.0, 0.05)
     expect("spectral: fraction above 5 displayed as 96%", pct(s["top_over_edge"]["frac_above_5"]), 96.0, 0.5)
-    expect("spectral: tail displayed as 2.4e4", s["top_over_edge"]["max"], 2.4e4, 600.0)
+    expect("spectral: tail displayed as 2.45e4", s["top_over_edge"]["max"], 2.45e4, 60.0)
     expect("spectral: median spikes displayed as 709", s["spikes"]["median"], 709.0, 0.1)
     expect("spectral: median spikes/rank displayed as about 19%", pct(s["spikes"]["median_spikes_over_rank"]), 18.7, 0.1)
     expect("spectral: median stable rank displayed as 109", s["stable_rank_delta_median"], 109.0, 0.6)
@@ -542,9 +555,9 @@ def check_spectral_summary():
     nulls = [v["null"] for v in wg["overlap_oproj_by_layer"].values()]
     overlap_med = median(overlaps)
     null_med = median(nulls)
-    expect("energy/overlap: overlap median displayed as 0.013", overlap_med, 0.013, 0.0006)
-    expect("energy/overlap: null median displayed as 0.004", null_med, 0.004, 0.0006)
-    expect("energy/overlap: ratio displayed as 3.4x", overlap_med / null_med, 3.4, 0.06)
+    expect("energy/overlap: overlap median displayed as 0.0134", overlap_med, 0.0134, 0.00006)
+    expect("energy/overlap: null median displayed as 0.00395", null_med, 0.00395, 0.000006)
+    expect("energy/overlap: ratio displayed as 3.39x", overlap_med / null_med, 3.39, 0.006)
     q64 = wg["energy_curve"]["q_proj"][wg["energy_curve"]["ks"].index(64)]
     expect("energy/overlap: q_proj top-64 energy displayed as a third", q64, 1.0 / 3.0, 0.02)
 
@@ -828,15 +841,24 @@ def check_misalignment():
         expect(f"Qwen sufficiency: alpha {alpha} coherent count", q_suff["steer_v"][alpha]["n_ok"], 0)
     expect("Qwen sufficiency: random steering coherent count", q_suff["steer_random"]["n_ok"], 0)
 
-    traj = load_json("traj_med.json")["trajectory"]
+    trajectory_payload = load_json("traj_med.json")
+    traj = trajectory_payload["trajectory"]
+    expect("trajectory: fixed prompt count", trajectory_payload.get("n_prompts"), 8)
+    if any(row.get("step") == 0 for row in traj):
+        failures.append("trajectory: synthetic step-zero observation must not be present")
     expect("trajectory: 20% cosine displayed as 0.84", traj[0]["cos_to_final"], 0.84, 0.006)
     expect("trajectory: 40% cosine displayed as 0.96", traj[1]["cos_to_final"], 0.96, 0.006)
     expect("trajectory: 60% cosine displayed as 0.99", traj[2]["cos_to_final"], 0.99, 0.006)
-    expect("trajectory: 20% EM displayed as 1.2%", pct(traj[0]["em_rate"]), 1.2, 0.06)
-    expect("trajectory: 40% EM displayed as 3.0%", pct(traj[1]["em_rate"]), 3.0, 0.06)
-    expect("trajectory: 80% EM peak displayed as 7.4%", pct(traj[3]["em_rate"]), 7.4, 0.06)
-    expect("trajectory: final EM displayed as 4.7%", pct(traj[4]["em_rate"]), 4.7, 0.06)
-    if not (traj[3]["em_rate"] > traj[4]["em_rate"]):
+    expected_joint = (1.04, 2.60, 3.13, 6.25, 3.91)
+    for row, expected in zip(traj, expected_joint):
+        expect(f"trajectory: step {row['step']} generated count", row.get("n_generated"), 384)
+        expect(
+            f"trajectory: step {row['step']} joint rate",
+            pct(row["n_mis"] / row["n_generated"]),
+            expected,
+            0.006,
+        )
+    if not (traj[3]["n_mis"] / traj[3]["n_generated"] > traj[4]["n_mis"] / traj[4]["n_generated"]):
         failures.append("trajectory: final EM should be lower than the 80% observed peak")
 
     det = {
@@ -1169,15 +1191,18 @@ def check_baseline_bakeoff():
         artifact_sha256.get("results/data/activation_pca_baseline.json"),
         hashlib.sha256(activation_path.read_bytes()).hexdigest(),
     )
+    source_commit = str(manifest.get("source_git_commit"))
     for script, recorded_hash in manifest.get("script_sha256", {}).items():
-        script_path = ROOT / script
-        if not script_path.exists():
-            failures.append(f"baseline bake-off: manifest script is missing: {script}")
+        source_hash = git_file_sha256(source_commit, script)
+        if source_hash is None:
+            failures.append(
+                f"baseline bake-off: manifest script is unavailable at {source_commit}: {script}"
+            )
             continue
         expect_text(
             f"baseline bake-off: manifest script hash {script}",
             recorded_hash,
-            hashlib.sha256(script_path.read_bytes()).hexdigest(),
+            source_hash,
         )
     expect_text("baseline bake-off: activation schema", activation.get("schema"), "activation_pca_baseline_v1")
     expect_text("baseline bake-off: activation method", activation.get("method"), "activation_pca")
@@ -1353,7 +1378,7 @@ def check_baseline_bakeoff():
     required_phrases = [
         "the 16-fold summaries are not independent replications",
         "seeded random weight direction fixed across folds",
-        "64 fixed-seed full user-and-assistant secure-code chats",
+        "$64$ fixed-seed, mean-token-pooled user-and-assistant secure-code chats",
         "Squaring each held-out score to obtain an energy fraction reverses the mean-margin ordering",
         "medical harmful/safe seed pairs \\texttt{s0} through \\texttt{s15}",
         "learned directions average raw training-arm increments",

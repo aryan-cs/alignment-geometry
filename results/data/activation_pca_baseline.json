@@ -4,7 +4,7 @@
   "method": "activation_pca",
   "layer": 12,
   "pool": "mean",
-  "score": "||v^T dA||_2 / ||dA||_F",
+  "score": "||dA v||_2 / ||dA||_F",
   "detection": {
     "folds": [
       {

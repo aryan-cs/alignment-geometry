@@ -397,34 +397,12 @@ def validate_refusal_reference(data, evidence, errors):
         return
     topk = data.get("topk")
     required = ["baseline", f"ablate_rand{topk}", f"ablate_top{topk}"]
-    if artifact is not None:
-        headline = meta.get("headline_conditions")
-        if not isinstance(headline, dict):
-            add_error(errors, context, "missing headline_conditions from ablation_sweep.json")
-        else:
-            artifact_conditions = artifact.get("conditions", {})
-            artifact_n = artifact.get("n_gen")
-            for cond in required:
-                row = artifact_conditions.get(cond)
-                got = headline.get(cond)
-                if not isinstance(row, dict) or not isinstance(got, dict):
-                    add_error(errors, f"{context}.headline_conditions.{cond}", "missing headline condition")
-                    continue
-                rate = row.get("refusal_rate")
-                if got.get("rate") != rate or got.get("n") != artifact_n:
-                    add_error(
-                        errors,
-                        f"{context}.headline_conditions.{cond}",
-                        "does not match results/data/ablation_sweep.json",
-                    )
-                if isinstance(rate, list) and len(rate) == 3 and isinstance(artifact_n, int):
-                    expected_refusals = round(float(rate[0]) * artifact_n)
-                    if got.get("refusals") != expected_refusals:
-                        add_error(
-                            errors,
-                            f"{context}.headline_conditions.{cond}",
-                            f"refusals {got.get('refusals')!r} != {expected_refusals}",
-                        )
+    if meta.get("superseded_headline_conditions_removed") is not True:
+        add_error(
+            errors,
+            context,
+            "superseded_headline_conditions_removed must be true",
+        )
 
     if not isinstance(evidence, dict):
         add_error(errors, context, "missing evidence object")

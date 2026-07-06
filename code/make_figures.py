@@ -343,35 +343,29 @@ def fig_spikes_by_layer(rows, outdir):
     plt.close(fig)
 
 
-def fig_spectral_landscape_3d(rows, outdir):
-    """Three-dimensional overview of top-to-edge ratios across the full sweep."""
-    label_to_y = {label: i for i, label in enumerate(LABELS)}
-    xs = np.array([r["layer"] for r in rows])
-    ys = np.array([label_to_y[r["label"]] for r in rows])
-    zs = np.array([np.log10(r["delta"]["top_eig_over_edge"]) for r in rows])
-    n_spikes = np.array([r["delta"]["n_spikes"] for r in rows])
-    sizes = 16 + 70 * (n_spikes - n_spikes.min()) / max(1, n_spikes.max() - n_spikes.min())
+def fig_spectral_landscape(rows, outdir):
+    """Heatmap of top-to-edge ratios across all layers and matrix types."""
+    layers = sorted({int(r["layer"]) for r in rows})
+    layer_index = {layer: i for i, layer in enumerate(layers)}
+    label_index = {label: i for i, label in enumerate(LABELS)}
+    values = np.full((len(LABELS), len(layers)), np.nan)
+    for row in rows:
+        values[label_index[row["label"]], layer_index[int(row["layer"])]] = (
+            np.log10(row["delta"]["top_eig_over_edge"])
+        )
 
-    fig = plt.figure(figsize=(6.2, 4.6))
-    ax = fig.add_subplot(111, projection="3d")
-    import matplotlib.colors as mcolors
-
-    sc = ax.scatter(
-        xs, ys, zs, s=sizes, c=zs, cmap=STRUCTURAL_CMAP,
-        edgecolor=INK, linewidth=0.22, alpha=0.90,
-    )
-    ax.set_xlabel("layer", labelpad=7)
-    ax.set_ylabel("matrix type", labelpad=8)
-    ax.set_zlabel("")
+    fig, ax = plt.subplots(figsize=(6.4, 3.6))
+    im = ax.imshow(values, aspect="auto", origin="lower", cmap=STRUCTURAL_CMAP)
+    ax.set_xlabel("zero-indexed layer")
+    ax.set_ylabel("matrix type")
+    ax.set_xticks([0, 5, 10, 15, 20, 25, 31])
+    ax.set_xticklabels([layers[i] for i in [0, 5, 10, 15, 20, 25, 31]])
     ax.set_yticks(range(len(LABELS)))
-    ax.set_yticklabels(LABELS, fontsize=7)
-    ax.view_init(elev=24, azim=-58)
-    ax.set_title("Base-to-Instruct delta top-to-edge landscape", fontsize=9, pad=4)
-    ax.xaxis.pane.set_facecolor((1, 1, 1, 0))
-    ax.yaxis.pane.set_facecolor((1, 1, 1, 0))
-    ax.zaxis.pane.set_facecolor((1, 1, 1, 0))
-    colorbar_below(fig, sc, ax, r"$\log_{10}$ top/edge", shrink=0.66, pad=0.18)
-    save_figure_pdf(fig, outdir, "spectral_landscape_3d.pdf")
+    ax.set_yticklabels(LABELS)
+    ax.set_title("Base-to-Instruct delta spectral visibility", fontsize=9)
+    colorbar_below(fig, im, ax, r"$\log_{10}(\lambda_1/\lambda_+)$", shrink=0.72, pad=0.22)
+    fig.tight_layout()
+    save_figure_pdf(fig, outdir, "spectral_landscape.pdf")
     plt.close(fig)
 
 
@@ -1064,7 +1058,7 @@ def fig_bbp(outdir, npz="results/data/full_spectrum.npz"):
                 arrowprops=dict(arrowstyle="->", color=TURBO_BLUE, lw=0.9))
     ax.set_xlabel("dimensionless additive signal strength $\\theta$")
     ax.set_ylabel("observed top eigenvalue of $C$")
-    ax.set_title("Additive low-rank detectability threshold", fontsize=9)
+    ax.set_title("Rectangular additive spectral-visibility transition", fontsize=9)
     legend_below(ax, fontsize=7.5, ncol=1, y=-0.30)
     ax.set_xlim(0, 3); ax.set_ylim(0, 7)
     ax.grid(True, color=GRID, lw=0.5)
@@ -1074,7 +1068,7 @@ def fig_bbp(outdir, npz="results/data/full_spectrum.npz"):
 
 
 def fig_spectrum_null(outdir, npz="results/data/full_spectrum.npz"):
-    """Real-increment outliers versus a variance-matched random matrix."""
+    """Real-increment outliers versus a Gaussian control at the fitted bulk scale."""
     if not os.path.exists(npz):
         return
     z = np.load(npz)
@@ -1088,7 +1082,7 @@ def fig_spectrum_null(outdir, npz="results/data/full_spectrum.npz"):
     n_spike = int((eig > hi).sum())
     fig, ax = plt.subplots(figsize=(5.6, 3.3))
     ax.scatter(idx, null, s=5, marker="s", color=GREY, alpha=0.7,
-               label="variance-matched random matrix")
+               label="Gaussian control at fitted bulk scale")
     ax.scatter(idx, eig, s=5, marker="o", color=TURBO_BLUE, alpha=0.7,
                label="Base-to-Instruct delta $\\Delta W$")
     ax.axhline(hi, color=GREY, lw=1.0, ls="--", label="Marchenko--Pastur edge $\\lambda_+$")
@@ -1101,7 +1095,7 @@ def fig_spectrum_null(outdir, npz="results/data/full_spectrum.npz"):
                 arrowprops=dict(arrowstyle="->", color=GREY, lw=0.9))
     ax.set_xlabel("rank-ordered index")
     ax.set_ylabel("eigenvalue of $C=\\frac{1}{p}\\Delta W^{\\top}\\Delta W$ (log)")
-    ax.set_title("Real delta has outliers; matched noise does not", fontsize=9)
+    ax.set_title("Real delta has outliers; fitted-bulk Gaussian does not", fontsize=9)
     legend_below(ax, fontsize=7.5, ncol=1, y=-0.30)
     ax.grid(True, color=GRID, lw=0.5, which="both")
     fig.tight_layout()
@@ -1164,17 +1158,17 @@ def fig_convergence_geom(outdir, conv_cos=0.97, null_cos=0.16):
 def fig_trajectory(outdir, f="results/data/traj_med.json"):
     """Early-detection: across fine-tuning checkpoints, the recovered direction's
     cosine to its final form (it locks in early) vs the emergent-misalignment rate
-    (the behavior, which trails). Dual axis; a step-0 base anchor (no increment)."""
+    (the behavior, which trails). Both series begin at the first measured checkpoint."""
     if not os.path.exists(f):
         return
     d = json.load(open(f))["trajectory"]
-    steps = [0] + [r["step"] for r in d]
-    cos = [0.0] + [r["cos_to_final"] for r in d]
-    em = [0.0] + [r["em_rate"] * 100 for r in d]
-    em_err_lo = [0.0]
-    em_err_hi = [0.0]
+    steps = [r["step"] for r in d]
+    cos = [r["cos_to_final"] for r in d]
+    em = [100 * r["n_mis"] / r["n_generated"] for r in d]
+    em_err_lo = []
+    em_err_hi = []
     for r in d:
-        p, lo, hi = wilson(r["n_mis"], r["n_ok"])
+        p, lo, hi = wilson(r["n_mis"], r["n_generated"])
         em_err_lo.append(100 * (p - lo))
         em_err_hi.append(100 * (hi - p))
     total = steps[-1]
@@ -1188,8 +1182,8 @@ def fig_trajectory(outdir, f="results/data/traj_med.json"):
     ax2 = ax.twinx()
     ax2.errorbar(pct, em, yerr=[em_err_lo, em_err_hi], fmt="s--",
                  color=HARM_RED, ecolor=HARM_RED, lw=1.8, ms=5, capsize=2.5,
-                 elinewidth=0.9, label="behavior (local-judge threshold rate)")
-    ax2.set_ylabel("behavior: local-judge threshold rate (%)", color=HARM_RED)
+                 elinewidth=0.9, label="behavior (joint rate among all outputs)")
+    ax2.set_ylabel("behavior: joint rate among all outputs (%)", color=HARM_RED)
     ax2.set_ylim(0, max(em) * 1.3); ax2.tick_params(axis="y", labelcolor=HARM_RED)
     ax.set_title("Post hoc trajectory to final recovered direction", fontsize=9)
     ax.grid(True, color=GRID, lw=0.5)
@@ -1222,7 +1216,10 @@ def fig_trajectory_direction_pca_3d(
     coords = Vc @ vt[:3].T
 
     traj = {r["step"]: r for r in json.load(open(rates))["trajectory"]}
-    em = np.array([traj[int(s)]["em_rate"] * 100 for s in steps])
+    em = np.array([
+        100 * traj[int(s)]["n_mis"] / traj[int(s)]["n_generated"]
+        for s in steps
+    ])
     pct = (100 * steps / steps[-1]).astype(int)
 
     fig = plt.figure(figsize=(4.6, 3.8))
@@ -1252,7 +1249,7 @@ def fig_trajectory_direction_pca_3d(
     ax.xaxis.pane.set_facecolor((1, 1, 1, 0))
     ax.yaxis.pane.set_facecolor((1, 1, 1, 0))
     ax.zaxis.pane.set_facecolor((1, 1, 1, 0))
-    colorbar_below(fig, sc, ax, "local-judge threshold rate (%)", shrink=0.66, pad=0.16)
+    colorbar_below(fig, sc, ax, "joint rate among all outputs (%)", shrink=0.66, pad=0.16)
     save_figure_pdf(fig, outdir, "trajectory_direction_pca_3d.pdf")
     plt.close(fig)
 
@@ -1388,7 +1385,7 @@ def main():
         fig_bulk_spikes(args.outdir)
         fig_spectrum_panel(rows, args.outdir)
         fig_spikes_by_layer(rows, args.outdir)
-        fig_spectral_landscape_3d(rows, args.outdir)
+        fig_spectral_landscape(rows, args.outdir)
         fig_effrank(rows, args.outdir)
         fig_capture(args.outdir)
         fig_energy_overlap(args.outdir)

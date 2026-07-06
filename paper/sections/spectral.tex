@@ -14,12 +14,13 @@ The leading eigenvalue of $C$ exceeds the operational Marchenko--Pastur
 visibility threshold in all
 $224$ matrices. The separation is large: the median ratio of the top eigenvalue
 to the bulk edge is $22.0$, it exceeds $5$ in $216/224$ matrices, and its tail
-reaches $2.4\times 10^4$. Under the fitted Gaussian/MP visibility reference, a
+reaches $2.45\times 10^4$. Under the fitted Gaussian/MP visibility reference, a
 structureless increment would place the top eigenvalue near the edge, at ratio
 $1$, compared with the observed median of $22.0$. Figure~\ref{fig:spectrum}
 shows a representative near-zero Marchenko--Pastur bulk with several separated
-leading eigenvalues. A variance-matched Gaussian matrix reproduces the bulk but
-has no MP-visible leading values (Figure~\ref{fig:nullcompare}). The Gaussian control
+leading eigenvalues. An iid Gaussian matrix whose entry variance is set to the
+median-matched MP bulk estimate reproduces the fitted bulk but has no
+MP-visible leading values (Figure~\ref{fig:nullcompare}). The Gaussian control
 illustrates departure from an iid diffuse reference; matched real fine-tunes test
 whether the pattern generalizes.
 As a fit-sensitivity check, an all-spectrum trace-moment scale, deliberately
@@ -48,7 +49,7 @@ relevance of these spectral components.}
 \centering
 \includegraphics[width=0.62\textwidth]{../results/figures/spectrum_null.pdf}
 \caption{Ranked eigenvalues for the same increment (circle markers) and a
-variance-matched Gaussian matrix (square markers): left is larger, higher is
+Gaussian control at the fitted MP bulk scale (square markers): left is larger, higher is
 stronger, and crossing the dashed edge marks visibility under the fitted
 reference. Both share the bulk, but only the real increment exceeds the edge.
 Matched fine-tunes provide the
@@ -128,12 +129,11 @@ and need not equal signal rank.}
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.74\textwidth]{../results/figures/spectral_landscape_3d.pdf}
-\caption{A three-dimensional view of the full spectral sweep. The base plane
-locates each of the $224$ layer--matrix increments; height and color moving from
-blue through cyan toward yellow mean a larger $\log_{10}(\lambda_1/\lambda_+)$ and greater
-separation above the fitted edge. This view summarizes spectral visibility;
-the behavioral tests in Section~\ref{sec:causal} assess its alignment relevance.}
+\includegraphics[width=0.74\textwidth]{../results/figures/spectral_landscape.pdf}
+\caption{Heatmap of $\log_{10}(\lambda_1/\lambda_+)$ across all $224$
+increments. Columns are zero-indexed layers and rows are matrix types; lighter
+colors indicate greater separation above the fitted MP edge. This summarizes
+spectral visibility, not behavioral relevance.}
 \label{fig:spectral-landscape}
 \end{figure}
 
@@ -144,8 +144,8 @@ top-$16$ left-singular subspace of the increment with the top-$16$ left-singular
 subspace of the base weight, by mean squared principal-angle cosine
 (Figure~\ref{fig:energy}, right). For orthonormal bases $U,V\in\R^{d\times16}$,
 the statistic is $\|U^\top V\|_F^2/16$; its independent-random expectation is
-$16/d=0.0039$ at $d=4096$. The observed median is $0.013$ across layers, only
-$3.4\times$ the random-subspace null of $0.004$ and far below the value a
+$16/d=0.0039$ at $d=4096$. The observed median is $0.0134$ across layers,
+versus $0.00395$ for the seeded random controls, a $3.39\times$ ratio and far below the value a
 rescaling of dominant base directions would produce. The delta therefore has
     little alignment with the base weight's dominant singular directions, with the
     largest departures at the first layers and the final layer. The left panel of
@@ -156,8 +156,9 @@ a third of $\|\dW\|_F^2$.
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.96\textwidth]{../results/figures/energy_overlap.pdf}
-\caption{\emph{Left:} cumulative increment energy: rightward includes more
-singular directions and upward means more energy captured. \emph{Right:}
+\caption{\emph{Left:} cumulative increment energy averaged over the $32$
+layers within each matrix type; rightward includes more singular directions
+and upward means more energy captured. \emph{Right:} per-layer
 top-$16$ increment--base overlap by layer: higher means stronger subspace
 alignment. Energy is front-loaded, while overlap stays near the random null.}
 \label{fig:energy}

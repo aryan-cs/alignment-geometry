@@ -417,7 +417,7 @@ def main():
         "method": "activation_pca",
         "layer": args.layer,
         "pool": args.pool,
-        "score": "||v^T dA||_2 / ||dA||_F",
+        "score": "||dA v||_2 / ||dA||_F",
         "detection": activation_pca_detection(mis_deltas, ben_deltas),
         "producer": {
             "script": "code/activation_pca_baseline.py",

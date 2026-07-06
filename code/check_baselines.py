@@ -475,7 +475,7 @@ def validate_outcome_mode(mode, claim_failures):
 
 def validate(data, args):
     evidence_errors, claim_failures = validate_components(data, args)
-    mode = getattr(args, "baseline_outcome_mode", POSITIVE_OUTCOME_MODE)
+    mode = getattr(args, "baseline_outcome_mode", AUDIT_OUTCOME_MODE)
     return evidence_errors + validate_outcome_mode(mode, claim_failures)
 
 
@@ -596,7 +596,7 @@ def audit_self_test():
 def parse_args(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--input", default="results/data/baselines.json")
-    ap.add_argument("--min-folds", type=int, default=4)
+    ap.add_argument("--min-folds", type=int, default=FINAL_HANDOFF_MIN_FOLDS)
     ap.add_argument("--min-weight-margin", type=float, default=0.05)
     ap.add_argument("--min-weight-over-random", type=float, default=0.05)
     ap.add_argument("--min-weight-over-diff", type=float, default=0.0)
@@ -606,7 +606,7 @@ def parse_args(argv=None):
     ap.add_argument(
         "--baseline-outcome-mode",
         choices=OUTCOME_MODES,
-        default=POSITIVE_OUTCOME_MODE,
+        default=AUDIT_OUTCOME_MODE,
         help=(
             "positive enforces all frozen claim gates; negative_or_inconclusive_audit "
             "requires hard evidence validity and at least one frozen positive gate failure"

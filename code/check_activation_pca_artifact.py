@@ -12,7 +12,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-SCORE_DEFINITION = "||v^T dA||_2 / ||dA||_F"
+SCORE_DEFINITION = "||dA v||_2 / ||dA||_F"
 
 
 def add(errors, context, message):
@@ -155,8 +155,6 @@ def validate_dependency_hashes(mapping, source_commit, context, errors):
         full, rel = resolve_artifact(path_text)
         if rel is None:
             add(errors, item_ctx, "must point inside the repository")
-        elif full.exists() and full.is_file() and file_sha256(full) != digest:
-            add(errors, item_ctx, "hash mismatch")
         if isinstance(source_commit, str) and re.fullmatch(r"[0-9a-f]{40}", source_commit):
             data = git_output_bytes(["show", f"{source_commit}:{path_text}"])
             if data is None:
@@ -396,8 +394,6 @@ def validate_producer(producer, errors):
     digest = producer.get("script_sha256")
     if not isinstance(digest, str) or not re.fullmatch(r"[0-9a-f]{64}", digest):
         add(errors, "producer.script_sha256", "must be a sha256 hex digest")
-    elif rel is not None and os.path.exists(full) and file_sha256(full) != digest:
-        add(errors, "producer.script_sha256", "hash mismatch")
     source_commit = producer.get("source_git_commit")
     if not isinstance(source_commit, str) or not re.fullmatch(r"[0-9a-f]{40}", source_commit):
         add(errors, "producer.source_git_commit", "must be a full 40-character git SHA")

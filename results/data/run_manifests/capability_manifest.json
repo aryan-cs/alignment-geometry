@@ -137,7 +137,7 @@
     "code/spectral.py": "7ce413546b7507bd6614aeb62e36647c6cf5f8367a8848c8550e8a881b2f54b9"
   },
   "artifact_sha256": {
-    "results/data/capability.json": "e21638c64a188ff41d6e717820f2964eebeec1a314d15210f00294cf638961da",
-    "results/data/capability_evidence.json": "e534795e5b6d7e8a25bf8b88074d2effc48ad9c34afdc0cdefc638e217dd3fbb"
+    "results/data/capability.json": "18a596bfa49985cd35e5b29b097338fffd628a65abde9056c2c822be5d1c02e2",
+    "results/data/capability_evidence.json": "4a0a22889cecf68a0493e8f0df09900c448706817e41aa88750e674f3bf54d9a"
   }
 }
