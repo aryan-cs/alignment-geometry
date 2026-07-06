@@ -225,6 +225,24 @@ def colorbar_below(fig, mappable, ax, label, shrink=0.72, pad=0.24, **kwargs):
     return cbar
 
 
+def label_above_intervals(ax, xs, values, upper_bounds, *, fontsize=8.0, offset_points=5):
+    """Place percentage labels above interval caps with a fixed visual gutter."""
+    for x, value, upper in zip(xs, values, upper_bounds):
+        ax.annotate(
+            f"{value:.1f}%",
+            xy=(x, upper),
+            xytext=(0, offset_points),
+            textcoords="offset points",
+            ha="center",
+            va="bottom",
+            fontsize=fontsize,
+            zorder=5,
+            annotation_clip=False,
+            bbox={"boxstyle": "square,pad=0.08", "facecolor": "white",
+                  "edgecolor": "none", "alpha": 0.90},
+        )
+
+
 def save_figure_pdf(fig, outdir, name, **kwargs):
     """Save a figure with outside legends and color keys included."""
     kwargs.setdefault("bbox_inches", "tight")
@@ -867,11 +885,17 @@ def fig_ablation(
             linewidth=1.1, width=0.64, zorder=2)
     axL.errorbar(xs, vals, yerr=errs, fmt="none", ecolor=INK,
                  elinewidth=1.0, capsize=3.5, zorder=3)
-    for x, y in zip(xs, vals):
-        axL.text(x, y + 4.0, f"{y:.1f}%", ha="center", fontsize=8)
+    label_above_intervals(
+        axL,
+        xs,
+        vals,
+        [100 * p[2] for p in pts],
+        fontsize=8.0,
+        offset_points=5,
+    )
     axL.set_xticks(xs); axL.set_xticklabels(labs, fontsize=7.8)
     axL.set_ylabel("substring-refusal rate (%)")
-    axL.set_ylim(0, 110)
+    axL.set_ylim(0, 120)
     axL.set_title("corrected fixed 128-prompt slice", fontsize=9)
     axL.grid(True, axis="y", color=GRID, lw=0.5)
 
@@ -977,8 +1001,14 @@ def fig_mis_causal(
             [100 * (hi - p) for p, hi in zip(pts, his)]]
     ax.errorbar(xs, [100 * p for p in pts], yerr=yerr, fmt="none", ecolor=INK,
                 elinewidth=1.0, capsize=4, zorder=3)
-    for x, p, hi in zip(xs, pts, his):
-        ax.text(x, 100 * hi + 0.2, f"{100*p + 1e-9:.1f}%", ha="center", fontsize=8.5)
+    label_above_intervals(
+        ax,
+        xs,
+        [100 * p + 1e-9 for p in pts],
+        [100 * hi for hi in his],
+        fontsize=8.5,
+        offset_points=5,
+    )
     ax.set_xticks(xs); ax.set_xticklabels(labels, fontsize=8.5)
     ax.set_ylabel("joint rate among all outputs (%)")
     ax.set_title("In-sample medical-contrast projection", fontsize=9)
@@ -1231,21 +1261,40 @@ def fig_trajectory_direction_pca_3d(
         cmap=SAFE_TO_HARM_CMAP,
         s=70, edgecolor=INK, linewidth=0.45,
     )
+    ax.view_init(elev=20, azim=-44)
+    ax.set_box_aspect((1.25, 1.0, 0.8))
+    from mpl_toolkits.mplot3d import proj3d
+
+    label_offsets = {
+        20: (8, 9),
+        40: (-20, 2),
+        60: (8, -11),
+        80: (-21, -4),
+        100: (8, 9),
+    }
     for label, xyz in zip(pct, coords):
-        offset = np.zeros(3)
-        if label == 80:
-            offset = np.array([-0.055, -0.010, -0.010])
-        elif label == 100:
-            offset = np.array([0.030, 0.018, 0.012])
-        ax.text(*(xyz + offset), f"{label}%", fontsize=7.5, clip_on=False)
+        x2, y2, _ = proj3d.proj_transform(*xyz, ax.get_proj())
+        dx, dy = label_offsets[int(label)]
+        ax.annotate(
+            f"{label}%",
+            xy=(x2, y2),
+            xytext=(dx, dy),
+            textcoords="offset points",
+            ha="left" if dx > 0 else "right",
+            va="bottom" if dy > 0 else "top",
+            fontsize=7.5,
+            annotation_clip=False,
+            bbox={"boxstyle": "square,pad=0.08", "facecolor": "white",
+                  "edgecolor": "none", "alpha": 0.90},
+            arrowprops={"arrowstyle": "-", "color": INK, "linewidth": 0.45,
+                        "shrinkA": 1.5, "shrinkB": 3.0},
+        )
     ax.set_xlabel("PC1 of direction", labelpad=6)
     ax.set_ylabel("PC2", labelpad=6)
     ax.set_zlabel("")
     ax.text2D(0.82, 0.48, "PC3", transform=ax.transAxes, rotation=90,
               va="center", ha="center")
     ax.set_title("Recovered direction trajectory in 3D", fontsize=9, pad=5)
-    ax.view_init(elev=20, azim=-44)
-    ax.set_box_aspect((1.25, 1.0, 0.8))
     ax.xaxis.pane.set_facecolor((1, 1, 1, 0))
     ax.yaxis.pane.set_facecolor((1, 1, 1, 0))
     ax.zaxis.pane.set_facecolor((1, 1, 1, 0))

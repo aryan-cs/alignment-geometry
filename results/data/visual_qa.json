@@ -1,26 +1,20 @@
 {
   "pdf": "docs/paper.pdf",
-  "pdf_sha256": "3ee9c88d91276f9da805ac2903ec63c94a07f81604317b6fa89f4b0a5291880f",
-  "inspected_at_utc": "2026-07-06T01:27:34Z",
+  "pdf_sha256": "55cb9002cccbd3c2a7c36ca5cce039ec540e9fdbac407f8a96bd2ffffda807a6",
+  "inspected_at_utc": "2026-07-06T02:39:31Z",
   "pages_total": 21,
   "pages_checked": 21,
   "render_dpi": 120,
   "inspected_pages_full_size": [
     1,
-    6,
     7,
-    8,
-    9,
+    10,
     11,
-    13,
-    14,
+    12,
     15,
-    18,
-    19,
-    20,
     21
   ],
-  "method": "Rendered all 21 pages with pdftoppm at 120 dpi; inspected a complete contact sheet and pages 1, 6-9, 11, 13-15, and 18-21 at full rendered size. Verified text, equations, tables, captions, citations, the new spectral heatmap, corrected all-output trajectory rates, panel alignment, colorbars, legends, page numbering, margins, and absence of clipping, overlap, blank pages, or missing assets.",
+  "method": "Rendered all 21 pages with pdftoppm at 120 dpi and inspected a complete contact sheet. Inspected pages 1, 7, 10-12, 15, and 21 at full rendered size, with focused 180-220 dpi checks of Figures 10, 13, and 15 after the final headroom adjustment. Verified percentage labels clear interval caps, markers, and axes; 3D labels use non-overlapping offsets and leader lines; no page element clips or overlaps.",
   "render_receipt": {
     "schema": "pdf_render_receipt_v1",
     "renderer": "pdftoppm",
@@ -75,8 +69,8 @@
       },
       {
         "page": 10,
-        "sha256": "68986a9132a618507a219a35b289b4d969117ac0ed54a09bdda945e65dc18b43",
-        "bytes": 227011
+        "sha256": "010f0f85f6a8404edb85940be6a321a000d77d4029c3b24e011c588576fe801c",
+        "bytes": 227375
       },
       {
         "page": 11,
@@ -85,8 +79,8 @@
       },
       {
         "page": 12,
-        "sha256": "16c0ddf06adf95caf100a715523bd2396e60930ffcc83d892f8f0e2df16b80f7",
-        "bytes": 291945
+        "sha256": "e93c4c27f07a9526c7c4412d0e6669cc13220e53e9bad4efb7ef42a14abf8d23",
+        "bytes": 291935
       },
       {
         "page": 13,
@@ -130,8 +124,8 @@
       },
       {
         "page": 21,
-        "sha256": "a518eb1d1f21f62305f9d387bc8f7041b31d91b953df8fc1af7ee8583203e060",
-        "bytes": 157299
+        "sha256": "4395af1f2f21509da42eedf63a24b0f8dcf6132ad450cf4866bcdc08c82b09c2",
+        "bytes": 158338
       }
     ]
   },
