@@ -1,7 +1,7 @@
 {
   "pdf": "docs/paper.pdf",
-  "pdf_sha256": "62280974927590404b68608b085f28f2bc36c7bca3567fafbfba4a427dc0e48a",
-  "inspected_at_utc": "2026-07-06T06:07:03Z",
+  "pdf_sha256": "ce12802d3fed889939ca2d7872d5b2162361826ddcb616f4e145ecae076acaf5",
+  "inspected_at_utc": "2026-07-06T06:15:29Z",
   "pages_total": 21,
   "pages_checked": 21,
   "render_dpi": 120,
@@ -14,7 +14,7 @@
     19,
     21
   ],
-  "method": "Rendered all 21 pages with pdftoppm at 120 dpi after restoring the angular vector schematic and correcting the analysis-manifest provenance paragraph. Inspected pages 1, 7, 9, 11, 15, 19, and 21 at full rendered size, with 150 dpi checks of the updated manifest triple on page 19 and both final-page figures. Verified the displayed revision, artifact count, and bundle hash are legible; the schematic and held-out plot fit cleanly; and no page element overlaps or clips.",
+  "method": "Rendered all 21 pages with pdftoppm at 120 dpi after fully regenerating the figure bundle and correcting the analysis-manifest provenance paragraph. Inspected pages 1, 7, 9, 11, 15, 19, and 21 at full rendered size, with 150 dpi checks of the updated manifest triple and both final-page figures. Verified the displayed revision, artifact count, and bundle hash are legible; the mean-absolute-cosine schematic and held-out plot fit cleanly; and no page element overlaps or clips.",
   "render_receipt": {
     "schema": "pdf_render_receipt_v1",
     "renderer": "pdftoppm",
