@@ -95,6 +95,55 @@ def has_phrase(text, phrase):
     return re.sub(r"\s+", " ", phrase) in re.sub(r"\s+", " ", text)
 
 
+def check_analysis_manifest_snapshot():
+    manifest = load_json("analysis_manifest.json")
+    expected = (
+        manifest.get("source_revision"),
+        manifest.get("artifact_count"),
+        manifest.get("bundle_sha256"),
+    )
+    if not (
+        isinstance(expected[0], str)
+        and re.fullmatch(r"[0-9a-f]{40}", expected[0])
+        and isinstance(expected[1], int)
+        and expected[1] > 0
+        and isinstance(expected[2], str)
+        and re.fullmatch(r"[0-9a-f]{64}", expected[2])
+    ):
+        failures.append(f"analysis manifest: invalid manifest triple {expected!r}")
+        return
+
+    appendix = (ROOT / "paper" / "sections" / "appendix.tex").read_text()
+    revision_match = re.search(
+        r"Analysis-input snapshot:\s*\\path\{([0-9a-f]{40})\}", appendix
+    )
+    bundle_match = re.search(
+        r"Data manifest:.*?\$(\d+)\$\s+tracked analysis\s+files;\s+"
+        r"bundle SHA-256\s+\\path\{([0-9a-f]{64})\}",
+        appendix,
+        re.DOTALL,
+    )
+    if revision_match is None or bundle_match is None:
+        failures.append("analysis manifest: appendix manifest triple is missing or malformed")
+    else:
+        displayed = (
+            revision_match.group(1),
+            int(bundle_match.group(1)),
+            bundle_match.group(2),
+        )
+        if displayed != expected:
+            failures.append(
+                f"analysis manifest: appendix displays {displayed!r}, expected {expected!r}"
+            )
+
+    readme = (ROOT / "README.md").read_text()
+    if expected[0] not in readme:
+        failures.append(
+            "analysis manifest: README source revision does not match "
+            f"{expected[0]}"
+        )
+
+
 def _command_result(args):
     proc = subprocess.run(
         args,
@@ -1373,6 +1422,7 @@ def check_baseline_bakeoff():
 
 
 def main():
+    check_analysis_manifest_snapshot()
     check_capability_caveat()
     check_random_control_wording()
     check_uncertainty_framing()

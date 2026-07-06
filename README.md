@@ -150,7 +150,7 @@ the artifact classes and editing policy.
 
 The frozen analysis-input snapshot is indexed by
 `results/data/analysis_manifest.json`. Its source revision is
-`e2ba5024cfc1e3e6d50d23ad9db3d88e6ce390a4`; the manifest is content-addressed
+`915a4e1b3a9d10232ccdd399a34967a9f7d5c4b6`; the manifest is content-addressed
 and can be verified with:
 
 ```bash
