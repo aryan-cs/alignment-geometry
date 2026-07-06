@@ -1,7 +1,7 @@
 {
   "schema": "figure_manifest_v1",
   "producer": "code/make_figures.py",
-  "generated_at": "2026-07-06T04:31:38Z",
+  "generated_at": "2026-07-06T05:56:16Z",
   "source_count": 28,
   "figure_count": 22,
   "sources": [
@@ -12,8 +12,8 @@
     },
     {
       "path": "code/make_figures.py",
-      "sha256": "398f6944e9ba644b5ba7994492b883139603adad7a4dc859fc9808a4ca20af04",
-      "bytes": 53704
+      "sha256": "814156bde7273c92bc164516710b9676717769535123ffcfafa0d4da67a66c75",
+      "bytes": 53708
     },
     {
       "path": "results/data/ablation_layers.json",
@@ -219,8 +219,8 @@
     },
     {
       "path": "results/figures/mis_geometry.pdf",
-      "sha256": "9d5ee3da67b409e28b5691bb125ecb6ff33cf8a21201dbb72750b39fd311efcb",
-      "bytes": 31888
+      "sha256": "0b936f5a66ea384a7d4eaeb5945f7f3fad97249669f9b9adb72fd28624eee24c",
+      "bytes": 34681
     },
     {
       "path": "results/figures/nec_suff.pdf",

@@ -1157,9 +1157,9 @@ def fig_convergence_geom(outdir, conv_cos=0.97, null_cos=0.16):
     from matplotlib.lines import Line2D
     handles = [
         Line2D([0], [0], color=HARM_RED, lw=2.6,
-               label="paired directions vs pooled, $\\overline{\\cos}=0.97$"),
+               label="paired directions vs pooled, $\\overline{|\\cos|}=0.97$"),
         Line2D([0], [0], color=SAFE_GREEN, lw=2.0,
-               label="benign differences vs pooled, $\\overline{\\cos}=0.16$"),
+               label="benign differences vs pooled, $\\overline{|\\cos|}=0.16$"),
     ]
     legend_below(
         ax,

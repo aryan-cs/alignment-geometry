@@ -1,20 +1,19 @@
 {
   "pdf": "docs/paper.pdf",
-  "pdf_sha256": "3c8f75dff2a47ce1643d70575d6e180588a56cee96fbbec3f2f02b4942915eda",
-  "inspected_at_utc": "2026-07-06T04:40:57Z",
+  "pdf_sha256": "a5f2f9cd500714cc8a314991fff42064892c53c1ecc11393d234f21c24d732c8",
+  "inspected_at_utc": "2026-07-06T05:55:47Z",
   "pages_total": 21,
   "pages_checked": 21,
   "render_dpi": 120,
   "inspected_pages_full_size": [
     1,
-    4,
     7,
     9,
     11,
     15,
     21
   ],
-  "method": "Rendered all 21 pages with pdftoppm at 120 dpi and inspected a complete contact sheet. Inspected pages 1, 4, 7, 9, 11, 15, and 21 at full rendered size after removing the unprovenanced trajectory result. Verified the revised abstract, Figure 1 caption, spectral figures, scalar-scout explanation, joint-first steering rates, limitations text, and final appendix figure; no text, labels, intervals, figures, or page elements overlap or clip.",
+  "method": "Rendered all 21 pages with pdftoppm at 120 dpi after restoring the angular vector schematic and inspected the complete layout. Inspected pages 1, 7, 9, 11, 15, and 21 at full rendered size, with a final 150 dpi inspection of page 21 after correcting the mean-absolute-cosine legend. Verified the schematic precedes the held-out plot, both figures and captions fit cleanly, labels and legends remain readable, and no page element overlaps or clips.",
   "render_receipt": {
     "schema": "pdf_render_receipt_v1",
     "renderer": "pdftoppm",
@@ -69,8 +68,8 @@
       },
       {
         "page": 10,
-        "sha256": "ca4e94fe450016d6a9d866c88d9c48c40eda1c684f1c0dce7f50197566814d26",
-        "bytes": 232411
+        "sha256": "5101b2dacc8d8d980abbc3df7bae55894d590cab0a1a4a92eb6b2f5db546ad6c",
+        "bytes": 239316
       },
       {
         "page": 11,
@@ -79,8 +78,8 @@
       },
       {
         "page": 12,
-        "sha256": "3b9a0d7713655da4600cbfb4c885a0f822d4fe68d222b476878f9cd115b1cb72",
-        "bytes": 280206
+        "sha256": "e8bc53c6ab538afd19669b359767107c1ef3a99f254fb5d1f93630e7847d804d",
+        "bytes": 280249
       },
       {
         "page": 13,
@@ -124,8 +123,8 @@
       },
       {
         "page": 21,
-        "sha256": "d0eea31c2b85da1dfa68226ce8ef2ed1a11399eb84d8cb1a3df6136eaca4e053",
-        "bytes": 58733
+        "sha256": "d8ca78a6226b613c7e385a154d176f9cd14f044472f91606c66ea106a4835f39",
+        "bytes": 120387
       }
     ]
   },
