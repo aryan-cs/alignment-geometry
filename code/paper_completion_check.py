@@ -2865,7 +2865,7 @@ def check_required_claim_framing(gates):
             "Projection is blunt",
             "capability-preserving intervention remains open",
             "Steering is nonmonotonic",
-            "they do not localize a circuit",
+            "the interventions do not localize a circuit",
             "requires a direction or threshold frozen before new endpoint deltas are observed",
             "code-organism follow-up fails its frozen criteria",
         ],
