@@ -1,4 +1,4 @@
-\section{Strong spectral outliers in the Llama Base-to-Instruct checkpoint delta}
+\section{MP visibility in the Llama Base-to-Instruct checkpoint delta}
 \label{sec:spectral}
 
 We analyze the increment $\dW$ for all seven linear maps in each of the $32$
@@ -9,8 +9,9 @@ to its bulk (Section~\ref{sec:theory}; Appendix~\ref{app:details}). The
 content-addressed analysis manifest in the appendix indexes the committed sweep,
 summaries, and producing code.
 
-\paragraph{Every analyzed Llama increment matrix has an MP-visible leading outlier.}
-The leading eigenvalue of $C$ exceeds the Marchenko--Pastur upper edge in all
+\paragraph{Every analyzed Llama increment matrix has an MP-visible leading eigenvalue.}
+The leading eigenvalue of $C$ exceeds the operational Marchenko--Pastur
+visibility threshold in all
 $224$ matrices. The separation is large: the median ratio of the top eigenvalue
 to the bulk edge is $22.0$, it exceeds $5$ in $216/224$ matrices, and its tail
 reaches $2.4\times 10^4$. Under the fitted Gaussian/MP visibility reference, a
@@ -18,14 +19,15 @@ structureless increment would place the top eigenvalue near the edge, at ratio
 $1$, compared with the observed median of $22.0$. Figure~\ref{fig:spectrum}
 shows a representative near-zero Marchenko--Pastur bulk with several separated
 leading eigenvalues. A variance-matched Gaussian matrix reproduces the bulk but
-has no detached outliers (Figure~\ref{fig:nullcompare}). The Gaussian control
+has no MP-visible leading values (Figure~\ref{fig:nullcompare}). The Gaussian control
 illustrates departure from an iid diffuse reference; matched real fine-tunes test
 whether the pattern generalizes.
 As a fit-sensitivity check, an all-spectrum trace-moment scale, deliberately
-inflated by the spikes, still places every leading eigenvalue above the edge and
-gives a median top-to-edge ratio of $11.8$. The number of exceedances changes
-substantially, so we treat that count as fit-dependent
-(Appendix~\ref{app:details}).
+inflated by the spikes, still places every leading eigenvalue above its fitted
+edge and gives a median top-to-edge ratio of $11.8$. This top-edge ratio is an
+algebraic function of stable rank and is not independent robustness evidence.
+The full-spectrum exceedance counts do add a separate fit-sensitivity check and
+change substantially (Appendix~\ref{app:details}).
 
 \begin{figure}[t]
 \centering
@@ -33,10 +35,10 @@ substantially, so we treat that count as fit-dependent
 \caption{Spectrum of the Base-to-Instruct checkpoint delta for a representative matrix
 (\texttt{gate\_proj}, layer 15; all $4096$ eigenvalues of $C$). \emph{Left:} the
 eigenvalue-density bulk has a heavier right tail than the Marchenko--Pastur fit.
-\emph{Right:} eigenvalues run largest to smallest; higher is stronger and above
-the horizontal edge is MP-visible. $829$ eigenvalues
-lie above the MP upper edge $\lambda_+$ ($821$ clear the operational
-edge-plus-six-fluctuation-scale threshold), the top one at $27\times$ the
+\emph{Right:} eigenvalues run largest to smallest; higher is stronger. Points
+above the horizontal line exceed the raw fitted MP edge. Of $4096$
+eigenvalues, $829$ exceed $\lambda_+$ and $821$ exceed the operational
+edge-plus-six-fluctuation-scale threshold; the largest is $27\times$ the
 edge. The refusal and misalignment interventions below test the behavioral
 relevance of these spectral components.}
 \label{fig:spectrum}
@@ -47,8 +49,9 @@ relevance of these spectral components.}
 \includegraphics[width=0.62\textwidth]{../results/figures/spectrum_null.pdf}
 \caption{Ranked eigenvalues for the same increment (circle markers) and a
 variance-matched Gaussian matrix (square markers): left is larger, higher is
-stronger, and crossing the dashed edge marks MP visibility. Both share the
-bulk, but only the real increment detaches. Matched fine-tunes provide the
+stronger, and crossing the dashed edge marks visibility under the fitted
+reference. Both share the bulk, but only the real increment exceeds the edge.
+Matched fine-tunes provide the
 empirical control beyond this Gaussian reference.}
 \label{fig:nullcompare}
 \end{figure}
@@ -67,9 +70,11 @@ the diffuse null; the empirical safety control is a real fine-tune under a
 matched recipe.
 
 \paragraph{The energy is concentrated.}
-The median MP-edge-exceedance count is $709$, about $19\%$ of matrix rank. This
-count depends on the fitted MP edge and is not an estimate of algebraic signal
-rank.
+We call values above $\lambda_+$ raw MP-edge exceedances and values above
+$\lambda_+$ plus six fitted finite-size scales operational visibility
+exceedances. The median operational visibility-exceedance count is $709$, about
+$19\%$ of matrix rank. This count depends on the fitted visibility threshold and
+is not an estimate of algebraic signal rank.
 The stable rank $\|\dW\|_F^2/\|\dW\|_2^2$ has median $109$. The $14336$
 feed-forward width is a hidden dimension, while algebraic rank is bounded by
 $\min(p,q)$: $1024$ for key/value projections and $4096$ for the other maps.
@@ -98,7 +103,7 @@ projections are the most concentrated.}
 \small
 \begin{tabular}{lccc}
 \toprule
-matrix & median top/edge & median strict edge exceedances & median stable rank \\
+matrix & median top/edge & median operational exceedances & median stable rank \\
 \midrule
 \texttt{q\_proj}    & $80.9$ & $808$ & $45.0$ \\
 \texttt{k\_proj}    & $25.4$ & $238$ & $36.1$ \\
@@ -114,9 +119,9 @@ matrix & median top/edge & median strict edge exceedances & median stable rank \
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.78\textwidth]{../results/figures/spikes_by_layer.pdf}
-\caption{MP-edge exceedance counts in $\dW$ by layer and matrix type. Rightward
-is deeper and higher means more directions above the fitted edge. Every layer
-has visible structure. These counts depend on the fitted visibility threshold
+\caption{Operational visibility-exceedance counts in $\dW$ by layer and matrix
+type. Rightward is deeper and higher means more directions above the fitted edge
+plus six finite-size scales. Every layer has visible structure. These counts depend on the fitted visibility threshold
 and need not equal signal rank.}
 \label{fig:bylayer}
 \end{figure}

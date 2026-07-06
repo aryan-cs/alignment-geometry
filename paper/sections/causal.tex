@@ -1,72 +1,68 @@
-\section{Leading spectral directions are ablation-sensitive for measured refusal}
+\section{Leading checkpoint-delta directions are ablation-sensitive for measured refusal}
 \label{sec:causal}
 
 We next test whether leading spectral directions track refusal behavior. The
 attention-output increment writes into the residual stream, which supports
-geometric-overlap, ablation, and steering tests.
+geometric-overlap and ablation tests.
 
 \paragraph{Setup.}
-We form the empirical refusal direction $r_\ell$ at layer $\ell$ as the
-difference of mean last-token residual activations on harmful AdvBench
-\citep{zou2023universal} versus harmless Alpaca \citep{taori2023alpaca} prompts
-under the chat template, following \citet{arditi2024}. At each layer, we measure
-the fraction of $r_\ell$ in the top-$k$ left-singular subspace of the
-layer-$\ell$ \texttt{o\_proj} increment and compare it with a random-$k$-subspace
-null. Harmful and harmless prompts separate along $r$ in the residual stream
-(Figure~\ref{fig:geometry}). Because $r$ may encode harmfulness, style, and
-dataset differences alongside refusal, the intervention claims concern the
-substring-refusal rate on held-out harmful prompts under this operational
-measure. Other prompt sets, judges, and harmless-prompt behavior under the same
-interventions remain untested. The appendix manifest links the committed
-artifacts and producing code.
+We form an empirical refusal direction $r_L$ as the difference of mean
+last-token residual activations on harmful AdvBench \citep{zou2023universal}
+and harmless Alpaca \citep{taori2023alpaca} prompts under the chat template,
+following \citet{arditi2024}. Decoder blocks are zero-indexed. In the capture
+sweep, block-$L$ \texttt{o\_proj} is paired with the residual after block $L$,
+stored as \texttt{hidden\_states[L+1]}. At each block, we measure the fraction
+of $r_L$ in the top-$k$ left-singular subspace of that block's
+\texttt{o\_proj} increment and compare it with a random-$k$-subspace reference.
+Because $r_L$ may encode harmfulness, style, and dataset differences alongside
+refusal, the intervention claim concerns only a fixed substring-refusal score
+on harmful prompts. Harmless-prompt effects, adaptive attacks, and human
+judgments under the same intervention remain unmeasured.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.58\textwidth]{../results/figures/geometry.pdf}
-\caption{Last-token residual activations at layer $14$ for harmful and harmless
-prompts, projected onto the refusal direction $\hat r$ (horizontal) and the
-leading orthogonal component (vertical). Points farther right project more
-strongly onto the oriented refusal direction; vertical position records the
-largest remaining variation, not more refusal. The classes separate primarily
-along $\hat r$.}
+\caption{Last-token residual activations for harmful and harmless prompts,
+projected onto the oriented refusal direction $\hat r$ (horizontal) and the
+leading orthogonal component (vertical). Farther right means a larger
+projection on $\hat r$; vertical position records the largest remaining
+variation, not more refusal. The same observations define $\hat r$, the
+orthogonal component, and the plotted points, so this is a construction view
+rather than held-out separation.}
 \label{fig:geometry}
 \end{figure}
 
 \paragraph{The refusal direction is enriched in leading spectral subspaces.}
-At layer $14$, the top-$8$ left-singular subspace of the \texttt{o\_proj}
-increment, $8$ directions out of $4096$, captures $2.7\%$ of the refusal
-direction's squared norm, against a random-subspace expectation of $0.20\%$: a
-$13.7\times$ enrichment ($n{=}256$ prompts per class;
-Table~\ref{tab:capture}, Figure~\ref{fig:capture}). These values are deterministic
-summaries of the fixed prompt set; Wilson intervals are reserved for rate
-estimates below. The enrichment is strongest
-at the very top of the spectrum and decays as $k$ grows, $7.9\times$ at $k{=}16$
-and $3.5\times$ at $k{=}128$, showing concentration near the top of the spectrum.
-Across all $32$ layers (Figure~\ref{fig:capture}, right), top-$8$ enrichment
-exceeds the random expectation in $31/32$ layers, has median
-$4.6\times$, and peaks at $14.2\times$, with the strongest concentration in the
-middle layers and again near the final layer. No single increment direction
-dominates; the refusal-direction mass is distributed within the leading
-subspace. This is evidence for a behaviorally relevant empirical subspace, not a
-quantitative validation of the single-spike overlap expression in
-Section~\ref{sec:theory}.
+At zero-indexed block $14$, the top-$8$ left-singular subspace of the
+\texttt{o\_proj} increment, $8$ directions out of $4096$, captures $2.8\%$ of
+the post-block refusal direction's squared norm, against a random-subspace
+expectation of $0.20\%$: a $14.2\times$ enrichment ($n{=}256$ prompts per
+class; Table~\ref{tab:capture}, Figure~\ref{fig:capture}). These values are
+deterministic summaries of the fixed prompt set; Wilson intervals are reserved
+for rate estimates below. Enrichment is $7.9\times$ at $k{=}16$ and
+$3.7\times$ at $k{=}128$, so concentration is strongest near the top of the
+spectrum. Across all $32$ blocks, top-$8$ enrichment exceeds the random
+expectation in $31/32$ blocks, has median $4.6\times$, and peaks at
+$14.2\times$. This supports an empirical association between the leading
+checkpoint-delta subspace and the prompt-derived direction. It is not a
+validation of the single-spike overlap formula in Section~\ref{sec:theory}.
 
 \begin{table}[t]
 \centering
-\caption{Fraction of the layer-$14$ refusal direction captured by the top-$k$
-left-singular subspace of the Base-to-Instruct checkpoint delta, versus the random-subspace
-null. Values are deterministic summaries of the capture analysis;
-Wilson intervals are used only for the ablation-rate estimates below.}
+\caption{Fraction of the post-block-$14$ refusal direction captured by the
+top-$k$ left-singular subspace of the block-$14$ Base-to-Instruct
+\texttt{o\_proj} increment. Values are deterministic summaries of the capture
+analysis; Wilson intervals are used only for the rate estimates below.}
 \label{tab:capture}
 \small
 \begin{tabular}{lccc}
 \toprule
 & $k=8$ & $k=32$ & $k=128$ \\
 \midrule
-\texttt{o\_proj} capture   & $0.027$ & $0.041$ & $0.106$ \\
-random-subspace null       & $0.002$ & $0.008$ & $0.031$ \\
+\texttt{o\_proj} capture & $0.028$ & $0.050$ & $0.115$ \\
+random-subspace reference & $0.002$ & $0.008$ & $0.031$ \\
 \midrule
-\texttt{o\_proj} enrichment & $13.7\times$ & $5.2\times$ & $3.5\times$ \\
+enrichment & $14.2\times$ & $6.4\times$ & $3.7\times$ \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -79,94 +75,45 @@ random-subspace null       & $0.002$ & $0.008$ & $0.031$ \\
 \begin{subfigure}{0.55\textwidth}
 \includegraphics[width=\textwidth]{../results/figures/capture_heatmap.pdf}
 \end{subfigure}
-\caption{\emph{Left:} captured fraction of the layer-$14$ refusal direction by
-the top-$k$ \texttt{o\_proj} increment subspace versus the random null; the gap
-is largest at small $k$; rightward includes more directions and upward means
-more capture. \emph{Right:} columns vary layer, rows vary $k$, and color moving from blue through cyan toward yellow
-means greater enrichment over random, strongest in the middle and final layers.}
+\caption{\emph{Left:} captured fraction of the post-block-$14$ refusal
+direction by the top-$k$ block-$14$ \texttt{o\_proj} increment subspace and the
+random reference. Rightward includes more directions; upward means more
+capture. \emph{Right:} columns vary source block, rows vary $k$, and color gives
+enrichment over random.}
 \label{fig:capture}
 \end{figure}
 
-\paragraph{Behavioral effects of residual-stream projection.}
-We next test behavioral dependence by projecting the top-$k$ left-singular subspace of the
-\texttt{o\_proj} increment out of the residual stream at every layer and measuring
-the substring-refusal rate on held-out harmful prompts, with a random-$k$-subspace as a
-negative control and a rank-one ablation of the refusal direction itself as a
-positive control ($n{=}128$ generations per condition;
-Figure~\ref{fig:ablation}). Applying the projection at every layer tests global
-residual-stream dependence; it cannot localize a circuit or demonstrate
-capability preservation. Projecting out the $k{=}8$ leading subspace leaves the
-measured rate unchanged (substring-refusal rate
-$98.4\% \to 98.4\%$, both $[94.5,99.6]\%$), matching a random $8$-dimensional
-ablation. Those eight directions hold under $3\%$ of the refusal
-direction. The projection effect becomes large at $k{=}128$: projecting out the
-top-$128$ increment directions changes the substring-refusal rate from $98.4\%$ to $3.1\%$
-(descriptive $95\%$ Wilson interval $[1.2, 7.8]$), while a random
-$128$-dimensional ablation leaves refusal essentially intact at $94.5\%$
-($[89.1, 97.3]$). These marginal per-rate Wilson intervals are descriptive;
-they are neither an interval nor a test for the $91.4$ percentage-point
-difference between interventions.
-Rank-one ablation of the empirical refusal direction lowers the rate to $68.8\%$
-($[60.3,76.1]\%$), making the top-$128$ spectral subspace the more effective
-target. At $k{=}512$, both projections severely disrupt refusal, so only the
-dimensions where the controls diverge distinguish spectral targeting from broad
-disruption. Because the basis is weight-derived, its association with refusal
-comes from prompt-labeled capture and behavioral tests. The same top-$128$
-projection causes substantial capability loss on MMLU, GSM8K, and ARC-style
-evaluations \citep{hendrycks2021mmlu,cobbe2021gsm8k,clark2018arc}.
-Capability-preserving intervention would require smaller or more structured
-subspaces.
+\paragraph{Global projection changes substring-scored refusal and capability.}
+We project the top-$128$ left-singular subspace of the block-$14$
+\texttt{o\_proj} increment out of the residual stream after every decoder
+block. Applying one weight-derived basis globally tests model-wide dependence;
+it does not localize a circuit. On the fixed $128$-prompt slice used for the
+corrected audit, baseline substring refusal is $126/128=98.4\%$
+($[94.5,99.6]\%$), spectral projection gives $18/128=14.1\%$
+($[9.1,21.1]\%$), and one seeded random $128$-dimensional projection gives
+$125/128=97.7\%$ ($[93.3,99.2]\%$). These are descriptive marginal Wilson
+intervals, not an interval or test for either intervention contrast. The
+corrected audit applies chat-formatted tokenization to all conditions. Earlier
+full-$k$, source-block, rank-one, and steering runs used a different activation
+or tokenization convention and are not used as evidence here.
+
+The same spectral intervention is highly destructive on capability benchmarks
+(Figure~\ref{fig:ablation}). Baseline, spectral, and random-projection accuracy
+is $65.4/41.8/54.4\%$ on MMLU, $80.0/50.2/65.8\%$ on ARC-C, and
+$76.8/3.0/65.5\%$ on GSM8K
+\citep{hendrycks2021mmlu,cobbe2021gsm8k,clark2018arc}. Thus the refusal change
+is accompanied by broad capability loss, substantially larger than for this
+random draw. One random subspace is a matched control, not a null distribution.
+The experiment does not establish capability-preserving refusal removal.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.96\textwidth]{../results/figures/ablation.pdf}
-\caption{Residual-stream projection of the \texttt{o\_proj} increment subspace
-(descriptive per-rate $95\%$ Wilson intervals over generated outputs).
-\emph{Left:} rightward removes more directions; lower means a smaller
-substring-refusal match rate. Red is the damaging spectral projection, gray a
-same-dimensional random control, and orange the rank-one positive control.
-\emph{Right:} at $k{=}128$, spectral ablation reaches $3.1\%$ refusal versus
-$94.5\%$ for random ablation. This intervention also harms capability.}
+\caption{Corrected top-$128$ intervention audit. \emph{Left:}
+substring-refusal rates on the same $128$ harmful prompts with descriptive
+per-rate $95\%$ Wilson intervals; lower means fewer fixed refusal-phrase
+matches. \emph{Right:} benchmark accuracy; higher is better. Spectral
+projection reduces the refusal score but also causes substantially more
+capability damage than the one seeded random projection.}
 \label{fig:ablation}
 \end{figure}
-
-\paragraph{The spectral--random gap appears at six intervention layers.}
-We repeat the $k{=}128$ projection at six layers spanning the network. Spectral
-projection reduces the measured rate at
-every layer, with rates of $3.1\%$ and $0.0\%$ at layers $14$ and $26$, while a
-same-dimensional random $128$-subspace leaves refusal at or above $93\%$
-throughout. The observed spectral-versus-random gap appears at all six layers;
-these repeated interventions in one model are not independent replications.
-These runs measure substring-scored refusal; the capability audit applies to
-the headline intervention.
-
-\paragraph{Steering increases substring-scored refusal on harmless prompts.}
-We next test whether the refusal-direction component contained in the subspace
-can induce refusal. We steer \emph{harmless} prompts by adding a unit direction
-at a single layer ($n=100$ harmless-prompt generations per strength and
-direction; Figure~\ref{fig:sufficiency}), with the empirical
-refusal direction as a positive control and a random direction as a negative one.
-Steering along the empirical refusal direction raises refusal from $0\%$
-($[0.0,3.7]\%$) to $98\%$ ($[93.0,99.4]\%$) as strength grows; a random
-direction never rises above $1.0\%$ ($[0.2,5.4]\%$). Steering along the leading
-singular direction leaves refusal near baseline. When we instead steer along the
-projection of the refusal direction into the top-$128$
-spectral subspace, a component that holds only $10.5\%$ of the refusal
-direction's squared norm, induced refusal rises to $67\%$ ($[57.3,75.4]\%$),
-far above the random control. The failure of the leading singular direction
-shows that effective steering requires a broader component of the leading
-subspace. Steering along the projected component increases the measured rate;
-the projection intervention shows sensitivity to the broader subspace.
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=0.66\textwidth]{../results/figures/sufficiency.pdf}
-\caption{Single-layer steering on harmless prompts ($n=100$ per point;
-descriptive per-rate $95\%$ Wilson intervals over generated outputs). Rightward
-is stronger steering; upward is more induced
-refusal. The refusal-direction control saturates, its projection into the
-top-$128$ spectral subspace reaches $67\%$, and the top single direction and
-random control remain near baseline.}
-\label{fig:sufficiency}
-\end{figure}
-\FloatBarrier

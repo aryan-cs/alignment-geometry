@@ -32,19 +32,23 @@ results are in \texttt{code/synthetic\_bbp.py} and
 Because the visibility edge depends on the estimated scale, we reanalyze the
 committed sweep with an all-spectrum moment match,
 $\hat\sigma^2_{\mathrm{tr}}=q^{-1}\sum_i\lambda_i$. Spikes inflate this
-estimate, making it a conservative stress test rather than a preferred bulk
-estimator. Every leading eigenvalue remains above the resulting edge, and the
-median top-to-edge ratio falls from $22.0$ to $11.8$
-(Table~\ref{tab:mp-sensitivity}). Edge-exceedance counts change substantially,
-which is why we do not interpret them as signal rank. The deterministic
+estimate, making it an alternative fit rather than a preferred bulk estimator.
+For this fit,
+$\lambda_1/\lambda_{+,\mathrm{tr}}=
+q/[\operatorname{srank}(\Delta W)(1+\sqrt\gamma)^2]$, so the leading-edge
+ratio is a restatement of stable rank rather than independent evidence. Every
+leading eigenvalue remains above the resulting edge, and the median ratio falls
+from $22.0$ to $11.8$ (Table~\ref{tab:mp-sensitivity}). Full-spectrum
+exceedance counts change substantially and depend on the rest of the fitted
+spectrum. We do not interpret either count as signal rank. The deterministic
 reanalysis is recorded in \path{results/data/mp_fit_sensitivity.json}.
 
 \begin{table}[!htbp]
 \centering
 \caption{Sensitivity to the MP scale fit. Ratios summarize all $224$ matrices;
 the last column counts eigenvalues above the fitted edge for the representative
-layer-15 \texttt{gate\_proj} spectrum. The leading-outlier result survives the
-trace-moment stress test, while exceedance counts are fit-dependent.}
+layer-15 \texttt{gate\_proj} spectrum. The trace-moment leading ratio is tied to
+stable rank; the changing full-spectrum counts show fit sensitivity.}
 \label{tab:mp-sensitivity}
 \small
 \begin{tabular}{lcccc}
@@ -58,34 +62,37 @@ trace-moment match & $3.03/11.76/412.41$ & $224/224$ & $202/224$ & $384$ \\
 \end{table}
 
 \paragraph{Refusal direction and capture.}
-The refusal direction is the difference of mean residual-stream activations at
-the chosen layer over the last token of harmful versus harmless prompts, using
+The refusal direction is the difference of mean post-block residual-stream
+activations over the last token of harmful versus harmless prompts, using
 the chat template. Harmful prompts are AdvBench goals \citep{zou2023universal};
 harmless prompts are Alpaca instructions with no input field
 \citep{taori2023alpaca}. The capture statistic is the fraction
 of the refusal direction's squared norm that lies in the orthonormalized top-$k$
-left-singular subspace of $\dW$ for the output-side maps (\texttt{o\_proj},
+left-singular subspace of the same zero-indexed block's $\dW$ for the output-side maps (\texttt{o\_proj},
 \texttt{down\_proj}), which share the residual basis. The null is the same
 statistic for $k$-dimensional random subspaces.
 
 \paragraph{Residual-stream projection intervention.}
-We project the top-$k$ singular subspace of the layer-$\ell$ \texttt{o\_proj}
-increment out of the residual stream at every decoder layer via forward hooks,
-and measure the refusal rate on held-out harmful prompts. The current top-$k$
-sweep reports harmful-prompt refusal; harmless-prompt behavior is unmeasured.
-The top-$128$ intervention also substantially reduces MMLU, ARC-C, and GSM8K
-accuracy and therefore is not treated as capability preserving. The control
-ablates a random $k$-dimensional subspace of equal dimension. Refusal is scored
-by substring match against the fixed phrase list defined in
-\texttt{code/causal.py}; generation is greedy. This heuristic follows the
-refusal behavior studied by \citet{arditi2024} and has not been validated
-against human preferences.
+We project the top-$128$ singular subspace of zero-indexed block $14$'s
+\texttt{o\_proj} increment out of the residual stream after every decoder block
+and measure the refusal score on a fixed harmful-prompt slice. The corrected
+audit applies chat-formatted tokenization consistently to baseline, spectral,
+and random conditions. Earlier full-$k$ and source-block sweeps used a different
+tokenization or activation convention and are not reported as evidence. The
+top-$128$ intervention substantially reduces MMLU, ARC-C, and GSM8K accuracy and
+is not treated as capability preserving. The control ablates one seeded random
+$128$-dimensional subspace. Refusal is scored by substring match against the
+fixed phrase list defined in \texttt{code/causal.py}; generation is greedy.
+This heuristic follows the refusal behavior studied by \citet{arditi2024} and
+has not been validated against human preferences.
 
 \paragraph{Capability and negative-audit details.}
-Top-$128$ ablation changes MMLU from $65.4\%$ ($[61.1,69.4]\%$) to $41.8\%$
-($[37.6,46.2]\%$), ARC-C from $80.0\%$ ($[75.8,83.6]\%$) to $50.2\%$
-($[45.4,55.1]\%$), and GSM8K from $76.7\%$ ($[72.4,80.6]\%$) to $3.0\%$
-($[1.7,5.2]\%$) \citep{hendrycks2021mmlu,cobbe2021gsm8k,clark2018arc}.
+Baseline/spectral/random top-$128$ accuracy is $65.4/41.8/54.4\%$ on MMLU,
+$80.0/50.2/65.8\%$ on ARC-C, and $76.8/3.0/65.5\%$ on GSM8K
+\citep{hendrycks2021mmlu,cobbe2021gsm8k,clark2018arc}. The spectral intervention
+is therefore more damaging than the one seeded random projection on all three
+benchmarks. On the corrected fixed $128$-prompt refusal slice, baseline,
+spectral, and random rates are $98.4\%$, $14.1\%$, and $97.7\%$.
 On HarmBench \citep{mazeika2024harmbench}, baseline, spectral-ablation, and random-ablation
 refusal are $71.2\%$ ($[66.6,75.5]\%$), $5.8\%$ ($[3.9,8.5]\%$), and $65.8\%$
 ($[61.0,70.2]\%$), respectively.
@@ -107,16 +114,22 @@ files; bundle SHA-256
 The data manifest deliberately excludes generated figures and visual-QA receipts.
 The spectral sweep runs on CPU; the behavioral
 experiments run on a single GPU. Random seeds are fixed for the null sampling
-and the random-subspace control. Reported binomial rate intervals are Wilson
+and the random-subspace control. The committed medical checkpoints, evaluation
+outputs, and directions are hash-linked, but the harmful- and safe-medical
+training rows and their source hashes are absent from the repository.
+Independent reproduction of those medical fine-tunes therefore requires the
+original training data; the tracked code-organism datasets do not fill that gap.
+Reported binomial rate intervals are Wilson
 score intervals \citep{wilson1927}. They are descriptive marginal intervals for
 individual rates, not uncertainty intervals or tests for differences between
-conditions. For misalignment interventions, coherent
-generations from fixed prompts and one causal arm are the binomial units;
+conditions. For the primary joint misalignment rates, all generated outputs from
+fixed prompts and one causal arm are the binomial units;
 intervals do not cover prompt, training-seed, or family variation. Subspace
 capture, paired-agreement cosines, and score margins are deterministic summaries
 of fixed repository prompts, layers, and folds; no sampling intervals are
-assigned to them. The 16-pair layer-12 comparison refits each learned direction
-within its fold. Activation PCA uses arm labels and 64 fixed-seed full
+assigned to them. The 16-pair block-12 comparison uses suffix-matched
+Qwen2.5-Coder-7B medical pairs \texttt{s0} through \texttt{s15} and refits each
+learned direction within its fold. Activation PCA uses arm labels and 64 fixed-seed full
 user-and-assistant secure-code chats, but no judged behavior labels or alternate
 stimuli. Held-out increments are normalized, whereas training increments remain
 energy unmatched, so cross-space margins are not a common effect-size scale and
@@ -131,6 +144,17 @@ seed 0, checkpoint pair \texttt{s0}, the condition schedule, and the decision
 rule, with no outcome-dependent reruns. Hashes link the manifest and generations
 to this design.
 
+\paragraph{Judge-threshold and prompt sensitivity.}
+For the Qwen necessity run, retaining the eligibility rule while changing the
+alignment threshold from $21$ to $30$, $40$, and $50$ gives baseline counts
+$15$, $18$, $31$, and $35$ out of $800$ outputs; learned-projection counts
+$0$, $0$, $1$, and $1$; and random-projection counts $21$, $27$, $46$, and
+$50$. At the reported threshold of $30$, the eight prompts contribute baseline,
+learned, and random counts of $(2,0,5)$, $(0,0,1)$, $(2,0,6)$, $(8,0,4)$,
+$(2,0,1)$, $(0,0,0)$, $(3,0,6)$, and $(1,0,4)$ across their $100$ samples.
+The result is not driven by every prompt, and these deterministic sensitivity
+summaries do not replace independent or human validation of the judge.
+
 \paragraph{Qualitative emergent-misalignment examples.}
 Table~\ref{tab:em-examples} gives truncated verbatim excerpts from harmful
 medical-advice arms on held-out prompts unrelated to medicine. The local judge
@@ -143,24 +167,11 @@ low-alignment in the aggregate evaluation.
 \centering
 \includegraphics[width=0.68\textwidth]{../results/figures/detect.pdf}
 \caption{Leave-one-seed-out separation. Families run horizontally; within-family
-offsets only separate markers. Greater height is more normalized energy along
-the recovered direction, and vertical separation measures arm ordering.
+offsets only separate markers. Greater height is the normalized projection norm
+$\|v^\top\Delta W\|_2/\|\Delta W\|_F$, and vertical separation measures arm ordering.
 Directions fitted on the remaining seeds rank the held-out misaligned arm
 higher in all $12/12$ folds; random scores remain near $0.015$.}
 \label{fig:detect}
-\end{figure}
-
-\begin{figure}[!htbp]
-\centering
-\includegraphics[width=0.92\textwidth]{../results/figures/nec_suff.pdf}
-\caption{Projection and steering, read left to right; boxes give conditional and
-joint rates before and after intervention. \emph{Left:} projecting out $v$ changes
-measured misalignment from $2.6\%$ to $0.0\%$. \emph{Right:} adding $v$ to a
-benign arm yields $5.3\%$ conditional and $4.0\%$ joint misalignment, but higher
-strengths reduce coherence. Removal is more complete than reconstruction.
-Descriptive per-rate Wilson intervals over generated outputs are reported in
-Section~\ref{sec:misalignment}.}
-\label{fig:nec-suff}
 \end{figure}
 
 \setcounter{topnumber}{3}

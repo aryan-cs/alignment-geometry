@@ -232,7 +232,7 @@ def save_figure_pdf(fig, outdir, name, **kwargs):
     fig.savefig(os.path.join(outdir, name), **kwargs)
 
 
-def fig_spectrum_panel(rows, outdir):
+def fig_spectrum_panel(rows, outdir, npz="results/data/full_spectrum.npz"):
     """Singular-value spectrum of Delta for one representative matrix, with the
     fitted MP bulk band and the edge exceedances highlighted."""
     # pick a mid-layer gate_proj (large gamma headroom)
@@ -250,16 +250,22 @@ def fig_spectrum_panel(rows, outdir):
     fig, ax = plt.subplots(figsize=(5.2, 3.1))
     idx = np.arange(1, len(eig) + 1)
     above = eig > hi
+    total_above = None
+    if os.path.exists(npz):
+        full = np.load(npz)
+        total_above = int(np.sum(full["eig"] > float(full["hi"])))
     ax.axhspan(0, hi, color=GREY_L, alpha=0.30, lw=0, label="MP bulk (noise)")
     ax.axhline(hi, color=GREY, lw=1.0, ls="--", label="MP edge $\\lambda_+$")
     ax.scatter(idx[~above], eig[~above], s=22, color=TURBO_CYAN, zorder=3,
                edgecolors="white", linewidths=0.4)
     ax.scatter(idx[above], eig[above], s=42, color=TURBO_BLUE, zorder=4,
-               edgecolors=INK, linewidths=0.5, label="MP-edge exceedances")
+               edgecolors=INK, linewidths=0.5, label="raw MP-edge exceedances")
     ax.set_xlabel("singular index of $\\Delta W$")
     ax.set_ylabel("eigenvalue of $C=\\frac{1}{p}\\Delta W^{\\!\\top}\\Delta W$")
-    ax.set_title(f"{r['label']} (layer {r['layer']}): "
-                 f"{d['n_spikes']} strict edge exceedances", fontsize=9)
+    shown = f"{int(np.sum(above))}/{len(eig)} shown exceed the raw edge"
+    if total_above is not None:
+        shown += f"; {total_above} total"
+    ax.set_title(f"{r['label']} (layer {r['layer']}): {shown}", fontsize=9)
     legend_below(ax, fontsize=7.5, ncol=1, y=-0.30)
     ax.set_xlim(0, len(eig) + 1)
     ax.grid(True, color=GRID, lw=0.5)
@@ -309,7 +315,7 @@ def fig_bulk_spikes(outdir, npz="results/data/full_spectrum.npz"):
 
 
 def fig_spikes_by_layer(rows, outdir):
-    """Operational strict edge exceedances per layer and matrix type."""
+    """Operational visibility exceedances per layer and matrix type."""
     layers = sorted(set(r["layer"] for r in rows))
     fig, ax = plt.subplots(figsize=(5.6, 3.2))
     for lab in LABELS:
@@ -328,7 +334,7 @@ def fig_spikes_by_layer(rows, outdir):
             label=lab,
         )
     ax.set_xlabel("layer")
-    ax.set_ylabel("strict edge exceedances in $\\Delta W$")
+    ax.set_ylabel("operational visibility exceedances in $\\Delta W$")
     ax.set_title("MP-visible structure appears at every layer", fontsize=9)
     legend_below(ax, fontsize=7, ncol=4, y=-0.30)
     ax.grid(True, color=GRID, lw=0.5)
@@ -369,23 +375,17 @@ def fig_spectral_landscape_3d(rows, outdir):
     plt.close(fig)
 
 
-def fig_capture(outdir, beh="results/data/behavioral_capture.json"):
-    """Refusal-direction capture by the top-k o_proj increment subspace vs the
-    random-subspace null, as a function of k."""
-    if not os.path.exists(beh):
+def fig_capture(outdir, sweep="results/data/capture_sweep.json"):
+    """Post-block-14 refusal-direction capture by the matching increment subspace."""
+    if not os.path.exists(sweep):
         return
-    b = json.load(open(beh))
-    cap = b.get("capture", {})
+    b = json.load(open(sweep))
+    cap = b.get("layers", {}).get("14", {}).get("capture", {})
     if not cap:
         return
-    # collect o_proj_k* entries
-    ks, caps, nulls = [], [], []
-    for key, v in sorted(cap.items()):
-        if key.startswith("o_proj_k"):
-            k = int(key.split("k")[-1])
-            ks.append(k); caps.append(v); nulls.append(b["null"].get(key, 0))
-    if not ks:
-        return
+    ks = [int(key) for key in cap]
+    caps = [cap[str(k)] for k in ks]
+    nulls = [k / 4096 for k in ks]
     order = np.argsort(ks)
     ks = np.array(ks)[order]; caps = np.array(caps)[order]; nulls = np.array(nulls)[order]
     fig, ax = plt.subplots(figsize=(4.0, 2.8))
@@ -827,65 +827,74 @@ def fig_capture_heatmap(outdir, sweep="results/data/capture_sweep.json"):
     plt.close(fig)
 
 
-def fig_ablation(outdir, abl="results/data/ablation_sweep.json"):
-    """Projection intervention: refusal rate as a function of removed increment-subspace
-    dimension k, with Wilson intervals and random-subspace controls."""
-    if not os.path.exists(abl):
+def fig_ablation(
+    outdir,
+    capability="results/data/capability.json",
+    evidence_f="results/data/capability_evidence.json",
+):
+    """Corrected top-128 refusal and capability audit."""
+    if not os.path.exists(capability):
         return
-    d = json.load(open(abl))
-    c = d["conditions"]
-    ks = [8, 32, 128, 512]
-    fig, (axL, axR) = plt.subplots(1, 2, figsize=(7.4, 3.0))
-    # left: refusal generation rate by k, with Wilson intervals
-    def rr(cond):
-        v = c.get(cond, {}).get("refusal_rate")
-        return v if v else (None, None, None)
+    if not os.path.exists(evidence_f):
+        print(f"skip ablation figure: missing {evidence_f}")
+        return
+    d = json.load(open(capability))
+    evidence = json.load(open(evidence_f))
+    try:
+        from check_capability_result import validate as validate_capability
+        errors, _ = validate_capability(
+            d,
+            require_paper=True,
+            evidence=evidence,
+            require_evidence=True,
+        )
+    except Exception as exc:
+        print(f"skip ablation figure: validation failed to run: {exc}")
+        return
+    if errors:
+        print("skip ablation figure: " + "; ".join(errors[:3]))
+        return
+    manifest_errors = _capability_manifest_errors()
+    if manifest_errors:
+        print("skip ablation figure: " + "; ".join(manifest_errors[:3]))
+        return
+    conds = ["baseline", "ablate_rand128", "ablate_top128"]
+    labs = ["baseline", "random-128", "spectral-128"]
+    cols = [SAFE_GREEN, TURBO_BLUE, HARM_RED]
+    refs = d["refusal_reference_conditions"]
+    pts = [refs[k]["rate"] for k in conds]
+    fig, (axL, axR) = plt.subplots(1, 2, figsize=(7.6, 3.0))
 
-    base = rr("baseline")
-    refdir = rr("ablate_refusal_dir")
+    xs = np.arange(len(conds))
+    vals = [100 * p[0] for p in pts]
+    errs = [[100 * (p[0] - p[1]) for p in pts],
+            [100 * (p[2] - p[0]) for p in pts]]
+    axL.bar(xs, vals, color=[c + "33" for c in cols], edgecolor=cols,
+            linewidth=1.1, width=0.64, zorder=2)
+    axL.errorbar(xs, vals, yerr=errs, fmt="none", ecolor=INK,
+                 elinewidth=1.0, capsize=3.5, zorder=3)
+    for x, y in zip(xs, vals):
+        axL.text(x, y + 4.0, f"{y:.1f}%", ha="center", fontsize=8)
+    axL.set_xticks(xs); axL.set_xticklabels(labs, fontsize=7.8)
+    axL.set_ylabel("substring-refusal rate (%)")
+    axL.set_ylim(0, 110)
+    axL.set_title("corrected fixed 128-prompt slice", fontsize=9)
+    axL.grid(True, axis="y", color=GRID, lw=0.5)
 
-    def curve(prefix):
-        vals = [rr(f"{prefix}{k}") for k in ks]
-        p = np.array([v[0] for v in vals], dtype=float)
-        lo = np.array([v[1] for v in vals], dtype=float)
-        hi = np.array([v[2] for v in vals], dtype=float)
-        return p, np.vstack([p - lo, hi - p])
-
-    top_p, top_err = curve("ablate_top")
-    rnd_p, rnd_err = curve("ablate_rand")
-    axL.axhline(base[0], color=GREY, lw=1.0, ls=":", label="baseline")
-    axL.fill_between(ks, base[1], base[2], color=GREY, alpha=0.12, lw=0)
-    axL.errorbar(ks, top_p, yerr=top_err, fmt="o-", color=HARM_RED, lw=1.4,
-                 ms=5, capsize=2.8, label="ablate top-$k$ increment")
-    axL.errorbar(ks, rnd_p, yerr=rnd_err, fmt="s--", color=GREY_L, lw=1.2,
-                 ms=4, capsize=2.8, label="ablate random-$k$")
-    if refdir[0] is not None:
-        axL.axhline(refdir[0], color=TURBO_ORANGE, lw=1.2, ls="-.",
-                    label="ablate refusal dir (rank 1)")
-        axL.fill_between(ks, refdir[1], refdir[2], color=TURBO_ORANGE, alpha=0.10, lw=0)
-    axL.set_xscale("log", base=2)
-    axL.set_xlabel("ablated subspace dimension $k$")
-    axL.set_ylabel("refusal rate (harmful)\n95% Wilson CI")
-    axL.set_ylim(0.0, 1.05)
-    axL.set_title("ablation effect emerges only at large $k$", fontsize=9)
-    legend_below(axL, fontsize=6.8, ncol=2, y=-0.34)
-    axL.grid(True, color=GRID, lw=0.5, which="both")
-    # right: refusal generation rate with Wilson CIs
-    conds = ["baseline", "ablate_rand128", "ablate_top128", "ablate_refusal_dir"]
-    labs = ["baseline", "random\n128", "top-128\nincrement", "refusal\ndir"]
-    cols = [GREY, GREY_L, HARM_RED, TURBO_ORANGE]
-    pts = [rr(x) for x in conds]
-    xs = range(len(conds))
-    for x, (p, lo, hi), col in zip(xs, pts, cols):
-        if p is None:
-            continue
-        axR.errorbar(x, p, yerr=[[p - lo], [hi - p]], fmt="o", color=col,
-                     ms=6, capsize=4, lw=1.2)
-    axR.set_xticks(list(xs)); axR.set_xticklabels(labs, fontsize=7.5)
-    axR.set_ylabel("refusal rate (harmful)\n95% Wilson CI")
-    axR.set_ylim(0.0, 1.05)
-    axR.set_title("top-128 spectral $\\neq$ random-128", fontsize=9)
+    tasks = [("MMLU", "mmlu"), ("ARC-C", "arc_challenge"), ("GSM8K", "gsm8k")]
+    width = 0.23
+    tx = np.arange(len(tasks))
+    for j, (cond, lab, col) in enumerate(zip(conds, labs, cols)):
+        scores = [100 * d["conditions"][cond][key]["accuracy"][0]
+                  for _, key in tasks]
+        axR.bar(tx + (j - 1) * width, scores, width=width, label=lab,
+                color=col + "33", edgecolor=col, linewidth=1.0, zorder=2)
+    axR.set_xticks(tx); axR.set_xticklabels([t[0] for t in tasks])
+    axR.set_ylabel("accuracy (%)")
+    axR.set_ylim(0, 90)
+    axR.set_title("the same projection broadly damages capability", fontsize=9)
     axR.grid(True, axis="y", color=GRID, lw=0.5)
+    legend_below(axR, fontsize=7.0, ncol=3, y=-0.28)
     fig.tight_layout()
     save_figure_pdf(fig, outdir, "ablation.pdf")
     plt.close(fig)
@@ -945,21 +954,26 @@ def fig_mis_convergence(outdir, f="results/data/directions_med.json"):
     plt.close(fig)
 
 
-def fig_mis_causal(outdir, nec="results/data/causal_misalign.json"):
+def fig_mis_causal(
+    outdir,
+    nec="results/data/causal_misalign.json",
+    generations="results/data/causal_misalign_generations.json",
+):
     """Ablation sensitivity: the recovered direction suppresses emergent misalignment,
     with 95% Wilson CIs; ablating a random direction of equal dimension does not.
     (The coherent-steering check is reported in the text and the appendix
     schematic; a flat-zero curve adds no information.)"""
-    if not os.path.exists(nec):
+    if not os.path.exists(nec) or not os.path.exists(generations):
         return
     n = json.load(open(nec))["necessity"]
+    generated = json.load(open(generations))["conditions"]
     keys = ["misaligned_baseline", "ablate_v", "ablate_random"]
     labels = ["misaligned\nbaseline", "project out\ncontrast", "project out\nrandom"]
     fills = [HARM_RED + "33", SAFE_GREEN + "33", GREY + "33"]
     edges = [HARM_RED_DARK, SAFE_GREEN_DARK, GREY]
     pts, los, his = [], [], []
     for kk in keys:
-        p, lo, hi = wilson(n[kk]["n_mis"], n[kk]["n_ok"])
+        p, lo, hi = wilson(n[kk]["n_mis"], len(generated[kk]))
         pts.append(p); los.append(lo); his.append(hi)
     fig, ax = plt.subplots(figsize=(4.7, 3.2))
     xs = list(range(3))
@@ -970,9 +984,9 @@ def fig_mis_causal(outdir, nec="results/data/causal_misalign.json"):
     ax.errorbar(xs, [100 * p for p in pts], yerr=yerr, fmt="none", ecolor=INK,
                 elinewidth=1.0, capsize=4, zorder=3)
     for x, p, hi in zip(xs, pts, his):
-        ax.text(x, 100 * hi + 0.2, f"{100*p:.1f}%", ha="center", fontsize=8.5)
+        ax.text(x, 100 * hi + 0.2, f"{100*p + 1e-9:.1f}%", ha="center", fontsize=8.5)
     ax.set_xticks(xs); ax.set_xticklabels(labels, fontsize=8.5)
-    ax.set_ylabel("local-judge rate among coherent outputs (%)")
+    ax.set_ylabel("joint rate among all outputs (%)")
     ax.set_title("In-sample medical-contrast projection", fontsize=9)
     ax.set_ylim(0, max(100 * max(his), 1) * 1.28)
     ax.grid(True, axis="y", color=GRID, lw=0.5)
@@ -994,7 +1008,7 @@ def fig_mis_gate(outdir, f="results/data/misalignment_eval_medical.json"):
         xs = np.linspace(x0 - 0.09, x0 + 0.09, len(rows))
         pts, los, his = [], [], []
         for row in rows:
-            p, lo, hi = wilson(row["n_misaligned"], row["n_scored"])
+            p, lo, hi = wilson(row["n_misaligned"], row["n_generated"])
             pts.append(100 * p); los.append(100 * lo); his.append(100 * hi)
         yerr = [[p - lo for p, lo in zip(pts, los)],
                 [hi - p for p, hi in zip(pts, his)]]
@@ -1002,14 +1016,14 @@ def fig_mis_gate(outdir, f="results/data/misalignment_eval_medical.json"):
                     markeredgecolor=INK, markeredgewidth=0.45,
                     ms=5.5, capsize=2.5, elinewidth=0.9, zorder=3, label=label)
         pk = sum(r["n_misaligned"] for r in rows)
-        pn = sum(r["n_scored"] for r in rows)
+        pn = sum(r["n_generated"] for r in rows)
         pp, _, _ = wilson(pk, pn)
         ax.hlines(100 * pp, x0 - 0.22, x0 + 0.22, color=col, lw=2)
     ax.set_xticks([0, 1]); ax.set_xticklabels(["misaligned\n(bad medical)", "benign\n(safe medical)"])
-    ax.set_ylabel("local-judge rate among coherent outputs (%)")
+    ax.set_ylabel("joint rate among all outputs (%)")
     ax.set_title("matched organism: separated from controls", fontsize=9)
     max_hi = max(
-        [100 * wilson(r["n_misaligned"], r["n_scored"])[2] for r in mis + ben] + [1.0]
+        [100 * wilson(r["n_misaligned"], r["n_generated"])[2] for r in mis + ben] + [1.0]
     )
     ax.set_xlim(-0.5, 1.5); ax.set_ylim(-0.4, max_hi * 1.25)
     legend_below(ax, fontsize=7.5, ncol=1, y=-0.30)
@@ -1244,7 +1258,7 @@ def fig_trajectory_direction_pca_3d(
 
 
 def fig_detect(outdir):
-    """Held-out detection: per family, the increment-energy a held-out misaligned
+    """Held-out detection: per family, the normalized projection norm a held-out misaligned
     vs benign arm puts on the recovered direction (leave-one-seed-out), with a
     random-direction control. Misaligned arms score above benign in every fold;
     the random direction does not separate them."""
@@ -1269,7 +1283,7 @@ def fig_detect(outdir):
                    label=("random direction (control)" if not present else None))
         present.append(name)
     ax.set_xticks(range(len(fams))); ax.set_xticklabels([f[0] for f in fams])
-    ax.set_ylabel("increment energy on recovered direction")
+    ax.set_ylabel("normalized projection norm")
     ax.set_ylim(-0.02, 0.78)
     ax.set_title("The recovered direction separates same-recipe held-out arms", fontsize=9)
     legend_below(ax, fontsize=7.6, ncol=3, y=-0.30)

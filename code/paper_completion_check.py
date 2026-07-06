@@ -2833,7 +2833,8 @@ def check_required_claim_framing(gates):
             "in an in-sample Qwen2.5-Coder-7B-Instruct intervention",
             "partial Mistral-7B effect",
             "broad disruption rather than capability-preserving refusal removal",
-            "neither weight-SVD superiority nor out-of-sample causal generalization",
+            "separability rather than method superiority",
+            "leaving prospective causal generalization open",
         ],
         "paper/sections/intro.tex": [
             "Marchenko--Pastur upper edge",
@@ -2844,11 +2845,11 @@ def check_required_claim_framing(gates):
             "Capability-preserving interventions would require smaller or more structured subspaces",
         ],
         "paper/sections/causal.tex": [
-            "Applying the projection at every layer tests global residual-stream dependence",
-            "cannot localize a circuit or demonstrate capability preservation",
-            "substantial capability loss",
-            "At $k{=}512$, both projections severely disrupt refusal",
-            "Capability-preserving intervention would require smaller or more structured subspaces",
+            "Applying one weight-derived basis globally tests model-wide dependence",
+            "it does not localize a circuit",
+            "highly destructive on capability benchmarks",
+            "One random subspace is a matched control, not a null distribution",
+            "does not establish capability-preserving refusal removal",
         ],
         "paper/sections/misalignment.tex": [
             "Rotation-invariant summaries",
@@ -2869,7 +2870,7 @@ def check_required_claim_framing(gates):
             "code-organism follow-up fails its frozen criteria",
         ],
         "README.md": [
-            "strict medical provenance artifacts validated",
+            "the original medical training rows are not present",
         ],
     }
     missing = []

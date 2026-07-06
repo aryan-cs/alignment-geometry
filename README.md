@@ -1,4 +1,4 @@
-# The Spectral Geometry of Misalignment
+# Checkpoint-Delta Geometry for Refusal and Matched Misalignment Contrasts
 
 > Code, manuscript source, and committed artifacts for a weight-space study of
 > spectral structure, refusal interventions, and matched emergent-misalignment
@@ -36,14 +36,18 @@ is not treated as an alignment detector.
   measure rather than a calibrated hypothesis test.
 - **Measured refusal is sensitive to the leading increment subspace.** On the
   tested harmful-prompt distribution, projecting out the top-128 subspace
-  reduces substring refusal from 98.4% (`[94.5,99.6]%`) to 3.1%
-  (`[1.2,7.8]%`), while an equal-dimensional random projection leaves it at
-  94.5% (`[89.1,97.3]%`). A separate MMLU/GSM8K/ARC audit shows broad
-  disruption, not capability preservation.
+  changes substring refusal on a fixed 128-prompt slice from 98.4%
+  (`[94.5,99.6]%`) to 14.1% (`[9.1,21.1]%`), while one seeded
+  equal-dimensional random projection gives 97.7% (`[93.3,99.2]%`). MMLU,
+  ARC-C, and GSM8K fall substantially more under the spectral projection than
+  under that random projection, showing broad disruption rather than capability
+  preservation.
 - **Matched medical organisms recover a shared contrast direction.** The
-  Qwen2.5-Coder-7B study has strict medical provenance artifacts validated.
-  Projecting out the fitted direction changes measured emergent misalignment
-  from 2.6% to 0.0% in-sample, while a random direction leaves it at 3.9%.
+  Qwen2.5-Coder-7B checkpoint, direction, and evaluation artifacts are
+  hash-linked, but the original medical training rows are not present.
+  Projecting out the fitted direction changes the all-output joint
+  misalignment-and-eligibility rate from 2.3% to 0.0% in-sample, while a random
+  direction gives 3.4%.
 - **The within-organism pattern appears across Qwen, Llama, and Mistral.** The
   Mistral intervention is partial rather than complete. These are controlled
   model organisms, not evidence about naturally occurring failures.
@@ -53,8 +57,9 @@ is not treated as an alignment detector.
 - **Several important audits are negative or inconclusive.** The cross-type
   code-organism study does not support positive transfer; the 14B study retains
   geometry and descriptive held-out ordering but misses its frozen causal
-  criteria; and row-mean weight contrast slightly exceeds weight-SVD in the
-  matched-fold baseline audit.
+  criteria. In the matched-fold baseline audit, all three learned methods rank
+  16/16 pairs correctly; the weight-SVD versus row-mean margin ordering depends
+  on whether projection norm or squared projection norm is reported.
 
 The paper reports confidence intervals, controls, provenance limits, and the
 full scope of these claims. The short summary above is not a substitute for the
@@ -70,7 +75,7 @@ alignment-geometry/
 ├── LICENSE                   document and source-code licensing terms
 ├── requirements-local.txt    local figure and validation dependencies
 ├── code/                     supported producers, launchers, and validators
-├── data/                     committed prompt and training datasets
+├── data/                     committed prompts and available training datasets
 ├── paper/                    self-contained manuscript source and build script
 ├── docs/
 │   ├── paper.pdf             current paper
@@ -130,7 +135,7 @@ manuscript. Important groups include:
 | Study | Primary artifacts | Main validator |
 |---|---|---|
 | Spectral sweep | `results/data/spectral.jsonl`, `summary.json`, `full_spectrum.npz` | `check_paper_numbers.py` |
-| Refusal interventions | `results/data/behavioral_capture.json`, `causal.json`, `ablation_sweep.json` | `check_paper_numbers.py` |
+| Refusal interventions | `results/data/behavioral_capture.json`, `capability.json`, `capability_evidence.json` | `check_paper_numbers.py` |
 | Medical organisms | `results/data/misalignment_eval_medical.json`, `directions_med.*`, `detect_med.json` | `check_direction_study.py` |
 | Cross-family replication | `results/data/directions_llama.json`, `directions_mistral.json` | `check_direction_study.py` |
 | Capability audit | `results/data/capability.json`, `capability_evidence.json` | `check_capability_result.py` |
@@ -172,8 +177,8 @@ Line styles, marker shapes, and dark keylines remain redundant with color.
 Citation metadata is available in [CITATION.cff](CITATION.cff).
 
 ```bibtex
-@misc{gupta2026spectralgeometry,
-  title  = {The Spectral Geometry of Misalignment},
+@misc{gupta2026checkpointdelta,
+  title  = {Checkpoint-Delta Geometry for Refusal and Matched Misalignment Contrasts},
   author = {Aryan Gupta},
   year   = {2026},
   url    = {https://github.com/aryan-cs/alignment-geometry}

@@ -14,7 +14,7 @@ abstract: >-
   model organisms.
 preferred-citation:
   type: generic
-  title: "The Spectral Geometry of Misalignment"
+  title: "Checkpoint-Delta Geometry for Refusal and Matched Misalignment Contrasts"
   authors:
     - family-names: Gupta
       given-names: Aryan

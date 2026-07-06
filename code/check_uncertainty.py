@@ -175,11 +175,24 @@ def expected_displayed_interval_catalog():
         causal_names.append("causal_misalign_14b.json")
     for name in causal_names:
         data = load_json(name)
+        generations_name = name.replace(".json", "_generations.json")
+        generations = (
+            load_json(generations_name).get("conditions", {})
+            if (DATA / generations_name).exists()
+            else {}
+        )
         for cond, row in data.get("necessity", {}).items():
             k = row.get("n_mis")
             n = row.get("n_ok")
             if isinstance(k, int) and isinstance(n, int) and n > 0:
                 add_expected_interval(catalog, wilson(k, n), f"{name}.necessity.{cond}")
+            generated = generations.get(cond)
+            if isinstance(k, int) and isinstance(generated, list) and generated:
+                add_expected_interval(
+                    catalog,
+                    wilson(k, len(generated)),
+                    f"{name}.necessity_joint.{cond}",
+                )
         for family, rows in data.get("sufficiency", {}).items():
             if isinstance(rows, dict) and "n_mis" in rows:
                 rows = {"_": rows}
@@ -209,6 +222,7 @@ def expected_displayed_interval_catalog():
     for name in eval_names:
         gate = load_json(name)
         pooled = {"misaligned": [0, 0], "benign": [0, 0]}
+        pooled_generated = {"misaligned": [0, 0], "benign": [0, 0]}
         for arm, row in gate.items():
             if not isinstance(row, dict):
                 continue
@@ -226,9 +240,25 @@ def expected_displayed_interval_catalog():
                 if bucket:
                     pooled[bucket][0] += k
                     pooled[bucket][1] += n
+                    n_generated = row.get("n_generated")
+                    if isinstance(n_generated, int) and n_generated > 0:
+                        add_expected_interval(
+                            catalog,
+                            wilson(k, n_generated),
+                            f"{name}.{arm}_joint",
+                        )
+                        pooled_generated[bucket][0] += k
+                        pooled_generated[bucket][1] += n_generated
         for bucket, (k, n) in pooled.items():
             if n > 0:
                 add_expected_interval(catalog, wilson(k, n), f"{name}.{bucket}_pooled")
+        for bucket, (k, n) in pooled_generated.items():
+            if n > 0:
+                add_expected_interval(
+                    catalog,
+                    wilson(k, n),
+                    f"{name}.{bucket}_pooled_joint",
+                )
 
     traj = load_json("traj_med.json")
     for row in traj.get("trajectory", []):
@@ -268,6 +298,13 @@ def expected_displayed_interval_catalog():
                     catalog,
                     refusal.get("rate"),
                     f"capability.{cond}.refusal.rate",
+                )
+        for cond, row in capability.get("refusal_reference_conditions", {}).items():
+            if isinstance(row, dict):
+                add_expected_interval(
+                    catalog,
+                    row.get("rate"),
+                    f"capability.refusal_reference_conditions.{cond}.rate",
                 )
 
     transfer_path = DATA / "transfer.json"
@@ -472,6 +509,39 @@ def check_refusal_artifacts(errors):
                 )
     else:
         add(errors, "sufficiency.n_gen", "missing positive generation count")
+
+    capability = load_json("capability.json")
+    corrected = capability.get("refusal_reference_conditions", {})
+    corrected_intervals = {}
+    for condition in ("baseline", "ablate_top128", "ablate_rand128"):
+        row = corrected.get(condition, {})
+        interval = row.get("rate")
+        k = row.get("refusals")
+        n = row.get("n")
+        if interval is None or not isinstance(k, int) or not isinstance(n, int):
+            add(errors, f"capability.refusal_reference_conditions.{condition}", "missing rate or counts")
+            continue
+        assert_wilson_from_counts(
+            errors,
+            f"capability.refusal_reference_conditions.{condition}.rate",
+            interval,
+            k,
+            n,
+            max_half_width=0.10,
+        )
+        corrected_intervals[condition] = interval
+    assert_separated_intervals(
+        errors,
+        "capability.corrected_refusal.baseline_vs_spectral",
+        corrected_intervals.get("baseline"),
+        corrected_intervals.get("ablate_top128"),
+    )
+    assert_separated_intervals(
+        errors,
+        "capability.corrected_refusal.random_vs_spectral",
+        corrected_intervals.get("ablate_rand128"),
+        corrected_intervals.get("ablate_top128"),
+    )
 
 
 def check_counted_rates(errors):

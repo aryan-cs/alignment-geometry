@@ -16,8 +16,8 @@ The controls separate four claims:
 \setlength{\itemsep}{1pt}
 \item \textbf{MP and Gaussian references} measure departure from an
 iid-isotropic benchmark, not alignment specificity.
-\item \textbf{Random subspaces} distinguish spectral targeting from projection
-dimension for $k=64$--$256$; at $k=512$, both projections broadly disrupt behavior.
+\item \textbf{A seeded random subspace} controls for projection dimension in the
+corrected top-$128$ audit, but does not estimate a null distribution.
 \item \textbf{Matched benign controls} isolate the joint target-policy and content
 contrast within the medical organism.
 \item \textbf{Interventions} show sensitivity in the tested models, not circuit
@@ -41,11 +41,15 @@ mathematics, RLHF \citep{ouyang2022instruct}, DPO \citep{rafailov2023dpo}, other
 optimizers, and schedules were not run.
 Reasoning, mixture-of-experts, multimodal, and models beyond 14B remain outside scope.
 
-The interventions act at every layer, but external validity is restricted to the
-tested checkpoints, prompts, and medical organisms; they do not localize a circuit.
+The refusal and necessity projections act after every block; medical steering
+is injected at one block. External validity is restricted to the tested
+checkpoints, prompts, and medical organisms, and the interventions do not
+localize a circuit.
 Each medical projection test uses a checkpoint that contributed to its fitted
 direction. The leave-one-pair-out analysis is a ranking screen, not a held-out
-causal intervention.
+causal intervention. The medical training rows and their source hashes are
+unavailable in the repository, so checkpoint and evaluation provenance alone do
+not enable independent retraining.
 The refusal direction may also encode prompt distribution, topic, and style. A
 provenance-complete HarmBench run \citep{mazeika2024harmbench} reproduces the
 spectral-versus-random gap on held-out harmful prompts, but harmless prompts,
@@ -58,11 +62,24 @@ nonmonotonic, and capability-preserving intervention remains open.
 
 The modest organism effects derive support from matched separation, held-out
 ranking, and cross-family recurrence, not prevalence alone. Baseline evidence
-does not favor weight-SVD: row-mean slightly outperforms it, activation PCA ties
-on arm ordering, folds overlap, update magnitude remains confounded, cross-space
+does not favor weight-SVD: row-mean has the larger normalized projection-norm
+margin, weight-SVD has the larger squared-score margin, activation PCA ties on
+arm ordering, folds overlap, update magnitude remains confounded, cross-space
 margins are incomparable, and supervised probes and RepE were not tested. The
-code-organism follow-up fails its frozen criteria, and the 14B causal test is
-indistinguishable from random projection. Naturally occurring
+code-organism follow-up fails its frozen criteria, and the 14B intervention does
+not meet its frozen positive criteria. Naturally occurring
 deceptive alignment, sycophancy, reward hacking, jailbreak susceptibility, and
 multimodal failures remain untested. Prospective and continual-learning use
 requires a direction or threshold frozen before new endpoint deltas are observed.
+
+\section*{Ethical considerations}
+The refusal intervention demonstrates a method for weakening a safety-related
+behavioral score. It also causes severe capability damage and does not provide a
+capability-preserving bypass, but the same analysis could still inform attempts
+to remove safeguards. We therefore present the intervention as a diagnostic
+result rather than a deployment recipe. The medical model-organism outputs are
+synthetic and are not medical advice. Their local-judge labels have not been
+independently or human validated, and the missing medical training rows limit
+reproducibility. Any operational use would require stronger behavioral
+evaluation, human review, held-out causal tests, and explicit controls for
+capability and misuse risk.

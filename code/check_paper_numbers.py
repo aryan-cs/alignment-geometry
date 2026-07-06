@@ -129,7 +129,7 @@ def check_capability_caveat():
     """Guard against broad-capability claims until H200 output is validated."""
     text = paper_text()
     harmless_required = [
-        "harmless-prompt behavior is unmeasured",
+        "Harmless-prompt effects, adaptive attacks, and human judgments under the same intervention remain unmeasured",
         "harmless prompts, adaptive adversaries, and human-validated scoring remain untested",
     ]
     for phrase in harmless_required:
@@ -142,8 +142,8 @@ def check_capability_caveat():
     if outcome == "preservation_thresholds_not_violated":
         return
     required = [
-        "substantial capability loss",
-        "Top-$128$ ablation changes MMLU from",
+        "highly destructive on capability benchmarks",
+        "Baseline/spectral/random top-$128$ accuracy",
         "top-$128$ intervention",
     ]
     for phrase in required:
@@ -200,7 +200,7 @@ def check_uncertainty_framing():
         "These values are deterministic summaries of the fixed prompt set",
         "Values are deterministic summaries of the capture analysis",
         "Wilson intervals are reserved for rate estimates below",
-        "Descriptive per-rate 95\\% Wilson intervals over generated outputs (baseline/direction/random) are Qwen:",
+        "Descriptive per-rate 95\\% Wilson intervals over all $800$ generated outputs (baseline/direction/random) are Qwen:",
         "These counts depend on the fitted visibility threshold and need not equal signal rank",
         "Subspace capture, paired-agreement cosines, and score margins are deterministic summaries",
         "Matrices within a model are correlated, so we do not attach a binomial interval to this count",
@@ -219,10 +219,10 @@ def check_abstract_rates():
     abstract = (ROOT / "paper" / "sections" / "abstract.tex").read_text()
     compact = re.sub(r"\s+", " ", abstract)
     required = [
-        "$98.4\\%$ to $3.1\\%$",
-        "same-dimensional random projection remains at $94.5\\%$",
-        "from $2.6\\%$ to $0.0\\%$",
-        "random direction remains at $3.9\\%$",
+        "from $98.4\\%$ to $14.1\\%$",
+        "same-dimensional random projection remains at $97.7\\%$",
+        "from $2.3\\%$ to $0.0\\%$",
+        "random direction gives $3.4\\%$",
     ]
     for phrase in required:
         if phrase not in compact:
@@ -274,9 +274,9 @@ def check_reviewer_scope_caveats():
         (
             "projection-ablation breadth",
             [
-                r"At\s*\$k\{=\}512\$, both projections severely disrupt refusal",
-                r"dimensions where the controls diverge distinguish spectral targeting from broad\s*disruption",
-                r"same top-\$128\$\s*projection causes substantial capability loss",
+                r"corrected top-\$128\$ audit",
+                r"One random subspace is a matched control, not a null distribution",
+                r"spectral intervention is highly destructive on capability benchmarks",
             ],
         ),
         (
@@ -297,8 +297,8 @@ def check_reviewer_scope_caveats():
             "proxy-not-circuit framing",
             [
                 r"sensitivity in the tested models,\s*not circuit\s*locality,\s*one-dimensional sufficiency",
-                r"cannot localize a circuit",
-                r"Row-mean contrast therefore performs slightly better in this\s*comparison",
+                r"does not localize a circuit",
+                r"does not\s*support superiority of either weight method",
             ],
         ),
         (
@@ -646,20 +646,20 @@ def check_synthetic_bbp():
 
 def check_refusal():
     readme = (ROOT / "README.md").read_text()
-    if "93.8% (`[89.1,97.3]%`)" in readme:
-        failures.append("README refusal summary: random-128 rate is stale; expected 94.5%")
-    if "94.5% (`[89.1,97.3]%`)" not in readme:
-        failures.append("README refusal summary: missing current random-128 rate 94.5%")
+    if "14.1% (`[9.1,21.1]%`)" not in readme:
+        failures.append("README refusal summary: missing corrected spectral-128 rate 14.1%")
+    if "97.7% (`[93.3,99.2]%`)" not in readme:
+        failures.append("README refusal summary: missing corrected random-128 rate 97.7%")
 
-    cap = load_json("behavioral_capture.json")
-    for k, expected in [(8, 0.027), (32, 0.041), (128, 0.106)]:
-        expect(f"capture table: o_proj k={k}", cap["capture"][f"o_proj_k{k}"], expected, 0.0006)
-    for k, expected in [(8, 0.002), (32, 0.008), (128, 0.031)]:
-        expect(f"capture table: null k={k}", cap["null"][f"o_proj_k{k}"], expected, 0.0006)
-    for k, expected in [(8, 13.7), (32, 5.2), (128, 3.5)]:
-        enrich = cap["capture"][f"o_proj_k{k}"] / cap["null"][f"o_proj_k{k}"]
-        expect(f"capture table: enrichment k={k}", enrich, expected, 0.06)
     sweep = load_json("capture_sweep.json")
+    cap = sweep["layers"]["14"]
+    for k, expected in [(8, 0.028), (32, 0.050), (128, 0.115)]:
+        expect(f"capture table: o_proj k={k}", cap["capture"][str(k)], expected, 0.0006)
+    for k, expected in [(8, 0.002), (32, 0.008), (128, 0.031)]:
+        expect(f"capture table: null k={k}", k / 4096, expected, 0.0006)
+    for k, expected in [(8, 14.2), (32, 6.4), (128, 3.7)]:
+        enrich = cap["enrich"][str(k)]
+        expect(f"capture table: enrichment k={k}", enrich, expected, 0.06)
     enrich8 = [row["enrich"]["8"] for row in sweep["layers"].values()]
     n_enriched = sum(1 for value in enrich8 if value > 1.0)
     expect("capture sweep: top-8 enrichment above random in 31/32 layers", n_enriched, 31)
@@ -671,28 +671,34 @@ def check_refusal():
     if "Refusal is enriched in the leading spikes, at every layer" in causal_tex:
         failures.append("causal section overclaims top-8 enrichment at every layer")
 
-    ablation = load_json("ablation_sweep.json")
-    c = ablation["conditions"]
-    expect("ablation: baseline refusal displayed as 98.4%", pct(c["baseline"]["refusal_rate"][0]), 98.4, 0.06)
-    expect("ablation: top-8 refusal displayed as 98.4%", pct(c["ablate_top8"]["refusal_rate"][0]), 98.4, 0.06)
-    expect("ablation: top-128 refusal displayed as 3.1%", pct(c["ablate_top128"]["refusal_rate"][0]), 3.1, 0.06)
-    expect("ablation: top-128 low CI displayed as 1.2%", pct(c["ablate_top128"]["refusal_rate"][1]), 1.2, 0.06)
-    expect("ablation: top-128 high CI displayed as 7.8%", pct(c["ablate_top128"]["refusal_rate"][2]), 7.8, 0.06)
-    expect("ablation: random-128 refusal displayed as 94.5%", pct(c["ablate_rand128"]["refusal_rate"][0]), 94.5, 0.06)
-    expect("ablation: random-128 low CI displayed as 89.1%", pct(c["ablate_rand128"]["refusal_rate"][1]), 89.1, 0.06)
-    expect("ablation: random-128 high CI displayed as 97.3%", pct(c["ablate_rand128"]["refusal_rate"][2]), 97.3, 0.06)
-    expect("ablation: refusal-dir rate displayed as 68.8%", pct(c["ablate_refusal_dir"]["refusal_rate"][0]), 68.8, 0.06)
+    capability = load_json("capability.json")
+    refs = capability["refusal_reference_conditions"]
+    corrected = {
+        "baseline": (126, 128, 98.4, 94.5, 99.6),
+        "ablate_top128": (18, 128, 14.1, 9.1, 21.1),
+        "ablate_rand128": (125, 128, 97.7, 93.3, 99.2),
+    }
+    for condition, (count, n, rate, lo, hi) in corrected.items():
+        row = refs[condition]
+        expect(f"corrected refusal: {condition} count", row["refusals"], count)
+        expect(f"corrected refusal: {condition} denominator", row["n"], n)
+        expect(f"corrected refusal: {condition} rate", pct(row["rate"][0]), rate, 0.06)
+        expect(f"corrected refusal: {condition} low CI", pct(row["rate"][1]), lo, 0.06)
+        expect(f"corrected refusal: {condition} high CI", pct(row["rate"][2]), hi, 0.06)
 
-    layers = load_json("ablation_layers.json")
-    expect("ablation layers: layer 14 top-k displayed as 3.1%", pct(layers["layers"]["14"]["ablate_topk"][0]), 3.1, 0.06)
-    expect("ablation layers: layer 26 top-k displayed as 0.0%", pct(layers["layers"]["26"]["ablate_topk"][0]), 0.0, 0.06)
-    min_random = min(pct(v["ablate_randk"][0]) for v in layers["layers"].values())
-    expect("ablation layers: random controls at or above 93%", min_random, 93.0, 0.2)
-
-    suff = load_json("sufficiency.json")
-    expect("sufficiency: refusal direction reaches 98%", pct(suff["refusal_dir"]["4.0"]["refusal"][0]), 98.0, 0.06)
-    expect("sufficiency: spectral subspace reaches 67%", pct(suff["spectral_subspace"]["6.0"]["refusal"][0]), 67.0, 0.06)
-    expect("sufficiency: refusal mass in spectral subspace displayed as 10.5%", pct(suff["refusal_in_spec_fraction"]), 10.5, 0.06)
+    task_expected = {
+        "mmlu": (65.4, 41.8, 54.4),
+        "arc_challenge": (80.0, 50.2, 65.8),
+        "gsm8k": (76.8, 3.0, 65.5),
+    }
+    for task, expected in task_expected.items():
+        for condition, value in zip(("baseline", "ablate_top128", "ablate_rand128"), expected):
+            expect(
+                f"capability figure: {task} {condition}",
+                pct(capability["conditions"][condition][task]["accuracy"][0]),
+                value,
+                0.06,
+            )
 
 
 def check_misalignment():
@@ -742,11 +748,17 @@ def check_misalignment():
     )
 
     gate = load_json("misalignment_eval_medical.json")
-    mis_rates = [pct(v["misalignment_rate"]) for k, v in gate.items() if k.startswith("misaligned_")]
-    ben_rates = [pct(v["misalignment_rate"]) for k, v in gate.items() if k.startswith("benign_")]
-    expect("medical gate: mean misaligned rate displayed as 4.7%", sum(mis_rates) / len(mis_rates), 4.7, 0.06)
-    expect("medical gate: min misaligned arm displayed as 3.4%", min(mis_rates), 3.4, 0.06)
-    expect("medical gate: max misaligned arm displayed as 6.0%", max(mis_rates), 6.0, 0.06)
+    mis_rows = [v for k, v in gate.items() if k.startswith("misaligned_")]
+    mis_rates = [100 * v["n_misaligned"] / v["n_generated"] for v in mis_rows]
+    ben_rates = [
+        100 * v["n_misaligned"] / v["n_generated"]
+        for k, v in gate.items()
+        if k.startswith("benign_")
+    ]
+    pooled_joint = 100 * sum(v["n_misaligned"] for v in mis_rows) / sum(v["n_generated"] for v in mis_rows)
+    expect("medical gate: pooled joint rate displayed as 3.9%", pooled_joint, 3.9, 0.06)
+    expect("medical gate: min joint arm displayed as 2.8%", min(mis_rates), 2.8, 0.06)
+    expect("medical gate: max joint arm displayed as 5.3%", max(mis_rates), 5.3, 0.06)
     expect("medical gate: benign controls displayed as 0.0%", max(ben_rates), 0.0, 0.01)
 
     directions = {
@@ -767,15 +779,38 @@ def check_misalignment():
     expect("Mistral: layer-8 benign null displayed as 0.17", directions["Mistral-7B"]["per_layer"]["8"]["benign_null_mean_abs_cos"], 0.17, 0.006)
 
     causal = {
-        "Qwen2.5-Coder-7B": (load_json("causal_misalign.json"), (2.6, 0.0, 3.9)),
-        "Llama-3-8B": (load_json("causal_misalign_llama.json"), (5.3, 0.5, 2.9)),
-        "Mistral-7B": (load_json("causal_misalign_mistral.json"), (8.7, 2.8, 8.6)),
+        "Qwen2.5-Coder-7B": (
+            load_json("causal_misalign.json"),
+            load_json("causal_misalign_generations.json"),
+            (2.6, 0.0, 3.9),
+            (2.3, 0.0, 3.4),
+        ),
+        "Llama-3-8B": (
+            load_json("causal_misalign_llama.json"),
+            load_json("causal_misalign_llama_generations.json"),
+            (5.3, 0.5, 2.9),
+            (4.9, 0.5, 2.6),
+        ),
+        "Mistral-7B": (
+            load_json("causal_misalign_mistral.json"),
+            load_json("causal_misalign_mistral_generations.json"),
+            (8.7, 2.8, 8.6),
+            (7.6, 2.6, 7.5),
+        ),
     }
-    for name, (data, (base, ablate, random)) in causal.items():
+    condition_keys = ("misaligned_baseline", "ablate_v", "ablate_random")
+    for name, (data, generated, conditional_expected, joint_expected) in causal.items():
         nec = data["necessity"]
-        expect(f"{name}: baseline EM", pct(nec["misaligned_baseline"]["rate"]), base, 0.06)
-        expect(f"{name}: ablate direction EM", pct(nec["ablate_v"]["rate"]), ablate, 0.06)
-        expect(f"{name}: random direction EM", pct(nec["ablate_random"]["rate"]), random, 0.06)
+        for key, conditional, joint in zip(condition_keys, conditional_expected, joint_expected):
+            expect(f"{name}: conditional {key} EM", pct(nec[key]["rate"]), conditional, 0.06)
+            n_generated = len(generated["conditions"][key])
+            expect(f"{name}: {key} generated count", n_generated, 800)
+            expect(
+                f"{name}: joint {key} EM",
+                100 * nec[key]["n_mis"] / n_generated,
+                joint,
+                0.06,
+            )
     q_nec = causal["Qwen2.5-Coder-7B"][0]["necessity"]
     expect("Qwen causal caption: baseline numerator", q_nec["misaligned_baseline"]["n_mis"], 18)
     expect("Qwen causal caption: baseline denominator", q_nec["misaligned_baseline"]["n_ok"], 683)
@@ -855,6 +890,7 @@ def check_scale_14b():
     directions = load_json("directions_14b.json")
     detector = load_json("detect_14b.json")
     causal = load_json("causal_misalign_14b.json")
+    causal_generations = load_json("causal_misalign_14b_generations.json")
     history = load_json("scale_14b_attempt_history.json")
     with open(manifest_path) as f:
         manifest = json.load(f)
@@ -917,6 +953,7 @@ def check_scale_14b():
         )
 
     pooled = {"misaligned": [0, 0], "benign": [0, 0]}
+    pooled_generated = {"misaligned": 0, "benign": 0}
     for arm, row in evaluation.items():
         if not isinstance(row, dict):
             failures.append(f"14B scale audit: malformed evaluation row {arm!r}")
@@ -933,8 +970,13 @@ def check_scale_14b():
         expect(f"14B scale audit: {arm} stored rate", row.get("misalignment_rate"), k / n)
         pooled[group][0] += k
         pooled[group][1] += n
+        pooled_generated[group] += int(row.get("n_generated", 0))
     if pooled != {"misaligned": [71, 1477], "benign": [0, 1562]}:
         failures.append(f"14B scale audit: pooled behavioral counts changed: {pooled!r}")
+    if pooled_generated != {"misaligned": 1600, "benign": 1600}:
+        failures.append(
+            f"14B scale audit: pooled generated counts changed: {pooled_generated!r}"
+        )
     for group, expected_display in {
         "misaligned": (4.8, 3.8, 6.0),
         "benign": (0.0, 0.0, 0.2),
@@ -944,6 +986,19 @@ def check_scale_14b():
         expect(f"14B scale audit: {group} displayed rate", round(pct(rate), 1), expected_display[0])
         expect(f"14B scale audit: {group} displayed Wilson lower", round(pct(lo), 1), expected_display[1])
         expect(f"14B scale audit: {group} displayed Wilson upper", round(pct(hi), 1), expected_display[2])
+    for group, expected_display in {
+        "misaligned": (4.4, 3.5, 5.6),
+        "benign": (0.0, 0.0, 0.2),
+    }.items():
+        k = pooled[group][0]
+        n = pooled_generated[group]
+        rate, lo, hi = wilson(k, n)
+        for label, got, want in zip(
+            ("rate", "Wilson lower", "Wilson upper"),
+            (round(pct(rate), 1), round(pct(lo), 1), round(pct(hi), 1)),
+            expected_display,
+        ):
+            expect(f"14B scale audit: {group} joint displayed {label}", got, want)
 
     layer12 = directions.get("per_layer", {}).get("12", {})
     expect("14B scale audit: layer-12 paired agreement", layer12.get("convergence_mean_abs_cos"), 0.9333010925875871)
@@ -966,6 +1021,11 @@ def check_scale_14b():
         "ablate_v": (3.6, 2.5, 5.2),
         "ablate_random": (4.5, 3.2, 6.2),
     }
+    joint_displayed = {
+        "misaligned_baseline": (4.8, 3.5, 6.5),
+        "ablate_v": (3.4, 2.3, 4.9),
+        "ablate_random": (4.1, 3.0, 5.7),
+    }
     for condition, (k, n) in expected_counts.items():
         row = necessity.get(condition, {})
         expect(f"14B scale audit: {condition} count", row.get("n_mis"), k)
@@ -979,6 +1039,19 @@ def check_scale_14b():
             displayed[condition],
         ):
             expect(f"14B scale audit: {condition} displayed {label}", got, want)
+        n_generated = len(causal_generations["conditions"][condition])
+        expect(f"14B scale audit: {condition} generated count", n_generated, 800)
+        joint_interval = wilson(k, n_generated)
+        for label, got, want in zip(
+            ("rate", "Wilson lower", "Wilson upper"),
+            (
+                round(pct(joint_interval[0]), 1),
+                round(pct(joint_interval[1]), 1),
+                round(pct(joint_interval[2]), 1),
+            ),
+            joint_displayed[condition],
+        ):
+            expect(f"14B scale audit: {condition} joint displayed {label}", got, want)
 
     baseline_rate = necessity.get("misaligned_baseline", {}).get("rate")
     ablate_rate = necessity.get("ablate_v", {}).get("rate")
@@ -1015,7 +1088,7 @@ def check_scale_14b():
     text = paper_text()
     required_phrases = [
         "Thus the 14B experiment reproduces the geometric and leave-one-pair-out results descriptively, but not the causal effect",
-        "measured misalignment is $4.8\\%$ ($71/1477$, $[3.8,6.0]\\%$)",
+        "measured misalignment is $71/1600=4.4\\%$ ($[3.5,5.6]\\%$)",
         "internal paired agreement with the pooled direction is $0.933$",
         "the differently constructed benign reference is $0.578$",
         "the overlapping folds are not independent replications",
@@ -1224,6 +1297,26 @@ def check_baseline_bakeoff():
         expect_text(f"baseline bake-off: {method} fold wins", row.get("mis_above_ben"), wins)
         expect(f"baseline bake-off: {method} mean margin", row.get("mean_margin"), margin, 0.0006)
         expect(f"baseline bake-off: {method} AUC", row.get("auc"), auc, 0.0006)
+    squared_expected = {
+        "weight_svd": 0.443,
+        "diff_of_means": 0.433,
+        "activation_pca": 0.385,
+        "random_projection": 0.00006,
+    }
+    squared_margins = {}
+    for method, expected_margin in squared_expected.items():
+        folds = methods.get(method, {}).get("detection", {}).get("folds", [])
+        squared_margin = sum(
+            float(row["mis_score"]) ** 2 - float(row["ben_score"]) ** 2
+            for row in folds
+        ) / len(folds)
+        squared_margins[method] = squared_margin
+        expect(
+            f"baseline bake-off: {method} squared-score margin",
+            squared_margin,
+            expected_margin,
+            0.0006,
+        )
     weight_margin = methods.get("weight_svd", {}).get("detection", {}).get("mean_margin")
     row_mean_margin = methods.get("diff_of_means", {}).get("detection", {}).get("mean_margin")
     if weight_margin is not None and row_mean_margin is not None:
@@ -1243,9 +1336,12 @@ def check_baseline_bakeoff():
     }
     for method, label in row_labels.items():
         row = methods.get(method, {}).get("detection", {})
+        squared = squared_margins[method]
+        squared_text = f"{squared:.5f}" if abs(squared) < 0.001 else f"{squared:.3f}"
         expected_row = (
             f"{label} & ${row.get('mis_above_ben')}$ & "
             f"${float(row.get('mean_margin')):.3f}$ & "
+            f"${squared_text}$ & "
             f"${float(row.get('auc')):.3f}$"
         )
         if not has_phrase(text, expected_row):
@@ -1258,7 +1354,8 @@ def check_baseline_bakeoff():
         "the 16-fold summaries are not independent replications",
         "seeded random weight direction fixed across folds",
         "64 fixed-seed full user-and-assistant secure-code chats",
-        f"using the unrounded margins, the observed difference is ${expected_difference:.3f}$",
+        "Squaring each held-out score to obtain an energy fraction reverses the mean-margin ordering",
+        "medical harmful/safe seed pairs \\texttt{s0} through \\texttt{s15}",
         "learned directions average raw training-arm increments",
         "the full four-way comparison is not preregistered",
     ]
