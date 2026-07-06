@@ -1,4 +1,4 @@
-# Checkpoint-Delta Geometry for Refusal and Matched Misalignment Contrasts
+# The Spectral Geometry of Misalignment
 
 > Code, manuscript source, and committed artifacts for a weight-space study of
 > spectral structure, refusal interventions, and matched emergent-misalignment
@@ -178,7 +178,7 @@ Citation metadata is available in [CITATION.cff](CITATION.cff).
 
 ```bibtex
 @misc{gupta2026checkpointdelta,
-  title  = {Checkpoint-Delta Geometry for Refusal and Matched Misalignment Contrasts},
+  title  = {The Spectral Geometry of Misalignment},
   author = {Aryan Gupta},
   year   = {2026},
   url    = {https://github.com/aryan-cs/alignment-geometry}

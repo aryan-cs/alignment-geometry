@@ -1,7 +1,7 @@
 {
   "pdf": "docs/proof.pdf",
-  "pdf_sha256": "95f6c0e000ba0d4a60fdc556729b97e587a9233906af106875b657c8a5ca45b2",
-  "inspected_at_utc": "2026-07-06T00:13:56Z",
+  "pdf_sha256": "c3e1636cd1785ee1f113e4b467df67c9d9f6470e0fd27daf888e42153ddf8b11",
+  "inspected_at_utc": "2026-07-06T14:38:20Z",
   "pages_total": 15,
   "pages_checked": 15,
   "render_dpi": 120,
@@ -11,7 +11,7 @@
     14,
     15
   ],
-  "method": "Rendered all 15 pages at 120 dpi and inspected the title page and pages 13-15 full-size after the title refresh. Confirmed equations, references, margins, page flow, and final pages render without clipping, overlap, blank pages, or broken glyphs.",
+  "method": "Rendered all 15 pages at 120 dpi after the title-only rebuild. Inspected page 1 at full size and confirmed the restored title is centered, legible, and free of clipping or overlap; retained the prior full-size inspection set for unchanged closing pages.",
   "render_receipt": {
     "schema": "pdf_render_receipt_v1",
     "renderer": "pdftoppm",
@@ -21,8 +21,8 @@
     "pages": [
       {
         "page": 1,
-        "sha256": "acd91b83c38a6bc35815603498fa8d7161d1e7875a9aff728a01c6ea17d43229",
-        "bytes": 277686
+        "sha256": "4f76330dfe88dc07a5618e065374fcf42dec8d3306e33ecb5f7952bf0b2b6186",
+        "bytes": 269427
       },
       {
         "page": 2,
