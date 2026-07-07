@@ -1,19 +1,15 @@
 {
   "pdf": "docs/paper.pdf",
-  "pdf_sha256": "6a3e5b03ae7ddc191c1ab60b19d1c397674f59760d55efc8a41f540870059957",
-  "inspected_at_utc": "2026-07-07T04:30:12Z",
+  "pdf_sha256": "2fd35d19d4285a8cddd67725831fcc2c31731d150f8b2a8c59770ea87c15e14f",
+  "inspected_at_utc": "2026-07-07T04:39:50Z",
   "pages_total": 21,
   "pages_checked": 21,
   "render_dpi": 120,
   "inspected_pages_full_size": [
-    5,
-    7,
-    9,
-    10,
-    12,
-    21
+    11,
+    12
   ],
-  "method": "Rendered all 21 pages at 120 dpi after enabling natural page bottoms to prevent vertical-glue stretching. Inspected the all-page contact sheet and pages 5, 7, 9, 10, 12, and 21 at full size. Verified consistent 12 pt float, caption, and in-text spacing; confirmed the former oversized gap on page 5 is gone; and found no clipping, overlap, blank pages, or broken figures.",
+  "method": "Rendered all 21 pages at 120 dpi after redesigning the cross-family results table. Inspected the all-page contact sheet and pages 11 and 12 at full size. Verified that uncertainty intervals sit beneath their corresponding joint-rate estimates, eligible-output rates occupy a separate labeled block, the caption is concise, and table-to-text spacing is consistent without clipping, overlap, or broken glyphs.",
   "render_receipt": {
     "schema": "pdf_render_receipt_v1",
     "renderer": "pdftoppm",
@@ -73,53 +69,53 @@
       },
       {
         "page": 11,
-        "sha256": "bb45b68b587e2b9a5ac0d97e657084bcc587a229caf912c58c62a362263f82fb",
-        "bytes": 374561
+        "sha256": "75449c37ec8a9dc82eb97a5b0d895822c9870a15d6c17b4b9e7f66c7298c4c90",
+        "bytes": 339909
       },
       {
         "page": 12,
-        "sha256": "9920b4dd9c0f91774fd20828471eb3363abb1b238c9574f4d3bb1425fca20b92",
-        "bytes": 346110
+        "sha256": "4a9d74e52ec1c9fab49fe816ff77df267de57a89a57e1f01a8731af58a8537d8",
+        "bytes": 327552
       },
       {
         "page": 13,
-        "sha256": "69f40c5ab2ab1ae61f0d80fa895aa9cde17fd71a08e1552fc8ba79f85e83bb3a",
-        "bytes": 365352
+        "sha256": "b8e5872b2cdca6d3107d8d61032acf169ab2b2586641357fd3e6bc2cef904624",
+        "bytes": 361721
       },
       {
         "page": 14,
-        "sha256": "2028d9c7e921e73220b7d618c3928e255e64f6437b70c7bbac4c61a2d0b0bbb5",
-        "bytes": 349082
+        "sha256": "95178abda4347a53969909b40a58b01b6bd98262785ddc972dbc557e21e09632",
+        "bytes": 358508
       },
       {
         "page": 15,
-        "sha256": "812a4705221aca1ba874bff4a721e183cba0e9884440721b27f17b9e9aa93c23",
-        "bytes": 387047
+        "sha256": "0bf65975d1008517a21071efc47a3e672ddcf4283336ecaf4620eb485c55014c",
+        "bytes": 363474
       },
       {
         "page": 16,
-        "sha256": "7f5d1f3f3c822d93e50a0e687b16c34d768207d84ccee65f91bfd6f0c130312f",
-        "bytes": 419475
+        "sha256": "4ff5c0bf3cb2094b2505d66f358d894598580d491121ad238503daee9ca83d4e",
+        "bytes": 422834
       },
       {
         "page": 17,
-        "sha256": "e8111b2ad5fea3dcbcdb20dfba27900f5d56ccf157934324bd82382fa67c4677",
-        "bytes": 427760
+        "sha256": "4199b0d396de4fe63701ad5a030b6577bc7a6c25433374dd46e4cad4f5ec8bec",
+        "bytes": 418752
       },
       {
         "page": 18,
-        "sha256": "757a2941246844455618a169cd0186cf6232948fbaedd200d60047bfed6e360a",
-        "bytes": 411665
+        "sha256": "56a91edb940e6ae1be8df4decc75b944864f37482bf39d44bbf40e554b1d23bc",
+        "bytes": 418925
       },
       {
         "page": 19,
-        "sha256": "931da1abd4296a12cc78d863290ed7c2eb09d1abf91be07bbd94928248846368",
-        "bytes": 404108
+        "sha256": "003306946fde192215e130c136f069bc73123b1cca7b18efd3e6370e2e03e42f",
+        "bytes": 398373
       },
       {
         "page": 20,
-        "sha256": "1bf81dec675c592ce9751660f01e80017465faddcb35dfa0c28d0cba08d00e3e",
-        "bytes": 283079
+        "sha256": "2eb2d3dda817b709bb9459eb1ae929f6b20f7df1af3748605f8b158b9140e285",
+        "bytes": 343538
       },
       {
         "page": 21,
