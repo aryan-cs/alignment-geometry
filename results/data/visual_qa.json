@@ -1,14 +1,14 @@
 {
   "pdf": "docs/paper.pdf",
-  "pdf_sha256": "cf6e30b0d1190f3af46bf38ef197d7ba1dd06df0520c7a163edd5ebed7a6417c",
-  "inspected_at_utc": "2026-07-07T04:53:14Z",
+  "pdf_sha256": "ec541e11e209e541163c0893c567c179214559538324e6dc3aa9fdc7423501b8",
+  "inspected_at_utc": "2026-07-07T05:04:11Z",
   "pages_total": 21,
   "pages_checked": 21,
   "render_dpi": 120,
   "inspected_pages_full_size": [
     11
   ],
-  "method": "Rendered all 21 pages at 120 dpi after expanding Table 5 to the full text width. Inspected page 11 at full size and confirmed that table rules align with the text block, model columns are evenly separated, intervals remain legible beneath their estimates, and surrounding spacing is unchanged without clipping or overlap.",
+  "method": "Rendered all 21 pages at 120 dpi after placing each Table 5 joint-rate estimate and confidence interval on one line. Inspected page 11 at full size and confirmed every row is single-line, the interval typography remains legible, the full-width columns stay aligned, and surrounding spacing has no clipping or overlap.",
   "render_receipt": {
     "schema": "pdf_render_receipt_v1",
     "renderer": "pdftoppm",
@@ -68,18 +68,18 @@
       },
       {
         "page": 11,
-        "sha256": "4da4c13d51560a3b268b93488690152373dadf25116c8a98ba1e89d8402665c5",
-        "bytes": 342405
+        "sha256": "a90db5e11164ebec6311752be92ec2c1ade57dcd58a260e6ca3300af9061a366",
+        "bytes": 349846
       },
       {
         "page": 12,
-        "sha256": "4a9d74e52ec1c9fab49fe816ff77df267de57a89a57e1f01a8731af58a8537d8",
-        "bytes": 327552
+        "sha256": "e922269c75b5a088c1fbe36dae440c21163f9fef0a3a0f537f0386ebf670319f",
+        "bytes": 328553
       },
       {
         "page": 13,
-        "sha256": "b8e5872b2cdca6d3107d8d61032acf169ab2b2586641357fd3e6bc2cef904624",
-        "bytes": 361721
+        "sha256": "8ae925c790e2893ec41d027cb44ea919134754a0f430a87d6f73c058599ff595",
+        "bytes": 353295
       },
       {
         "page": 14,
