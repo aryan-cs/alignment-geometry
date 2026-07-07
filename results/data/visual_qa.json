@@ -1,15 +1,14 @@
 {
   "pdf": "docs/paper.pdf",
-  "pdf_sha256": "2fd35d19d4285a8cddd67725831fcc2c31731d150f8b2a8c59770ea87c15e14f",
-  "inspected_at_utc": "2026-07-07T04:39:50Z",
+  "pdf_sha256": "cf6e30b0d1190f3af46bf38ef197d7ba1dd06df0520c7a163edd5ebed7a6417c",
+  "inspected_at_utc": "2026-07-07T04:53:14Z",
   "pages_total": 21,
   "pages_checked": 21,
   "render_dpi": 120,
   "inspected_pages_full_size": [
-    11,
-    12
+    11
   ],
-  "method": "Rendered all 21 pages at 120 dpi after redesigning the cross-family results table. Inspected the all-page contact sheet and pages 11 and 12 at full size. Verified that uncertainty intervals sit beneath their corresponding joint-rate estimates, eligible-output rates occupy a separate labeled block, the caption is concise, and table-to-text spacing is consistent without clipping, overlap, or broken glyphs.",
+  "method": "Rendered all 21 pages at 120 dpi after expanding Table 5 to the full text width. Inspected page 11 at full size and confirmed that table rules align with the text block, model columns are evenly separated, intervals remain legible beneath their estimates, and surrounding spacing is unchanged without clipping or overlap.",
   "render_receipt": {
     "schema": "pdf_render_receipt_v1",
     "renderer": "pdftoppm",
@@ -69,8 +68,8 @@
       },
       {
         "page": 11,
-        "sha256": "75449c37ec8a9dc82eb97a5b0d895822c9870a15d6c17b4b9e7f66c7298c4c90",
-        "bytes": 339909
+        "sha256": "4da4c13d51560a3b268b93488690152373dadf25116c8a98ba1e89d8402665c5",
+        "bytes": 342405
       },
       {
         "page": 12,

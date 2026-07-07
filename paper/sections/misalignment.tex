@@ -170,7 +170,7 @@ coherence gate.}
 \small
 \setlength{\tabcolsep}{5pt}
 \renewcommand{\arraystretch}{1.08}
-\begin{tabular}{lccc}
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lccc@{}}
 \toprule
 measure & Qwen2.5-Coder-7B & Llama-3-8B & Mistral-7B \\
 \midrule
@@ -197,7 +197,7 @@ baseline & $2.6\%$ & $5.3\%$ & $8.7\%$ \\
 project out contrast & $0.0\%$ & $0.5\%$ & $2.8\%$ \\
 project out random & $3.9\%$ & $2.9\%$ & $8.6\%$ \\
 \bottomrule
-\end{tabular}
+\end{tabular*}
 \end{table}
 
 \paragraph{The converse steering test is weaker.}
