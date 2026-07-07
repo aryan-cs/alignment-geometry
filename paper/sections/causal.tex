@@ -1,9 +1,11 @@
 \section{Leading checkpoint-delta directions are ablation-sensitive for measured refusal}
 \label{sec:causal}
 
-We next test whether leading spectral directions track refusal behavior. The
-attention-output increment writes into the residual stream, which supports
-geometric-overlap and ablation tests.
+The spectral census identifies candidate directions but gives them no semantic
+label. Refusal provides a direct first test because an activation-space
+direction can be estimated independently from prompts. The attention-output
+increment writes into the residual stream, allowing us to compare its leading
+subspace with that direction and then intervene on the same coordinates.
 
 \paragraph{Setup.}
 We form an empirical refusal direction $r_L$ as the difference of mean
@@ -119,3 +121,6 @@ projection reduces the refusal score but also causes substantially more
 capability damage than the one seeded random projection.}
 \label{fig:ablation}
 \end{figure}
+
+To separate condition-specific change from this mixed delta, we next compare
+matched harmful and safe fine-tunes.

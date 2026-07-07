@@ -302,7 +302,7 @@ def check_reviewer_scope_caveats():
         (
             "spectral non-specificity",
             [
-                r"Low-dimensional structure also occurs in other fine-tunes",
+                r"census alone does not make the anisotropy specific to alignment",
                 r"matched controls for domain adaptation,\s*coding,\s*mathematics",
                 r"RLHF.*DPO.*were not run",
             ],
@@ -310,15 +310,15 @@ def check_reviewer_scope_caveats():
         (
             "Marchenko-Pastur null limitation",
             [
-                r"fitted Marchenko--Pastur curve supplies a visibility reference",
+                r"fitted Marchenko--Pastur curve answers visibility,\s*not specificity",
                 r"matched controls for domain adaptation,\s*coding,\s*mathematics",
-                r"empirical safety control is a real fine-tune under a\s*matched recipe",
+                r"matched harmful and safe fine-tunes",
             ],
         ),
         (
             "stable-rank interpretation",
             [
-                r"Stable rank summarizes energy concentration; it does not count\s*the processes that produced the change or establish alignment specificity",
+                r"census alone does not make the anisotropy specific to alignment",
                 r"Neither statistic identifies a mechanism, and both depend on the chosen parameterization",
             ],
         ),
@@ -351,7 +351,7 @@ def check_reviewer_scope_caveats():
         (
             "controlled-organism scope",
             [
-                r"same\s*within-organism,\s*in-sample pattern appears at 7B/8B scale",
+                r"pattern recurs\s*within three 7B/8B medical organisms",
                 r"Within the three\s*arm-labeled medical organisms,\s*internal agreement,\s*retrospective held-out\s*ranking,\s*and in-sample projection effects recur",
             ],
         ),

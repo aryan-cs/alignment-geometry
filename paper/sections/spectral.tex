@@ -1,9 +1,11 @@
 \section{MP visibility in the Llama Base-to-Instruct checkpoint delta}
 \label{sec:spectral}
 
-We analyze the increment $\dW$ for all seven linear maps in each of the $32$
-decoder layers of Llama-3-8B \citep{grattafiori2024llama3}, $224$ matrices in
-total. For each matrix, we compare the eigenvalues of
+We begin with the broadest empirical question: does a real post-training update
+contain components that are visible under the fitted reference? We analyze the
+increment $\dW$ for all seven linear maps in each of the $32$ decoder layers of
+Llama-3-8B \citep{grattafiori2024llama3}, $224$ matrices in total. For each
+matrix, we compare the eigenvalues of
 $C = \tfrac1p \dW^{\!\top}\dW$ with a Marchenko--Pastur visibility reference fit
 to its bulk (Section~\ref{sec:theory}; Appendix~\ref{app:details}). The
 content-addressed analysis manifest in the appendix indexes the committed sweep,
@@ -57,18 +59,11 @@ empirical control beyond this Gaussian reference.}
 \label{fig:nullcompare}
 \end{figure}
 
-The spectra reveal anisotropy and provide directions for testing. Because
-low-dimensional structure also occurs in other fine-tunes
-\citep{aghajanyan2021,hu2022lora}, Section~\ref{sec:misalignment} evaluates
-alignment specificity with matched benign controls and causal interventions.
-
-The fitted Marchenko--Pastur curve supplies a visibility reference.
-Optimizer, architecture, and data correlations make learned updates
-non-exchangeable, and learned neural-network spectra are already known to be
-structured \citep{martin2021}, including transformer weight spectra
-\citep{staats2024small}. Exchangeability-based surrogates test deviations from
-the diffuse null; the empirical safety control is a real fine-tune under a
-matched recipe.
+The fitted Marchenko--Pastur curve answers visibility, not specificity. Learned
+updates are non-exchangeable and neural-network spectra are already structured
+\citep{martin2021}, including in transformers \citep{staats2024small}. We use
+the Gaussian reference only as a diffuse null, then examine how the observed
+structure is distributed before testing behavior.
 
 \paragraph{The energy is concentrated.}
 We call values above $\lambda_+$ raw MP-edge exceedances and values above
@@ -163,3 +158,6 @@ top-$16$ increment--base overlap by layer: higher means stronger subspace
 alignment. Energy is front-loaded, while overlap stays near the random null.}
 \label{fig:energy}
 \end{figure}
+
+Because concentrated updates also arise from generic training variation
+\citep{aghajanyan2021,hu2022lora}, we next test refusal and condition specificity.

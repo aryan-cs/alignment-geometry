@@ -1,7 +1,10 @@
 \section{Discussion}
 \label{sec:discussion}
 
-\paragraph{Role of the spectrum.}
+Spectral visibility identifies concentrated change, matched controls supply
+condition-specific information, and interventions test behavioral sensitivity.
+
+\paragraph{The spectrum is a search device, not an explanation.}
 Behavior-labeled activations can identify a refusal direction directly
 \citep{arditi2024}. Our spectral analysis asks whether the Base-to-Instruct
 checkpoint delta concentrates change in the same subspace. Prompt-labeled capture
@@ -39,7 +42,8 @@ advantage over random ablation. Because the released delta aggregates stages and
 each organism fixes one recipe, matched controls for domain adaptation, coding,
 mathematics, RLHF \citep{ouyang2022instruct}, DPO \citep{rafailov2023dpo}, other
 optimizers, and schedules were not run.
-Reasoning, mixture-of-experts, multimodal, and models beyond 14B remain outside scope.
+Reasoning, mixture-of-experts, multimodal, and models beyond 14B remain outside
+scope.
 
 The refusal and necessity projections act after every block; medical steering
 is injected at one block. External validity is restricted to the tested
@@ -58,8 +62,8 @@ blunt: the removed subspace can contain refusal, instruction following, formatti
 and other content. Top-$128$ ablation substantially degrades MMLU, ARC-C, and
 GSM8K \citep{hendrycks2021mmlu,cobbe2021gsm8k,clark2018arc};
 Appendix~\ref{app:details} reports fixed-subset accuracies and descriptive
-intervals. Steering is
-nonmonotonic, and capability-preserving intervention remains open.
+intervals. Steering is nonmonotonic, and capability-preserving intervention
+remains open.
 
 The modest organism effects derive support from matched separation, held-out
 ranking, and cross-family recurrence, not prevalence alone. Baseline evidence

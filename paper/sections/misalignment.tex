@@ -10,6 +10,8 @@ Rotation-invariant
 summaries such as stable rank, edge-exceedance counts, and heavy-tailed exponents
 cannot locate that direction, so the analysis uses singular vectors under a
 controlled contrast.
+The analysis proceeds from scalar summaries to a matched direction, then tests
+intervention, recurrence, held-out ranking, and scale.
 
 \paragraph{Scalar summaries fail in the matched scout.}
 We first compared stable rank, edge-exceedance count, and top-to-edge ratio at
@@ -136,29 +138,25 @@ The marginal Wilson intervals in Figure~\ref{fig:mis-causal} treat all fixed
 generated outputs as Bernoulli units. They exclude prompt, training-seed, judge,
 and family variation and do not quantify the intervention contrast.
 
-\paragraph{Cross-family within-organism checks.}
-We repeat the construction on \texttt{Llama-3-8B-Instruct}
+\paragraph{The pattern recurs across three 7B/8B medical organisms.}
+To test whether the Qwen result is family-specific, we repeat the construction
+on \texttt{Llama-3-8B-Instruct}
 \citep{grattafiori2024llama3}, using four misaligned and four benign arms with
 the matched recipe, difference-of-increments direction, and causal test. The
-medical organism induces measured misalignment on Llama
-($39/800=4.9\%$, $[3.6,6.6]\%$, in the causal-test arm); the four paired directions have
-mean cosine $0.95$ with their pooled Llama contrast, against a benign-difference
-reference of $0.48$ at layer 12; and projecting it out changes measured
-misalignment from $4.9\%$ to $0.5\%$ while a random direction of equal dimension
-also lowers it, to $2.6\%$ (\mbox{Table~\ref{tab:cross-family}}). Thus only the
-learned-versus-random gap is supported by this single random control. Llama's higher
-benign-reference cosine narrows
-the geometric gap relative to the coder model.
+four paired directions have mean cosine $0.95$ with their pooled Llama contrast,
+against a benign reference of $0.48$ at layer 12. Projection changes measured
+misalignment from $4.9\%$ to $0.5\%$, while a random direction also lowers it to
+$2.6\%$ (Table~\ref{tab:cross-family}); this single random control supports only
+the learned-versus-random gap.
 
 On \texttt{Mistral-7B-Instruct} \citep{jiang2023mistral}, the four paired
 directions have mean cosine $0.71$ with their pooled contrast at layer 12 (and $0.87$ at layer 8) against
 benign references of $0.37$ and $0.17$, and projecting out the recovered
 direction changes measured misalignment from $7.6\%$ to $2.6\%$, below the
 random-projection control at $7.5\%$ (\mbox{Table~\ref{tab:cross-family}}).
-All three controlled medical organisms yield a matched weight direction whose
-\mbox{in-sample} projection lowers measured misalignment. Suppression is nearly complete
-on Qwen and Llama and partial on Mistral, where lower layer-12 agreement produces
-a noisier estimate. These experiments do not address naturally occurring
+All three organisms yield a matched direction whose in-sample projection lowers
+measured misalignment. Suppression is nearly complete on Qwen and Llama and
+partial on Mistral. These experiments do not address naturally occurring
 failures \citep{turner2025organisms}.
 
 \begin{table}[!htbp]
@@ -196,8 +194,9 @@ eligible-output rates are $2.6/0.0/3.9\%$, $5.3/0.5/2.9\%$, and
 $8.7/2.8/8.6\%$.}
 \end{table}
 
-\paragraph{Ablation-sensitive, with limited eligible steering.}
-Adding the direction to a benign model gives weaker evidence than removing it.
+\paragraph{The converse steering test is weaker.}
+Projection tests sensitivity; adding the direction to a benign model asks the
+stronger sufficiency question and gives weaker evidence.
 Among all $800$ outputs per setting, the joint misalignment-and-coherence rate
 is $0.0\%$ ($0/800$) without steering, $4.0\%$ ($32/800$) at
 $\alpha{=}0.5$, and $2.1\%$ ($17/800$) at $\alpha{=}1.0$. Conditional on
@@ -224,8 +223,10 @@ contributed to the pooled direction; this is not a held-out causal test.}
 \label{fig:mis-causal}
 \end{figure}
 
-\paragraph{The recovered direction separates same-recipe held-out arms.}
-In each leave-one-seed-out fold, we recover the direction from the remaining
+\paragraph{Held-out ranking separates screening from intervention.}
+Because the projection experiments are in-sample, we ask a narrower held-out
+question: can the direction rank an omitted harmful arm above its matched safe
+arm? In each leave-one-seed-out fold, we recover the direction from the remaining
 seed pairs and score the omitted misaligned and benign block-12 increments by
 $s(\Delta W;v)=\|v^\top\Delta W\|_2/\|\Delta W\|_F$. This is a normalized
 projection norm; the corresponding energy fraction is $s^2$. Across all three families and every overlapping
@@ -239,7 +240,8 @@ direction of equal dimension scores both near $0.015$
 (Figure~\ref{fig:detect} in Appendix~\ref{app:details}). This retrospective,
 same-recipe score has not been calibrated for arbitrary checkpoints.
 
-\paragraph{14B audit.}
+\paragraph{The geometric pattern persists at 14B, but the causal criterion fails.}
+The 7B/8B results leave open whether the same sequence survives at larger scale.
 We analyzed four suffix-matched Qwen2.5-Coder-14B-Instruct
 insecure-versus-benign checkpoint pairs~\citep{hui2024qwen25coder}. Across the four misaligned arms,
 measured misalignment is $71/1600=4.4\%$ ($[3.5,5.6]\%$) versus $0/1600=0.0\%$
@@ -266,7 +268,8 @@ without an outcome-dependent retry.
 
 \FloatBarrier
 \paragraph{Baseline audit establishes separability, not method superiority.}
-At zero-indexed block 12, we compare two learned
+Successful held-out ordering does not show that the leading singular vector is
+uniquely effective. We therefore compare, at zero-indexed block 12, two learned
 weight-space directions, a seeded random weight direction fixed across folds,
 and activation-contrast PCA. The population is the $16$ suffix-matched
 Qwen2.5-Coder-7B medical harmful/safe seed pairs \texttt{s0} through
@@ -318,3 +321,8 @@ fixed random weight direction & $12/16$ & $0.002$ & $0.00006$ & $0.727$ \\
 \end{tabular}
 \end{table}
 \FloatBarrier
+
+Overall, scalar concentration does not separate the arms, but labeled contrasts
+recur and rank held-out arms. Projection changes measured behavior at 7B/8B;
+the 14B audit is inconclusive, and alternative contrasts separate equally well.
+This supports separability and ablation sensitivity, not a unique mechanism.

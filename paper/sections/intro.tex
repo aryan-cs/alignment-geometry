@@ -1,99 +1,68 @@
 \section{Introduction}
 \label{sec:intro}
 
-The weight delta between a base model and its aligned checkpoint records the
-aggregate effect of post-training.
-Instruction tuning with human feedback is a standard post-training tool
-for making language models instruction-following \citep{ouyang2022instruct}; in
-the Llama-3 release, Llama-3-8B and Llama-3-8B-Instruct are the base and
-post-trained checkpoints of the same-size model family
-\citep{grattafiori2024llama3}. For each linear map, the
-increment $\dW = W_{\text{instruct}} - W_{\text{base}}$ is the full
-Base-to-Instruct post-training checkpoint delta. Because the release combines
-instruction tuning, preference optimization, and safety training, the delta
-cannot attribute behavior to any one stage. We study its spectral geometry and
-test whether removing the resulting directions changes measured refusal or
-emergent misalignment.
+Post-training is usually evaluated through behavior, but it also leaves behind a
+geometric record: the difference between the initial and final weights. For a
+linear map, this checkpoint delta is
+$\dW=W_{\text{instruct}}-W_{\text{base}}$. It aggregates every stage between the
+two checkpoints, so it cannot by itself distinguish instruction tuning,
+preference optimization, or safety training
+\citep{ouyang2022instruct,rafailov2023dpo}. It can, however, reveal where the
+parameters moved. We ask whether that geometry can narrow the search for
+directions associated with refusal and measured emergent misalignment.
 
-``Shape'' here refers to the singular-value spectrum. A diffuse update
-distributes spectral mass across many directions; a concentrated update places
-substantial mass in a few. Random matrix theory supplies a conditional visibility
-model for distinguishing these regimes. Under an iid Gaussian diffuse-update
-model, the limiting spectrum has a Marchenko--Pastur upper edge
-\citep{marchenko1967,johnstone2001}; under an additive fixed-rank model, a
-supercritical signal produces squared singular values that detach from that edge,
-and the corresponding singular vectors have nonzero, generally imperfect overlap
-with planted directions \citep{benaych2012}. We use these results as a visibility
-reference rather than a model of post-training dynamics, then test empirical
-leading directions through intervention.
+The central difficulty is that geometric structure is not automatically
+behavioral structure. A diffuse update spreads spectral mass across many
+directions, whereas a concentrated update places substantial mass in a few.
+Under an iid Gaussian diffuse-update model, the limiting spectrum has a
+Marchenko--Pastur upper edge \citep{marchenko1967,johnstone2001}. Under an
+additive fixed-rank model, a sufficiently strong component detaches from that
+edge, and its singular vector partially overlaps the planted direction
+\citep{benaych2012}. We use this theory only to decide which empirical
+directions are spectrally visible. Behavioral meaning must come from separate
+capture, control, and intervention experiments.
 
-We evaluate the resulting spectral diagnostics on Llama-3-8B.
+The paper follows that distinction from broad structure to specific behavior.
+We first examine every linear map in the released Llama-3-8B Base-to-Instruct
+delta \citep{grattafiori2024llama3}. All $224$ leading eigenvalues clear their
+fitted Marchenko--Pastur visibility edges, often by one to four orders of
+magnitude, and the median stable rank is $109$ against ambient dimensions in the
+thousands. The update is therefore strongly anisotropic, but this census alone
+does not make the anisotropy specific to alignment.
 
-\textbf{The Llama Base-to-Instruct checkpoint delta is MP-visible under the fitted reference.}
-Across all $224$ weight matrices, the leading eigenvalue of $C$ sits far above the
-operational Marchenko--Pastur visibility threshold fitted to its own bulk, often by one to four orders of
-magnitude, showing that the released checkpoint delta is highly anisotropic.
-Matched directional controls below test whether that anisotropy is related to
-safety behavior.
+We next ask whether the visible directions intersect a known behavioral axis.
+The empirical refusal direction, estimated independently from harmful and
+harmless prompts \citep{arditi2024}, is enriched in the leading singular
+subspace of the attention-output delta. Projecting the top-$128$ subspace out
+after every block changes substring-scored refusal on a fixed harmful-prompt
+slice from $98.4\%$ ($[94.5,99.6]\%$) to $14.1\%$ ($[9.1,21.1]\%$), while one
+seeded random subspace gives $97.7\%$ ($[93.3,99.2]\%$)
+\citep{wilson1927}. The same projection damages MMLU, ARC-C, and GSM8K far more
+than the random control. The result links the leading subspace to measured
+refusal, but the intervention is blunt and does not preserve capability.
 
-\textbf{The checkpoint delta's energy is concentrated.} While the operational visibility exceedances number
-in the hundreds, the stable rank
-$\|\dW\|_F^2/\|\dW\|_2^2$ sits near one hundred against ambient dimensions in
-the thousands, indicating strong energy concentration relative to a diffuse
-full-rank update. Stable rank summarizes energy concentration; it does not count
-the processes that produced the change or establish alignment specificity.
+Finally, we replace the unrestricted Base-to-Instruct delta with a matched
+contrast. In the emergent-misalignment model-organism setting
+\citep{betley2025emergent,turner2025organisms}, harmful and safe arms share
+questions and training recipe while differing in target-answer policy and
+content. Their difference yields a medical-contrast direction. Across four
+Qwen2.5-Coder-7B-Instruct pairs, seed-level directions agree with the pooled
+direction at mean cosine $0.97$, compared with $0.16$ for benign-pair
+differences at the selected layer. A retrospective leave-one-pair-out score
+ranks every harmful arm above its safe counterpart. In an in-sample
+intervention, projecting out the direction changes the all-output joint
+misalignment-and-eligibility rate from $2.3\%$ ($18/800$) to $0.0\%$ ($0/800$),
+versus $3.4\%$ ($27/800$) under random-direction ablation. The pattern recurs
+within three 7B/8B medical organisms, although the Mistral effect is partial;
+the 14B causal audit does not meet its frozen positive criteria. A separate
+$16$-pair Qwen audit shows that weight-SVD, row-mean contrast, and arm-labeled
+activation PCA all separate held-out arms, but does not support superiority of
+one weight method.
 
-\textbf{The leading spectral subspace is ablation-sensitive for measured refusal.} The empirical refusal direction,
-recovered by difference-of-means on harmful versus harmless prompts
-\citep{arditi2024}, is strongly enriched in the leading singular subspace of the
-attention-output increment, an order of magnitude above a random-subspace null
-and most concentrated at the very top of the spectrum. Projecting that subspace
-out of the residual stream changes substring-scored harmful-prompt refusal on a
-fixed $128$-prompt slice from $98.4\%$ ($[94.5,99.6]\%$) to $14.1\%$
-($[9.1,21.1]\%$), while one seeded same-dimensional random subspace gives
-$97.7\%$ ($[93.3,99.2]\%$) \citep{wilson1927}. The corrected run applies
-chat-formatted tokenization to all three conditions. On MMLU, ARC-C, and GSM8K,
-the spectral projection also causes substantially more damage than the random
-projection. One random draw is a matched control, not a null distribution.
-Harmless-prompt behavior under the projection was not measured, and
-capability-preserving interventions would require smaller or more structured
-subspaces.
-
-\textbf{A matched harmful-versus-safe contrast yields a weight-derived
-direction.} We use the emergent-misalignment model-organism setting
-\citep{betley2025emergent,turner2025organisms}, with matched misaligned and benign
-control models that share questions and training recipe while differing in
-target-answer safety and content. The difference of their weight increments
-yields a pooled medical-contrast direction. Four paired directions have mean
-cosine $0.97$ with that pooled direction, while benign-pair differences have
-mean cosine $0.16$ in the early-middle layers where the direction is read. The
-pooled estimate includes every pair; a leave-one-pair-out score provides a
-retrospective, same-recipe held-out-arm ranking check. The fit uses known
-harmful-versus-safe arm assignments but no judged response examples. In the
-in-sample Qwen intervention, projecting out the direction changes the all-output
-joint misalignment-and-eligibility rate from $2.3\%$ ($18/800$) to $0.0\%$
-($0/800$), while random-direction ablation gives $3.4\%$ ($27/800$). Among
-eligible outputs, the corresponding rates are $2.6\%$, $0.0\%$, and $3.9\%$.
-The same
-within-organism, in-sample pattern appears at 7B/8B scale in
-Qwen2.5-Coder-7B-Instruct, Llama-3-8B-Instruct, and Mistral-7B-Instruct
-\citep{jiang2023mistral}, although the Mistral effect is partial. No
-out-of-sample causal ablation was run. At 14B, the geometry and held-out ordering
-persist, but the seeded causal audit does not meet its frozen positive criteria. Across
-families, the direction acts as an ablation-sensitive readout of a distributed
-representation; one-dimensional sufficiency remains unestablished. In a
-16-fold same-recipe audit of suffix-matched Qwen2.5-Coder-7B medical checkpoint
-pairs, spanning the primary four plus $12$ additional pairs, row-mean weight
-contrast and arm-labeled activation PCA also rank every held-out pair correctly.
-Row-mean has the larger margin under the normalized
-projection-norm score, while weight-SVD has the larger mean squared-score
-margin. The audit therefore establishes separability, not weight-SVD
-superiority.
-
-Mathematically, we specialize the established additive-spike transition to
-checkpoint increments and state its fixed-energy rank corollary. Empirically, we
-combine a full-matrix census with matched multi-family tests; methodologically,
-condition-labeled checkpoint contrasts nominate intervention targets without
-judged response examples in the fit. The spectrum narrows the search space but
-does not identify the training mechanism. Figure~\ref{fig:pipeline} summarizes
-the workflow.
+This sequence defines the scope of the contribution. The additive-spike theory
+provides a visibility rule, the full-matrix census identifies candidate
+subspaces, and matched contrasts and interventions test their behavioral
+relevance. The results support behavior-sensitive geometry in the fixed
+checkpoints studied here. They do not identify the training mechanism, establish
+one-dimensional sufficiency, or demonstrate prospective causal generalization.
+Figure~\ref{fig:pipeline} summarizes the first stage of the analysis.
