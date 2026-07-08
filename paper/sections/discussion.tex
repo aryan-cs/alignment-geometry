@@ -1,8 +1,11 @@
 \section{Discussion}
 \label{sec:discussion}
 
-Spectral visibility identifies concentrated change, matched controls supply
-condition-specific information, and interventions test behavioral sensitivity.
+The experiments form a hierarchy of evidence. Spectral visibility says where
+to look, behavior-labeled capture asks whether a candidate overlaps a known
+axis, matched controls identify which training condition the direction tracks,
+and interventions test whether the model is sensitive to those coordinates.
+No single stage supports the full claim on its own.
 
 \paragraph{The spectrum is a search device, not an explanation.}
 Behavior-labeled activations can identify a refusal direction directly
@@ -11,7 +14,9 @@ checkpoint delta concentrates change in the same subspace. Prompt-labeled captur
 and the spectral-versus-random intervention gap show that measured refusal is
 sensitive to the selected leading subspace. The additive model supplies an ideal outlier
 threshold \citep{benaych2012}; its fitted empirical counterpart
-prioritizes directions for those tests.
+prioritizes directions for those tests. The practical role of the spectrum is
+therefore compression: it turns a high-dimensional endpoint delta into a small
+set of hypotheses that can be challenged with behavioral evidence.
 
 \paragraph{What the controls establish.}
 The controls separate four claims:
@@ -26,56 +31,43 @@ contrast within the medical organism.
 \item \textbf{Interventions} show sensitivity in the tested models, not circuit
 locality, one-dimensional sufficiency, or prospective prediction.
 \end{itemize}
-Base-to-Instruct concentration may instead reflect generic fine-tuning, optimizer
-and data correlations, representational reorganization, or parameterization. The
-organism direction uses known harmful-versus-safe arm assignments but no judged
-response examples; raw update magnitude remains unmatched. Within the three
-arm-labeled medical organisms, internal agreement, retrospective held-out
-ranking, and in-sample projection effects recur. The unrestricted delta's concentration is consistent with low-rank
-adapters \citep{hu2022lora} and the low intrinsic dimension of fine-tuning
-\citep{aghajanyan2021}; matched controls supply the alignment-relevant information.
+Together, these controls support a workflow rather than a universal safety
+vector: use geometry to nominate directions, matched contrasts to attach
+condition information, and intervention to test the resulting hypothesis.
+The unrestricted delta may reflect generic fine-tuning, optimizer correlations,
+or low-dimensional adaptation \citep{aghajanyan2021,hu2022lora}; matched arm
+labels supply the condition information. Across three medical organisms the
+direction recurs, but raw update magnitude remains unmatched.
 
 \paragraph{Limitations.}
-The refusal census covers one released 8B model \citep{grattafiori2024llama3};
-the 14B organism reproduces geometry and held-out ranking but not a causal
-advantage over random ablation. Because the released delta aggregates stages and
-each organism fixes one recipe, matched controls for domain adaptation, coding,
-mathematics, RLHF \citep{ouyang2022instruct}, DPO \citep{rafailov2023dpo}, other
-optimizers, and schedules were not run.
-Reasoning, mixture-of-experts, multimodal, and models beyond 14B remain outside
-scope.
+The refusal census covers one released 8B model \citep{grattafiori2024llama3},
+and the 14B organism reproduces geometry but not causal advantage over random
+ablation. Each endpoint delta aggregates training stages, while each organism
+fixes one recipe; we did not run matched controls for coding, mathematics,
+other domains, or objectives such as RLHF and DPO
+\citep{ouyang2022instruct,rafailov2023dpo}, nor for other optimizers or
+schedules. Reasoning,
+mixture-of-experts, multimodal, and models beyond 14B remain outside scope.
 
-The refusal and necessity projections act after every block; medical steering
-is injected at one block. External validity is restricted to the tested
-checkpoints, prompts, and medical organisms, and the interventions do not
-localize a circuit.
-Each medical projection test uses a checkpoint that contributed to its fitted
-direction. The leave-one-pair-out analysis is a ranking screen, not a held-out
-causal intervention. The medical training rows and their source hashes are
-unavailable in the repository, so checkpoint and evaluation provenance alone do
-not enable independent retraining.
-The refusal direction may also encode prompt distribution, topic, and style. A
-provenance-complete HarmBench run \citep{mazeika2024harmbench} reproduces the
-spectral-versus-random gap on held-out harmful prompts, but harmless prompts,
-adaptive adversaries, and human-validated scoring remain untested. Projection is
-blunt: the removed subspace can contain refusal, instruction following, formatting,
-and other content. Top-$128$ ablation substantially degrades MMLU, ARC-C, and
-GSM8K \citep{hendrycks2021mmlu,cobbe2021gsm8k,clark2018arc};
-Appendix~\ref{app:details} reports fixed-subset accuracies and descriptive
-intervals. Steering is nonmonotonic, and capability-preserving intervention
-remains open.
+Global projection does not localize a circuit, and each medical projection uses
+a checkpoint that contributed to its fitted direction. Leave-one-pair-out is a
+ranking screen, not a held-out causal intervention. Missing medical training
+rows prevent independent retraining. The refusal direction may encode prompt
+distribution, topic, or style alongside refusal. HarmBench reproduces the spectral-versus-random gap on
+held-out harmful prompts \citep{mazeika2024harmbench}, but harmless prompts,
+adaptive attacks, and human scoring remain untested. Projection is blunt and
+damages MMLU, ARC-C, and GSM8K
+\citep{hendrycks2021mmlu,cobbe2021gsm8k,clark2018arc}; steering is nonmonotonic.
+Capability-preserving intervention remains open.
 
-The modest organism effects derive support from matched separation, held-out
-ranking, and cross-family recurrence, not prevalence alone. Baseline evidence
-does not favor weight-SVD: row-mean has the larger normalized projection-norm
-margin, weight-SVD has the larger squared-score margin, activation PCA ties on
-arm ordering, folds overlap, update magnitude remains confounded, cross-space
-margins are incomparable, and supervised probes and RepE were not tested. The
-code-organism follow-up fails its frozen criteria, and the 14B intervention does
-not meet its frozen positive criteria. Naturally occurring
-deceptive alignment, sycophancy, reward hacking, jailbreak susceptibility, and
-multimodal failures remain untested. Prospective and continual-learning use
-requires a direction or threshold frozen before new endpoint deltas are observed.
+The organism claim rests on matched separation, held-out ranking, and
+cross-family recurrence, not prevalence. Baselines do not favor weight-SVD:
+row-mean and weight-SVD exchange margin order under score squaring, activation
+PCA ties their arm ordering, folds overlap, and update magnitude remains
+confounded. The code-organism and 14B causal audits fail their frozen criteria.
+Naturally occurring deception, sycophancy, reward hacking, jailbreaks, and
+multimodal failures remain untested. Prospective use requires directions and
+thresholds frozen before new endpoint deltas are observed.
 
 \section*{Ethical considerations}
 The refusal intervention demonstrates a method for weakening a safety-related

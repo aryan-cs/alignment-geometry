@@ -2,78 +2,59 @@
 \label{sec:related}
 
 \paragraph{Spectra of trained weights and fine-tuning.}
-Heavy-tailed self-regularization relates trained-weight spectra to model quality,
-including outliers above a Marchenko--Pastur bulk and ``bulk plus spikes''
-regimes \citep{martin2021}. Small singular directions of a trained weight can
-also carry information edited by fine-tuning \citep{staats2024small}.
-\citet{shuttleworth2025lora} find that LoRA introduces high-ranking
-'intruder dimensions' that are absent under matched full fine-tuning. By
-contrast with that comparison of resulting weights, we analyze the checkpoint
-increment $\Delta W$ itself and test its leading directions by intervention.
+Trained-weight spectra exhibit outliers and ``bulk plus spikes'' regimes
+\citep{martin2021}; small singular directions can also carry fine-tuning edits
+\citep{staats2024small}. LoRA introduces high-ranking ``intruder dimensions''
+absent under matched full fine-tuning \citep{shuttleworth2025lora}. These works
+characterize trained weights or adaptation schemes. We instead analyze the
+checkpoint increment $\Delta W$ and intervene on its leading directions.
 
 \paragraph{Low-rank adaptation and weight arithmetic.}
-Low intrinsic dimension \citep{aghajanyan2021} and LoRA \citep{hu2022lora}
-show that adaptation can be parameter-efficient. Task arithmetic edits behavior
-by adding or subtracting whole checkpoint deltas
-\citep{ilharco2023task,ortizjimenez2023task}.
-\citet{fierro2026weight} introduce contrastive weight steering: they subtract
-updates from opposed fine-tunes to obtain a behavior direction and report
-preliminary emergent-misalignment detection by update similarity. Our medical
-contrast uses the same basic difference-of-updates construction. Relative to
-Fierro and Roger's study, we evaluate a fitted spectral census,
-singular-subspace localization, matched-fold comparisons, and residual-stream
-interventions. We do not claim priority for contrastive weight arithmetic.
+Low intrinsic dimension and LoRA show that adaptation can be
+parameter-efficient \citep{aghajanyan2021,hu2022lora}; task arithmetic edits
+behavior with whole checkpoint deltas
+\citep{ilharco2023task,ortizjimenez2023task}. Contrastive weight steering
+subtracts opposed fine-tuning updates to obtain a behavior direction
+\citep{fierro2026weight}. Our medical contrast uses that construction, then adds
+a fitted spectral census, subspace localization, matched-fold comparisons, and
+residual-stream interventions. We do not claim priority for contrastive weight
+arithmetic.
 
 \paragraph{Safety-relevant parameter subspaces.}
-\citet{wei2024brittleness} identify safety-critical neuron- and rank-level
-regions using pruning and low-rank modifications. Safe LoRA selectively
-projects LoRA updates onto an alignment subspace derived from aligned and
-unaligned weights \citep{hsu2024safelora}; LSSF extracts low-rank components of
-safety vectors for post-hoc fusion \citep{zhou2025lssf}; and
-safety-preserving fine-tuning removes gradient components that conflict with a
-low-rank safety subspace \citep{zhang2026preserving}. Safe LoRA, LSSF, and the
-latter fine-tuning method target safety preservation or restoration. Our
-global residual-stream projection instead measures behavioral sensitivity and
-causes broad capability loss.
+Safety-critical neuron and rank regions can be identified through pruning and
+low-rank modification \citep{wei2024brittleness}. Safe LoRA, LSSF, and
+safety-preserving fine-tuning use low-rank alignment subspaces to preserve or
+restore safety \citep{hsu2024safelora,zhou2025lssf,zhang2026preserving}. Our
+global residual projection instead diagnoses behavioral sensitivity and causes
+broad capability loss.
 
 \paragraph{Activation directions and interpretability.}
-Representation engineering (RepE) reads and steers concept directions
-\citep{zou2023repe}, and sparse autoencoders surface interpretable, steerable
-features \citep{templeton2024scaling}. For the chat models and prompts they
-study, \citet{arditi2024} report that refusal is mediated by a residual-stream
-direction found by difference of means. These methods locate behavior in
-activation space using prompt or feature information. We ask whether a leading
-weight-increment subspace is enriched for an activation direction separately
-estimated from prompt-labeled activations. Figure~\ref{fig:geometry} uses those
-same activations to construct both plotted axes and is therefore
-construction-only; behavioral sensitivity is evaluated separately by the
-global projection audit.
+RepE reads and steers concept directions \citep{zou2023repe}, while sparse
+autoencoders surface steerable features \citep{templeton2024scaling}.
+\citet{arditi2024} recover refusal by an activation difference of means. We ask
+whether a leading weight-increment subspace is enriched for that independently
+estimated activation direction. Figure~\ref{fig:geometry} is construction-only;
+the projection audit supplies the behavioral test.
 
 \paragraph{Emergent misalignment and behavioral auditing.}
-Narrow fine-tuning can induce broad misalignment \citep{betley2025emergent}.
-\citet{soligo2025convergent} recover convergent activation directions, while
-emergent misalignment can be induced using a single rank-one LoRA adapter
-\citep{turner2025organisms}. Supervised probes can detect strategic deception
-\citep{goldowskydill2025}, and hidden-objective audits use richer access to data,
-examples, and model behavior \citep{marks2025}. Our checkpoint screens use arm
-labels but no judged responses in the fit. They should not be read as competitive
-with behavior-labeled probes, and the intervention results remain in-sample with
-respect to the fitted checkpoint arms.
+Narrow fine-tuning can induce broad misalignment \citep{betley2025emergent},
+with convergent activation directions \citep{soligo2025convergent} and even a
+single rank-one LoRA adapter \citep{turner2025organisms}. Supervised deception
+probes and hidden-objective audits use richer behavioral evidence
+\citep{goldowskydill2025,marks2025}. Our checkpoint screens use arm labels but
+no judged responses; they are not competitors to behavior-labeled probes, and
+their interventions remain in-sample.
 
 \paragraph{Adjacent spectral diagnostics.}
-Spectral backdoor detectors score per-input activations
-\citep{tran2018spectral}. LARF reports higher effective rank of harmful-prompt
-representation transformations after fine-tuning on its top-ranked
-safety-degrading samples than on bottom-ranked samples \citep{larf2025}. These observables
-differ from the concentration and direction of a checkpoint increment. The
-fitted Marchenko--Pastur reference here prioritizes directions for empirical
-tests; it is neither a calibrated detector nor a model of the optimization
-process.
+Spectral backdoor detectors score per-input activations \citep{tran2018spectral};
+LARF compares effective rank of harmful-prompt representation transformations
+across fine-tuning subsets \citep{larf2025}. Those observables differ from a
+checkpoint increment. Our fitted MP reference prioritizes directions for tests;
+it is neither a calibrated detector nor an optimization model.
 
 \paragraph{Complementary mechanisms.}
-Sequential training can cause catastrophic forgetting \citep{kirkpatrick2017},
-task adaptation can reorganize representations \citep{merchant2020}, and
-conflicting objectives can induce gradient interference \citep{yu2020gradient}.
-These mechanisms may all shape endpoint deltas. Spectral geometry describes the
-resulting anisotropy and nominates subspaces, but does not identify which
-training process produced them.
+Catastrophic forgetting, representational reorganization, and gradient
+interference can all shape endpoint deltas
+\citep{kirkpatrick2017,merchant2020,yu2020gradient}. Spectral geometry describes
+the resulting anisotropy and nominates subspaces; it does not identify which
+process produced them.

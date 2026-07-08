@@ -100,13 +100,17 @@ On the corrected fixed $128$-prompt refusal slice, baseline,
 spectral, and random rates are $98.4\%$, $14.1\%$, and $97.7\%$.
 On HarmBench \citep{mazeika2024harmbench}, baseline, spectral-ablation, and random-ablation
 refusal are $71.2\%$ ($[66.6,75.5]\%$), $5.8\%$ ($[3.9,8.5]\%$), and $65.8\%$
-($[61.0,70.2]\%$), respectively. Every condition uses the same chat-formatted
+($[61.0,70.2]\%$), respectively. The held-out prompt set shows that the
+spectral-versus-random gap is not confined to the AdvBench slice, although it
+does not resolve output coherence or harmless-prompt effects. Every condition uses the same chat-formatted
 input convention: one user message per behavior, the generation prompt added
 by the Instruct tokenizer, then tokenization with special-token insertion
 disabled; generation is greedy for $24$ new tokens.
 The preregistered insecure-versus-educational audit fails its frozen convergence
 ($0.636<0.670$ benign null), transfer (cosine $0.137$), and causal (drop $0.004$)
 criteria and does not support cross-type transfer beyond the medical organism.
+This failed audit narrows the result to recurrence within the matched medical
+construction rather than a general code-domain misalignment direction.
 
 \paragraph{Reproducibility.}
 \begingroup\small\raggedright
@@ -162,8 +166,10 @@ $0$, $0$, $1$, and $1$; and random-projection counts $21$, $27$, $46$, and
 $50$. At the reported threshold of $30$, the eight prompts contribute baseline,
 learned, and random counts of $(2,0,5)$, $(0,0,1)$, $(2,0,6)$, $(8,0,4)$,
 $(2,0,1)$, $(0,0,0)$, $(3,0,6)$, and $(1,0,4)$ across their $100$ samples.
-The result is not driven by every prompt, and these deterministic sensitivity
-summaries do not replace independent or human validation of the judge.
+The learned-projection count remains near zero as the threshold changes, so the
+qualitative ordering is not specific to the reported cutoff. The effect is not
+driven by every prompt, however, and these deterministic sensitivity summaries
+do not replace independent or human validation of the judge.
 
 \paragraph{Qualitative emergent-misalignment examples.}
 Table~\ref{tab:em-examples} gives truncated verbatim excerpts from harmful

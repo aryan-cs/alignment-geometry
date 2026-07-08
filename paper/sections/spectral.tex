@@ -31,6 +31,9 @@ edge and gives a median top-to-edge ratio of $11.8$. This top-edge ratio is an
 algebraic function of stable rank and is not independent robustness evidence.
 The full-spectrum exceedance counts do add a separate fit-sensitivity check and
 change substantially (Appendix~\ref{app:details}).
+Across both fits, the stable conclusion is qualitative: the real checkpoint
+delta contains directions too prominent to treat as diffuse noise. This makes
+them candidates for behavioral tests, not evidence that they encode alignment.
 
 \begin{figure}[t]
 \centering
@@ -76,8 +79,10 @@ feed-forward width is a hidden dimension, while algebraic rank is bounded by
 $\min(p,q)$: $1024$ for key/value projections and $4096$ for the other maps.
 Matrix by matrix, median stable rank is $3.3\%$ of this ceiling, showing energy
 concentration at every layer (Figures~\ref{fig:bylayer}
-and~\ref{fig:spectral-landscape}). Neither statistic identifies a mechanism, and
-both depend on the chosen parameterization.
+and~\ref{fig:spectral-landscape}). A small fraction of the available dimensions
+therefore carries a disproportionate share of the update, making subspace-level
+tests practical. Neither statistic identifies a mechanism, and both depend on
+the chosen parameterization.
 
 \paragraph{Query/key maps are most spectrally concentrated.}
 Concentration varies across the seven maps
@@ -86,9 +91,10 @@ top-to-edge ratios, with medians of $81$ and $25$, and the smallest stable
 ranks ($45$ and $36$), making them the most concentrated of the seven map types.
 The value and output-side maps spread their energy
 more widely. Because query/key maps set attention patterns
-\citep{vaswani2017attention}, their concentration localizes the update to maps
-that participate directly in attention-pattern computation. The spectra do not
-reveal how many independent mechanisms produced the update.
+\citep{vaswani2017attention}, they are natural places to look for structured
+post-training change. The result does not show that attention-pattern changes
+cause the behavior below, or reveal how many independent mechanisms produced
+the update.
 
 \begin{table}[t]
 \centering
@@ -117,8 +123,10 @@ matrix & median top/edge & median operational exceedances & median stable rank \
 \includegraphics[width=0.78\textwidth]{../results/figures/spikes_by_layer.pdf}
 \caption{Operational visibility-exceedance counts in $\dW$ by layer and matrix
 type. Rightward is deeper and higher means more directions above the fitted edge
-plus six finite-size scales. Every layer has visible structure. These counts depend on the fitted visibility threshold
-and need not equal signal rank.}
+plus six finite-size scales. Every layer has visible structure. These counts
+depend on the fitted visibility threshold and need not equal signal rank. The
+layer-wide recurrence rules out an isolated single-layer phenomenon under this
+reference, but not generic fine-tuning structure.}
 \label{fig:bylayer}
 \end{figure}
 
@@ -142,11 +150,13 @@ the statistic is $\|U^\top V\|_F^2/16$; its independent-random expectation is
 $16/d=0.0039$ at $d=4096$. The observed median is $0.0134$ across layers,
 versus $0.00395$ for the seeded random controls, a $3.39\times$ ratio and far below the value a
 rescaling of dominant base directions would produce. The delta therefore has
-    little alignment with the base weight's dominant singular directions, with the
-    largest departures at the first layers and the final layer. The left panel of
-    Figure~\ref{fig:energy} shows how front-loaded the increment energy is:
+little alignment with the base weight's dominant singular directions, with the
+largest departures at the first layers and the final layer. The left panel of
+Figure~\ref{fig:energy} shows how front-loaded the increment energy is:
 for the query projection the top $64$ of $4096$ singular directions already carry
-a third of $\|\dW\|_F^2$.
+a third of $\|\dW\|_F^2$. Operationally, the useful candidates come from the
+update itself; simply inspecting the base model's dominant modes would miss
+most of the observed change.
 
 \begin{figure}[t]
 \centering
@@ -155,7 +165,9 @@ a third of $\|\dW\|_F^2$.
 layers within each matrix type; rightward includes more singular directions
 and upward means more energy captured. \emph{Right:} per-layer
 top-$16$ increment--base overlap by layer: higher means stronger subspace
-alignment. Energy is front-loaded, while overlap stays near the random null.}
+alignment. Energy is front-loaded, while overlap stays near the random null, so
+the delta contributes concentrated directions not already dominant in the base
+weight.}
 \label{fig:energy}
 \end{figure}
 

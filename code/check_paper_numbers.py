@@ -192,7 +192,7 @@ def check_capability_caveat():
     text = paper_text()
     harmless_required = [
         "Harmless-prompt effects, adaptive attacks, and human judgments under the same intervention remain unmeasured",
-        "harmless prompts, adaptive adversaries, and human-validated scoring remain untested",
+        "harmless prompts, adaptive attacks, and human scoring remain untested",
     ]
     for phrase in harmless_required:
         if not has_phrase(text, phrase):
@@ -283,9 +283,9 @@ def check_abstract_rates():
     compact = re.sub(r"\s+", " ", abstract)
     required = [
         "from $98.4\\%$ to $14.1\\%$",
-        "same-dimensional random projection remains at $97.7\\%$",
+        "versus $97.7\\%$ for a random subspace",
         "from $2.3\\%$ to $0.0\\%$",
-        "random direction gives $3.4\\%$",
+        "versus $3.4\\%$ under random ablation",
     ]
     for phrase in required:
         if phrase not in compact:
@@ -303,23 +303,23 @@ def check_reviewer_scope_caveats():
         (
             "spectral non-specificity",
             [
-                r"census alone does not make the anisotropy specific to alignment",
-                r"matched controls for domain adaptation,\s*coding,\s*mathematics",
-                r"RLHF.*DPO.*were not run",
+                r"not by itself alignment evidence",
+                r"did not run matched controls for coding,\s*mathematics,\s*other domains",
+                r"objectives such as RLHF and DPO",
             ],
         ),
         (
             "Marchenko-Pastur null limitation",
             [
                 r"fitted Marchenko--Pastur curve answers visibility,\s*not specificity",
-                r"matched controls for domain adaptation,\s*coding,\s*mathematics",
+                r"did not run matched controls for coding,\s*mathematics,\s*other domains",
                 r"matched harmful and safe fine-tunes",
             ],
         ),
         (
             "stable-rank interpretation",
             [
-                r"census alone does not make the anisotropy specific to alignment",
+                r"not by itself alignment evidence",
                 r"Neither statistic identifies a mechanism, and both depend on the chosen parameterization",
             ],
         ),
@@ -328,10 +328,10 @@ def check_reviewer_scope_caveats():
             [
                 r"Refusal is scored by substring match against the fixed phrase list",
                 r"harmful versus harmless prompts",
-                r"prompt distribution,\s*topic,\s*and style",
-                r"provenance-complete HarmBench run",
+                r"prompt\s*distribution,\s*topic,\s*or style",
+                r"HarmBench reproduces",
                 r"baseline,\s*spectral-ablation,\s*and random-ablation refusal are\s*\$71\.2\\%\$.*\$5\.8\\%\$.*\$65\.8\\%\$",
-                r"harmless prompts,\s*adaptive adversaries,\s*and human-validated scoring remain untested",
+                r"harmless prompts,\s*adaptive attacks,\s*and human scoring remain untested",
             ],
         ),
         (
@@ -352,8 +352,8 @@ def check_reviewer_scope_caveats():
         (
             "controlled-organism scope",
             [
-                r"pattern recurs\s*within three 7B/8B medical organisms",
-                r"Within the three\s*arm-labeled medical organisms,\s*internal agreement,\s*retrospective held-out\s*ranking,\s*and in-sample projection effects recur",
+                r"construction recurs in three 7B/8B model families",
+                r"Across three medical organisms the\s*direction recurs",
             ],
         ),
         (
@@ -367,14 +367,14 @@ def check_reviewer_scope_caveats():
         (
             "external validity",
             [
-                r"naturally occurring deceptive alignment,\s*sycophancy,\s*reward hacking,\s*jailbreak\s+susceptibility,\s*and multimodal failures",
+                r"Naturally occurring deception,\s*sycophancy,\s*reward hacking,\s*jailbreaks,\s*and\s*multimodal failures remain untested",
             ],
         ),
         (
             "predictive validation",
             [
-                r"requires a direction or threshold frozen before new endpoint deltas are observed",
-                r"retrospective,\s*same-recipe score has not been calibrated for arbitrary checkpoints",
+                r"Prospective use requires directions and\s*thresholds frozen before new endpoint deltas are observed",
+                r"score has not been calibrated for arbitrary checkpoints",
             ],
         ),
     ]
@@ -1139,17 +1139,17 @@ def check_scale_14b():
 
     text = paper_text()
     required_phrases = [
-        "Thus the 14B experiment reproduces the geometric and leave-one-pair-out results descriptively, but not the causal effect",
-        "measured misalignment is $71/1600=4.4\\%$ ($[3.5,5.6]\\%$)",
-        "internal paired agreement with the pooled direction is $0.933$",
-        "the differently constructed benign reference is $0.578$",
-        "the overlapping folds are not independent replications",
-        "On one causal checkpoint pair (\\texttt{s0}), using sampling seed 0",
+        "Geometric reproducibility is therefore not sufficient evidence of causal control",
+        "misaligned arms have a $4.4\\%$ all-output rate ($[3.5,5.6]\\%$)",
+        "Layer-12 paired agreement is $0.933$",
+        "against a $0.578$ benign reference",
+        "the overlapping folds are not independent",
+        "On the frozen causal pair \\texttt{s0} with seed 0",
         "mean margin $0.093$",
-        "The baseline drop is $0.0148$",
-        "random-minus-direction gap is $0.0085$",
-        "the frozen marginal-interval separation criterion also fails",
-        "exploratory and non-independent",
+        "The $0.0148$ baseline drop",
+        "$0.0085$ random-minus-learned gap",
+        "the marginal intervals overlap",
+        "unseeded pre-freeze runs remain exploratory",
         "single post-freeze seeded run, without an outcome-dependent retry",
     ]
     for phrase in required_phrases:

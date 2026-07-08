@@ -26,8 +26,10 @@ within a model are correlated, so we do not attach a binomial interval to this
 count. The per-matrix Frobenius rescaling puts the two arms on a common energy
 scale for presentation, but it does not change stable rank, fitted-edge
 exceedance counts, or the top-to-edge ratio. It is bookkeeping rather than an
-additional control. Because these scalar summaries show no separation,
-subsequent analyses compare update directions under a matched contrast.
+additional control. The negative result is informative: harmful and safe arms
+do not differ in how concentrated their updates are. Any distinguishing signal
+must instead depend on where the updates point, which motivates the matched
+directional analysis below.
 
 \begin{table}[t]
 \centering
@@ -68,9 +70,11 @@ the alignment and eligibility conditions, versus $0/1600$ for the four benign
 arms (Figure~\ref{fig:mis-gate}). Conditional on eligibility, the corresponding
 rates are $63/1329=4.7\%$ ($[3.7,6.0]\%$) and $0/1327=0.0\%$
 ($[0.0,0.3]\%$). The aggregate artifact does not preserve the separate counts
-for each exclusion category. Within this design, the gap isolates the
-target-answer contrast from the shared training recipe. The judge and threshold
-have not been validated by blinded human ratings or an independent judge.
+for each exclusion category. This behavioral gap is the phenotype the weight
+contrast must recover; without it, geometric separation would have no measured
+behavioral target. Within this design, the gap isolates the target-answer
+contrast from the shared training recipe. The judge and threshold have not been
+validated by blinded human ratings or an independent judge.
 
 \begin{figure}[!htbp]
 \centering
@@ -97,9 +101,13 @@ reference, although their construction differs from the paired statistic. The
 per-pair directions align with the pooled direction at mean cosine $0.96$ to $0.98$
 across the five evaluated layers ($8,12,16,20,24$), whereas the
 benign-versus-benign divergence aligns with it at only
-$0.16$ in the early-middle layers (Figure~\ref{fig:mis-converge}). This gap leads
-us to derive bases from zero-indexed blocks 8 and 12; each necessity projection
-is then applied after every decoder block. Leave-one-pair-out scoring below provides a
+$0.16$ in the early-middle layers (Figure~\ref{fig:mis-converge}). Thus the
+shared harmful-versus-safe contrast dominates seed-specific training drift in
+the leading direction at these layers; pooling is not merely averaging
+unrelated vectors. Because the pool contains every pair, this is consistency
+evidence rather than generalization evidence. The gap leads us to derive bases
+from zero-indexed blocks 8 and 12; each necessity projection is then applied
+after every decoder block. Leave-one-pair-out scoring below provides a
 retrospective, same-recipe held-out-arm ranking check rather than an
 out-of-distribution causal test. Appendix Figure~\ref{fig:mis-geom} gives an
 angular schematic of the paired-agreement and benign-reference cosines.
@@ -117,15 +125,20 @@ because all pairs enter the pooled direction, this is within-sample agreement.}
 \paragraph{Layer dependence of the contrastive geometry.}
 Paired agreement remains near $0.97$, while the benign-reference cosine rises
 from $0.16$ at layer 12 to $0.88$ at layer 24. Deeper evaluated layers therefore
-move along similar directions regardless of objective, so we focus on bases
-read from blocks 8 and 12.
+move along similar directions regardless of objective. The early-middle layers
+are more useful for isolating what differs between harmful and safe training;
+the late-layer direction appears to contain more recipe-shared adaptation. We
+therefore focus on bases read from blocks 8 and 12.
 
 \paragraph{In-sample projection suppresses measured misalignment.}
 Projecting the block-12-derived direction out of the residual stream of a
 misaligned arm after every decoder block changes the all-output joint rate from
 $18/800=2.3\%$ to $0/800=0.0\%$ (Figure~\ref{fig:mis-causal}), while projecting
 out a random direction gives $27/800=3.4\%$. The corresponding eligible-output
-rates are $18/683=2.6\%$, $0/702=0.0\%$, and $27/685=3.9\%$. In this run, all
+rates are $18/683=2.6\%$, $0/702=0.0\%$, and $27/685=3.9\%$. Under this
+fixed metric, the fitted direction eliminates the measured events whereas the
+random direction does not. Descriptively, this links the recurring direction
+to behavior. In this run, all
 ineligible outputs failed only the coherence threshold; no \texttt{CODE},
 \texttt{REFUSAL}, or unparseable judge output occurred. The gate above uses
 $400$ outputs per arm ($50$ per prompt), whereas this is a separate
@@ -155,9 +168,13 @@ benign references of $0.37$ and $0.17$, and projecting out the recovered
 direction changes measured misalignment from $7.6\%$ to $2.6\%$, below the
 random-projection control at $7.5\%$ (\mbox{Table~\ref{tab:cross-family}}).
 All three organisms yield a matched direction whose in-sample projection lowers
-measured misalignment. Suppression is nearly complete on Qwen and Llama and
-partial on Mistral. These experiments do not address naturally occurring
-failures \citep{turner2025organisms}.
+measured misalignment. This recurrence changes the interpretation of the Qwen
+result: the matched-contrast procedure is not merely fitting a peculiarity of
+one model family. What transfers is the analysis recipe, not a shared vector or
+effect size. Suppression is nearly complete on Qwen and Llama but partial on
+Mistral, which argues against a universal intervention strength. These
+experiments do not address naturally occurring failures
+\citep{turner2025organisms}.
 
 \begin{table}[!htbp]
 \centering
@@ -165,7 +182,8 @@ failures \citep{turner2025organisms}.
 organisms. Geometry rows are layer-12 point estimates from four matched arms.
 Joint rates use all $800$ outputs per condition; brackets give descriptive
 per-rate $95\%$ Wilson intervals. Eligible-output rates condition on the judge's
-coherence gate.}
+coherence gate. The recurring direction is strongest on Qwen and Llama, while
+the weaker Mistral effect shows that recurrence does not imply uniformity.}
 \label{tab:cross-family}
 \small
 \setlength{\tabcolsep}{5pt}
@@ -212,10 +230,12 @@ $[0.0,0.6]\%$), $5.3\%$ ($32/605$, $[3.8,7.4]\%$), and $13.8\%$
 $75.6\%$ at $\alpha{=}0.5$ and $15.4\%$ at $\alpha{=}1.0$, so the higher
 conditional rate at $\alpha{=}1.0$ reflects a selected coherent subset rather
 than a larger all-output effect;
-stronger steering produces no coherent samples. The direction is
-ablation-sensitive and shifts judged behavior at low steering strength, but the
-experiment does not establish a sufficient one-dimensional mechanism or
-identify the underlying representation and circuit.
+stronger steering produces no coherent samples. This asymmetry matters: a
+direction can be necessary for the measured behavior without being sufficient
+to recreate it cleanly. The nonmonotonic joint rate and collapse in coherence
+at high strength suggest that steering also disrupts general generation. The
+experiment therefore does not establish a sufficient one-dimensional mechanism
+or identify the underlying representation and circuit.
 
 \begin{figure}[!htbp]
 \centering
@@ -243,34 +263,31 @@ do not use binomial uncertainty over folds. Figure~\ref{fig:detect} shows all
 four held-out fold scores per arm and family. Harmful/safe means are
 $0.671/0.098$ for Qwen, $0.435/0.233$ for Llama, and $0.264/0.136$ for Mistral, while a random
 direction of equal dimension scores both near $0.015$
-(Figure~\ref{fig:detect} in Appendix~\ref{app:details}). This retrospective,
-same-recipe score has not been calibrated for arbitrary checkpoints.
+(Figure~\ref{fig:detect} in Appendix~\ref{app:details}). This is the first step
+in the analysis where the fitted geometry retains condition information for an
+endpoint excluded from the fit. It supports retrospective screening within the
+same recipe, but the score has not been calibrated for arbitrary checkpoints.
 
 \paragraph{The geometric pattern persists at 14B, but the causal criterion fails.}
 The 7B/8B results leave open whether the same sequence survives at larger scale.
 We analyzed four suffix-matched Qwen2.5-Coder-14B-Instruct
-insecure-versus-benign checkpoint pairs~\citep{hui2024qwen25coder}. Across the four misaligned arms,
-measured misalignment is $71/1600=4.4\%$ ($[3.5,5.6]\%$) versus $0/1600=0.0\%$
-($[0.0,0.2]\%$) for benign controls. Conditional on eligibility, the rates are
-$71/1477=4.8\%$ and $0/1562=0.0\%$. At layer 12, internal paired
-agreement with the pooled direction is $0.933$; the differently constructed
-benign reference is $0.578$. A descriptive leave-one-pair-out screen ranks all
-four misaligned arms above their benign counterparts (mean margin $0.093$), but
-the overlapping folds are not independent replications. On one causal
-checkpoint pair (\texttt{s0}), using sampling seed 0, the all-output rates are
-$38/800=4.8\%$ at baseline ($[3.5,6.5]\%$), $27/800=3.4\%$ after
-learned-direction projection ($[2.3,4.9]\%$), and $33/800=4.1\%$ after random
-projection ($[3.0,5.7]\%$). The corresponding eligible-output rates are
-$5.1\%$, $3.6\%$, and $4.5\%$; these define the preregistered endpoint.
-The baseline drop is $0.0148$ and the random-minus-direction gap is $0.0085$,
-both below the frozen $0.015$
-criteria; the frozen marginal-interval separation criterion also fails and does
-not provide an interval for either rate difference. Thus the 14B experiment
-reproduces the geometric and leave-one-pair-out results descriptively, but not
-the causal effect. Two
-unseeded queue runs conducted before the analysis freeze remain exploratory and
-non-independent; the reported result uses the single post-freeze seeded run,
-without an outcome-dependent retry.
+insecure-versus-benign checkpoint pairs~\citep{hui2024qwen25coder}. The
+misaligned arms have a $4.4\%$ all-output rate ($[3.5,5.6]\%$), versus $0.0\%$
+($[0.0,0.2]\%$) for benign controls. Layer-12 paired agreement is $0.933$
+against a $0.578$ benign reference, and a descriptive leave-one-pair-out screen
+ranks all four pairs correctly (mean margin $0.093$); the overlapping folds are
+not independent. On the frozen causal pair
+\texttt{s0} with seed 0, baseline, learned-projection, and random-projection
+rates are $4.8\%$, $3.4\%$, and $4.1\%$ over all outputs, and $5.1\%$, $3.6\%$,
+and $4.5\%$ among eligible outputs. The latter define the preregistered
+endpoint. The $0.0148$ baseline drop and $0.0085$ random-minus-learned gap both
+miss the frozen $0.015$ criteria, and the marginal intervals overlap. Two
+unseeded pre-freeze runs remain exploratory; the reported result is the single
+post-freeze seeded run, without an outcome-dependent retry.
+The scale result separates claims that coincide in the smaller organisms: a
+direction can be internally stable and rank held-out arms while its causal
+advantage over random ablation remains too small. Geometric reproducibility is
+therefore not sufficient evidence of causal control.
 
 \FloatBarrier
 \paragraph{Baseline audit establishes separability, not method superiority.}
@@ -296,12 +313,17 @@ $\Delta A\in\mathbb{R}^{64\times d}$, it uses the top right singular vector of
 the uncentered analogous leave-one-out harmful-minus-safe contrast and scores
 $s_A(\Delta A;v)=\|\Delta A v\|_2/(\|\Delta A\|_F+10^{-12})$. Singular-vector signs are
 arbitrary. No medical-domain or alternate stimulus set was evaluated, so this
-is an exploratory, stimulus-specific baseline. Under the implemented score, row-mean
+is an exploratory, stimulus-specific baseline.
+
+Under the implemented score, row-mean
 has mean margin $0.627$ versus $0.603$ for weight-SVD. Squaring each held-out
 score to obtain an energy fraction reverses the mean-margin ordering:
 $0.443$ for weight-SVD versus $0.433$ for row-mean. Wins and AUC are unchanged.
 The comparison is therefore sensitive to score parameterization and does not
-support superiority of either weight method. Held-out scores normalize each increment, whereas
+support superiority of either weight method. Perfect ordering by all three
+learned methods changes the interpretation of the result: the arm-level
+contrast is broadly accessible, and the leading singular vector is one useful
+representation rather than a uniquely privileged detector. Held-out scores normalize each increment, whereas
 the learned directions average raw training-arm increments, so update magnitude
 remains confounded. Because training folds overlap, the 16-fold summaries are
 not independent replications.
@@ -328,7 +350,10 @@ fixed random weight direction & $12/16$ & $0.002$ & $0.00006$ & $0.727$ \\
 \end{table}
 \FloatBarrier
 
-Overall, scalar concentration does not separate the arms, but labeled contrasts
-recur and rank held-out arms. Projection changes measured behavior at 7B/8B;
-the 14B audit is inconclusive, and alternative contrasts separate equally well.
-This supports separability and ablation sensitivity, not a unique mechanism.
+The progression across these experiments is the main result. Scalar
+concentration does not separate the arms, but labeled directions recur and rank
+held-out arms; orientation, not update concentration, carries the useful
+condition information. Projection changes measured behavior at 7B/8B, yet the
+14B audit is inconclusive and alternative contrasts separate equally well.
+Weight geometry is therefore useful as a condition-informed screen and
+intervention target, not as a unique causal explanation.

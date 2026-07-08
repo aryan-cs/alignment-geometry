@@ -45,9 +45,12 @@ for rate estimates below. Enrichment is $7.9\times$ at $k{=}16$ and
 $3.7\times$ at $k{=}128$, so concentration is strongest near the top of the
 spectrum. Across all $32$ blocks, top-$8$ enrichment exceeds the random
 expectation in $31/32$ blocks, has median $4.6\times$, and peaks at
-$14.2\times$. This supports an empirical association between the leading
-checkpoint-delta subspace and the prompt-derived direction. It is not a
-validation of the single-spike overlap formula in Section~\ref{sec:theory}.
+$14.2\times$. Capturing $2.8\%$ is modest in absolute terms, but concentrating
+that mass in only $8$ of $4096$ coordinates makes the spectral ordering a
+useful search prior. The refusal direction remains distributed; the leading
+subspace is enriched for it rather than a complete representation. This is an
+empirical association, not a validation of the single-spike overlap formula in
+Section~\ref{sec:theory}.
 
 \begin{table}[t]
 \centering
@@ -100,6 +103,9 @@ full-$k$, source-block, rank-one, and steering runs used a different activation
 or tokenization convention and are not used as evidence here.
 Because refusal is substring-scored without an output-coherence gate, the
 lower rate does not distinguish compliant answers from degenerate generations.
+Even with that limitation, the spectral-versus-random gap shows that the
+weight-derived basis selects behaviorally relevant coordinates beyond the
+generic effect of deleting $128$ dimensions.
 
 The same spectral intervention is highly destructive on capability benchmarks
 (Figure~\ref{fig:ablation}). Baseline, spectral, and random-projection accuracy
@@ -108,7 +114,10 @@ $76.8/3.0/65.5\%$ on GSM8K
 \citep{hendrycks2021mmlu,cobbe2021gsm8k,clark2018arc}. Thus the refusal change
 is accompanied by broad capability loss, substantially larger than for this
 random draw. One random subspace is a matched control, not a null distribution.
-The experiment does not establish capability-preserving refusal removal.
+Taken together, the refusal and benchmark results indicate entanglement: the
+selected subspace participates in refusal, but also supports general
+capability. The experiment identifies a behavior-sensitive region, not a clean
+safety switch or a capability-preserving removal method.
 
 \begin{figure}[t]
 \centering

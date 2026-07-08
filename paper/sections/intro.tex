@@ -1,68 +1,51 @@
 \section{Introduction}
 \label{sec:intro}
 
-Post-training is usually evaluated through behavior, but it also leaves behind a
-geometric record: the difference between the initial and final weights. For a
+Post-training is usually evaluated through behavior, but it also leaves a
+geometric record in the difference between initial and final weights. For a
 linear map, this checkpoint delta is
-$\dW=W_{\text{instruct}}-W_{\text{base}}$. It aggregates every stage between the
-two checkpoints, so it cannot by itself distinguish instruction tuning,
-preference optimization, or safety training
-\citep{ouyang2022instruct,rafailov2023dpo}. It can, however, reveal where the
-parameters moved. We ask whether that geometry can narrow the search for
-directions associated with refusal and measured emergent misalignment.
+$\dW=W_{\text{instruct}}-W_{\text{base}}$. Because it aggregates every stage
+between the checkpoints, it cannot distinguish instruction tuning, preference
+optimization, or safety training \citep{ouyang2022instruct,rafailov2023dpo}.
+It can, however, reveal where the parameters moved. We ask whether that record
+can narrow the search for directions associated with refusal and measured
+emergent misalignment.
 
 The central difficulty is that geometric structure is not automatically
 behavioral structure. A diffuse update spreads spectral mass across many
-directions, whereas a concentrated update places substantial mass in a few.
-Under an iid Gaussian diffuse-update model, the limiting spectrum has a
-Marchenko--Pastur upper edge \citep{marchenko1967,johnstone2001}. Under an
-additive fixed-rank model, a sufficiently strong component detaches from that
-edge, and its singular vector partially overlaps the planted direction
-\citep{benaych2012}. We use this theory only to decide which empirical
-directions are spectrally visible. Behavioral meaning must come from separate
-capture, control, and intervention experiments.
+directions; a concentrated update places substantial mass in a few. Under an
+iid Gaussian reference, the limiting spectrum has a Marchenko--Pastur edge
+\citep{marchenko1967,johnstone2001}; under an additive fixed-rank model, a
+strong component detaches and its singular vector becomes informative
+\citep{benaych2012}. We use this theory only to rank visible candidates.
+Behavioral meaning must come from capture, controls, and interventions.
 
-The paper follows that distinction from broad structure to specific behavior.
-We first examine every linear map in the released Llama-3-8B Base-to-Instruct
-delta \citep{grattafiori2024llama3}. All $224$ leading eigenvalues clear their
-fitted Marchenko--Pastur visibility edges, often by one to four orders of
-magnitude, and the median stable rank is $109$ against ambient dimensions in the
-thousands. The update is therefore strongly anisotropic, but this census alone
-does not make the anisotropy specific to alignment.
+The paper follows that progression. In the released Llama-3-8B
+Base-to-Instruct delta \citep{grattafiori2024llama3}, all $224$ analyzed maps
+have an MP-visible leading eigenvalue and the median stable rank is $109$.
+This pervasive anisotropy makes subspace-level tests tractable, but is not by
+itself alignment evidence.
 
-We next ask whether the visible directions intersect a known behavioral axis.
-The empirical refusal direction, estimated independently from harmful and
-harmless prompts \citep{arditi2024}, is enriched in the leading singular
-subspace of the attention-output delta. Projecting the top-$128$ subspace out
-after every block changes substring-scored refusal on a fixed harmful-prompt
-slice from $98.4\%$ ($[94.5,99.6]\%$) to $14.1\%$ ($[9.1,21.1]\%$), while one
-seeded random subspace gives $97.7\%$ ($[93.3,99.2]\%$)
-\citep{wilson1927}. The same projection damages MMLU, ARC-C, and GSM8K far more
-than the random control. The result links the leading subspace to measured
-refusal, but the intervention is blunt and does not preserve capability.
+We next test a visible subspace against a refusal direction estimated
+independently from harmful and harmless prompts \citep{arditi2024}. Global
+projection of the top $128$ directions changes substring-scored refusal from
+$98.4\%$ to $14.1\%$, versus $97.7\%$ for one random subspace, but causes much
+larger capability losses. The selected coordinates matter to refusal while
+remaining entangled with general computation.
 
-Finally, we replace the unrestricted Base-to-Instruct delta with a matched
-contrast. In the emergent-misalignment model-organism setting
-\citep{betley2025emergent,turner2025organisms}, harmful and safe arms share
-questions and training recipe while differing in target-answer policy and
-content. Their difference yields a medical-contrast direction. Across four
-Qwen2.5-Coder-7B-Instruct pairs, seed-level directions agree with the pooled
-direction at mean cosine $0.97$, compared with $0.16$ for benign-pair
-differences at the selected layer. A retrospective leave-one-pair-out score
-ranks every harmful arm above its safe counterpart. In an in-sample
-intervention, projecting out the direction changes the all-output joint
-misalignment-and-eligibility rate from $2.3\%$ ($18/800$) to $0.0\%$ ($0/800$),
-versus $3.4\%$ ($27/800$) under random-direction ablation. The pattern recurs
-within three 7B/8B medical organisms, although the Mistral effect is partial;
-the 14B causal audit does not meet its frozen positive criteria. A separate
-$16$-pair Qwen audit shows that weight-SVD, row-mean contrast, and arm-labeled
-activation PCA all separate held-out arms, but does not support superiority of
-one weight method.
+Finally, matched harmful and safe medical fine-tunes isolate a
+condition-labeled contrast \citep{betley2025emergent,turner2025organisms}. Four
+Qwen directions \citep{hui2024qwen25coder} agree with their pool at cosine $0.97$, rank every omitted
+harmful arm above its safe partner, and support an in-sample projection that
+changes the measured joint rate from $2.3\%$ to $0.0\%$ versus $3.4\%$ under
+random ablation. The pattern recurs in three 7B/8B families, but is weaker on
+Mistral \citep{jiang2023mistral} and fails the frozen 14B causal criteria. A $16$-pair audit also finds
+perfect held-out ordering for several learned contrasts, not unique superiority
+of weight-SVD. The recurring signal is therefore separable, but separability
+and causal control are different claims.
 
-This sequence defines the scope of the contribution. The additive-spike theory
-provides a visibility rule, the full-matrix census identifies candidate
-subspaces, and matched contrasts and interventions test their behavioral
-relevance. The results support behavior-sensitive geometry in the fixed
-checkpoints studied here. They do not identify the training mechanism, establish
-one-dimensional sufficiency, or demonstrate prospective causal generalization.
-Figure~\ref{fig:pipeline} summarizes the first stage of the analysis.
+Together, the theory supplies a visibility rule, the census nominates
+subspaces, and the matched experiments test behavioral relevance. The results
+support behavior-sensitive geometry in these fixed checkpoints, not a training
+mechanism, one-dimensional sufficiency, or prospective causal generalization.
+Figure~\ref{fig:pipeline} summarizes the first stage.
