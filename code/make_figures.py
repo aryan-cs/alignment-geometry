@@ -36,7 +36,9 @@ from figure_palette import (  # noqa: E402
     STRUCTURAL_RAMP,
     TURBO_BLUE,
     TURBO_CYAN,
+    TURBO_GREEN,
     TURBO_ORANGE,
+    TURBO_RED,
     TURBO_VIOLET,
     TURBO_YELLOW,
 )
@@ -44,9 +46,9 @@ from figure_palette import (  # noqa: E402
 LABELS = ["q_proj", "k_proj", "v_proj", "o_proj",
           "gate_proj", "up_proj", "down_proj"]
 LABEL_COLOR = {
-    "q_proj": TURBO_BLUE, "k_proj": TURBO_CYAN, "v_proj": TURBO_YELLOW,
-    "o_proj": TURBO_ORANGE, "gate_proj": TURBO_VIOLET, "up_proj": GREY,
-    "down_proj": INK,
+    "q_proj": TURBO_RED, "k_proj": TURBO_ORANGE, "v_proj": TURBO_YELLOW,
+    "o_proj": TURBO_GREEN, "gate_proj": TURBO_CYAN, "up_proj": TURBO_BLUE,
+    "down_proj": TURBO_VIOLET,
 }
 LABEL_MARKER = {
     "q_proj": "o", "k_proj": "s", "v_proj": "^", "o_proj": "D",
@@ -354,8 +356,8 @@ def fig_spikes_by_layer(rows, outdir):
     ax.set_title("MP-visible structure appears at every layer", fontsize=9)
     legend_below(ax, fontsize=7, ncol=4, y=-0.30)
     ax.grid(True, color=GRID, lw=0.5)
-    fig.tight_layout()
-    save_figure_pdf(fig, outdir, "spikes_by_layer.pdf")
+    fig.tight_layout(pad=1.2)
+    save_figure_pdf(fig, outdir, "spikes_by_layer.pdf", pad_inches=0.06)
     plt.close(fig)
 
 

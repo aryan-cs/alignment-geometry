@@ -1,14 +1,19 @@
 {
   "pdf": "docs/paper.pdf",
-  "pdf_sha256": "ec541e11e209e541163c0893c567c179214559538324e6dc3aa9fdc7423501b8",
-  "inspected_at_utc": "2026-07-07T05:04:11Z",
+  "pdf_sha256": "c08ed8941587a5f5753312894e512ae802b9b5bb27c1fada63f6485cc1b6568f",
+  "inspected_at_utc": "2026-07-08T16:30:05Z",
   "pages_total": 21,
   "pages_checked": 21,
   "render_dpi": 120,
   "inspected_pages_full_size": [
-    11
+    1,
+    6,
+    7,
+    11,
+    15,
+    21
   ],
-  "method": "Rendered all 21 pages at 120 dpi after placing each Table 5 joint-rate estimate and confidence interval on one line. Inspected page 11 at full size and confirmed every row is single-line, the interval typography remains legible, the full-width columns stay aligned, and surrounding spacing has no clipping or overlap.",
+  "method": "Rendered all 21 pages at 120 dpi after updating the matrix-type series to a Turbo red-orange-yellow-green-cyan-blue-violet sequence and adding export padding to Figure 5. Inspected pages 1, 6, 7, 11, 15, and 21 at full size. Confirmed the complete Figure 5 y-axis label has visible margin with no clipping, all seven series and legend entries remain distinguishable, the shared matrix-type colors in Figure 7 remain legible, and the required title, table, limitations, and final-figure pages have no overlap or clipping.",
   "render_receipt": {
     "schema": "pdf_render_receipt_v1",
     "renderer": "pdftoppm",
@@ -43,13 +48,13 @@
       },
       {
         "page": 6,
-        "sha256": "855f34969ff6b629f62654393468df2b301aa99c273fd8c1de29848aa1d0150f",
-        "bytes": 263605
+        "sha256": "744d7c9aeaffb87ada1ad37fceb57d5cfef5a07307f244e7d127988a620780b7",
+        "bytes": 262242
       },
       {
         "page": 7,
-        "sha256": "e938bd94be5580073cde7399e10155eb8c4c9db0ce5e8c9c0e7f71eff7fdd7da",
-        "bytes": 263578
+        "sha256": "e3f8db1c6c62e745607b6bc522b2a7e85ae8058e0359249e87e2b85ef2cfdd3d",
+        "bytes": 263884
       },
       {
         "page": 8,

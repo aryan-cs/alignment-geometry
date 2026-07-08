@@ -1,7 +1,7 @@
 {
   "schema": "figure_manifest_v1",
   "producer": "code/make_figures.py",
-  "generated_at": "2026-07-06T06:14:36Z",
+  "generated_at": "2026-07-08T16:20:23Z",
   "source_count": 28,
   "figure_count": 22,
   "sources": [
@@ -12,8 +12,8 @@
     },
     {
       "path": "code/make_figures.py",
-      "sha256": "814156bde7273c92bc164516710b9676717769535123ffcfafa0d4da67a66c75",
-      "bytes": 53708
+      "sha256": "e0ea87cb40339c0955b066d87f86f94930c646a030344dcadc78f7b128de8528",
+      "bytes": 53777
     },
     {
       "path": "results/data/ablation_layers.json",
@@ -194,8 +194,8 @@
     },
     {
       "path": "results/figures/energy_overlap.pdf",
-      "sha256": "07f519a17e460f93e408fdf9060f6e63140352396ff20b4b6f59f8fff460584d",
-      "bytes": 42907
+      "sha256": "cececa962a88138487f27244c65460e6f048a6ddd820a9dbcac174c6cbe69f54",
+      "bytes": 42964
     },
     {
       "path": "results/figures/geometry.pdf",
@@ -244,8 +244,8 @@
     },
     {
       "path": "results/figures/spikes_by_layer.pdf",
-      "sha256": "0cbf3f0ee63a61324bae1a65dd11e994926635e63ffc40136a451b09233e7a7e",
-      "bytes": 40114
+      "sha256": "3048d587f10f2f3d1912850d8dbc66ae7f3775f4b5d97e916ebbb95974c6d2dd",
+      "bytes": 40151
     },
     {
       "path": "results/figures/sufficiency.pdf",
