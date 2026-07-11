@@ -352,7 +352,7 @@ def check_reviewer_scope_caveats():
         (
             "controlled-organism scope",
             [
-                r"construction recurs in three 7B/8B model families",
+                r"recurring contrast directions across three 7B/8B families",
                 r"Across three medical organisms the\s*direction recurs",
             ],
         ),

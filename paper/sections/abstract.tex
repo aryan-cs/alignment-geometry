@@ -1,31 +1,22 @@
 \begin{abstract}
-Post-training leaves a record in the difference between a model's initial and
-final weights. We ask whether this checkpoint geometry can narrow the search
-for directions associated with refusal \citep{arditi2024} and measured emergent
-misalignment \citep{betley2025emergent,turner2025organisms}. Across all $224$
-linear maps in the Llama-3-8B Base-to-Instruct delta
+Post-training changes model behavior, but evaluation alone does not reveal how
+those changes are organized in weight space. We study the difference between
+initial and final checkpoints, using spectral outliers to locate prominent
+directions and matched fine-tuning contrasts to test their behavioral relevance.
+Across all $224$ linear maps in the Llama-3-8B Base-to-Instruct delta
 \citep{grattafiori2024llama3}, every leading eigenvalue clears a fitted
-Marchenko--Pastur visibility edge \citep{marchenko1967}, including under an
-alternative scale fit. The spectrum therefore nominates prominent directions,
-but does not identify their behavioral role.
+Marchenko--Pastur visibility edge \citep{marchenko1967}.
 
-We first test the leading attention-output subspace against an independently
-estimated refusal direction \citep{arditi2024}. Projecting out its top $128$ directions changes
-substring-scored refusal from $98.4\%$ to $14.1\%$, versus $97.7\%$ for a random
-subspace. The same intervention causes much larger capability losses, indicating
-a behavior-sensitive but entangled subspace rather than an isolated safety
-switch.
-
-We then contrast matched harmful and safe medical fine-tunes. Four Qwen
-checkpoint pairs \citep{hui2024qwen25coder}
-agree with their pooled direction at cosine $0.97$, rank every
-omitted harmful arm above its safe counterpart, and support an in-sample
-projection that changes the measured joint rate from $2.3\%$ to $0.0\%$, versus
-$3.4\%$ under random ablation. The construction recurs in three 7B/8B model
-families, but is weaker on Mistral \citep{jiang2023mistral} and fails the frozen
-14B causal criteria. A
-$16$-pair audit also finds perfect held-out ordering for several learned
-contrasts, not unique superiority of weight-SVD. The evidence supports
-behavior-sensitive geometry in these fixed checkpoints, not a universal
-direction, method superiority, or prospective causal generalization.
+The leading attention-output subspace overlaps an independently estimated
+refusal direction \citep{arditi2024}. Projecting out its top $128$ directions
+changes substring-scored refusal from $98.4\%$ to $14.1\%$, versus $97.7\%$ for
+a random subspace, but also causes broad capability loss. Matched harmful and
+safe medical fine-tunes \citep{betley2025emergent,turner2025organisms} yield
+recurring contrast directions across three 7B/8B families. On
+Qwen2.5-Coder-7B \citep{hui2024qwen25coder}, an in-sample projection changes the
+measured joint misalignment rate from $2.3\%$ to $0.0\%$, versus $3.4\%$ under
+random ablation; a frozen 14B test is inconclusive. In these checkpoints,
+spectral geometry exposes behavior-sensitive subspaces, but the capability
+damage and failed scale-up criterion do not support an isolated safety mechanism
+or prospective causal generalization.
 \end{abstract}

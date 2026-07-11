@@ -135,13 +135,11 @@ PROOF_METADATA_SENTINELS = {
 }
 
 PAPER_CONTEXT_SENTINELS = [
-    ("paper/sections/abstract.tex", "directions associated with refusal", ("arditi2024",), 1),
     ("paper/sections/abstract.tex", "Llama-3-8B Base-to-Instruct delta", ("grattafiori2024llama3",), 1),
     ("paper/sections/abstract.tex", "Marchenko--Pastur visibility edge", ("marchenko1967",), 1),
-    ("paper/sections/abstract.tex", "estimated refusal direction", ("arditi2024",), 2),
-    ("paper/sections/abstract.tex", "misalignment \\citep", ("betley2025emergent", "turner2025organisms"), 1),
-    ("paper/sections/abstract.tex", "Four Qwen", ("hui2024qwen25coder",), 2),
-    ("paper/sections/abstract.tex", "weaker on Mistral", ("jiang2023mistral",), 1),
+    ("paper/sections/abstract.tex", "refusal direction", ("arditi2024",), 1),
+    ("paper/sections/abstract.tex", "Matched harmful and", ("betley2025emergent", "turner2025organisms"), 1),
+    ("paper/sections/abstract.tex", "Qwen2.5-Coder-7B", ("hui2024qwen25coder",), 1),
     ("paper/sections/intro.tex", "optimization, or safety training", ("ouyang2022instruct", "rafailov2023dpo"), 1),
     ("paper/sections/intro.tex", "In the released Llama-3-8B", ("grattafiori2024llama3",), 2),
     ("paper/sections/intro.tex", "iid Gaussian reference", ("marchenko1967", "johnstone2001"), 2),

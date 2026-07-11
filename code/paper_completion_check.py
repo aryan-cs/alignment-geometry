@@ -2759,10 +2759,10 @@ def check_required_claim_framing(gates):
     required = {
         "paper/sections/abstract.tex": [
             "substring-scored refusal",
-            "support an in-sample projection",
-            "weaker on Mistral",
-            "behavior-sensitive but entangled subspace",
-            "not unique superiority of weight-SVD",
+            "an in-sample projection",
+            "broad capability loss",
+            "frozen 14B test is inconclusive",
+            "behavior-sensitive subspaces",
             "prospective causal generalization",
         ],
         "paper/sections/intro.tex": [
