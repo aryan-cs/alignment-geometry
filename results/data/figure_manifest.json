@@ -1,7 +1,7 @@
 {
   "schema": "figure_manifest_v1",
   "producer": "code/make_figures.py",
-  "generated_at": "2026-07-16T13:44:45Z",
+  "generated_at": "2026-07-16T14:43:43Z",
   "source_count": 29,
   "figure_count": 25,
   "sources": [
@@ -12,8 +12,8 @@
     },
     {
       "path": "code/make_figures.py",
-      "sha256": "e5efe8bef716002c7bee61f8ab0de3c580a164152c8a0296e80d0341843a7cb9",
-      "bytes": 67748
+      "sha256": "a8b8bfaa626d5116a98eeeb57550bbbb2ba165d69680ba8572b8ba4f1b8f2698",
+      "bytes": 68343
     },
     {
       "path": "results/data/ablation_layers.json",
@@ -239,8 +239,8 @@
     },
     {
       "path": "results/figures/mis_scout_overlap_3d.pdf",
-      "sha256": "7c4f7202bd329733665df2e85f9d3f2bbd38bf6de39a6aca4ba758dfd4ad8cff",
-      "bytes": 97674
+      "sha256": "f99fc776dac8311b30679a5d4caa9b9055895cbb5573a8016c432ca150e281a1",
+      "bytes": 93394
     },
     {
       "path": "results/figures/nec_suff.pdf",

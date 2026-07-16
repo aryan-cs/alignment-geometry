@@ -1,7 +1,7 @@
 {
   "pdf": "docs/paper.pdf",
-  "pdf_sha256": "7595b0ea74ef86e65fda5793632521ab9a586e3872a6cf84626f0816262a6cc3",
-  "inspected_at_utc": "2026-07-16T14:08:20Z",
+  "pdf_sha256": "f1313968dae3e02ac8c14b1cbf03a51a03368ebe97843a427e510e2954106917",
+  "inspected_at_utc": "2026-07-16T14:44:37Z",
   "pages_total": 23,
   "pages_checked": 23,
   "render_dpi": 120,
@@ -16,7 +16,7 @@
     22,
     23
   ],
-  "method": "All 23 pages inspected in a 72-dpi contact sheet; changed and gate-critical pages 1, 7, 9-11, 15, and 21-23 inspected individually at 160 dpi. Verified figure legibility, captions, margins, float spacing, and absence of clipping or overlap.",
+  "method": "All 23 pages inspected in a 72-dpi contact sheet; Figure 11 and adjacent pages 10-11 inspected individually at 220 dpi after the final-width layout revision; gate-critical pages 1, 7, 9-11, 15, and 21-23 retained in the full-size inspection set. Verified panel separation, axis-label spacing, caption placement, margins, and absence of clipping or overlap.",
   "render_receipt": {
     "schema": "pdf_render_receipt_v1",
     "renderer": "pdftoppm",
@@ -71,58 +71,58 @@
       },
       {
         "page": 10,
-        "sha256": "1434c77e3edc01058e072bcfeae2a6bd312972b02184e02c5599f8de2b937a31",
-        "bytes": 297353
+        "sha256": "936e995eeeee3238764728560ecc7939869774e6f5d061421db443224ef18e6e",
+        "bytes": 199950
       },
       {
         "page": 11,
-        "sha256": "66ebac077b9af75fa2421a0bfaad5db8684f975e716b46c2523861b2f48d3a21",
-        "bytes": 352121
+        "sha256": "351daa509a6ddf48a81bea38d15769c7ca418a89f5e0329b841f5c0b52cce75e",
+        "bytes": 330068
       },
       {
         "page": 12,
-        "sha256": "820e6f0067cded6ea1003568b6a03cde44f42aac4cf53af2f7a3d9bf63ace34c",
-        "bytes": 263524
+        "sha256": "1a4e8009ecbf137c9ce5dc96b6ebe98ce486d195596247ccf0fda10f3a69373e",
+        "bytes": 355675
       },
       {
         "page": 13,
-        "sha256": "9be0eeb5abaa6a8e363af5b987aae059922b7fe089afccdc26d6f0b9afea46c0",
-        "bytes": 347672
+        "sha256": "5c8609d2bb694b8934e8bdc5e62762ae59bb98eb79d1733aec07b46107da8e26",
+        "bytes": 337236
       },
       {
         "page": 14,
-        "sha256": "ef8514d8da4b3a85b5dbef1114d1edf00fdd664e6601aa9e59e53e8b0eb623cf",
-        "bytes": 350727
+        "sha256": "b3d9d1d7fa4b55fd135e70a57e2e8617e60c79a5b0775ffdc2880ae13eacd01f",
+        "bytes": 337220
       },
       {
         "page": 15,
-        "sha256": "04e61889ae4e62442f8ebfc48a089d1dd83c702ee8e3c5c9d7aa898e86b65beb",
-        "bytes": 343230
+        "sha256": "c5eadb3d5ffe2f1fc9c098d8403db5ae2dcafb5b76490ce44a75f354f407551f",
+        "bytes": 338228
       },
       {
         "page": 16,
-        "sha256": "00305e399e19d1e975329ed614ecc9459e083f94de60d5c1501b4f4ff68fb59d",
-        "bytes": 396286
+        "sha256": "5ca535801edd8600a9bfd56522920b328b793a4aff0c49c80e52e993c3a0a5ae",
+        "bytes": 393526
       },
       {
         "page": 17,
-        "sha256": "40f185c377899ca44664885891694ab2a378061c83589de61daa163fc30a4cb6",
-        "bytes": 415682
+        "sha256": "751bab9f3308aabd2740cc51861ab6cdb9cd23afc39cc5938ac52f22fa40b9bc",
+        "bytes": 429093
       },
       {
         "page": 18,
-        "sha256": "7cd785860927d301b96616c37d44b0a0402aeb62b274ab7d44d970429175bd57",
-        "bytes": 427589
+        "sha256": "ce1a169e0e26e06cacf30eff1c432960218c8ba35d541a88040acb78f4098711",
+        "bytes": 413100
       },
       {
         "page": 19,
-        "sha256": "0fcdfd1485f5979dab38e6e203aee9fedb067734fe441da0ccfb17a5c65f4e66",
-        "bytes": 384271
+        "sha256": "499a37ff7d30dd0098960afecb3675197e573d04729b62cb1ce8f7f48fe2da31",
+        "bytes": 399585
       },
       {
         "page": 20,
-        "sha256": "ef1f2b4aebbc813650ab1de477a69018f3a30b109f60e706ba1ed5933a1a3af8",
-        "bytes": 301664
+        "sha256": "69d4c1afee7d449a9de3cdeeb463abf8c22693a0e42fef966317980eb500c14a",
+        "bytes": 361091
       },
       {
         "page": 21,

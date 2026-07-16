@@ -1095,10 +1095,15 @@ def fig_mis_scout_overlap_3d(
     misaligned = np.log10(top_over_edge("mis"))
     residual = misaligned - benign
 
-    fig = plt.figure(figsize=(7.2, 3.2))
-    grid = fig.add_gridspec(1, 3, width_ratios=[1.13, 1.0, 0.78])
+    # Generate at the NeurIPS text width so TeX does not shrink the typography.
+    fig = plt.figure(figsize=(5.5, 4.65))
+    grid = fig.add_gridspec(
+        2, 2, height_ratios=[2.15, 1.0], hspace=0.38, wspace=0.36
+    )
     ax_profiles = fig.add_subplot(grid[0, 0], projection="3d")
     ax_iso = fig.add_subplot(grid[0, 1], projection="3d")
+    orientation_ticks = [0, 2, 4, 6]
+    orientation_labels = ["q", "v", "gate", "down"]
 
     for row_idx in range(len(LABELS)):
         ys = np.full(len(layers), row_idx)
@@ -1109,14 +1114,29 @@ def fig_mis_scout_overlap_3d(
     zmax = max(benign.max(), misaligned.max()) * 1.03
     ax_profiles.set(xlim=(layers.min(), layers.max()),
                     ylim=(-0.3, len(LABELS) - 0.7), zlim=(0, zmax))
-    ax_profiles.set_xticks([0, 8, 16, 24, 32, 40, 47])
-    ax_profiles.set_yticks(range(len(LABELS)), LABELS)
+    ax_profiles.set_xticks([0, 16, 32, 47])
+    ax_profiles.set_yticks(orientation_ticks, orientation_labels)
     ax_profiles.set_zticks([0, 1, 2, 3, 4], ["1x", "10x", "100x", "1k", "10k"])
-    ax_profiles.set_xlabel("layer")
-    ax_profiles.set_ylabel("matrix type")
-    ax_profiles.set_zlabel("top/edge ratio")
-    ax_profiles.set_title("(a) Spectral profiles", fontsize=10, pad=3)
-    style_3d_axes(ax_profiles)
+    ax_profiles.set_xlabel("layer", fontsize=8.5, labelpad=5)
+    ax_profiles.set_ylabel("matrix", fontsize=8.5, labelpad=7)
+    ax_profiles.set_zlabel("top/edge", fontsize=8.5, labelpad=5)
+    ax_profiles.set_title("(a) Spectral profiles", fontsize=9.2, pad=7)
+    ax_profiles.set_proj_type("ortho")
+    style_3d_axes(
+        ax_profiles, elev=25, azim=-58, aspect=(1.42, 1.0, 0.95)
+    )
+    ax_profiles.tick_params(labelsize=8.0, pad=2)
+    ax_profiles.legend(
+        handles=[
+            Line2D([0], [0], color=SAFE_GREEN, lw=1.8,
+                   label="benign arm"),
+            Line2D([0], [0], color=HARM_RED, lw=1.8, ls="--",
+                   label="misaligned arm"),
+        ],
+        loc="upper left", bbox_to_anchor=(-0.01, 0.96), ncol=1,
+        frameon=True, facecolor="white", edgecolor="none", framealpha=0.88,
+        fontsize=7.5, handlelength=2.0, borderpad=0.25, labelspacing=0.28,
+    )
 
     xs, ys = np.meshgrid(layers.astype(float), np.arange(len(LABELS), dtype=float))
     flat = residual.ravel()
@@ -1128,76 +1148,70 @@ def fig_mis_scout_overlap_3d(
     )
     ax_iso.plot_surface(plane_x, plane_y, np.zeros_like(plane_x),
                         color=GRID, alpha=0.28, shade=False)
-    ax_iso.bar3d(xs.ravel() - 0.34, ys.ravel() - 0.28, z0,
-                 0.68, 0.56, dz, color=colors, edgecolor=INK,
-                 linewidth=0.08, shade=True, alpha=0.88)
+    ax_iso.bar3d(xs.ravel() - 0.27, ys.ravel() - 0.22, z0,
+                 0.54, 0.44, dz, color=colors, edgecolor=INK,
+                 linewidth=0.06, shade=False, alpha=0.84)
     limit = max(abs(residual.min()), abs(residual.max())) * 1.15
     ax_iso.set(xlim=(layers.min() - 0.6, layers.max() + 0.6),
                ylim=(-0.55, len(LABELS) - 0.55), zlim=(-limit, limit))
-    ax_iso.set_xticks([0, 8, 16, 24, 32, 40, 47])
-    ax_iso.set_yticks(range(len(LABELS)), [])
-    ax_iso.set_zticks([-limit, 0, limit], [])
-    ax_iso.set_xlabel("layer")
-    ax_iso.set_title("(b) Isometric residuals", fontsize=10, pad=3)
-    style_3d_axes(ax_iso)
-
-    side_grid = grid[0, 2].subgridspec(
-        8, 1, height_ratios=[0.30, 1, 1, 1, 1, 1, 1, 1], hspace=0.10
+    ax_iso.set_xticks([0, 16, 32, 47])
+    ax_iso.set_yticks(orientation_ticks, orientation_labels)
+    axis_tick = max(0.05, round(limit / 0.05) * 0.05)
+    ax_iso.set_zticks(
+        [-axis_tick, 0, axis_tick],
+        [f"-{axis_tick:.2f}", "0", f"+{axis_tick:.2f}"],
     )
-    title_ax = fig.add_subplot(side_grid[0, 0])
-    title_ax.axis("off")
-    title_ax.text(0.5, 0.45, "(c) Side view",
-                  fontsize=10, color=INK, ha="center", va="center")
-    side_axes = []
-    tick = 0.05 if limit >= 0.05 else limit / 2
-    for row_idx, label in enumerate(LABELS):
-        ax = fig.add_subplot(
-            side_grid[row_idx + 1, 0],
-            sharex=side_axes[0] if side_axes else None,
-        )
-        values = residual[row_idx]
-        fills = [HARM_RED if value >= 0 else SAFE_GREEN for value in values]
-        edges = [HARM_RED_DARK if value >= 0 else SAFE_GREEN_DARK
-                 for value in values]
-        ax.bar(layers, values, width=0.82, color=fills,
-               edgecolor=edges, linewidth=0.22)
-        ax.axhline(0, color=GREY, lw=0.65)
-        ax.set_ylim(-limit, limit)
-        ax.set_ylabel(label, rotation=0, ha="right", va="center",
-                      labelpad=8, fontsize=7.2)
-        ax.spines["top"].set_visible(False)
-        ax.spines["right"].set_visible(False)
-        ax.spines["left"].set_color(GRID)
-        ax.spines["bottom"].set_visible(False)
-        ax.tick_params(axis="both", labelsize=6.4, length=2, pad=1)
-        if row_idx == 3:
-            ax.yaxis.tick_right()
-            ax.set_yticks([-tick, 0, tick],
-                          [f"-{tick:.2f}", "0", f"+{tick:.2f}"])
-        else:
-            ax.set_yticks([])
-        if row_idx < len(LABELS) - 1:
-            ax.tick_params(axis="x", labelbottom=False, bottom=False)
-        else:
-            ax.spines["bottom"].set_visible(True)
-            ax.spines["bottom"].set_color(GREY)
-            ax.set_xticks([0, 8, 16, 24, 32, 40, 47])
-            ax.set_xlabel("layer", labelpad=2)
-        side_axes.append(ax)
+    ax_iso.set_xlabel("layer", fontsize=8.5, labelpad=5)
+    # The right-hand 3D labels otherwise extend beyond the fixed paper-width
+    # canvas. The ticks and panel title carry those two axis meanings here.
+    ax_iso.set_ylabel("")
+    ax_iso.set_zlabel("")
+    ax_iso.set_title("(b) Isometric residuals", fontsize=9.2, pad=7)
+    ax_iso.set_proj_type("ortho")
+    style_3d_axes(ax_iso, elev=25, azim=-58, aspect=(1.42, 1.0, 0.95))
+    ax_iso.tick_params(labelsize=8.0, pad=2)
 
-    fig.legend(
-        handles=[
-            Line2D([0], [0], color=SAFE_GREEN, lw=1.8, label="benign arm"),
-            Line2D([0], [0], color=HARM_RED, lw=1.8, ls="--",
-                   label="misaligned arm"),
-            Line2D([0], [0], color=GREY, lw=0.8, label="zero residual"),
-        ],
-        loc="lower center", ncol=3, frameon=False, fontsize=8,
-        bbox_to_anchor=(0.5, 0.035),
+    map_grid = grid[1, :].subgridspec(
+        2, 1, height_ratios=[14, 1], hspace=1.05
     )
-    fig.subplots_adjust(left=0.025, right=0.985, bottom=0.14,
-                        top=0.93, wspace=0.14)
-    save_figure_pdf(fig, outdir, "mis_scout_overlap_3d.pdf", pad_inches=0.08)
+    ax_map = fig.add_subplot(map_grid[0, 0])
+    cax = fig.add_subplot(map_grid[1, 0])
+    residual_cmap = mcolors.LinearSegmentedColormap.from_list(
+        "safe_neutral_harm", [SAFE_GREEN, "#ffffff", HARM_RED]
+    )
+    map_limit = max(abs(residual.min()), abs(residual.max()))
+    image = ax_map.imshow(
+        residual,
+        aspect="auto",
+        interpolation="nearest",
+        cmap=residual_cmap,
+        norm=mcolors.TwoSlopeNorm(vmin=-map_limit, vcenter=0, vmax=map_limit),
+    )
+    ax_map.set_xticks([0, 8, 16, 24, 32, 40, 47])
+    ax_map.set_xticklabels([0, 8, 16, 24, 32, 40, 47])
+    ax_map.set_yticks(range(len(LABELS)), LABELS)
+    ax_map.set_xlabel("layer", labelpad=4)
+    ax_map.set_ylabel("")
+    ax_map.set_title("(c) Orthographic residual map", fontsize=9.2, pad=6)
+    ax_map.tick_params(axis="both", labelsize=7.8, length=2.5, pad=2)
+    for boundary in np.arange(0.5, len(LABELS), 1.0):
+        ax_map.axhline(boundary, color="white", lw=0.55, alpha=0.95)
+    colorbar = fig.colorbar(image, cax=cax, orientation="horizontal")
+    colorbar.set_ticks([-map_limit, 0, map_limit])
+    colorbar.set_ticklabels(
+        [f"-{map_limit:.2f}", "0", f"+{map_limit:.2f}"]
+    )
+    colorbar.ax.tick_params(labelsize=7.5, length=2, pad=2)
+    colorbar.set_label(
+        r"paired $\log_{10}(\mathrm{misaligned}/\mathrm{benign})$",
+        fontsize=8.0, labelpad=2,
+    )
+
+    fig.subplots_adjust(left=0.12, right=0.90, bottom=0.10, top=0.95)
+    save_figure_pdf(
+        fig, outdir, "mis_scout_overlap_3d.pdf",
+        bbox_inches=None, pad_inches=0,
+    )
     plt.close(fig)
 
 
