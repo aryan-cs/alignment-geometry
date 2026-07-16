@@ -98,8 +98,7 @@ their directions; activation-contrast PCA uses the arm-condition labels and 64
 fixed full user-and-assistant secure-code chats as stimuli but no judged behavior
 labels, and alternate stimulus sets are not tested. The
 learned directions average raw training-arm increments rather than
-energy-rescaled increments, while held-out scores are norm-normalized. The
-label-trained comparators remain untested rather than completed baselines. Where
+energy-rescaled increments, while held-out scores are norm-normalized. Where
 labels exist and the distribution is known, a probe is expected to be better.
 
 **Metrics.** Per-layer spike test power and false-positive rate against the
@@ -107,7 +106,7 @@ permutation null; separation of `r_m` and `r_b` relative to `r*` at matched
 energy; steering effect size on the eval questions; leading-subspace distance
 against the null; transfer AUROC across misalignment types; and, for the
 completed baseline audit, fold wins, mean score margin, and AUC under a shared
-16-fold split. Supervised behavioral-label comparisons remain future work.
+16-fold split.
 
 ## 8. The LARF tension
 
@@ -150,7 +149,7 @@ The proof carries the full positioning with citations. In brief, we differentiat
 | Cross-type transfer beyond the medical organism | validated as a negative/inconclusive H200 audit; the real code-organism result does not support a positive transfer claim, so any future positive bundle must be separate from the completed `cross_type_code_audit` handoff |
 | 14B scale study | completed and retained as a negative/inconclusive causal audit; four suffix-matched Qwen2.5-Coder-14B checkpoint pairs show strong internal paired agreement and descriptive leave-one-pair-out separation, while the single post-freeze `s0`-pair seeded necessity run misses the causal drop, random-control gap, and Wilson-separation criteria |
 | Baseline bake-off and activation-PCA baselines | completed and validated as a negative/inconclusive H200 audit; all three learned directions rank all 16 held-out pairs correctly, while weight-SVD's mean margin is 0.023 below row-mean contrast, so the paper makes no weight-SVD superiority claim |
-| Robustness to adaptive adversaries | documented limitation/future work, not an external completion gate |
+| Robustness to adaptive adversaries | outside the external completion gates |
 
 ## 11. Repository layout
 
@@ -189,8 +188,7 @@ in the manuscript. The baseline bake-off is also completed and retained as a
 negative/inconclusive audit because weight-SVD does not outperform the simpler
 row-mean contrast. The 14B scale study is completed as a negative/inconclusive
 causal audit: geometry and held-out separation persist, but causal scale
-replication is not supported. Robustness to adaptive adversaries remains a documented limitation and
-future-work item, not a completion blocker. The local ingest helpers now cover
+replication is not supported. The local ingest helpers now cover
 completed capability, current-provenance, cross-type, and OOD-transfer bundles,
 plus the completed baseline and 14B audit bundles; they are handoff gates
 for real H200 artifacts, not substitutes for those artifacts.

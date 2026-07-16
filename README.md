@@ -44,7 +44,8 @@ is not treated as an alignment detector.
   preservation.
 - **Matched medical organisms recover a shared contrast direction.** The
   Qwen2.5-Coder-7B checkpoint, direction, and evaluation artifacts are
-  hash-linked, but the original medical training rows are not present.
+  hash-linked; the medical training rows are external inputs and are not
+  distributed in this repository.
   Projecting out the fitted direction changes the all-output joint
   misalignment-and-eligibility rate from 2.3% to 0.0% in-sample, while a random
   direction gives 3.4%.

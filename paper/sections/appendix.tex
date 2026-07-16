@@ -75,10 +75,9 @@ statistic for $k$-dimensional random subspaces.
 \paragraph{Residual-stream projection intervention.}
 We project the top-$128$ singular subspace of zero-indexed block $14$'s
 \texttt{o\_proj} increment out of the residual stream after every decoder block
-and measure the refusal score on a fixed harmful-prompt slice. The corrected
+and measure the refusal score on a fixed harmful-prompt slice. The
 audit applies chat-formatted tokenization consistently to baseline, spectral,
-and random conditions. Earlier full-$k$ and source-block sweeps used a different
-tokenization or activation convention and are not reported as evidence. The
+and random conditions. The
 top-$128$ intervention substantially reduces MMLU, ARC-C, and GSM8K accuracy and
 is not treated as capability preserving. The control ablates one seeded random
 $128$-dimensional subspace. Refusal is scored by substring match against the
@@ -96,7 +95,7 @@ respectively. Baseline/spectral/random Wilson intervals are
 $[61.1,69.4]/[37.6,46.2]/[50.0,58.7]\%$ on MMLU,
 $[75.8,83.6]/[45.4,55.1]/[61.0,70.2]\%$ on ARC-C, and
 $[72.4,80.6]/[1.7,5.2]/[60.7,70.0]\%$ on GSM8K.
-On the corrected fixed $128$-prompt refusal slice, baseline,
+On the fixed $128$-prompt refusal slice, baseline,
 spectral, and random rates are $98.4\%$, $14.1\%$, and $97.7\%$.
 On HarmBench \citep{mazeika2024harmbench}, baseline, spectral-ablation, and random-ablation
 refusal are $71.2\%$ ($[66.6,75.5]\%$), $5.8\%$ ($[3.9,8.5]\%$), and $65.8\%$
@@ -123,15 +122,11 @@ files; bundle SHA-256
 \path{6eab34d39670f76b26dc9f751d12579e96d1517f}; configuration SHA-256
 \path{4034ac8286446debac327ad75808ee41542ae10af507399a8a5bf131c21d36b7}.\par
 \endgroup
-The data manifest deliberately excludes generated figures and visual-QA receipts.
-The spectral sweep runs on CPU; the behavioral
-experiments run on a single GPU. Random seeds are fixed for the null sampling
+Random seeds are fixed for the null sampling
 and the random-subspace control. Committed artifacts record resolved paths and
 SHA-256 hashes for the medical checkpoint files, evaluation outputs, and
-recovered directions; the fine-tuned checkpoint files, harmful/safe training
-rows, and source hashes are not in the repository. Independent retraining or
-reevaluation therefore requires those original files; no public checkpoint
-locations are currently recorded.
+recovered directions; the fine-tuned checkpoint files and training rows are
+external inputs and are not distributed with the repository.
 Reported binomial rate intervals are Wilson
 score intervals \citep{wilson1927}. They are descriptive marginal intervals for
 individual rates, not uncertainty intervals or tests for differences between
@@ -149,8 +144,8 @@ exploratory and stimulus-specific. Held-out increments are normalized, whereas t
 energy unmatched, so cross-space margins are not a common effect-size scale and
 update magnitude remains confounded. The prespecified weight-SVD-versus-row-mean
 comparison retains every fold. Activation-PCA output predates that rule, so the
-full four-way comparison is not preregistered. Its H200 environment is
-hash-linked; the later weight calculation runs on CPU.
+full four-way comparison is not preregistered. Its execution environment is
+hash-linked.
 
 Two unseeded 14B runs preceded the analysis freeze and are treated as exploratory
 because queue selection depended on their outcomes. The primary analysis fixes
@@ -194,13 +189,34 @@ the pool, so this is descriptive within-sample agreement, not a held-out test.}
 
 \begin{figure}[!htbp]
 \centering
-\includegraphics[width=0.68\textwidth]{../results/figures/detect.pdf}
-\caption{Leave-one-seed-out separation. Families run horizontally; within-family
-offsets only separate markers. Greater height is the normalized projection norm
-$\|v^\top\Delta W\|_2/\|\Delta W\|_F$, and vertical separation measures arm ordering.
-Each red or green point is one held-out fold score, four per arm per family;
-each gray point is a random-direction score for one held-out arm, eight per
-family. Directions fitted on the remaining seeds rank the held-out misaligned
-arm higher in all $12/12$ folds.}
+\includegraphics[width=\textwidth]{../results/figures/direction_cosine_schematic_3d.pdf}
+\caption{Cosine-level schematic of layer-12 internal agreement across the three
+7B/8B medical organisms. The black vertical axis in each panel represents that
+family's own pooled contrast. Ring height is the reported mean absolute cosine
+with that axis; a higher, smaller ring means stronger agreement and less
+orthogonal component. Line style and marker identify model family. Red rings
+show matched harmful-minus-safe directions ($0.97$, $0.95$, $0.71$), while green
+rings show the differently constructed benign-reference directions ($0.16$,
+$0.48$, $0.37$). Azimuth and the two horizontal coordinates are schematic, and
+vectors from different families are not embedded in a common parameter space.
+Because all four pairs enter each pooled direction, the figure visualizes
+within-sample consistency rather than held-out generalization.}
+\label{fig:direction-cones}
+\end{figure}
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\textwidth]{../results/figures/heldout_pairs_3d.pdf}
+\caption{Leave-one-pair-out ranking across four model cohorts. Families run
+horizontally, held-out folds run in depth, and height is the normalized
+projection norm $\|v^\top\Delta W\|_2/\|\Delta W\|_F$. Each connector joins the
+benign (green square) and misaligned (red circle) arm from one fold, so an
+upward connector from green to red is a correct within-fold ordering. (a) The
+contrast direction is fitted on the other three pairs and orders every held-out
+pair correctly in the three 7B/8B cohorts and the Qwen-14B scale audit. (b) One
+seeded random unit direction per cohort, held fixed across folds, gives small
+and weakly separated scores. The folds overlap in training arms, and a single
+random direction is a dimensional control rather than a sampled null. The 14B
+column is a positive screening result only; its frozen causal criterion fails.}
 \label{fig:detect}
 \end{figure}

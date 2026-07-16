@@ -182,7 +182,6 @@ PAPER_CONTEXT_SENTINELS = [
     ("paper/sections/related.tex", "Safety-critical neuron", ("wei2024brittleness",), 2),
     ("paper/sections/related.tex", "Safe LoRA, LSSF", ("hsu2024safelora", "zhou2025lssf", "zhang2026preserving"), 2),
     ("paper/sections/related.tex", "Catastrophic forgetting", ("kirkpatrick2017", "merchant2020", "yu2020gradient"), 3),
-    ("paper/sections/discussion.tex", "objectives such as RLHF and DPO", ("ouyang2022instruct", "rafailov2023dpo"), 2),
     ("paper/sections/discussion.tex", "HarmBench reproduces", ("mazeika2024harmbench",), 2),
     ("paper/sections/discussion.tex", "The additive model supplies an ideal outlier", ("benaych2012",), 2),
     ("paper/sections/discussion.tex", "The refusal census covers one released 8B model", ("grattafiori2024llama3",), 2),

@@ -20,35 +20,38 @@ On a Qwen2.5-Coder-14B \citep{hui2024qwen25coder} insecure-versus-secure scout
 pair following the emergent-misalignment construction
 \citep{betley2025emergent}, across $336$ matrices,
 the misaligned and benign-matched increments are essentially indistinguishable
-(Table~\ref{tab:scalar-scout}). The misaligned increment has lower stable rank in
+(Figure~\ref{fig:scalar-scout}). Median stable rank is $325.83$ versus $325.84$,
+median operational visibility count is $43.5$ versus $43.0$, and median
+top-to-edge ratio is $3.43$ versus $3.42$. The misaligned increment has lower stable rank in
 $181/336$ matrices ($53.9\%$), a descriptive fraction near one half. Matrices
 within a model are correlated, so we do not attach a binomial interval to this
 count. The per-matrix Frobenius rescaling puts the two arms on a common energy
 scale for presentation, but it does not change stable rank, fitted-edge
 exceedance counts, or the top-to-edge ratio. It is bookkeeping rather than an
-additional control. The negative result is informative: harmful and safe arms
-do not differ in how concentrated their updates are. Any distinguishing signal
-must instead depend on where the updates point, which motivates the matched
-directional analysis below.
+additional control. The sign-changing residuals in
+Figure~\ref{fig:scalar-scout} make the same point at matrix resolution: some
+misaligned maps have larger top-to-edge ratios, others have smaller ratios, and
+there is no architecture-wide shift. These tested scalar summaries therefore
+do not separate the two arms. This failure motivates the matched directional
+analysis below, which asks where the updates point rather than only how
+concentrated they are.
 
-\begin{table}[t]
+\begin{figure}[!htbp]
 \centering
-\caption{Scalar spectral summaries for the Qwen2.5-Coder-14B scout. Values are
-medians over $336$ linear maps after rescaling the benign increment to the
-misaligned increment's Frobenius energy per matrix. This rescaling does not
-change any of the three scale-invariant summaries.}
-\label{tab:scalar-scout}
-\small
-\begin{tabular}{lcc}
-\toprule
-metric & misaligned & benign matched-energy \\
-\midrule
-stable rank & $325.83$ & $325.84$ \\
-operational visibility exceedances & $43.5$ & $43.0$ \\
-top/edge & $3.43$ & $3.42$ \\
-\bottomrule
-\end{tabular}
-\end{table}
+\includegraphics[width=\textwidth]{../results/figures/mis_scout_overlap_3d.pdf}
+\caption{Matched 14B scalar scout across $48$ layers and seven matrix types
+($336$ matrices). (a) Top-eigenvalue-to-fitted-MP-edge profiles for the
+misaligned and benign-matched increments; height is logarithmic, so each decade
+is a tenfold increase. (b) An isometric view of the paired log-ratio
+$\log_{10}(\mathrm{misaligned}/\mathrm{benign})$. (c) The same residuals from
+the side, where red bars above zero indicate a larger ratio for the misaligned
+arm and green bars below zero indicate a larger ratio for its benign match.
+Residuals change sign across layers and maps rather than showing a uniform
+shift. Together with the nearly identical medians in the text, this shows why
+the tested scalar concentration summaries do not separate the matched arms and
+why the subsequent analysis turns to directional information.}
+\label{fig:scalar-scout}
+\end{figure}
 
 \paragraph{Matched medical-advice fine-tunes.}
 We use emergent misalignment \citep{betley2025emergent} in the model-organism
@@ -69,8 +72,7 @@ four harmful-advice arms, $63/1600=3.9\%$ of all generated outputs jointly meet
 the alignment and eligibility conditions, versus $0/1600$ for the four benign
 arms (Figure~\ref{fig:mis-gate}). Conditional on eligibility, the corresponding
 rates are $63/1329=4.7\%$ ($[3.7,6.0]\%$) and $0/1327=0.0\%$
-($[0.0,0.3]\%$). The aggregate artifact does not preserve the separate counts
-for each exclusion category. This behavioral gap is the phenotype the weight
+($[0.0,0.3]\%$). This behavioral gap is the phenotype the weight
 contrast must recover; without it, geometric separation would have no measured
 behavioral target. Within this design, the gap isolates the target-answer
 contrast from the shared training recipe. The judge and threshold have not been
@@ -111,6 +113,11 @@ after every decoder block. Leave-one-pair-out scoring below provides a
 retrospective, same-recipe held-out-arm ranking check rather than an
 out-of-distribution causal test. Appendix Figure~\ref{fig:mis-geom} gives an
 angular schematic of the paired-agreement and benign-reference cosines.
+Appendix Figure~\ref{fig:direction-cones} extends that intuition across model
+families. In that schematic, moving upward means larger absolute cosine with a
+family's own pooled contrast, while the shrinking horizontal ring shows that
+less orthogonal freedom remains. The figure compares the reported cosine
+levels; it does not place different model families in one shared weight space.
 
 \begin{figure}[!htbp]
 \centering
@@ -143,9 +150,8 @@ ineligible outputs failed only the coherence threshold; no \texttt{CODE},
 \texttt{REFUSAL}, or unparseable judge output occurred. The gate above uses
 $400$ outputs per arm ($50$ per prompt), whereas this is a separate
 $800$-output run ($100$ per prompt). Because the tested arm contributes to the pooled direction,
-the result therefore concerns an in-sample, model-wide intervention; layer
-locality, capability preservation, and out-of-sample causal ablation were not
-tested. The fit uses known harmful-versus-safe arm assignments but no judged
+the result concerns an in-sample, model-wide intervention rather than a
+held-out causal test. The fit uses known harmful-versus-safe arm assignments but no judged
 response examples.
 The marginal Wilson intervals in Figure~\ref{fig:mis-causal} treat all fixed
 generated outputs as Bernoulli units. They exclude prompt, training-seed, judge,
@@ -175,6 +181,12 @@ effect size. Suppression is nearly complete on Qwen and Llama but partial on
 Mistral, which argues against a universal intervention strength. These
 experiments do not address naturally occurring failures
 \citep{turner2025organisms}.
+The cross-family schematic in Appendix Figure~\ref{fig:direction-cones} makes
+the recurring gap visible: the red harmful-minus-safe rings sit above the green
+benign-reference rings in every family, although Mistral's gap is smaller. The
+recurrence is therefore a recurrence of within-family contrast geometry and of
+the analysis procedure, not evidence for one vector shared across incompatible
+parameter spaces.
 
 \begin{table}[!htbp]
 \centering
@@ -260,7 +272,8 @@ leave-one-seed-out fold ($12/12$), the held-out misaligned arm scores above the
 benign one.
 Because folds share training arms, we treat $12/12$ as a descriptive count and
 do not use binomial uncertainty over folds. Figure~\ref{fig:detect} shows all
-four held-out fold scores per arm and family. Harmful/safe means are
+four held-out fold scores per arm and family. In the first three family columns,
+harmful/safe means are
 $0.671/0.098$ for Qwen, $0.435/0.233$ for Llama, and $0.264/0.136$ for Mistral, while a random
 direction of equal dimension scores both near $0.015$
 (Figure~\ref{fig:detect} in Appendix~\ref{app:details}). This is the first step
@@ -288,6 +301,13 @@ The scale result separates claims that coincide in the smaller organisms: a
 direction can be internally stable and rank held-out arms while its causal
 advantage over random ablation remains too small. Geometric reproducibility is
 therefore not sufficient evidence of causal control.
+Figure~\ref{fig:detect} places this distinction beside the smaller-family
+results. In the learned-direction panel, the red point lies above its matched
+green point in every fold, including all four 14B folds. In the seeded-random
+panel, the pairs cluster together near zero. The connectors make the relevant
+quantity a within-fold margin rather than an absolute height. The 14B ordering
+is a positive screening result inside the matched recipe, but the failed frozen
+intervention criterion prevents it from being read as a positive causal result.
 
 \FloatBarrier
 \paragraph{Baseline audit establishes separability, not method superiority.}

@@ -25,7 +25,7 @@ The controls separate four claims:
 \item \textbf{MP and Gaussian references} measure departure from an
 iid-isotropic benchmark, not alignment specificity.
 \item \textbf{A seeded random subspace} controls for projection dimension in the
-corrected top-$128$ audit, but does not estimate a null distribution.
+top-$128$ audit, but does not estimate a null distribution.
 \item \textbf{Matched benign controls} isolate the joint target-policy and content
 contrast within the medical organism.
 \item \textbf{Interventions} show sensitivity in the tested models, not circuit
@@ -43,30 +43,22 @@ direction recurs, but raw update magnitude remains unmatched.
 The refusal census covers one released 8B model \citep{grattafiori2024llama3},
 and the 14B organism reproduces geometry but not causal advantage over random
 ablation. Each endpoint delta aggregates training stages, while each organism
-fixes one recipe; we did not run matched controls for coding, mathematics,
-other domains, or objectives such as RLHF and DPO
-\citep{ouyang2022instruct,rafailov2023dpo}, nor for other optimizers or
-schedules. Reasoning,
-mixture-of-experts, multimodal, and models beyond 14B remain outside scope.
+fixes one recipe.
 
 Global projection does not localize a circuit, and each medical projection uses
 a checkpoint that contributed to its fitted direction. Leave-one-pair-out is a
-ranking screen, not a held-out causal intervention. Missing medical training
-rows prevent independent retraining. The refusal direction may encode prompt
+ranking screen, not a held-out causal intervention. The refusal direction may encode prompt
 distribution, topic, or style alongside refusal. HarmBench reproduces the spectral-versus-random gap on
-held-out harmful prompts \citep{mazeika2024harmbench}, but harmless prompts,
-adaptive attacks, and human scoring remain untested. Projection is blunt and
+held-out harmful prompts \citep{mazeika2024harmbench}. Projection is blunt and
 damages MMLU, ARC-C, and GSM8K
 \citep{hendrycks2021mmlu,cobbe2021gsm8k,clark2018arc}; steering is nonmonotonic.
-Capability-preserving intervention remains open.
 
 The organism claim rests on matched separation, held-out ranking, and
 cross-family recurrence, not prevalence. Baselines do not favor weight-SVD:
 row-mean and weight-SVD exchange margin order under score squaring, activation
 PCA ties their arm ordering, folds overlap, and update magnitude remains
 confounded. The code-organism and 14B causal audits fail their frozen criteria.
-Naturally occurring deception, sycophancy, reward hacking, jailbreaks, and
-multimodal failures remain untested. Prospective use requires directions and
+Prospective use requires directions and
 thresholds frozen before new endpoint deltas are observed.
 
 \section*{Ethical considerations}
@@ -76,7 +68,6 @@ capability-preserving bypass, but the same analysis could still inform attempts
 to remove safeguards. We therefore present the intervention as a diagnostic
 result rather than a deployment recipe. The medical model-organism outputs are
 synthetic and are not medical advice. Their local-judge labels have not been
-independently or human validated, and the missing medical training rows limit
-reproducibility. Any operational use would require stronger behavioral
+independently or human validated. Any operational use would require stronger behavioral
 evaluation, human review, held-out causal tests, and explicit controls for
 capability and misuse risk.

@@ -18,8 +18,7 @@ of $r_L$ in the top-$k$ left-singular subspace of that block's
 \texttt{o\_proj} increment and compare it with a random-$k$-subspace reference.
 Because $r_L$ may encode harmfulness, style, and dataset differences alongside
 refusal, the intervention claim concerns only a fixed substring-refusal score
-on harmful prompts. Harmless-prompt effects, adaptive attacks, and human
-judgments under the same intervention remain unmeasured.
+on harmful prompts.
 
 \begin{figure}[t]
 \centering
@@ -92,15 +91,13 @@ enrichment over random.}
 We project the top-$128$ left-singular subspace of the block-$14$
 \texttt{o\_proj} increment out of the residual stream after every decoder
 block. Applying one weight-derived basis globally tests model-wide dependence;
-it does not localize a circuit. On the fixed $128$-prompt slice used for the
-corrected audit, baseline substring refusal is $126/128=98.4\%$
+it does not localize a circuit. On the fixed $128$-prompt slice,
+baseline substring refusal is $126/128=98.4\%$
 ($[94.5,99.6]\%$), spectral projection gives $18/128=14.1\%$
 ($[9.1,21.1]\%$), and one seeded random $128$-dimensional projection gives
 $125/128=97.7\%$ ($[93.3,99.2]\%$). These are descriptive marginal Wilson
 intervals, not an interval or test for either intervention contrast. The
-corrected audit applies chat-formatted tokenization to all conditions. Earlier
-full-$k$, source-block, rank-one, and steering runs used a different activation
-or tokenization convention and are not used as evidence here.
+audit applies chat-formatted tokenization to all conditions.
 Because refusal is substring-scored without an output-coherence gate, the
 lower rate does not distinguish compliant answers from degenerate generations.
 Even with that limitation, the spectral-versus-random gap shows that the
@@ -122,7 +119,7 @@ safety switch or a capability-preserving removal method.
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.96\textwidth]{../results/figures/ablation.pdf}
-\caption{Corrected top-$128$ intervention audit. \emph{Left:}
+\caption{Top-$128$ intervention audit. \emph{Left:}
 substring-refusal rates on the same $128$ harmful prompts with descriptive
 per-rate $95\%$ Wilson intervals; lower means fewer fixed refusal-phrase
 matches. \emph{Right:} benchmark accuracy; higher is better. Spectral

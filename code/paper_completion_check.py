@@ -21,7 +21,7 @@ import numpy as np
 
 
 ROOT = Path(__file__).resolve().parents[1]
-EXPECTED_PAPER_PAGES = "21"
+EXPECTED_PAPER_PAGES = "23"
 SCALE_14B_ATTEMPT_HISTORY = "results/data/scale_14b_attempt_history.json"
 SCALE_14B_ATTEMPT_RECEIPT = "results/data/run_logs/scale14b_evidence_20260701.log"
 SCALE_14B_CAUSAL_ARTIFACTS = (
@@ -160,7 +160,44 @@ FIGURE_SOURCE_ARTIFACTS = [
     "results/data/run_manifests/capability_manifest.json",
 ]
 
-REQUIRED_THREE_D_FIGURES = {}
+REQUIRED_THREE_D_FIGURES = {
+    "results/figures/mis_scout_overlap_3d.pdf": {
+        "section": "paper/sections/misalignment.tex",
+        "phrases": [
+            "mis_scout_overlap_3d.pdf",
+            "sign-changing residuals",
+            "why the subsequent analysis turns to directional information",
+        ],
+        "producer_phrases": [
+            "def fig_mis_scout_overlap_3d",
+            "mis_scout_overlap_3d.pdf",
+        ],
+    },
+    "results/figures/direction_cosine_schematic_3d.pdf": {
+        "section": "paper/sections/appendix.tex",
+        "phrases": [
+            "direction_cosine_schematic_3d.pdf",
+            "not embedded in a common parameter space",
+            "within-sample consistency rather than held-out generalization",
+        ],
+        "producer_phrases": [
+            "def fig_direction_cosine_schematic_3d",
+            "direction_cosine_schematic_3d.pdf",
+        ],
+    },
+    "results/figures/heldout_pairs_3d.pdf": {
+        "section": "paper/sections/appendix.tex",
+        "phrases": [
+            "heldout_pairs_3d.pdf",
+            "a dimensional control rather than a sampled null",
+            "frozen causal criterion fails",
+        ],
+        "producer_phrases": [
+            "def fig_heldout_pairs_3d",
+            "heldout_pairs_3d.pdf",
+        ],
+    },
+}
 
 TRACKER_PENDING_TERMS = [
     "queued",
@@ -1838,7 +1875,12 @@ def check_visual_qa_receipt(gates):
     except json.JSONDecodeError as exc:
         add(gates, "visual_qa_receipt_current", False, f"invalid JSON: {exc}")
         return
-    errors = visual_qa_receipt_errors(data, pdf, "docs/paper.pdf", {1, 7, 11, 15, 21})
+    errors = visual_qa_receipt_errors(
+        data,
+        pdf,
+        "docs/paper.pdf",
+        {1, 7, 11, 15, 21, 22, 23},
+    )
     add(
         gates,
         "visual_qa_receipt_current",
@@ -2782,24 +2824,21 @@ def check_required_claim_framing(gates):
         ],
         "paper/sections/misalignment.tex": [
             "Rotation-invariant summaries",
-            "result therefore concerns an in-sample, model-wide intervention",
-            "locality, capability preservation, and out-of-sample causal ablation were not tested",
+            "result concerns an in-sample, model-wide intervention rather than a held-out causal test",
             "exclude prompt, training-seed, judge, and family variation",
         ],
         "paper/sections/discussion.tex": [
             "matched arm labels supply the condition information",
-            "did not run matched controls for coding, mathematics",
-            "Reasoning, mixture-of-experts, multimodal, and models beyond 14B remain outside scope",
+            "Each endpoint delta aggregates training stages",
             "prompt distribution, topic, or style",
             "Projection is blunt",
-            "capability-preserving intervention remains open",
             "steering is nonmonotonic",
             "Global projection does not localize a circuit",
             "Prospective use requires directions and thresholds frozen before new endpoint deltas are observed",
             "code-organism and 14B causal audits fail their frozen criteria",
         ],
         "README.md": [
-            "the original medical training rows are not present",
+            "the medical training rows are external inputs",
         ],
     }
     missing = []

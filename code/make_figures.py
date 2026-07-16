@@ -21,6 +21,7 @@ matplotlib.use("Agg")
 import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 from matplotlib import font_manager
+from matplotlib.lines import Line2D
 from matplotlib.patches import FancyArrowPatch, Wedge, FancyBboxPatch
 
 from figure_palette import (  # noqa: E402
@@ -105,6 +106,7 @@ FIGURE_SOURCE_ARTIFACTS = [
     "results/data/detect_med.json",
     "results/data/detect_llama.json",
     "results/data/detect_mistral.json",
+    "results/data/detect_14b.json",
     "results/data/synthetic_bbp.json",
     "results/data/capability.json",
     "results/data/capability_evidence.json",
@@ -248,6 +250,19 @@ def save_figure_pdf(fig, outdir, name, **kwargs):
     kwargs.setdefault("bbox_inches", "tight")
     kwargs.setdefault("pad_inches", 0.0)
     fig.savefig(os.path.join(outdir, name), **kwargs)
+
+
+def style_3d_axes(ax, elev=27, azim=-57, aspect=(1.8, 1.0, 0.95)):
+    """Apply the manuscript's quiet axis treatment to a 3D panel."""
+    ax.set_facecolor("white")
+    ax.tick_params(colors=INK, labelsize=7.5, pad=1)
+    for axis in (ax.xaxis, ax.yaxis, ax.zaxis):
+        axis.pane.set_facecolor((1, 1, 1, 0))
+        axis.pane.set_edgecolor(GRID)
+        axis._axinfo["grid"].update(color=GRID, linewidth=0.5, linestyle="-")
+        axis.line.set_color(GREY)
+    ax.view_init(elev=elev, azim=azim)
+    ax.set_box_aspect(aspect)
 
 
 def fig_spectrum_panel(rows, outdir, npz="results/data/full_spectrum.npz"):
@@ -844,7 +859,7 @@ def fig_ablation(
     capability="results/data/capability.json",
     evidence_f="results/data/capability_evidence.json",
 ):
-    """Corrected top-128 refusal and capability audit."""
+    """Top-128 refusal and capability audit."""
     if not os.path.exists(capability):
         return
     if not os.path.exists(evidence_f):
@@ -896,7 +911,7 @@ def fig_ablation(
     axL.set_xticks(xs); axL.set_xticklabels(labs, fontsize=7.8)
     axL.set_ylabel("substring-refusal rate (%)")
     axL.set_ylim(0, 120)
-    axL.set_title("corrected fixed 128-prompt slice", fontsize=9)
+    axL.set_title("fixed 128-prompt slice", fontsize=9)
     axL.grid(True, axis="y", color=GRID, lw=0.5)
 
     tasks = [("MMLU", "mmlu"), ("ARC-C", "arc_challenge"), ("GSM8K", "gsm8k")]
@@ -1057,6 +1072,135 @@ def fig_mis_gate(outdir, f="results/data/misalignment_eval_medical.json"):
     plt.close(fig)
 
 
+def fig_mis_scout_overlap_3d(
+    outdir,
+    f="results/data/misalign_scout.json",
+):
+    """Matched 14B scalar scout: overlaid profiles and signed residual views."""
+    if not os.path.exists(f):
+        return
+    payload = json.load(open(f))
+    rows = payload["rows"]
+    layers = sorted({int(row["layer"]) for row in rows})
+    lookup = {(row["label"], int(row["layer"])): row for row in rows}
+
+    def top_over_edge(condition):
+        return np.array([
+            [lookup[(label, layer)][condition]["top_over_edge"] for layer in layers]
+            for label in LABELS
+        ], dtype=float)
+
+    layers = np.asarray(layers)
+    benign = np.log10(top_over_edge("ben_matched"))
+    misaligned = np.log10(top_over_edge("mis"))
+    residual = misaligned - benign
+
+    fig = plt.figure(figsize=(7.2, 3.2))
+    grid = fig.add_gridspec(1, 3, width_ratios=[1.13, 1.0, 0.78])
+    ax_profiles = fig.add_subplot(grid[0, 0], projection="3d")
+    ax_iso = fig.add_subplot(grid[0, 1], projection="3d")
+
+    for row_idx in range(len(LABELS)):
+        ys = np.full(len(layers), row_idx)
+        ax_profiles.plot(layers, ys, benign[row_idx], color=SAFE_GREEN,
+                         lw=1.35, alpha=0.90)
+        ax_profiles.plot(layers, ys, misaligned[row_idx], color=HARM_RED,
+                         lw=1.10, alpha=0.82, ls="--")
+    zmax = max(benign.max(), misaligned.max()) * 1.03
+    ax_profiles.set(xlim=(layers.min(), layers.max()),
+                    ylim=(-0.3, len(LABELS) - 0.7), zlim=(0, zmax))
+    ax_profiles.set_xticks([0, 8, 16, 24, 32, 40, 47])
+    ax_profiles.set_yticks(range(len(LABELS)), LABELS)
+    ax_profiles.set_zticks([0, 1, 2, 3, 4], ["1x", "10x", "100x", "1k", "10k"])
+    ax_profiles.set_xlabel("layer")
+    ax_profiles.set_ylabel("matrix type")
+    ax_profiles.set_zlabel("top/edge ratio")
+    ax_profiles.set_title("(a) Spectral profiles", fontsize=10, pad=3)
+    style_3d_axes(ax_profiles)
+
+    xs, ys = np.meshgrid(layers.astype(float), np.arange(len(LABELS), dtype=float))
+    flat = residual.ravel()
+    z0 = np.minimum(flat, 0)
+    dz = np.abs(flat)
+    colors = [HARM_RED if value >= 0 else SAFE_GREEN for value in flat]
+    plane_x, plane_y = np.meshgrid(
+        [layers.min(), layers.max()], [-0.35, len(LABELS) - 0.65]
+    )
+    ax_iso.plot_surface(plane_x, plane_y, np.zeros_like(plane_x),
+                        color=GRID, alpha=0.28, shade=False)
+    ax_iso.bar3d(xs.ravel() - 0.34, ys.ravel() - 0.28, z0,
+                 0.68, 0.56, dz, color=colors, edgecolor=INK,
+                 linewidth=0.08, shade=True, alpha=0.88)
+    limit = max(abs(residual.min()), abs(residual.max())) * 1.15
+    ax_iso.set(xlim=(layers.min() - 0.6, layers.max() + 0.6),
+               ylim=(-0.55, len(LABELS) - 0.55), zlim=(-limit, limit))
+    ax_iso.set_xticks([0, 8, 16, 24, 32, 40, 47])
+    ax_iso.set_yticks(range(len(LABELS)), [])
+    ax_iso.set_zticks([-limit, 0, limit], [])
+    ax_iso.set_xlabel("layer")
+    ax_iso.set_title("(b) Isometric residuals", fontsize=10, pad=3)
+    style_3d_axes(ax_iso)
+
+    side_grid = grid[0, 2].subgridspec(
+        8, 1, height_ratios=[0.30, 1, 1, 1, 1, 1, 1, 1], hspace=0.10
+    )
+    title_ax = fig.add_subplot(side_grid[0, 0])
+    title_ax.axis("off")
+    title_ax.text(0.5, 0.45, "(c) Side view",
+                  fontsize=10, color=INK, ha="center", va="center")
+    side_axes = []
+    tick = 0.05 if limit >= 0.05 else limit / 2
+    for row_idx, label in enumerate(LABELS):
+        ax = fig.add_subplot(
+            side_grid[row_idx + 1, 0],
+            sharex=side_axes[0] if side_axes else None,
+        )
+        values = residual[row_idx]
+        fills = [HARM_RED if value >= 0 else SAFE_GREEN for value in values]
+        edges = [HARM_RED_DARK if value >= 0 else SAFE_GREEN_DARK
+                 for value in values]
+        ax.bar(layers, values, width=0.82, color=fills,
+               edgecolor=edges, linewidth=0.22)
+        ax.axhline(0, color=GREY, lw=0.65)
+        ax.set_ylim(-limit, limit)
+        ax.set_ylabel(label, rotation=0, ha="right", va="center",
+                      labelpad=8, fontsize=7.2)
+        ax.spines["top"].set_visible(False)
+        ax.spines["right"].set_visible(False)
+        ax.spines["left"].set_color(GRID)
+        ax.spines["bottom"].set_visible(False)
+        ax.tick_params(axis="both", labelsize=6.4, length=2, pad=1)
+        if row_idx == 3:
+            ax.yaxis.tick_right()
+            ax.set_yticks([-tick, 0, tick],
+                          [f"-{tick:.2f}", "0", f"+{tick:.2f}"])
+        else:
+            ax.set_yticks([])
+        if row_idx < len(LABELS) - 1:
+            ax.tick_params(axis="x", labelbottom=False, bottom=False)
+        else:
+            ax.spines["bottom"].set_visible(True)
+            ax.spines["bottom"].set_color(GREY)
+            ax.set_xticks([0, 8, 16, 24, 32, 40, 47])
+            ax.set_xlabel("layer", labelpad=2)
+        side_axes.append(ax)
+
+    fig.legend(
+        handles=[
+            Line2D([0], [0], color=SAFE_GREEN, lw=1.8, label="benign arm"),
+            Line2D([0], [0], color=HARM_RED, lw=1.8, ls="--",
+                   label="misaligned arm"),
+            Line2D([0], [0], color=GREY, lw=0.8, label="zero residual"),
+        ],
+        loc="lower center", ncol=3, frameon=False, fontsize=8,
+        bbox_to_anchor=(0.5, 0.035),
+    )
+    fig.subplots_adjust(left=0.025, right=0.985, bottom=0.14,
+                        top=0.93, wspace=0.14)
+    save_figure_pdf(fig, outdir, "mis_scout_overlap_3d.pdf", pad_inches=0.08)
+    plt.close(fig)
+
+
 def fig_bbp(outdir, npz="results/data/full_spectrum.npz"):
     """Intuition for the additive rectangular detectability transition."""
     gamma = float(np.load(npz)["gamma"]) if os.path.exists(npz) else 0.2857
@@ -1185,6 +1329,101 @@ def fig_convergence_geom(outdir, conv_cos=0.97, null_cos=0.16):
     plt.close(fig)
 
 
+def fig_direction_cosine_schematic_3d(outdir):
+    """Schematic unit-sphere encoding of layer-12 cosine summaries.
+
+    The rings encode scalar absolute cosines only. They are not a shared
+    coordinate embedding of vectors from different model families.
+    """
+    specs = [
+        ("Qwen-7B", "results/data/directions_med.json", "-", "o", 0.15),
+        ("Llama-8B", "results/data/directions_llama.json", "--", "s", 2.25),
+        ("Mistral-7B", "results/data/directions_mistral.json", ":", "^", 4.35),
+    ]
+    rows = []
+    for family, path, linestyle, marker, azimuth in specs:
+        if not os.path.exists(path):
+            return
+        layer = json.load(open(path))["per_layer"]["12"]
+        rows.append({
+            "family": family,
+            "linestyle": linestyle,
+            "marker": marker,
+            "azimuth": azimuth,
+            "paired": layer["convergence_mean_abs_cos"],
+            "benign": layer["benign_null_mean_abs_cos"],
+        })
+
+    def panel(ax, key, title, color, dark):
+        polar = np.linspace(0, 2 * np.pi, 48)
+        colat = np.linspace(0, np.pi, 24)
+        x = np.outer(np.cos(polar), np.sin(colat))
+        y = np.outer(np.sin(polar), np.sin(colat))
+        z = np.outer(np.ones_like(polar), np.cos(colat))
+        ax.plot_wireframe(x, y, z, rstride=4, cstride=6,
+                          color=GRID, linewidth=0.4, alpha=0.35)
+        ax.quiver(0, 0, 0, 0, 0, 1.18, color=INK, linewidth=2.2,
+                  arrow_length_ratio=0.10)
+        ring_angle = np.linspace(0, 2 * np.pi, 180)
+        family_handles = []
+        for row in rows:
+            cosine = float(row[key])
+            radius = math.sqrt(max(0.0, 1.0 - cosine * cosine))
+            marker_x = radius * math.cos(row["azimuth"])
+            marker_y = radius * math.sin(row["azimuth"])
+            ax.plot(radius * np.cos(ring_angle),
+                    radius * np.sin(ring_angle),
+                    np.full_like(ring_angle, cosine),
+                    color=color, lw=2.6, ls=row["linestyle"])
+            ax.scatter([marker_x], [marker_y], [cosine], s=34,
+                       marker=row["marker"], color=color,
+                       edgecolor=dark, linewidth=0.7)
+            family_handles.append(Line2D(
+                [0], [0], color=color, lw=1.8, ls=row["linestyle"],
+                marker=row["marker"], markerfacecolor=color,
+                markeredgecolor=dark, markersize=4.2,
+                label=f"{row['family']}  {cosine:.2f}",
+            ))
+        ax.set(xlim=(-1.08, 1.08), ylim=(-1.08, 1.08), zlim=(0, 1.2))
+        # Orthogonal coordinates are arbitrary in this scalar-cosine schematic.
+        # Omitting their labels avoids implying a shared cross-family embedding.
+        ax.set_xlabel("")
+        ax.set_ylabel("")
+        ax.set_zlabel("absolute cosine with pool" if key == "paired" else "")
+        ax.set_title(title, color=INK, fontsize=10, pad=3)
+        style_3d_axes(ax, elev=22, azim=-52, aspect=(1, 1, 1))
+        ax.legend(handles=family_handles, loc="upper left",
+                  bbox_to_anchor=(0.01, 0.91), frameon=True,
+                  facecolor="white", edgecolor="none", framealpha=0.90,
+                  fontsize=7.0, handlelength=2.4, borderpad=0.25,
+                  labelspacing=0.28)
+
+    fig = plt.figure(figsize=(7.0, 3.4))
+    ax_paired = fig.add_subplot(1, 2, 1, projection="3d")
+    ax_benign = fig.add_subplot(1, 2, 2, projection="3d")
+    panel(ax_paired, "paired", "(a) Harmful-minus-safe directions",
+          HARM_RED, HARM_RED_DARK)
+    panel(ax_benign, "benign", "(b) Benign-reference directions",
+          SAFE_GREEN, SAFE_GREEN_DARK)
+    fig.legend(
+        handles=[
+            Line2D([0], [0], color=INK, lw=2.0,
+                   label="pooled contrast axis"),
+            Line2D([0], [0], color=HARM_RED, lw=2.0,
+                   label="harmful-minus-safe"),
+            Line2D([0], [0], color=SAFE_GREEN, lw=2.0,
+                   label="benign reference"),
+        ],
+        loc="lower center", ncol=3, frameon=False, fontsize=8,
+        bbox_to_anchor=(0.5, 0.025),
+    )
+    fig.subplots_adjust(left=0.025, right=0.975, bottom=0.14,
+                        top=0.94, wspace=0.04)
+    save_figure_pdf(fig, outdir, "direction_cosine_schematic_3d.pdf",
+                    pad_inches=0.08)
+    plt.close(fig)
+
+
 def fig_detect(outdir):
     """Held-out detection: per family, the normalized projection norm a held-out misaligned
     vs benign arm puts on the recovered direction (leave-one-seed-out), with a
@@ -1218,6 +1457,76 @@ def fig_detect(outdir):
     ax.grid(True, axis="y", color=GRID, lw=0.5)
     fig.tight_layout()
     save_figure_pdf(fig, outdir, "detect.pdf")
+    plt.close(fig)
+
+
+def fig_heldout_pairs_3d(outdir):
+    """Per-fold learned-direction separation beside the seeded random control."""
+    specs = [
+        ("Qwen-7B", "results/data/detect_med.json"),
+        ("Llama-8B", "results/data/detect_llama.json"),
+        ("Mistral-7B", "results/data/detect_mistral.json"),
+        ("Qwen-14B\n(scale audit)", "results/data/detect_14b.json"),
+    ]
+    family_rows = []
+    for name, path in specs:
+        if not os.path.exists(path):
+            return
+        family_rows.append((name, json.load(open(path))["folds"]))
+
+    def panel(ax, mode, title):
+        benign_key, misaligned_key = (
+            ("ben_score", "mis_score") if mode == "learned"
+            else ("ben_rand", "mis_rand")
+        )
+        connector = INK if mode == "learned" else GREY
+        linestyle = "-" if mode == "learned" else ":"
+        for family_index, (_name, folds) in enumerate(family_rows):
+            for fold_index, row in enumerate(folds):
+                benign = float(row[benign_key])
+                misaligned = float(row[misaligned_key])
+                ax.plot([family_index, family_index],
+                        [fold_index, fold_index], [benign, misaligned],
+                        color=connector, lw=1.35, ls=linestyle, alpha=0.78)
+                ax.scatter([family_index], [fold_index], [benign], s=28,
+                           marker="s", color=SAFE_GREEN,
+                           edgecolor=SAFE_GREEN_DARK, linewidth=0.6)
+                ax.scatter([family_index], [fold_index], [misaligned], s=30,
+                           marker="o", color=HARM_RED,
+                           edgecolor=HARM_RED_DARK, linewidth=0.6)
+        ax.set(xlim=(-0.5, 3.5), ylim=(-0.4, 3.4), zlim=(0, 0.75))
+        ax.set_xticks(range(4), [name for name, _rows in family_rows],
+                      rotation=8, ha="right")
+        ax.set_yticks(range(4), ["fold 0", "fold 1", "fold 2", "fold 3"])
+        ax.set_ylabel("held-out fold", labelpad=8)
+        ax.set_zlabel("normalized projection norm", labelpad=7)
+        ax.set_title(title, color=INK, fontsize=10, pad=3)
+        style_3d_axes(ax, elev=24, azim=-58, aspect=(1.35, 1.0, 1.0))
+
+    fig = plt.figure(figsize=(7.0, 3.4))
+    ax_learned = fig.add_subplot(1, 2, 1, projection="3d")
+    ax_random = fig.add_subplot(1, 2, 2, projection="3d")
+    panel(ax_learned, "learned", "(a) Learned contrast direction")
+    panel(ax_random, "random", "(b) Seeded random direction")
+    fig.legend(
+        handles=[
+            Line2D([0], [0], marker="s", color="none",
+                   markerfacecolor=SAFE_GREEN, markeredgecolor=SAFE_GREEN_DARK,
+                   label="benign held-out arm"),
+            Line2D([0], [0], marker="o", color="none",
+                   markerfacecolor=HARM_RED, markeredgecolor=HARM_RED_DARK,
+                   label="misaligned held-out arm"),
+            Line2D([0], [0], color=INK, lw=1.5,
+                   label="learned-direction pair"),
+            Line2D([0], [0], color=GREY, lw=1.5, ls=":",
+                   label="random-control pair"),
+        ],
+        loc="lower center", ncol=4, frameon=False, fontsize=7.7,
+        bbox_to_anchor=(0.5, 0.025),
+    )
+    fig.subplots_adjust(left=0.025, right=0.975, bottom=0.18,
+                        top=0.94, wspace=0.04)
+    save_figure_pdf(fig, outdir, "heldout_pairs_3d.pdf", pad_inches=0.08)
     plt.close(fig)
 
 
@@ -1329,12 +1638,15 @@ def main():
         fig_mis_convergence(args.outdir)
         fig_mis_causal(args.outdir)
         fig_mis_gate(args.outdir)
+        fig_mis_scout_overlap_3d(args.outdir)
         fig_bbp(args.outdir)
         fig_spectrum_null(args.outdir)
         fig_convergence_geom(args.outdir)
+        fig_direction_cosine_schematic_3d(args.outdir)
         fig_nec_suff(args.outdir)
         fig_xfam_convergence(args.outdir)
         fig_detect(args.outdir)
+        fig_heldout_pairs_3d(args.outdir)
         print("figures written to", args.outdir)
     write_figure_manifest(args.outdir, args.manifest, args.data)
 

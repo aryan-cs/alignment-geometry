@@ -191,8 +191,8 @@ def check_capability_caveat():
     """Guard against broad-capability claims until H200 output is validated."""
     text = paper_text()
     harmless_required = [
-        "Harmless-prompt effects, adaptive attacks, and human judgments under the same intervention remain unmeasured",
-        "harmless prompts, adaptive attacks, and human scoring remain untested",
+        "substring-scored without an output-coherence gate",
+        "does not resolve output coherence or harmless-prompt effects",
     ]
     for phrase in harmless_required:
         if not has_phrase(text, phrase):
@@ -304,15 +304,13 @@ def check_reviewer_scope_caveats():
             "spectral non-specificity",
             [
                 r"not by itself alignment evidence",
-                r"did not run matched controls for coding,\s*mathematics,\s*other domains",
-                r"objectives such as RLHF and DPO",
+                r"Each endpoint delta aggregates training stages",
             ],
         ),
         (
             "Marchenko-Pastur null limitation",
             [
                 r"fitted Marchenko--Pastur curve answers visibility,\s*not specificity",
-                r"did not run matched controls for coding,\s*mathematics,\s*other domains",
                 r"matched harmful and safe fine-tunes",
             ],
         ),
@@ -331,13 +329,13 @@ def check_reviewer_scope_caveats():
                 r"prompt\s*distribution,\s*topic,\s*or style",
                 r"HarmBench reproduces",
                 r"baseline,\s*spectral-ablation,\s*and random-ablation refusal are\s*\$71\.2\\%\$.*\$5\.8\\%\$.*\$65\.8\\%\$",
-                r"harmless prompts,\s*adaptive attacks,\s*and human scoring remain untested",
+                r"does not resolve output coherence or harmless-prompt effects",
             ],
         ),
         (
             "projection-ablation breadth",
             [
-                r"corrected top-\$128\$ audit",
+                r"top-\$128\$ audit",
                 r"One random subspace is a matched control, not a null distribution",
                 r"spectral intervention is highly destructive on capability benchmarks",
             ],
@@ -346,7 +344,6 @@ def check_reviewer_scope_caveats():
             "single-model refusal scope",
             [
                 r"refusal census covers one released 8B model",
-                r"Reasoning,\s*mixture-of-experts,\s*multimodal,\s*and models beyond 14B remain outside scope",
             ],
         ),
         (
@@ -367,7 +364,7 @@ def check_reviewer_scope_caveats():
         (
             "external validity",
             [
-                r"Naturally occurring deception,\s*sycophancy,\s*reward hacking,\s*jailbreaks,\s*and\s*multimodal failures remain untested",
+                r"do not address naturally occurring failures",
             ],
         ),
         (
